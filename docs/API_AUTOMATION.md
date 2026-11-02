@@ -1,6 +1,6 @@
 # API 泛化与编译器元数据
 
-本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。新增 20 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 21 个公共包装；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
+本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 39 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 44 个公共包装；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
 
 ## 实际参考与 MLU 取舍
 
@@ -29,7 +29,7 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 之前仅有 10 个 ObjectID RPC 能生成。普通 API 需要分别增加 header、client 编解码、server 长度检查/dispatch、backend、导出与台账；各处重复字段和 opcode。现在新增一个已审查的普通 API，主要填写 Schema 中的字段/映射/native binding，再补功能族语义断言；其余重复路径一次生成。
 
-本轮 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，另有协议头、导出 map 和测试模板。这个数字是生成结果行数，不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；最新行数及哈希见 [制品清单](../evidence/query-boundaries-20261102/artifact-manifest.json)，另有协议头、导出 map 和测试模板。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
 ## BANG C 编译器类型 metadata
 
@@ -55,6 +55,10 @@ python3 scripts/verify-transparent.py --out evidence/<batch>/full-suite
 
 `generate_compat.py` 对 SDK 预处理 Census、头文件哈希、Schema 精确签名、真实链接导出和人工状态做校验，生成逐 API ledger、summary、功能族统计和剩余 API 的依赖计划。`verify-api-contracts.py` 再核对生成结果、opcode、codec/dispatch/binding、导出 allowlist、ledger 和完整状态的证据文件。
 
-新增功能族测试比较稳定 stdout；实时 free memory 只比不变量，时间值只比非负及 disabled-timing 错误，stderr 单独留存 native 诊断。生成 test plan 为全部 20 个 RPC 提供坏长度与坏成功回复测试，另加跨 session、overflow、stale、alignment 和元数据负例。生成模板不会被当作通过测试；语义断言仍由作者编写。
+新增功能族测试比较稳定 stdout；实时 free memory 只比不变量，时间值只比非负及 disabled-timing 错误，stderr 单独留存 native 诊断。生成 test plan 为全部 39 个 typed RPC 提供坏长度与坏成功回复测试，另加跨 session、overflow、stale、alignment、string 和元数据负例。生成模板不会被当作通过测试；语义断言仍由作者编写。
 
-剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。下一工作包优先补 context/config/PCI 查询、allocation attribute/range 和 queue 属性，再实现 client host pages/completion/writeback，扩展 module/symbol 与 aggregate metadata；Graph/IPC/Peer 等等待相应依赖。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
+剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range 和 queue 属性基础已接入；后续补 Context flags/TLS、default queue ordering 和更广内存边界，实现 client host pages/completion/writeback，扩展 module/symbol 与 aggregate metadata；Graph/IPC/Peer 等等待相应依赖。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
+
+## 查询边界续批
+
+Context/PCI、memory range/attributes、Queue union 本轮新增 19 个 typed RPC 与 23 个公共 wrapper，累计 39/44。新增 `cstring` 的请求/回复 NUL 检查、owner session 选择、显式 `native_status` 错误输出；语义 adapter 和批量 wrapper 仍手写。详见 [设计与边界](QUERY_BOUNDARIES.md)。`summarize-api-change.py --baseline <commit> --out <evidence-dir>` 机械生成逐项 delta 和制品哈希；完整状态仍需人工证据审查。

@@ -1,0 +1,90 @@
+[
+  {
+    "name": "runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_query_boundaries"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_query_boundaries"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_query_boundaries"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_query_boundaries"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_query_boundaries",
+      "driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_query_boundaries",
+      "driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_query_boundaries",
+      "driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_query_boundaries",
+      "driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "query_protocol",
+    "command": [
+      "python3",
+      "tests/query_protocol.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "query_ownership",
+    "command": [
+      "python3",
+      "tests/query_ownership.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "typed_client_faults",
+    "command": [
+      "python3",
+      "tests/typed_client_faults.py"
+    ],
+    "returncode": 0
+  }
+]

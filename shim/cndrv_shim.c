@@ -351,6 +351,7 @@ __attribute__((destructor)) static void finish(void) {
   if(control) mlu_remote_disconnect(control);
   pthread_mutex_unlock(&lock);
 }
+#include "driver_queries.inc"
 #include "cndrv_api.inc"
 
 CNresult cnCreateQueueWithPriority(CNqueue *out,unsigned flags,int priority) {

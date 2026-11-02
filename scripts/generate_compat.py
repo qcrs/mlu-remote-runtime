@@ -16,6 +16,9 @@ exports = {family:{line.split()[-1] for line in subprocess.check_output(
     ['nm','-D','--defined-only',str(ROOT/path)],text=True).splitlines() if line.split()}
     for family,path in [('CNRT','build/shim/libcnrt.so'),('CNDrv','build/driver-shim/libcndrv.so')]}
 backend = (ROOT/'server/mlu_backend.c').read_text()
+# Native semantic adapters live beside the backend, rather than in generated
+# fixed-field bindings. Count actual calls there too, without conflating exports.
+backend += '\n'+'\n'.join(path.read_text() for path in sorted((ROOT/'server').glob('*.inc')))
 rows, hashes = [], {}
 for family, header, prefix, return_type in [('CNRT','cnrt.h','cnrt','cnrtRet_t'),('CNDrv','cn_api.h','cn','CNresult')]:
     hashes[header] = hashlib.sha256((sdk/'include'/header).read_bytes()).hexdigest()

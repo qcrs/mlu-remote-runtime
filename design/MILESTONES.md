@@ -49,6 +49,8 @@ flowchart LR
 
 2026-11-02 API 扩展批次新增 30 个公共 API（15 完整、15 部分），修复 5 个原拒绝入口（3 完整、2 部分）。Census 仍为 310 项，目前完整 36、部分 58、明确拒绝 4、未实现 212。已建立 device/version/properties、owned memory fill/stride copy、queue/notifier options/wait/timing、kernel attribute 的复用模式；[15 项新增检查 + 59 项完整回归](../evidence/api-expansion-20261102/README.md) 通过。实现与取舍见 [API 自动化](../docs/API_AUTOMATION.md)。
 
+后续查询工作包在 `8dbd336` 基础上新增 24 公共 API（9 完整、15 部分），累计 45/73/4/188。Context 配置/版本/任务容量、PCI、内存属性/range、Queue owner/属性 union 已接入；11+15+59 项检查通过。见 [设计](../docs/QUERY_BOUNDARIES.md) 和 [证据](../evidence/query-boundaries-20261102/README.md)。Host pinned/writeback 与复杂 ABI/Symbol 不因查询成功而升级。
+
 | 工作包 | 实施内容与依赖 | 原生与远程验收标准 |
 |---|---|---|
 | M3.1 模块注册 | 分离 ImageID/ModuleID/多个 KernelID；DSO load/unload 引用计数；依赖当前 upload | 同一 module 两个 kernel 共享 globals，native/remote 结果一致；多次 dlopen/dlclose、卸载时有 pending launch、reset 后注册重载；stale ID 拒绝 |
@@ -62,9 +64,9 @@ M3.1 已完成一个 registration→一个 ModuleID→多个 KernelID、重复 l
 
 M3.2 新增 CNCC `mlisa_kernel` IR→宿主 ELF 类型 metadata，按 image 指纹/精确 symbol/设备参数大小交叉核对；同一 module 的 C、enum、template、zero-arg kernel 数值通过，scalar 与 fake VA 相同也不误重定位。无 metadata 的旧程序保留保守 demangler。aggregate、pointer graph、Host symbol 和设备 i64→s48 语义边界仍需原生证据，M3.2 部分完成。
 
-M3.6 已完成本轮自动化门槛：310 声明的 Schema 签名/功能族/参数/状态；原 10 对对象 RPC，加 20 typed RPC 的编解码/dispatch/binding、21 公共 wrapper、导出 map、台账/功能族计划和测试模板；contract checker 核对 SDK/Schema/Protocol/Export/Ledger/evidence，全部生成 RPC 的坏请求与坏成功回复实测通过。该生成范围已验收，buffer/复杂 lifecycle 的通用生成仍需继续扩展。H2D staging、非阻塞 transfer release、1200 次 launch/copy 保留原回归。
+M3.6 已完成本轮自动化门槛：310 声明的 Schema 签名/功能族/参数/状态；原 10 对对象 RPC，加 39 typed RPC 的编解码/dispatch/binding、44 公共 wrapper（含后续查询批次）、导出 map、台账/功能族计划和测试模板；contract checker 核对 SDK/Schema/Protocol/Export/Ledger/evidence，全部生成 RPC 的坏请求与坏成功回复实测通过。该生成范围已验收，buffer/复杂 lifecycle 的通用生成仍需继续扩展。H2D staging、非阻塞 transfer release、1200 次 launch/copy 保留原回归。
 
-M3.5 已建立独立 Driver Shim：每个 native context 对应一条 remote session，TLS current binding、四种原生调度标志、立即文件/fatbinary module load、多个 KernelID、primitive/offset/NULL/xyz launch、显式/native NULL queue 与 notifier、带 native cleanup ACK 的销毁已实现。普通 Driver binary 的 native/replacement/preload 及无 SDK/设备视图验证见 [起步批次证据](../evidence/driver-shim-20261102/README.md)。本轮扩展后 56 个已导出公共入口中，17 已实现、38 部分实现、1 明确拒绝；台账分别检查两个 Shim 的导出。NULL queue async copy、真异步 D2H、完整 context API/默认队列隐式顺序、复杂 ABI 和多设备仍待验收，**M3.5 仍部分完成**。
+M3.5 已建立独立 Driver Shim：每个 native context 对应一条 remote session，TLS current binding、四种原生调度标志、立即文件/fatbinary module load、多个 KernelID、primitive/offset/NULL/xyz launch、显式/native NULL queue 与 notifier、带 native cleanup ACK 的销毁已实现。普通 Driver binary 的 native/replacement/preload 及无 SDK/设备视图验证见 [起步批次证据](../evidence/driver-shim-20261102/README.md)。两批扩展后 71 个已导出公共入口中，25 已实现、45 部分实现、1 明确拒绝；台账分别检查两个 Shim 的导出。NULL queue async copy、真异步 D2H、完整 context API/默认队列隐式顺序、复杂 ABI 和多设备仍待验收，**M3.5 仍部分完成**。
 
 double 参数验证依赖可工作的原生编译器或已验证的替代编译配置；当前 CNCC 崩溃需先向原生链路定位。multi-arch fatbin/SDK 升级需先更新 parser 选择策略及 M1 证据。
 

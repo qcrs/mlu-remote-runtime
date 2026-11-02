@@ -1,0 +1,124 @@
+[
+  {
+    "name": "runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_api_families"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_api_families"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_api_families"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_api_families"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_api_families",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/audit/native_bang_abi-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_api_families",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/audit/native_bang_abi-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_api_families",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/audit/native_bang_abi-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_api_families",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/audit/native_bang_abi-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "metadata-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_metadata"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "metadata-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_metadata"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "metadata-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_metadata"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "metadata-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_metadata"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "typed-protocol",
+    "command": [
+      "python3",
+      "tests/typed_api_protocol.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "typed-client-faults",
+    "command": [
+      "python3",
+      "tests/typed_client_faults.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "metadata-validation",
+    "command": [
+      "python3",
+      "tests/bang_metadata.py"
+    ],
+    "returncode": 0
+  }
+]

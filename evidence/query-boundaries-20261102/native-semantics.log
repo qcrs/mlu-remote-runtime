@@ -1,0 +1,87 @@
+cnDeviceGetPCIBusId(pci,64,0) = 0
+pci 0000:84:00.0
+pci length 0 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 1 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 2 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 3 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 4 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 5 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 6 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 7 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 8 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 9 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 10 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 11 status 100006 bytes a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5 a5
+pci length 12 status 0 bytes 30 30 30 30 3a 38 34 3a 30 30 2e 30 00 a5
+pci length 13 status 0 bytes 30 30 30 30 3a 38 34 3a 30 30 2e 30 00 a5
+pci length 14 status 0 bytes 30 30 30 30 3a 38 34 3a 30 30 2e 30 00 a5
+ctx config 0 0 0
+cnCtxSetConfig((CNCtxConfig)t,v) = 0
+ctx config 1 0 1024
+cnCtxSetConfig((CNCtxConfig)t,v) = 0
+ctx config 2 0 0
+cnCtxSetConfig((CNCtxConfig)t,v) = 0
+ctx config 3 0 33554432
+cnCtxSetConfig((CNCtxConfig)t,v) = 0
+ctx config 4 100006 -1
+cnCtxGetApiVersion(ctx,&ver) = 0
+api version 205002
+tasks 1 0 24
+tasks 2 100006 -1
+tasks 4 0 6
+tasks 8 0 3
+tasks 16 0 1
+tasks 32 0 0
+tasks 64 0 0
+range 0 0 1 123
+range 41 0 1 123
+range 82 0 1 123
+range 123 100102 0 0
+cnMemGetAddressRange(NULL,NULL,p) = 0
+mem attr 1 0 2 ptr 0 base 0 ctx 0
+mem attr 2 0 0 ptr 1 base 0 ctx 0
+mem attr 3 0 0 ptr 0 base 0 ctx 0
+mem attr 4 0 0 ptr 0 base 0 ctx 0
+mem attr 5 100006 0 ptr 0 base 0 ctx 0
+mem attr 6 0 0 ptr 0 base 0 ctx 1
+mem attr 7 0 0 ptr 0 base 0 ctx 0
+mem attr 8 100006 0 ptr 0 base 0 ctx 0
+mem attr 9 100006 0 ptr 0 base 0 ctx 0
+mem attr 10 100006 0 ptr 0 base 0 ctx 0
+mem attr 11 100006 0 ptr 0 base 0 ctx 0
+mem attr 12 100006 0 ptr 0 base 0 ctx 0
+mem attr 13 100006 0 ptr 0 base 0 ctx 0
+mem attr 14 100006 0 ptr 0 base 0 ctx 0
+mem attr 15 100006 0 ptr 0 base 0 ctx 0
+mem attr 16 100006 0 ptr 0 base 0 ctx 0
+mem attr 17 0 0 ptr 0 base 1 ctx 0
+mem attr 18 0 123 ptr 0 base 0 ctx 0
+mem attr 19 100006 0 ptr 0 base 0 ctx 0
+mem attr 20 100006 0 ptr 0 base 0 ctx 0
+mem attr 21 0 4294967295 ptr 0 base 0 ctx 0
+mem attr 22 0 1 ptr 0 base 0 ctx 0
+mem attr 23 0 0 ptr 0 base 0 ctx 0
+mem attr 24 0 0 ptr 0 base 0 ctx 0
+mem attr 25 100006 0 ptr 0 base 0 ctx 0
+cnQueueGetContext(NULL,&qc) = 0
+default ctx matches 1
+cnQueueGetAttribute(q,CN_QUEUE_ATTRIBUTE_ACCESS_POLICY_WINDOW,&value) = 0
+queue attr default 0 0 0.000000 0 0
+cnQueueSetAttribute(q,CN_QUEUE_ATTRIBUTE_ACCESS_POLICY_WINDOW,&value) = 0
+cnQueueCopyAttributes(q2,q) = 0
+cnQueueGetAttribute(q2,CN_QUEUE_ATTRIBUTE_ACCESS_POLICY_WINDOW,&value) = 0
+queue attr set 1 0 0.000000 0 0
+cnCtxResetPersistingL2Cache() = 0
+runtime config 0 0 0
+cnrtDeviceSetConfig((cnrtDeviceConfig_t)t,v) = 0
+runtime config 1 0 1024
+cnrtDeviceSetConfig((cnrtDeviceConfig_t)t,v) = 0
+runtime config 2 0 0
+cnrtDeviceSetConfig((cnrtDeviceConfig_t)t,v) = 0
+runtime config 3 100006 -1
+runtime config 4 100006 -1
+cnrtPointerGetAttributes(&a,(char *)rp+7) = 0
+runtime ptr 2 0 123 dev 1 host 1 cache -1 base 1
+cnrtQueueGetAttribute(rq,cnrtQueueAttributeAccessPolicyWindow,&rv) = 0
+cnrtQueueSetAttribute(rq,cnrtQueueAttributeAccessPolicyWindow,&rv) = 100006
+cnrtDeviceResetPersistingL2Cache() = 0

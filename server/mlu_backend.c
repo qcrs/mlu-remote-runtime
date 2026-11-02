@@ -970,4 +970,5 @@ static int mlu_backend_copy3d(mlu_backend_session *s,const mlu_api_copy3d_reques
   p.extent=(CNextent){in->depth,in->height,in->width};
   return (int)cnMemcpyDtoD3D(&p);
 }
+#include "api_queries.inc"
 #include "typed_backend.inc"

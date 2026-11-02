@@ -233,4 +233,165 @@ typedef struct {
   unsigned char unused;
 } mlu_api_copy3d_response;
 int mlu_remote_api_copy3d(mlu_remote_context *, const mlu_api_copy3d_request *, mlu_api_copy3d_response *);
+typedef struct {
+  int32_t device;
+  int32_t length;
+} mlu_api_driver_pci_id_request;
+typedef struct {
+  char text[64];
+} mlu_api_driver_pci_id_response;
+int mlu_remote_api_driver_pci_id(mlu_remote_context *, const mlu_api_driver_pci_id_request *, mlu_api_driver_pci_id_response *);
+typedef struct {
+  char text[64];
+} mlu_api_driver_pci_device_request;
+typedef struct {
+  uint64_t device;
+  uint32_t native_status;
+} mlu_api_driver_pci_device_response;
+int mlu_remote_api_driver_pci_device(mlu_remote_context *, const mlu_api_driver_pci_device_request *, mlu_api_driver_pci_device_response *);
+typedef struct {
+  int32_t device;
+  int32_t length;
+} mlu_api_runtime_pci_id_request;
+typedef struct {
+  char text[64];
+} mlu_api_runtime_pci_id_response;
+int mlu_remote_api_runtime_pci_id(mlu_remote_context *, const mlu_api_runtime_pci_id_request *, mlu_api_runtime_pci_id_response *);
+typedef struct {
+  char text[64];
+} mlu_api_runtime_pci_device_request;
+typedef struct {
+  uint64_t device;
+} mlu_api_runtime_pci_device_response;
+int mlu_remote_api_runtime_pci_device(mlu_remote_context *, const mlu_api_runtime_pci_device_request *, mlu_api_runtime_pci_device_response *);
+typedef struct {
+  unsigned char unused;
+} mlu_api_context_version_request;
+typedef struct {
+  uint32_t version;
+} mlu_api_context_version_response;
+int mlu_remote_api_context_version(mlu_remote_context *, const mlu_api_context_version_request *, mlu_api_context_version_response *);
+typedef struct {
+  uint32_t klass;
+} mlu_api_context_tasks_request;
+typedef struct {
+  int32_t count;
+} mlu_api_context_tasks_response;
+int mlu_remote_api_context_tasks(mlu_remote_context *, const mlu_api_context_tasks_request *, mlu_api_context_tasks_response *);
+typedef struct {
+  uint32_t type;
+} mlu_api_context_config_get_request;
+typedef struct {
+  int64_t value;
+} mlu_api_context_config_get_response;
+int mlu_remote_api_context_config_get(mlu_remote_context *, const mlu_api_context_config_get_request *, mlu_api_context_config_get_response *);
+typedef struct {
+  uint32_t type;
+  int64_t value;
+} mlu_api_context_config_set_request;
+typedef struct {
+  unsigned char unused;
+} mlu_api_context_config_set_response;
+int mlu_remote_api_context_config_set(mlu_remote_context *, const mlu_api_context_config_set_request *, mlu_api_context_config_set_response *);
+typedef struct {
+  uint32_t type;
+} mlu_api_runtime_config_get_request;
+typedef struct {
+  int64_t value;
+} mlu_api_runtime_config_get_response;
+int mlu_remote_api_runtime_config_get(mlu_remote_context *, const mlu_api_runtime_config_get_request *, mlu_api_runtime_config_get_response *);
+typedef struct {
+  uint32_t type;
+  int64_t value;
+} mlu_api_runtime_config_set_request;
+typedef struct {
+  unsigned char unused;
+} mlu_api_runtime_config_set_response;
+int mlu_remote_api_runtime_config_set(mlu_remote_context *, const mlu_api_runtime_config_set_request *, mlu_api_runtime_config_set_response *);
+typedef struct {
+  unsigned char unused;
+} mlu_api_cache_reset_request;
+typedef struct {
+  unsigned char unused;
+} mlu_api_cache_reset_response;
+int mlu_remote_api_cache_reset(mlu_remote_context *, const mlu_api_cache_reset_request *, mlu_api_cache_reset_response *);
+typedef struct {
+  int32_t node;
+} mlu_api_node_memory_info_request;
+typedef struct {
+  uint64_t free;
+  uint64_t total;
+} mlu_api_node_memory_info_response;
+int mlu_remote_api_node_memory_info(mlu_remote_context *, const mlu_api_node_memory_info_request *, mlu_api_node_memory_info_response *);
+typedef struct {
+  uint64_t allocation;
+  uint64_t offset;
+} mlu_api_address_range_request;
+typedef struct {
+  uint64_t bytes;
+} mlu_api_address_range_response;
+int mlu_remote_api_address_range(mlu_remote_context *, const mlu_api_address_range_request *, mlu_api_address_range_response *);
+typedef struct {
+  uint64_t allocation;
+  uint64_t offset;
+  uint32_t attr;
+} mlu_api_memory_attribute_request;
+typedef struct {
+  uint64_t value;
+  uint32_t width;
+} mlu_api_memory_attribute_response;
+int mlu_remote_api_memory_attribute(mlu_remote_context *, const mlu_api_memory_attribute_request *, mlu_api_memory_attribute_response *);
+typedef struct {
+  uint64_t allocation;
+  uint64_t offset;
+} mlu_api_pointer_attributes_request;
+typedef struct {
+  int32_t type;
+  int32_t device;
+  uint64_t bytes;
+  int32_t cache;
+} mlu_api_pointer_attributes_response;
+int mlu_remote_api_pointer_attributes(mlu_remote_context *, const mlu_api_pointer_attributes_request *, mlu_api_pointer_attributes_response *);
+typedef struct {
+  uint64_t queue;
+} mlu_api_queue_context_request;
+typedef struct {
+  unsigned char unused;
+} mlu_api_queue_context_response;
+int mlu_remote_api_queue_context(mlu_remote_context *, const mlu_api_queue_context_request *, mlu_api_queue_context_response *);
+typedef struct {
+  uint64_t queue;
+  uint32_t attr;
+} mlu_api_queue_attribute_get_request;
+typedef struct {
+  uint64_t allocation;
+  uint64_t offset;
+  uint64_t bytes;
+  float ratio;
+  uint32_t hit;
+  uint32_t miss;
+} mlu_api_queue_attribute_get_response;
+int mlu_remote_api_queue_attribute_get(mlu_remote_context *, const mlu_api_queue_attribute_get_request *, mlu_api_queue_attribute_get_response *);
+typedef struct {
+  uint64_t queue;
+  uint32_t attr;
+  uint64_t allocation;
+  uint64_t offset;
+  uint64_t bytes;
+  float ratio;
+  uint32_t hit;
+  uint32_t miss;
+} mlu_api_queue_attribute_set_request;
+typedef struct {
+  unsigned char unused;
+} mlu_api_queue_attribute_set_response;
+int mlu_remote_api_queue_attribute_set(mlu_remote_context *, const mlu_api_queue_attribute_set_request *, mlu_api_queue_attribute_set_response *);
+typedef struct {
+  uint64_t queue;
+  uint64_t src;
+} mlu_api_queue_attribute_copy_request;
+typedef struct {
+  unsigned char unused;
+} mlu_api_queue_attribute_copy_response;
+int mlu_remote_api_queue_attribute_copy(mlu_remote_context *, const mlu_api_queue_attribute_copy_request *, mlu_api_queue_attribute_copy_response *);
 #endif

@@ -1,0 +1,8 @@
+2026-11-02 15:33:05.029684: [cnrtError] [565024] [Card: 0] Error occurred during calling 'cnDeviceGetPCIBusId' in CNDrv interface.
+2026-11-02 15:33:05.029737: [cnrtError] [565024] [Card: 0] Return value is 100006, CN_ERROR_INVALID_VALUE.
+2026-11-02 15:33:05.029741: [cnrtError] [565024] [Card: 0] cnrtDeviceGetPCIBusId: Failed to get the device PCI bus ID.
+2026-11-02 15:33:05.029748: [cnrtError] [565024] [Card: 0] Error occurred during calling 'cnDeviceGetByPCIBusId' in CNDrv interface.
+2026-11-02 15:33:05.029752: [cnrtError] [565024] [Card: 0] Return value is 100005, CN_ERROR_INVALID_DEVICE.
+2026-11-02 15:33:05.029755: [cnrtError] [565024] [Card: 0] cnrtDeviceGetByPCIBusId: Failed to get the device by PCI bus ID.
+2026-11-02 15:33:05.030594: [cnrtError] [565024] [Card: 0] Error occurred during calling 'cnQueueSetAttribute' in CNDrv interface.
+2026-11-02 15:33:05.030605: [cnrtError] [565024] [Card: 0] Return value is 100006, CN_ERROR_INVALID_VALUE.

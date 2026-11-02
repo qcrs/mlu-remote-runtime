@@ -67,7 +67,26 @@
     "API_MEMSET": 49,
     "API_COPY2D": 50,
     "API_KERNEL_ATTRIBUTE": 51,
-    "API_COPY3D": 52
+    "API_COPY3D": 52,
+    "API_DRIVER_PCI_ID": 53,
+    "API_DRIVER_PCI_DEVICE": 54,
+    "API_RUNTIME_PCI_ID": 55,
+    "API_RUNTIME_PCI_DEVICE": 56,
+    "API_CONTEXT_VERSION": 57,
+    "API_CONTEXT_TASKS": 58,
+    "API_CONTEXT_CONFIG_GET": 59,
+    "API_CONTEXT_CONFIG_SET": 60,
+    "API_RUNTIME_CONFIG_GET": 61,
+    "API_RUNTIME_CONFIG_SET": 62,
+    "API_CACHE_RESET": 63,
+    "API_NODE_MEMORY_INFO": 64,
+    "API_ADDRESS_RANGE": 65,
+    "API_MEMORY_ATTRIBUTE": 66,
+    "API_POINTER_ATTRIBUTES": 67,
+    "API_QUEUE_CONTEXT": 68,
+    "API_QUEUE_ATTRIBUTE_GET": 69,
+    "API_QUEUE_ATTRIBUTE_SET": 70,
+    "API_QUEUE_ATTRIBUTE_COPY": 71
   },
   "hello": {
     "request": [
@@ -317,7 +336,7 @@
     },
     "enum": {
       "wire": "i32",
-      "policy": "CNRT and CNDrv enums are distinct; invoke matching native API"
+      "policy": "CNRT and CNDrv enum namespaces are distinct; matching native API or explicit named-enum translation (runtime config -> owned CNDrv context)"
     },
     "pointer": {
       "mapping": "allocation_id + checked byte offset; never a host address"
@@ -328,7 +347,8 @@
         "in",
         "out",
         "inout"
-      ]
+      ],
+      "string_encoding": "cstring with fixed capacity: client strnlen, server request NUL check, response NUL check before output publication"
     },
     "struct": {
       "encoding": "named fields, no native padding or embedded host pointers"
@@ -734,7 +754,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtDeviceGetByPCIBusId(int *device, const char *pciBusId);",
       "parameters": [
@@ -742,25 +762,52 @@
           "name": "device",
           "c_type": "int *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         },
         {
           "name": "pciBusId",
           "c_type": "const char *",
           "kind": "buffer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "NUL terminated, max 63 bytes",
+          "mapping": "bounded_string"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; bounded PCI input <=63 bytes including accepted native short forms",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "runtime_pci_device",
+      "wrapper": {
+        "rpc": "runtime_pci_device",
+        "inputs": {
+          "text": "pciBusId"
+        },
+        "outputs": [
+          "*device=out.device;"
+        ],
+        "prepare": [],
+        "current": false,
+        "required": [
+          "device",
+          "pciBusId"
+        ]
+      },
+      "rpc_operations": [
+        "API_RUNTIME_PCI_DEVICE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceGetByPCIBusId",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_runtime_pci_device_request",
+        "response": "mlu_api_runtime_pci_device_response",
+        "server_handler": "mlu_backend_api_runtime_pci_device",
+        "backend_binding": "typed_rpc.runtime_pci_device.backend_binding"
+      }
     },
     {
       "name": "cnrtDeviceGetConfig",
@@ -768,7 +815,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtDeviceGetConfig(int64_t *pValue, cnrtDeviceConfig_t type);",
       "parameters": [
@@ -776,9 +823,9 @@
           "name": "pValue",
           "c_type": "int64_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         },
         {
           "name": "type",
@@ -789,12 +836,35 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "runtime_config_get",
+      "wrapper": {
+        "rpc": "runtime_config_get",
+        "inputs": {
+          "type": "type"
+        },
+        "outputs": [
+          "*pValue=out.value;"
+        ],
+        "prepare": [],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_RUNTIME_CONFIG_GET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceGetConfig",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_runtime_config_get_request",
+        "response": "mlu_api_runtime_config_get_response",
+        "server_handler": "mlu_backend_api_runtime_config_get",
+        "backend_binding": "typed_rpc.runtime_config_get.backend_binding"
+      }
     },
     {
       "name": "cnrtDeviceGetPCIBusId",
@@ -802,7 +872,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtDeviceGetPCIBusId(char *pciBusId, int len, int device);",
       "parameters": [
@@ -810,9 +880,9 @@
           "name": "pciBusId",
           "c_type": "char *",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "len",
+          "mapping": "bounded NUL string; native buffer never exposed"
         },
         {
           "name": "len",
@@ -831,12 +901,40 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "runtime_pci_id",
+      "wrapper": {
+        "rpc": "runtime_pci_id",
+        "inputs": {
+          "device": "device",
+          "length": "len"
+        },
+        "outputs": [
+          "if(len<=0 || strlen(out.text)>=(size_t)len) RETURN(cnrtErrorArgsInvalid);",
+          "memcpy(pciBusId,out.text,strlen(out.text)+1);"
+        ],
+        "prepare": [],
+        "current": false,
+        "required": [
+          "pciBusId"
+        ]
+      },
+      "rpc_operations": [
+        "API_RUNTIME_PCI_ID"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceGetPCIBusId",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_runtime_pci_id_request",
+        "response": "mlu_api_runtime_pci_id_response",
+        "server_handler": "mlu_backend_api_runtime_pci_id",
+        "backend_binding": "typed_rpc.runtime_pci_id.backend_binding"
+      }
     },
     {
       "name": "cnrtDeviceGetQueuePriorityRange",
@@ -943,16 +1041,35 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "Resets owned remote context; shared-context interop pending",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtDeviceResetPersistingL2Cache(void);",
       "parameters": [],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Resets owned remote context; shared-context interop pending",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "cache_reset",
+      "wrapper": {
+        "rpc": "cache_reset",
+        "inputs": {},
+        "outputs": [],
+        "prepare": [],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_CACHE_RESET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceResetPersistingL2Cache",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_cache_reset_request",
+        "response": "mlu_api_cache_reset_response",
+        "server_handler": "mlu_backend_api_cache_reset",
+        "backend_binding": "typed_rpc.cache_reset.backend_binding"
+      }
     },
     {
       "name": "cnrtDeviceSetConfig",
@@ -960,7 +1077,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtDeviceSetConfig(cnrtDeviceConfig_t type, int64_t value);",
       "parameters": [
@@ -981,12 +1098,34 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "runtime_config_set",
+      "wrapper": {
+        "rpc": "runtime_config_set",
+        "inputs": {
+          "type": "type",
+          "value": "value"
+        },
+        "outputs": [],
+        "prepare": [],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_RUNTIME_CONFIG_SET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceSetConfig",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_runtime_config_set_request",
+        "response": "mlu_api_runtime_config_set_response",
+        "server_handler": "mlu_backend_api_runtime_config_set",
+        "backend_binding": "typed_rpc.runtime_config_set.backend_binding"
+      }
     },
     {
       "name": "cnrtDriverGetVersion",
@@ -3164,33 +3303,62 @@
       "family": "memory",
       "priority": 1,
       "depends_on": "fake VA registry and host memory policy",
-      "blocker": "Need attribute field and host/device ownership review",
+      "blocker": "Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtPointerGetAttributes(cnrtPointerAttributes_t *attr, const void *ptr);",
       "parameters": [
         {
           "name": "attr",
           "c_type": "cnrtPointerAttributes_t *",
-          "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "kind": "struct",
+          "direction": "out",
+          "length": "1",
+          "mapping": "named fields; device pointers relocated"
         },
         {
           "name": "ptr",
           "c_type": "const void *",
-          "kind": "buffer",
+          "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "owned allocation -> AllocationID + checked offset"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "pointer_attributes",
+      "wrapper": {
+        "rpc": "pointer_attributes",
+        "inputs": {
+          "allocation": "a->id",
+          "offset": "off"
+        },
+        "outputs": [
+          "cnrtPointerAttributes_t v={.type=out.type,.device=out.device,.size=out.bytes,.devicePointer=(void *)ptr,.hostPointer=NULL,.cacheMode=out.cache,.deviceBasePointer=a->base}; *attr=v;"
+        ],
+        "prepare": [
+          "uint64_t off; allocation *a=lookup(ptr,&off); if(!a || off==a->bytes) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "current": false,
+        "required": [
+          "attr"
+        ]
+      },
+      "rpc_operations": [
+        "API_POINTER_ATTRIBUTES"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtPointerGetAttributes",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_pointer_attributes_request",
+        "response": "mlu_api_pointer_attributes_response",
+        "server_handler": "mlu_backend_api_pointer_attributes",
+        "backend_binding": "typed_rpc.pointer_attributes.backend_binding"
+      }
     },
     {
       "name": "cnrtQueryNotifier",
@@ -3258,7 +3426,7 @@
       "family": "queue_notifier",
       "priority": 1,
       "depends_on": "context/object registry",
-      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueCopyAttributes(cnrtQueue_t dst, cnrtQueue_t src);",
       "parameters": [
@@ -3268,7 +3436,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "src",
@@ -3276,15 +3444,42 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_copy",
+      "wrapper": {
+        "rpc": "queue_attribute_copy",
+        "inputs": {
+          "queue": "qid",
+          "src": "sid"
+        },
+        "outputs": [],
+        "prepare": [
+          "uint64_t qid,sid;",
+          "if(!dst || !src) RETURN(cnrtErrorNotSupport);",
+          "cnrtRet_t qs=api_queue(dst,&qid); if(qs) RETURN(qs); qs=api_queue(src,&sid); if(qs) RETURN(qs);"
+        ],
+        "current": false,
+        "required": []
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_COPY"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueCopyAttributes",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_queue_attribute_copy_request",
+        "response": "mlu_api_queue_attribute_copy_response",
+        "server_handler": "mlu_backend_api_queue_attribute_copy",
+        "backend_binding": "typed_rpc.queue_attribute_copy.backend_binding"
+      }
     },
     {
       "name": "cnrtQueueCreate",
@@ -3432,7 +3627,7 @@
       "family": "queue_notifier",
       "priority": 1,
       "depends_on": "context/object registry",
-      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueGetAttribute(cnrtQueue_t queue, cnrtQueueAttrID_t attr_id, cnrtQueueAttrValue_t *value_out);",
       "parameters": [
@@ -3442,7 +3637,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "attr_id",
@@ -3450,23 +3645,58 @@
           "kind": "enum",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "value_out",
           "c_type": "cnrtQueueAttrValue_t *",
-          "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "kind": "struct",
+          "direction": "out",
+          "length": "1",
+          "mapping": "tagged accessPolicyWindow fields; baseAddr -> AllocationID + offset"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_get",
+      "wrapper": {
+        "rpc": "queue_attribute_get",
+        "inputs": {
+          "queue": "qid",
+          "attr": "attr_id"
+        },
+        "outputs": [
+          "void *base=NULL; if(out.allocation) { allocation *a=allocation_by_id(out.allocation); if(!a || out.offset>=a->bytes) RETURN(cnrtErrorArgsInvalid); base=(char *)a->base+out.offset; }",
+          "cnrtQueueAttrValue_t v={0};",
+          "v.accessPolicyWindow.baseAddr=(void *)(uintptr_t)base; v.accessPolicyWindow.numBytes=out.bytes;",
+          "v.accessPolicyWindow.hitRatio=out.ratio; v.accessPolicyWindow.hitProp=out.hit; v.accessPolicyWindow.missProp=out.miss;",
+          "*value_out=v;"
+        ],
+        "prepare": [
+          "if(!queue) RETURN(cnrtErrorNotSupport);",
+          "uint64_t qid;",
+          "cnrtRet_t qs=api_queue(queue,&qid); if(qs) RETURN(qs);"
+        ],
+        "current": false,
+        "required": [
+          "value_out"
+        ]
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_GET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueGetAttribute",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_queue_attribute_get_request",
+        "response": "mlu_api_queue_attribute_get_response",
+        "server_handler": "mlu_backend_api_queue_attribute_get",
+        "backend_binding": "typed_rpc.queue_attribute_get.backend_binding"
+      }
     },
     {
       "name": "cnrtQueueGetCaptureInfo",
@@ -3659,7 +3889,7 @@
       "family": "queue_notifier",
       "priority": 1,
       "depends_on": "context/object registry",
-      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueSetAttribute(cnrtQueue_t queue, cnrtQueueAttrID_t attr_id, const cnrtQueueAttrValue_t *value);",
       "parameters": [
@@ -3669,7 +3899,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "attr_id",
@@ -3677,23 +3907,63 @@
           "kind": "enum",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "value",
           "c_type": "const cnrtQueueAttrValue_t *",
-          "kind": "pointer",
+          "kind": "struct",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "tagged accessPolicyWindow fields; baseAddr -> AllocationID + offset"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_set",
+      "wrapper": {
+        "rpc": "queue_attribute_set",
+        "inputs": {
+          "queue": "qid",
+          "attr": "attr_id",
+          "allocation": "aid",
+          "offset": "off",
+          "bytes": "value->accessPolicyWindow.numBytes",
+          "ratio": "value->accessPolicyWindow.hitRatio",
+          "hit": "value->accessPolicyWindow.hitProp",
+          "miss": "value->accessPolicyWindow.missProp"
+        },
+        "outputs": [],
+        "prepare": [
+          "if(!queue) RETURN(cnrtErrorNotSupport);",
+          "uint64_t qid;",
+          "cnrtRet_t qs=api_queue(queue,&qid); if(qs) RETURN(qs);",
+          "uint64_t aid=0,off=0;",
+          "if(value->accessPolicyWindow.baseAddr) {",
+          "  allocation *a=lookup(value->accessPolicyWindow.baseAddr,&off);",
+          "  if(!a || off>=a->bytes || value->accessPolicyWindow.numBytes>a->bytes-off) RETURN(cnrtErrorArgsInvalid); aid=a->id;",
+          "} else if(value->accessPolicyWindow.numBytes) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "current": false,
+        "required": [
+          "value"
+        ]
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_SET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueSetAttribute",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_queue_attribute_set_request",
+        "response": "mlu_api_queue_attribute_set_response",
+        "server_handler": "mlu_backend_api_queue_attribute_set",
+        "backend_binding": "typed_rpc.queue_attribute_set.backend_binding"
+      }
     },
     {
       "name": "cnrtQueueSync",
@@ -6237,7 +6507,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnCtxGetApiVersion(CNcontext context, unsigned int *pversion);",
       "parameters": [
@@ -6247,23 +6517,50 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "owned Context token selects remote session; no native handle on wire"
         },
         {
           "name": "pversion",
           "c_type": "unsigned int *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "context_version",
+      "wrapper": {
+        "rpc": "context_version",
+        "inputs": {},
+        "outputs": [
+          "*pversion=out.version;"
+        ],
+        "prepare": [
+          "struct context *target=find_context((uintptr_t)context); if(!target) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "current": false,
+        "required": [
+          "pversion"
+        ],
+        "session": "target->remote"
+      },
+      "rpc_operations": [
+        "API_CONTEXT_VERSION"
+      ],
+      "bindings": {
+        "client_wrapper": "cnCtxGetApiVersion",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_context_version_request",
+        "response": "mlu_api_context_version_response",
+        "server_handler": "mlu_backend_api_context_version",
+        "backend_binding": "typed_rpc.context_version.backend_binding"
+      }
     },
     {
       "name": "cnCtxGetConfig",
@@ -6271,7 +6568,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnCtxGetConfig(long long int *pconfig, CNCtxConfig type);",
       "parameters": [
@@ -6279,9 +6576,9 @@
           "name": "pconfig",
           "c_type": "long long int *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         },
         {
           "name": "type",
@@ -6292,12 +6589,35 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "context_config_get",
+      "wrapper": {
+        "rpc": "context_config_get",
+        "inputs": {
+          "type": "type"
+        },
+        "outputs": [
+          "*pconfig=out.value;"
+        ],
+        "prepare": [],
+        "current": true
+      },
+      "rpc_operations": [
+        "API_CONTEXT_CONFIG_GET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnCtxGetConfig",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_context_config_get_request",
+        "response": "mlu_api_context_config_get_response",
+        "server_handler": "mlu_backend_api_context_config_get",
+        "backend_binding": "typed_rpc.context_config_get.backend_binding"
+      }
     },
     {
       "name": "cnCtxGetCurrent",
@@ -6439,16 +6759,35 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnCtxResetPersistingL2Cache(void);",
       "parameters": [],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "cache_reset",
+      "wrapper": {
+        "rpc": "cache_reset",
+        "inputs": {},
+        "outputs": [],
+        "prepare": [],
+        "current": true
+      },
+      "rpc_operations": [
+        "API_CACHE_RESET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnCtxResetPersistingL2Cache",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_cache_reset_request",
+        "response": "mlu_api_cache_reset_response",
+        "server_handler": "mlu_backend_api_cache_reset",
+        "backend_binding": "typed_rpc.cache_reset.backend_binding"
+      }
     },
     {
       "name": "cnCtxSetConfig",
@@ -6456,7 +6795,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnCtxSetConfig(CNCtxConfig type, long long int config);",
       "parameters": [
@@ -6477,12 +6816,34 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "context_config_set",
+      "wrapper": {
+        "rpc": "context_config_set",
+        "inputs": {
+          "type": "type",
+          "value": "config"
+        },
+        "outputs": [],
+        "prepare": [],
+        "current": true
+      },
+      "rpc_operations": [
+        "API_CONTEXT_CONFIG_SET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnCtxSetConfig",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_context_config_set_request",
+        "response": "mlu_api_context_config_set_response",
+        "server_handler": "mlu_backend_api_context_config_set",
+        "backend_binding": "typed_rpc.context_config_set.backend_binding"
+      }
     },
     {
       "name": "cnCtxSetCurrent",
@@ -6727,7 +7088,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnDeviceGetByPCIBusId(CNdev *dev, const char *pciBusId);",
       "parameters": [
@@ -6735,25 +7096,53 @@
           "name": "dev",
           "c_type": "CNdev *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         },
         {
           "name": "pciBusId",
           "c_type": "const char *",
           "kind": "buffer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "NUL terminated, max 63 bytes",
+          "mapping": "bounded_string"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; bounded PCI input <=63 bytes including accepted native short forms",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "driver_pci_device",
+      "wrapper": {
+        "rpc": "driver_pci_device",
+        "inputs": {
+          "text": "pciBusId"
+        },
+        "outputs": [
+          "*dev=out.device;"
+        ],
+        "prepare": [],
+        "current": false,
+        "required": [
+          "dev",
+          "pciBusId"
+        ],
+        "native_status": "native_status"
+      },
+      "rpc_operations": [
+        "API_DRIVER_PCI_DEVICE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnDeviceGetByPCIBusId",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_driver_pci_device_request",
+        "response": "mlu_api_driver_pci_device_response",
+        "server_handler": "mlu_backend_api_driver_pci_device",
+        "backend_binding": "typed_rpc.driver_pci_device.backend_binding"
+      }
     },
     {
       "name": "cnDeviceGetCount",
@@ -6829,7 +7218,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
       "return_type": "CNresult",
       "signature": "CNresult cnDeviceGetPCIBusId(char *pciBusId, int len, CNdev dev);",
       "parameters": [
@@ -6837,9 +7226,9 @@
           "name": "pciBusId",
           "c_type": "char *",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "len",
+          "mapping": "bounded NUL string; native buffer never exposed"
         },
         {
           "name": "len",
@@ -6858,12 +7247,40 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "driver_pci_id",
+      "wrapper": {
+        "rpc": "driver_pci_id",
+        "inputs": {
+          "device": "dev",
+          "length": "len"
+        },
+        "outputs": [
+          "if(len<=0 || strlen(out.text)>=(size_t)len) RETURN(CN_ERROR_INVALID_VALUE);",
+          "memcpy(pciBusId,out.text,strlen(out.text)+1);"
+        ],
+        "prepare": [],
+        "current": false,
+        "required": [
+          "pciBusId"
+        ]
+      },
+      "rpc_operations": [
+        "API_DRIVER_PCI_ID"
+      ],
+      "bindings": {
+        "client_wrapper": "cnDeviceGetPCIBusId",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_driver_pci_id_request",
+        "response": "mlu_api_driver_pci_id_response",
+        "server_handler": "mlu_backend_api_driver_pci_id",
+        "backend_binding": "typed_rpc.driver_pci_id.backend_binding"
+      }
     },
     {
       "name": "cnDeviceTotalMem",
@@ -7064,7 +7481,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnGetCtxMaxParallelUnionTasks(CNcontext context, KernelClass c, int *number);",
       "parameters": [
@@ -7074,7 +7491,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "owned Context token selects remote session; no native handle on wire"
         },
         {
           "name": "c",
@@ -7088,17 +7505,46 @@
           "name": "number",
           "c_type": "int *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "context_tasks",
+      "wrapper": {
+        "rpc": "context_tasks",
+        "inputs": {
+          "klass": "c"
+        },
+        "outputs": [
+          "*number=out.count;"
+        ],
+        "prepare": [
+          "struct context *target=find_context((uintptr_t)context); if(!target) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "current": false,
+        "required": [
+          "number"
+        ],
+        "session": "target->remote"
+      },
+      "rpc_operations": [
+        "API_CONTEXT_TASKS"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetCtxMaxParallelUnionTasks",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_context_tasks_request",
+        "response": "mlu_api_context_tasks_response",
+        "server_handler": "mlu_backend_api_context_tasks",
+        "backend_binding": "typed_rpc.context_tasks.backend_binding"
+      }
     },
     {
       "name": "cnGetDriverVersion",
@@ -7338,7 +7784,7 @@
       "family": "memory",
       "priority": 1,
       "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "blocker": "Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
       "return_type": "CNresult",
       "signature": "CNresult cnGetMemAttribute(void *pi, CNmem_attribute attr, CNaddr ptr);",
       "parameters": [
@@ -7346,9 +7792,9 @@
           "name": "pi",
           "c_type": "void *",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "attribute dependent: 1, 4 or 8 bytes",
+          "mapping": "typed scalar or relocated allocation/context; never native pointer"
         },
         {
           "name": "attr",
@@ -7367,12 +7813,45 @@
           "mapping": "allocation_id + checked byte offset"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "memory_attribute",
+      "wrapper": {
+        "rpc": "memory_attribute",
+        "inputs": {
+          "allocation": "a->id",
+          "offset": "off",
+          "attr": "attr"
+        },
+        "outputs": [
+          "if(publish_memory_attribute(pi,attr,ptr,a,&out)) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);"
+        ],
+        "prepare": [
+          "if(!find_context(current)) RETURN(CN_CONTEXT_ERROR_INVALID);",
+          "uint64_t off; allocation *a=query_allocation(ptr,&off);",
+          "if(!a || off==a->bytes) { invalid_memory_attribute(pi,attr); RETURN(CN_ERROR_INVALID_VALUE); }"
+        ],
+        "current": false,
+        "required": [
+          "pi"
+        ],
+        "session": "a->owner->remote"
+      },
+      "rpc_operations": [
+        "API_MEMORY_ATTRIBUTE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetMemAttribute",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_memory_attribute_request",
+        "response": "mlu_api_memory_attribute_response",
+        "server_handler": "mlu_backend_api_memory_attribute",
+        "backend_binding": "typed_rpc.memory_attribute.backend_binding"
+      }
     },
     {
       "name": "cnGetMemAttributes",
@@ -7380,7 +7859,7 @@
       "family": "memory",
       "priority": 1,
       "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "blocker": "Owned device pointers only; host/VMM pending",
       "return_type": "CNresult",
       "signature": "CNresult cnGetMemAttributes(unsigned int numAttributes, CNmem_attribute *attributes, void **data, CNaddr ptr);",
       "parameters": [
@@ -7390,23 +7869,23 @@
           "kind": "scalar",
           "direction": "in",
           "length": "1",
-          "mapping": "value"
+          "mapping": "field_codec"
         },
         {
           "name": "attributes",
           "c_type": "CNmem_attribute *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "in",
+          "length": "numAttributes",
+          "mapping": "field_codec"
         },
         {
           "name": "data",
           "c_type": "void **",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "numAttributes",
+          "mapping": "array of typed output pointers; never serialized"
         },
         {
           "name": "ptr",
@@ -7414,15 +7893,26 @@
           "kind": "pointer",
           "direction": "in",
           "length": "1",
-          "mapping": "allocation_id + checked byte offset"
+          "mapping": "owned allocation -> AllocationID + checked offset; owner session per entry"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Owned device pointers; SDK attempts all entries and returns final entry status; earlier and later successful outputs are published; bound current context required even when querying another owner",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Host/VMM ownership and bulk protocol batching",
+      "rpc_operations": [
+        "API_MEMORY_ATTRIBUTE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetMemAttributes",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_memory_attribute_request",
+        "response": "mlu_api_memory_attribute_response",
+        "server_handler": "mlu_backend_api_memory_attribute",
+        "backend_binding": "typed_rpc.memory_attribute.backend_binding"
+      }
     },
     {
       "name": "cnInit",
@@ -8356,7 +8846,7 @@
       "family": "memory",
       "priority": 1,
       "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "blocker": "Owned cnMalloc ranges only; host/VMM/registered allocations pending",
       "return_type": "CNresult",
       "signature": "CNresult cnMemGetAddressRange(CNaddr *pbaseAddr, cn_uint64_t *pbytes, const CNaddr mluAddr);",
       "parameters": [
@@ -8364,17 +8854,17 @@
           "name": "pbaseAddr",
           "c_type": "CNaddr *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
+          "direction": "out",
+          "length": "1",
           "mapping": "allocation_id + checked byte offset"
         },
         {
           "name": "pbytes",
           "c_type": "cn_uint64_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         },
         {
           "name": "mluAddr",
@@ -8385,12 +8875,41 @@
           "mapping": "allocation_id + checked byte offset"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnMalloc ranges only; host/VMM/registered allocations pending",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "address_range",
+      "wrapper": {
+        "rpc": "address_range",
+        "inputs": {
+          "allocation": "a->id",
+          "offset": "off"
+        },
+        "outputs": [
+          "if(pbaseAddr) *pbaseAddr=(CNaddr)(uintptr_t)a->base; if(pbytes) *pbytes=out.bytes;"
+        ],
+        "prepare": [
+          "if(!find_context(current)) RETURN(CN_CONTEXT_ERROR_INVALID);",
+          "uint64_t off; allocation *a=query_allocation(mluAddr,&off); if(!a || off==a->bytes) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);"
+        ],
+        "current": false,
+        "required": [],
+        "session": "a->owner->remote"
+      },
+      "rpc_operations": [
+        "API_ADDRESS_RANGE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemGetAddressRange",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_address_range_request",
+        "response": "mlu_api_address_range_response",
+        "server_handler": "mlu_backend_api_address_range",
+        "backend_binding": "typed_rpc.address_range.backend_binding"
+      }
     },
     {
       "name": "cnMemGetAllocationGranularity",
@@ -8530,7 +9049,7 @@
       "family": "memory",
       "priority": 1,
       "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnMemGetNodeInfo(cn_uint64_t *pfreeBytes, cn_uint64_t *ptotalBytes, int node);",
       "parameters": [
@@ -8538,17 +9057,17 @@
           "name": "pfreeBytes",
           "c_type": "cn_uint64_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         },
         {
           "name": "ptotalBytes",
           "c_type": "cn_uint64_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         },
         {
           "name": "node",
@@ -8559,12 +9078,36 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "node_memory_info",
+      "wrapper": {
+        "rpc": "node_memory_info",
+        "inputs": {
+          "node": "node"
+        },
+        "outputs": [
+          "if(pfreeBytes) *pfreeBytes=out.free; if(ptotalBytes) *ptotalBytes=out.total;"
+        ],
+        "prepare": [],
+        "current": true,
+        "required": []
+      },
+      "rpc_operations": [
+        "API_NODE_MEMORY_INFO"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemGetNodeInfo",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_node_memory_info_request",
+        "response": "mlu_api_node_memory_info_response",
+        "server_handler": "mlu_backend_api_node_memory_info",
+        "backend_binding": "typed_rpc.node_memory_info.backend_binding"
+      }
     },
     {
       "name": "cnMemImportFromShareableHandle",
@@ -10672,7 +11215,7 @@
       "family": "queue_notifier",
       "priority": 1,
       "depends_on": "context/object registry",
-      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueCopyAttributes(CNqueue dst, CNqueue src);",
       "parameters": [
@@ -10682,7 +11225,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "src",
@@ -10690,15 +11233,42 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_copy",
+      "wrapper": {
+        "rpc": "queue_attribute_copy",
+        "inputs": {
+          "queue": "qid",
+          "src": "sid"
+        },
+        "outputs": [],
+        "prepare": [
+          "uint64_t qid,sid;",
+          "if(!dst || !src) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);",
+          "if(queue_id(c,dst,&qid) || queue_id(c,src,&sid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "current": true,
+        "required": []
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_COPY"
+      ],
+      "bindings": {
+        "client_wrapper": "cnQueueCopyAttributes",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_queue_attribute_copy_request",
+        "response": "mlu_api_queue_attribute_copy_response",
+        "server_handler": "mlu_backend_api_queue_attribute_copy",
+        "backend_binding": "typed_rpc.queue_attribute_copy.backend_binding"
+      }
     },
     {
       "name": "cnQueueEndCapture",
@@ -10740,7 +11310,7 @@
       "family": "queue_notifier",
       "priority": 1,
       "depends_on": "context/object registry",
-      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueGetAttribute(CNqueue hqueue, CNqueueAttrID attr_id, CNqueueAttrValue *value_out);",
       "parameters": [
@@ -10750,7 +11320,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "attr_id",
@@ -10758,23 +11328,58 @@
           "kind": "enum",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "value_out",
           "c_type": "CNqueueAttrValue *",
-          "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "kind": "struct",
+          "direction": "out",
+          "length": "1",
+          "mapping": "tagged accessPolicyWindow fields; baseAddr -> AllocationID + offset"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_get",
+      "wrapper": {
+        "rpc": "queue_attribute_get",
+        "inputs": {
+          "queue": "qid",
+          "attr": "attr_id"
+        },
+        "outputs": [
+          "void *base=NULL; if(out.allocation) { allocation *a=allocation_by_id(c,out.allocation); if(!a || out.offset>=a->bytes) RETURN(CN_ERROR_INVALID_VALUE); base=(char *)a->base+out.offset; }",
+          "CNqueueAttrValue v={0};",
+          "v.accessPolicyWindow.baseAddr=(CNaddr)(uintptr_t)base; v.accessPolicyWindow.numBytes=out.bytes;",
+          "v.accessPolicyWindow.hitRatio=out.ratio; v.accessPolicyWindow.hitProp=out.hit; v.accessPolicyWindow.missProp=out.miss;",
+          "*value_out=v;"
+        ],
+        "prepare": [
+          "if(!hqueue) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);",
+          "uint64_t qid;",
+          "if(queue_id(c,hqueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "current": true,
+        "required": [
+          "value_out"
+        ]
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_GET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnQueueGetAttribute",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_queue_attribute_get_request",
+        "response": "mlu_api_queue_attribute_get_response",
+        "server_handler": "mlu_backend_api_queue_attribute_get",
+        "backend_binding": "typed_rpc.queue_attribute_get.backend_binding"
+      }
     },
     {
       "name": "cnQueueGetCaptureInfo",
@@ -10848,7 +11453,7 @@
       "family": "queue_notifier",
       "priority": 1,
       "depends_on": "context/object registry",
-      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueGetContext(CNqueue hqueue, CNcontext *pctx);",
       "parameters": [
@@ -10858,23 +11463,54 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "pctx",
           "c_type": "CNcontext *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "native context identity verified, then owner token published"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Retain Native/Remote boundary regression",
+      "rpc": "queue_context",
+      "wrapper": {
+        "rpc": "queue_context",
+        "inputs": {
+          "queue": "qid"
+        },
+        "outputs": [
+          "*pctx=(CNcontext)(uintptr_t)owner->token;"
+        ],
+        "prepare": [
+          "struct context *owner=find_context(current); uint64_t qid=0;",
+          "if(hqueue) { object *q=query_queue(hqueue); if(!q) RETURN(CN_QUEUE_ERROR_INVALID); owner=q->owner; qid=q->id; }",
+          "if(!owner) RETURN(CN_CONTEXT_ERROR_INVALID);"
+        ],
+        "current": false,
+        "required": [
+          "pctx"
+        ],
+        "session": "owner->remote"
+      },
+      "rpc_operations": [
+        "API_QUEUE_CONTEXT"
+      ],
+      "bindings": {
+        "client_wrapper": "cnQueueGetContext",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_queue_context_request",
+        "response": "mlu_api_queue_context_response",
+        "server_handler": "mlu_backend_api_queue_context",
+        "backend_binding": "typed_rpc.queue_context.backend_binding"
+      }
     },
     {
       "name": "cnQueueGetPriority",
@@ -10975,7 +11611,7 @@
       "family": "queue_notifier",
       "priority": 1,
       "depends_on": "context/object registry",
-      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueSetAttribute(CNqueue hqueue, CNqueueAttrID attr_id, const CNqueueAttrValue *value);",
       "parameters": [
@@ -10985,7 +11621,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "attr_id",
@@ -10993,23 +11629,63 @@
           "kind": "enum",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         },
         {
           "name": "value",
           "c_type": "const CNqueueAttrValue *",
-          "kind": "pointer",
+          "kind": "struct",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "tagged accessPolicyWindow fields; baseAddr -> AllocationID + offset"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_set",
+      "wrapper": {
+        "rpc": "queue_attribute_set",
+        "inputs": {
+          "queue": "qid",
+          "attr": "attr_id",
+          "allocation": "aid",
+          "offset": "off",
+          "bytes": "value->accessPolicyWindow.numBytes",
+          "ratio": "value->accessPolicyWindow.hitRatio",
+          "hit": "value->accessPolicyWindow.hitProp",
+          "miss": "value->accessPolicyWindow.missProp"
+        },
+        "outputs": [],
+        "prepare": [
+          "if(!hqueue) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);",
+          "uint64_t qid;",
+          "if(queue_id(c,hqueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);",
+          "uint64_t aid=0,off=0;",
+          "if(value->accessPolicyWindow.baseAddr) {",
+          "  allocation *a=lookup(c,value->accessPolicyWindow.baseAddr,&off);",
+          "  if(!a || off>=a->bytes || value->accessPolicyWindow.numBytes>a->bytes-off) RETURN(CN_ERROR_INVALID_VALUE); aid=a->id;",
+          "} else if(value->accessPolicyWindow.numBytes) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "current": true,
+        "required": [
+          "value"
+        ]
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_SET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnQueueSetAttribute",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_queue_attribute_set_request",
+        "response": "mlu_api_queue_attribute_set_response",
+        "server_handler": "mlu_backend_api_queue_attribute_set",
+        "backend_binding": "typed_rpc.queue_attribute_set.backend_binding"
+      }
     },
     {
       "name": "cnQueueSync",
@@ -14236,6 +14912,486 @@
       "backend_binding": [
         "return mlu_backend_copy3d(s,in);"
       ]
+    },
+    {
+      "name": "driver_pci_id",
+      "operation": "API_DRIVER_PCI_ID",
+      "opcode": 53,
+      "request": [
+        {
+          "name": "device",
+          "type": "i32"
+        },
+        {
+          "name": "length",
+          "type": "i32"
+        }
+      ],
+      "response": [
+        {
+          "name": "text",
+          "type": "cstring",
+          "count": 64
+        }
+      ],
+      "backend_binding": [
+        "if(in->length<13) return CN_ERROR_INVALID_VALUE;",
+        "return (int)cnDeviceGetPCIBusId(out->text,64,in->device);"
+      ]
+    },
+    {
+      "name": "driver_pci_device",
+      "operation": "API_DRIVER_PCI_DEVICE",
+      "opcode": 54,
+      "request": [
+        {
+          "name": "text",
+          "type": "cstring",
+          "count": 64
+        }
+      ],
+      "response": [
+        {
+          "name": "device",
+          "type": "u64"
+        },
+        {
+          "name": "native_status",
+          "type": "u32"
+        }
+      ],
+      "backend_binding": [
+        "CNdev dev=0; out->native_status=cnDeviceGetByPCIBusId(&dev,in->text);",
+        "out->device=dev; return 0;"
+      ]
+    },
+    {
+      "name": "runtime_pci_id",
+      "operation": "API_RUNTIME_PCI_ID",
+      "opcode": 55,
+      "request": [
+        {
+          "name": "device",
+          "type": "i32"
+        },
+        {
+          "name": "length",
+          "type": "i32"
+        }
+      ],
+      "response": [
+        {
+          "name": "text",
+          "type": "cstring",
+          "count": 64
+        }
+      ],
+      "backend_binding": [
+        "if(in->length<13) return cnrtErrorArgsInvalid;",
+        "return (int)cnrtDeviceGetPCIBusId(out->text,64,in->device);"
+      ]
+    },
+    {
+      "name": "runtime_pci_device",
+      "operation": "API_RUNTIME_PCI_DEVICE",
+      "opcode": 56,
+      "request": [
+        {
+          "name": "text",
+          "type": "cstring",
+          "count": 64
+        }
+      ],
+      "response": [
+        {
+          "name": "device",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "int dev=0; int st=cnrtDeviceGetByPCIBusId(&dev,in->text);",
+        "if(!st) out->device=dev;",
+        "return st;"
+      ]
+    },
+    {
+      "name": "context_version",
+      "operation": "API_CONTEXT_VERSION",
+      "opcode": 57,
+      "request": [],
+      "response": [
+        {
+          "name": "version",
+          "type": "u32"
+        }
+      ],
+      "backend_binding": [
+        "return (int)cnCtxGetApiVersion(s->context,&out->version);"
+      ]
+    },
+    {
+      "name": "context_tasks",
+      "operation": "API_CONTEXT_TASKS",
+      "opcode": 58,
+      "request": [
+        {
+          "name": "klass",
+          "type": "u32"
+        }
+      ],
+      "response": [
+        {
+          "name": "count",
+          "type": "i32"
+        }
+      ],
+      "backend_binding": [
+        "return (int)cnGetCtxMaxParallelUnionTasks(s->context,(KernelClass)in->klass,&out->count);"
+      ]
+    },
+    {
+      "name": "context_config_get",
+      "operation": "API_CONTEXT_CONFIG_GET",
+      "opcode": 59,
+      "request": [
+        {
+          "name": "type",
+          "type": "u32"
+        }
+      ],
+      "response": [
+        {
+          "name": "value",
+          "type": "i64"
+        }
+      ],
+      "backend_binding": [
+        "long long v=0; int st=cnCtxGetConfig(&v,(CNCtxConfig)in->type);",
+        "if(!st) out->value=v;",
+        "return st;"
+      ]
+    },
+    {
+      "name": "context_config_set",
+      "operation": "API_CONTEXT_CONFIG_SET",
+      "opcode": 60,
+      "request": [
+        {
+          "name": "type",
+          "type": "u32"
+        },
+        {
+          "name": "value",
+          "type": "i64"
+        }
+      ],
+      "response": [],
+      "backend_binding": [
+        "return (int)cnCtxSetConfig((CNCtxConfig)in->type,in->value);"
+      ]
+    },
+    {
+      "name": "runtime_config_get",
+      "operation": "API_RUNTIME_CONFIG_GET",
+      "opcode": 61,
+      "request": [
+        {
+          "name": "type",
+          "type": "u32"
+        }
+      ],
+      "response": [
+        {
+          "name": "value",
+          "type": "i64"
+        }
+      ],
+      "backend_binding": [
+        "CNCtxConfig type; switch((cnrtDeviceConfig_t)in->type) {",
+        "case cnrtDeviceConfigReserved: type=CN_CTX_CONFIG_RESERVED; break;",
+        "case cnrtDeviceConfigPrintfFifoNum: type=CN_CTX_CONFIG_PRINTF_MAX_NUM; break;",
+        "case cnrtDeviceConfigMaxPersistingL2CacheSize: type=CN_CTX_CONFIG_MAX_PERSISTING_L2_CACHE_SIZE; break;",
+        "default: return cnrtErrorArgsInvalid; }",
+        "long long v=0; int st=cnCtxGetConfig(&v,type); if(!st) out->value=v; return st;"
+      ]
+    },
+    {
+      "name": "runtime_config_set",
+      "operation": "API_RUNTIME_CONFIG_SET",
+      "opcode": 62,
+      "request": [
+        {
+          "name": "type",
+          "type": "u32"
+        },
+        {
+          "name": "value",
+          "type": "i64"
+        }
+      ],
+      "response": [],
+      "backend_binding": [
+        "CNCtxConfig type; switch((cnrtDeviceConfig_t)in->type) {",
+        "case cnrtDeviceConfigReserved: type=CN_CTX_CONFIG_RESERVED; break;",
+        "case cnrtDeviceConfigPrintfFifoNum: type=CN_CTX_CONFIG_PRINTF_MAX_NUM; break;",
+        "case cnrtDeviceConfigMaxPersistingL2CacheSize: type=CN_CTX_CONFIG_MAX_PERSISTING_L2_CACHE_SIZE; break;",
+        "default: return cnrtErrorArgsInvalid; }",
+        "return (int)cnCtxSetConfig(type,in->value);"
+      ]
+    },
+    {
+      "name": "cache_reset",
+      "operation": "API_CACHE_RESET",
+      "opcode": 63,
+      "request": [],
+      "response": [],
+      "backend_binding": [
+        "return (int)cnCtxResetPersistingL2Cache();"
+      ]
+    },
+    {
+      "name": "node_memory_info",
+      "operation": "API_NODE_MEMORY_INFO",
+      "opcode": 64,
+      "request": [
+        {
+          "name": "node",
+          "type": "i32"
+        }
+      ],
+      "response": [
+        {
+          "name": "free",
+          "type": "u64"
+        },
+        {
+          "name": "total",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "cn_uint64_t free=0,total=0; int st=cnMemGetNodeInfo(&free,&total,in->node);",
+        "if(!st) { out->free=free; out->total=total; } return st;"
+      ]
+    },
+    {
+      "name": "address_range",
+      "operation": "API_ADDRESS_RANGE",
+      "opcode": 65,
+      "request": [
+        {
+          "name": "allocation",
+          "type": "u64"
+        },
+        {
+          "name": "offset",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "bytes",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "mlu_backend_allocation *a=find_alloc(s,in->allocation); CNaddr p=0,base=0; cn_uint64_t bytes=0;",
+        "if(!a || in->offset>=a->bytes || range(a,in->offset,1,&p)) return CN_MEMORY_ERROR_INVALID_ADDRESS;",
+        "int st=cnMemGetAddressRange(&base,&bytes,p); if(st) return st;",
+        "if(base!=a->address || bytes!=a->bytes) return MLU_REMOTE_UNSUPPORTED;",
+        "out->bytes=bytes; return 0;"
+      ]
+    },
+    {
+      "name": "memory_attribute",
+      "operation": "API_MEMORY_ATTRIBUTE",
+      "opcode": 66,
+      "request": [
+        {
+          "name": "allocation",
+          "type": "u64"
+        },
+        {
+          "name": "offset",
+          "type": "u64"
+        },
+        {
+          "name": "attr",
+          "type": "u32"
+        }
+      ],
+      "response": [
+        {
+          "name": "value",
+          "type": "u64"
+        },
+        {
+          "name": "width",
+          "type": "u32"
+        }
+      ],
+      "backend_binding": [
+        "return backend_memory_attribute(s,in,out);"
+      ]
+    },
+    {
+      "name": "pointer_attributes",
+      "operation": "API_POINTER_ATTRIBUTES",
+      "opcode": 67,
+      "request": [
+        {
+          "name": "allocation",
+          "type": "u64"
+        },
+        {
+          "name": "offset",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "type",
+          "type": "i32"
+        },
+        {
+          "name": "device",
+          "type": "i32"
+        },
+        {
+          "name": "bytes",
+          "type": "u64"
+        },
+        {
+          "name": "cache",
+          "type": "i32"
+        }
+      ],
+      "backend_binding": [
+        "return backend_pointer_attributes(s,in,out);"
+      ]
+    },
+    {
+      "name": "queue_context",
+      "operation": "API_QUEUE_CONTEXT",
+      "opcode": 68,
+      "request": [
+        {
+          "name": "queue",
+          "type": "u64"
+        }
+      ],
+      "response": [],
+      "backend_binding": [
+        "mlu_backend_queue *q=in->queue ? find_queue(s,in->queue) : NULL; if(in->queue && !q) return CN_QUEUE_ERROR_INVALID;",
+        "CNcontext c=NULL; int st=cnQueueGetContext(q ? q->handle : NULL,&c); if(st) return st;",
+        "return c==s->context ? 0 : MLU_REMOTE_BAD_OBJECT;"
+      ]
+    },
+    {
+      "name": "queue_attribute_get",
+      "operation": "API_QUEUE_ATTRIBUTE_GET",
+      "opcode": 69,
+      "request": [
+        {
+          "name": "queue",
+          "type": "u64"
+        },
+        {
+          "name": "attr",
+          "type": "u32"
+        }
+      ],
+      "response": [
+        {
+          "name": "allocation",
+          "type": "u64"
+        },
+        {
+          "name": "offset",
+          "type": "u64"
+        },
+        {
+          "name": "bytes",
+          "type": "u64"
+        },
+        {
+          "name": "ratio",
+          "type": "f32"
+        },
+        {
+          "name": "hit",
+          "type": "u32"
+        },
+        {
+          "name": "miss",
+          "type": "u32"
+        }
+      ],
+      "backend_binding": [
+        "return backend_queue_attribute_get(s,in,out);"
+      ]
+    },
+    {
+      "name": "queue_attribute_set",
+      "operation": "API_QUEUE_ATTRIBUTE_SET",
+      "opcode": 70,
+      "request": [
+        {
+          "name": "queue",
+          "type": "u64"
+        },
+        {
+          "name": "attr",
+          "type": "u32"
+        },
+        {
+          "name": "allocation",
+          "type": "u64"
+        },
+        {
+          "name": "offset",
+          "type": "u64"
+        },
+        {
+          "name": "bytes",
+          "type": "u64"
+        },
+        {
+          "name": "ratio",
+          "type": "f32"
+        },
+        {
+          "name": "hit",
+          "type": "u32"
+        },
+        {
+          "name": "miss",
+          "type": "u32"
+        }
+      ],
+      "response": [],
+      "backend_binding": [
+        "return backend_queue_attribute_set(s,in,out);"
+      ]
+    },
+    {
+      "name": "queue_attribute_copy",
+      "operation": "API_QUEUE_ATTRIBUTE_COPY",
+      "opcode": 71,
+      "request": [
+        {
+          "name": "queue",
+          "type": "u64"
+        },
+        {
+          "name": "src",
+          "type": "u64"
+        }
+      ],
+      "response": [],
+      "backend_binding": [
+        "return backend_queue_attribute_copy(s,in,out);"
+      ]
     }
   ],
   "extra_exports": {
@@ -14262,5 +15418,12 @@
       "unknown LLVM types",
       "cross-architecture scalar semantics"
     ]
+  },
+  "query_contracts": {
+    "owner_routing": "Explicit context, allocation and queue queries select their owner session, without changing client TLS current context. Memory queries still require a bound current context, per native probe.",
+    "addresses": "Only AllocationID + offset and verified context identity markers cross wire; native addresses/handles never returned.",
+    "outputs_on_error": "Default success-only publication. native_status u32 envelope permits reviewed native error outputs (Driver invalid PCI writes dev=-1).",
+    "strings": "PCI ID output requires len>=13; input fixed capacity64 including NUL.",
+    "queue_union": "AccessPolicyWindow uses allocation,offset,bytes,f32 ratio,hit,miss. NULL attribute queue rejected. Freed window allocation cannot be reverse-relocated."
   }
 }

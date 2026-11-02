@@ -361,6 +361,10 @@ const char *cnrtGetErrorStr(cnrtRet_t e) { return cnrtGetErrorName(e); }
 cnrtRet_t cnrtMallocConstant(void **p,size_t n) { (void)p; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }
 cnrtRet_t cnrtHostMalloc(void **p,size_t n) { (void)p; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }
 cnrtRet_t cnrtFreeHost(void *p) { (void)p; ENTER(); RETURN(cnrtErrorNotSupport); }
+static allocation *allocation_by_id(uint64_t id) {
+  for(allocation *a=allocations;a;a=a->next) if(a->live && a->id==id) return a;
+  return NULL;
+}
 #include "cnrt_api.inc"
 __attribute__((destructor)) static void shutdown_remote(void) {
   ENTER(); if(ctx) { mlu_remote_disconnect(ctx); ctx=NULL; }

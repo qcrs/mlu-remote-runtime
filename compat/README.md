@@ -20,4 +20,4 @@ python3 scripts/verify-api-contracts.py
 
 `native_test` / `remote_test` 中不带目录的 `.log` 相对 `evidence/transparent-20261102/`；带批次前缀（例如 `shared-module-20261102/suite/`）则相对 `evidence/`。`not_run` 明确表示尚无对应证据，尤其不能把拒绝函数计为已实现。CNNL 和第二台主机的阻塞记录在总体能力矩阵中，二者不属于这两个头文件的 API 分母。
 
-RPC 重复封装由 Schema 生成：原有 10 对对象包装/分派，加上 20 个 typed RPC 的请求/响应、编解码、成功形状、分派与 backend binding，以及 21 个公共 ABI wrapper、导出 map、清单和测试 plan。对象归属、异步 staging、模块存活和参数重定位仍手写。旧六算子 registry/manifests 继续由原生成器维护。详见 [自动化设计](../docs/API_AUTOMATION.md) 和 [实际验证证据](../evidence/api-expansion-20261102/README.md)。
+RPC 重复封装由 Schema 生成：原有 10 对对象包装/分派，加上当前 39 个 typed RPC 的请求/响应、编解码、成功形状、分派与 backend binding，以及 44 个公共 ABI wrapper、导出 map、清单和测试 plan。对象归属、异步 staging、模块存活、查询 owner 路由和参数重定位仍有手写部分。旧六算子 registry/manifests 继续由原生成器维护。详见 [自动化设计](../docs/API_AUTOMATION.md)、[查询边界设计](../docs/QUERY_BOUNDARIES.md) 和 [本批验证证据](../evidence/query-boundaries-20261102/README.md)。

@@ -1,0 +1,2 @@
+2026-11-02 15:27:25.529122: [cnrtError] [562261] [Card: 0] Error occurred during calling 'cnQueueSetAttribute' in CNDrv interface.
+2026-11-02 15:27:25.529179: [cnrtError] [562261] [Card: 0] Return value is 100006, CN_ERROR_INVALID_VALUE.

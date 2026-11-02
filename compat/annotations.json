@@ -6,6 +6,27 @@
     "remote_test": "api-expansion-20261102/runtime-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
   },
+  "cnrtDeviceGetByPCIBusId": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; bounded PCI input <=63 bytes including accepted native short forms",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
+  },
+  "cnrtDeviceGetConfig": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
+  "cnrtDeviceGetPCIBusId": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
   "cnrtDeviceGetQueuePriorityRange": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
@@ -19,6 +40,20 @@
     "native_test": "not_run",
     "remote_test": "native_bang_abi-replacement.log; session-reset-test.log",
     "next_step": "Probe and implement this functional family"
+  },
+  "cnrtDeviceResetPersistingL2Cache": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Resets owned remote context; shared-context interop pending",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
+  "cnrtDeviceSetConfig": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
   },
   "cnrtDriverGetVersion": {
     "status": "IMPLEMENTED",
@@ -216,12 +251,26 @@
     "remote_test": "native_bang_abi-replacement.log",
     "next_step": "Probe and implement this functional family"
   },
+  "cnrtPointerGetAttributes": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
   "cnrtQueryNotifier": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Native query delegation; transparent pending-notifier differential probe still needed",
     "native_test": "build/probes/probe_queue",
     "remote_test": "client-test.log (CNDrv seam)",
     "next_step": "Probe and implement this functional family"
+  },
+  "cnrtQueueCopyAttributes": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
   },
   "cnrtQueueCreate": {
     "status": "IMPLEMENTED",
@@ -244,6 +293,13 @@
     "remote_test": "native_bang_abi-replacement.log",
     "next_step": "Probe and implement this functional family"
   },
+  "cnrtQueueGetAttribute": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
   "cnrtQueueGetPriority": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
@@ -257,6 +313,13 @@
     "native_test": "api-semantics-native.log",
     "remote_test": "api-semantics-remote.log",
     "next_step": "Probe and implement this functional family"
+  },
+  "cnrtQueueSetAttribute": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "native_test": "query-boundaries-20261102/runtime-native.log",
+    "remote_test": "query-boundaries-20261102/runtime-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
   },
   "cnrtQueueSync": {
     "status": "PARTIAL_IMPLEMENTED",
@@ -328,6 +391,20 @@
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
   },
+  "cnCtxGetApiVersion": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
+  },
+  "cnCtxGetConfig": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
+  },
   "cnCtxGetCurrent": {
     "status": "IMPLEMENTED",
     "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
@@ -355,6 +432,20 @@
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+  },
+  "cnCtxResetPersistingL2Cache": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
+  },
+  "cnCtxSetConfig": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
   },
   "cnCtxSetCurrent": {
     "status": "IMPLEMENTED",
@@ -398,6 +489,13 @@
     "remote_test": "api-expansion-20261102/driver-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
   },
+  "cnDeviceGetByPCIBusId": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; bounded PCI input <=63 bytes including accepted native short forms",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
+  },
   "cnDeviceGetCount": {
     "status": "IMPLEMENTED",
     "boundary": "Remote visible device count; control connection requires a reachable server with at least one MLU",
@@ -411,6 +509,13 @@
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnDeviceGetPCIBusId": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
   },
   "cnDeviceTotalMem": {
     "status": "PARTIAL_IMPLEMENTED",
@@ -433,6 +538,13 @@
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
   },
+  "cnGetCtxMaxParallelUnionTasks": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
+  },
   "cnGetDriverVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
@@ -446,6 +558,20 @@
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+  },
+  "cnGetMemAttribute": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
+  "cnGetMemAttributes": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Owned device pointers; SDK attempts all entries and returns final entry status; earlier and later successful outputs are published; bound current context required even when querying another owner",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Host/VMM ownership and bulk protocol batching"
   },
   "cnInit": {
     "status": "PARTIAL_IMPLEMENTED",
@@ -475,12 +601,26 @@
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
   },
+  "cnMemGetAddressRange": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnMalloc ranges only; host/VMM/registered allocations pending",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
   "cnMemGetInfo": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+  },
+  "cnMemGetNodeInfo": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
   },
   "cnMemcpy2D": {
     "status": "PARTIAL_IMPLEMENTED",
@@ -657,12 +797,40 @@
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
   },
+  "cnQueueCopyAttributes": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
+  "cnQueueGetAttribute": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+  },
+  "cnQueueGetContext": {
+    "status": "IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Retain Native/Remote boundary regression"
+  },
   "cnQueueGetPriority": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+  },
+  "cnQueueSetAttribute": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "native_test": "query-boundaries-20261102/driver-native.log",
+    "remote_test": "query-boundaries-20261102/driver-remote.log",
+    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
   },
   "cnQueueSync": {
     "status": "PARTIAL_IMPLEMENTED",

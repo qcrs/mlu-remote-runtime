@@ -3,31 +3,24 @@
     "family": "device_context",
     "priority": 0,
     "counts": {
-      "IMPLEMENTED": 16,
-      "NOT_IMPLEMENTED": 21,
-      "PARTIAL_IMPLEMENTED": 8
+      "IMPLEMENTED": 23,
+      "PARTIAL_IMPLEMENTED": 13,
+      "NOT_IMPLEMENTED": 9
     },
     "remaining": [
-      {
-        "api": "cnrtDeviceGetByPCIBusId",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
       {
         "api": "cnrtDeviceGetConfig",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnrtDeviceGetPCIBusId",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnrtDeviceReset",
@@ -40,15 +33,15 @@
         "api": "cnrtDeviceResetPersistingL2Cache",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Resets owned remote context; shared-context interop pending",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnrtDeviceSetConfig",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnrtGetDevice",
@@ -93,46 +86,11 @@
         "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
       },
       {
-        "api": "cnCtxGetApiVersion",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnCtxGetConfig",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnCtxResetPersistingL2Cache",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnCtxSetConfig",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
         "api": "cnDeviceGet",
         "priority": 0,
         "depends_on": "native context",
         "blocker": "Setters and multi-device TLS require explicit state rules",
         "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnDeviceGetByPCIBusId",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
       },
       {
         "api": "cnDeviceGetName",
@@ -145,18 +103,11 @@
         "api": "cnDeviceGetPCIBusId",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnGetCtxConfigParam_pt",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnGetCtxMaxParallelUnionTasks",
         "priority": 0,
         "depends_on": "native context",
         "blocker": "Setters and multi-device TLS require explicit state rules",
@@ -1403,10 +1354,10 @@
     "family": "memory",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 8,
+      "IMPLEMENTED": 9,
       "UNSUPPORTED": 1,
-      "PARTIAL_IMPLEMENTED": 7,
-      "NOT_IMPLEMENTED": 26
+      "PARTIAL_IMPLEMENTED": 11,
+      "NOT_IMPLEMENTED": 21
     },
     "remaining": [
       {
@@ -1427,8 +1378,8 @@
         "api": "cnrtPointerGetAttributes",
         "priority": 1,
         "depends_on": "fake VA registry and host memory policy",
-        "blocker": "Need attribute field and host/device ownership review",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnDeviceTotalMem",
@@ -1448,15 +1399,15 @@
         "api": "cnGetMemAttribute",
         "priority": 1,
         "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnGetMemAttributes",
         "priority": 1,
         "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Owned device pointers only; host/VMM pending",
+        "next_step": "Host/VMM ownership and bulk protocol batching"
       },
       {
         "api": "cnMalloc",
@@ -1532,8 +1483,8 @@
         "api": "cnMemGetAddressRange",
         "priority": 1,
         "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Owned cnMalloc ranges only; host/VMM/registered allocations pending",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnMemGetAllocationGranularity",
@@ -1544,13 +1495,6 @@
       },
       {
         "api": "cnMemGetAllocationPropertiesFromHandle",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnMemGetNodeInfo",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
@@ -1806,9 +1750,9 @@
     "family": "queue_notifier",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 9,
-      "PARTIAL_IMPLEMENTED": 22,
-      "NOT_IMPLEMENTED": 9
+      "IMPLEMENTED": 10,
+      "PARTIAL_IMPLEMENTED": 28,
+      "NOT_IMPLEMENTED": 2
     },
     "remaining": [
       {
@@ -1843,8 +1787,8 @@
         "api": "cnrtQueueCopyAttributes",
         "priority": 1,
         "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnrtQueueCreateWithPriority",
@@ -1857,8 +1801,8 @@
         "api": "cnrtQueueGetAttribute",
         "priority": 1,
         "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnrtQueueGetPriority",
@@ -1878,8 +1822,8 @@
         "api": "cnrtQueueSetAttribute",
         "priority": 1,
         "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnrtQueueSync",
@@ -1983,29 +1927,22 @@
         "api": "cnQueueCopyAttributes",
         "priority": 1,
         "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnQueueGetAttribute",
         "priority": 1,
         "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnQueueGetContext",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnQueueSetAttribute",
         "priority": 1,
         "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
       },
       {
         "api": "cnQueueSync",

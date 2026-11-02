@@ -1,0 +1,19 @@
+[
+  {
+    "name": "native-semantics",
+    "command": [
+      "build/probes/probe_query_semantics"
+    ],
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native-null-attribute",
+    "command": [
+      "build/probes/probe_query_semantics",
+      "--native-null-attribute"
+    ],
+    "returncode": -11,
+    "expected": -11
+  }
+]

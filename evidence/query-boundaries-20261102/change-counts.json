@@ -1,0 +1,199 @@
+{
+  "baseline_commit": "8dbd336aa5aa6b494cf63f592906ae158400e999",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnrtDeviceGetByPCIBusId",
+      "library": "CNRT",
+      "family": "device_context",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtDeviceGetConfig",
+      "library": "CNRT",
+      "family": "device_context",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtDeviceGetPCIBusId",
+      "library": "CNRT",
+      "family": "device_context",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtDeviceResetPersistingL2Cache",
+      "library": "CNRT",
+      "family": "device_context",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtDeviceSetConfig",
+      "library": "CNRT",
+      "family": "device_context",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtPointerGetAttributes",
+      "library": "CNRT",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtQueueCopyAttributes",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtQueueGetAttribute",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtQueueSetAttribute",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnCtxGetApiVersion",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnCtxGetConfig",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnCtxResetPersistingL2Cache",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnCtxSetConfig",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnDeviceGetByPCIBusId",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnDeviceGetPCIBusId",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnGetCtxMaxParallelUnionTasks",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnGetMemAttribute",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnGetMemAttributes",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnMemGetAddressRange",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnMemGetNodeInfo",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnQueueCopyAttributes",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnQueueGetAttribute",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnQueueGetContext",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnQueueSetAttribute",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    }
+  ],
+  "new_status_counts": {
+    "IMPLEMENTED": 9,
+    "PARTIAL_IMPLEMENTED": 15
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 212,
+    "IMPLEMENTED": 36,
+    "PARTIAL_IMPLEMENTED": 58,
+    "UNSUPPORTED": 4
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 188,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 73,
+    "UNSUPPORTED": 4
+  },
+  "generated_before": {
+    "typed_rpc": 20,
+    "public_wrappers": 21
+  },
+  "generated_after": {
+    "typed_rpc": 39,
+    "public_wrappers": 44
+  }
+}

@@ -50,4 +50,4 @@ LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/native_bang_generic
 
 ## API 自动化扩展（2026-11-02）
 
-新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；另修复 5 个原拒绝入口。Schema 覆盖全部 310 个公共声明，生成 20 typed RPC、21 公共 wrapper 和导出/台账/契约检查。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[功能族计划](compat/family-plan.md)、[本轮证据](evidence/api-expansion-20261102/README.md)。
+首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；另修复 5 个原拒绝入口。后续查询边界批次再新增 24 个 API。Schema 覆盖 310 个公共声明，当前生成 39 个 typed RPC、44 个公共 wrapper，并维护导出/台账/契约检查。累计 45 完整、73 部分、4 拒绝、188 未实现。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)、[查询批次证据](evidence/query-boundaries-20261102/README.md)。
