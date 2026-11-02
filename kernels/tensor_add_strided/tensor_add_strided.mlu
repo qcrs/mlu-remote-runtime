@@ -1,0 +1,12 @@
+#include <bang.h>
+
+__mlu_entry__ void tensor_add_strided(float *dst, const float *a, const float *b,
+                                      int rows, int cols,
+                                      int dst_rs, int dst_cs,
+                                      int a_rs, int a_cs,
+                                      int b_rs, int b_cs) {
+  if (!dst || !a || !b || rows <= 0 || cols <= 0) return;
+  for (int r = 0; r < rows; ++r)
+    for (int c = 0; c < cols; ++c)
+      dst[r * dst_rs + c * dst_cs] = a[r * a_rs + c * a_cs] + b[r * b_rs + c * b_cs];
+}

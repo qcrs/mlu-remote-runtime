@@ -1,0 +1,6 @@
+#include <bang.h>
+
+__mlu_entry__ void scalar_add(float *dst, const float *src, float scalar, int n) {
+  if (!dst || !src || n <= 0) return;
+  for (int i = 0; i < n; ++i) dst[i] = src[i] + scalar;
+}

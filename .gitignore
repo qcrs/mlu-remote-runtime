@@ -1,0 +1,5 @@
+build/
+modules/*.fatbin
+modules/*.fatbin.c
+modules/*.manifest
+build/generated/

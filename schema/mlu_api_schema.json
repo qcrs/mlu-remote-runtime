@@ -1,0 +1,63 @@
+{
+  "protocol": "mlu-remote",
+  "version": 1,
+  "wire": {"byte_order": "network", "max_payload": 67108864},
+  "object_ids": ["DeviceID", "AllocationID", "QueueID", "NotifierID", "TransferID", "ModuleID", "KernelID", "OperatorID"],
+  "operations": {
+    "HELLO": 1,
+    "DEVICE_QUERY": 2,
+    "ALLOC": 3,
+    "FREE": 4,
+    "MEMCPY": 5,
+    "QUEUE_CREATE": 6,
+    "QUEUE_DESTROY": 7,
+    "QUEUE_SYNC": 8,
+    "QUEUE_QUERY": 9,
+    "NOTIFIER_CREATE": 10,
+    "NOTIFIER_DESTROY": 11,
+    "NOTIFIER_RECORD": 12,
+    "NOTIFIER_QUERY": 13,
+    "NOTIFIER_SYNC": 14,
+    "CNNL_OPERATION": 15,
+    "MODULE_LOAD_PRESET": 16,
+    "KERNEL_LAUNCH": 17,
+    "SESSION_RESET": 18,
+    "DEVICE_SELECT": 19,
+    "OPERATOR_CREATE": 20,
+    "OPERATOR_DESTROY": 21,
+    "OPERATOR_LAUNCH": 22,
+    "TRANSFER_QUERY": 23,
+    "TRANSFER_SYNC": 24,
+    "MODULE_UNLOAD_PRESET": 25
+  },
+  "hello": {
+    "request": ["version", "capability_flags", "requested_device"],
+    "requested_device": "UINT32_MAX means server default device; otherwise session context is rebound before resources are created",
+    "response": ["version", "device_count", "capability_flags", "reserved"]
+  },
+  "operator_registry": {
+    "1": {"name": "vector_add", "module": "vector_add.fatbin", "kernel": "_Z10vector_addPfPKfS1_i", "inputs": 2, "outputs": 1, "rank": 1, "datatype": "f32", "scalar_bytes": 0},
+    "2": {"name": "scalar_add", "module": "scalar_add.fatbin", "kernel": "_Z10scalar_addPfPKffi", "inputs": 1, "outputs": 1, "rank": 1, "datatype": "f32", "scalar_bytes": 4},
+    "3": {"name": "relu", "module": "relu.fatbin", "kernel": "_Z4reluPfPKfi", "inputs": 1, "outputs": 1, "rank": 1, "datatype": "f32", "scalar_bytes": 0},
+    "4": {"name": "tensor_add_strided", "module": "tensor_add_strided.fatbin", "kernel": "_Z18tensor_add_stridedPfPKfS1_iiiiiiii", "inputs": 2, "outputs": 1, "rank": 2, "datatype": "f32", "scalar_bytes": 0},
+    "5": {"name": "scalar_mul", "module": "scalar_mul.fatbin", "kernel": "_Z10scalar_mulPfPKffi", "inputs": 1, "outputs": 1, "rank": 1, "datatype": "f32", "scalar_bytes": 4},
+    "6": {"name": "tensor_mul_strided", "module": "tensor_mul_strided.fatbin", "kernel": "_Z18tensor_mul_stridedPfPKfS1_iiiiiiii", "inputs": 2, "outputs": 1, "rank": 2, "datatype": "f32", "scalar_bytes": 0}
+  },
+  "parameter_kinds": {
+    "scalar": "fixed-width integer or floating-point value in the payload",
+    "host_bytes": "length-prefixed bytes copied into server staging memory",
+    "device_buffer": "AllocationID plus checked byte offset",
+    "shape_stride_layout": "rank plus fixed-width shape/stride arrays; never native pointers",
+    "enum_flags": "fixed-width integer values",
+    "object_id": "session-scoped opaque ID",
+    "transfer_completion": "server-owned CNDrv notifier associated with the queued operation"
+  },
+  "memcpy_parameters": ["direction", "QueueID", "AllocationID+offset", "bytes", "host_bytes"],
+  "kernel_parameters": ["KernelID", "QueueID", "AllocationID", "grid", "block", "shape", "stride", "layout", "datatype", "scalar bytes"],
+  "operator_request": {
+    "fixed_prefix": ["OperatorID", "KernelID", "QueueID", "input_count", "output_count", "scalar_bytes", "flags", "grid_x", "grid_y", "grid_z", "block_x", "block_y", "block_z"],
+    "tensor_descriptor": ["AllocationID", "offset", "rank", "layout", "datatype", "shape[]", "stride[]"],
+    "response": ["TransferID"],
+    "error_response": ["status", "error_name", "error_message"]
+  }
+}
