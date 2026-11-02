@@ -9,7 +9,8 @@ test -x "$CLIENT_PROGRAM"
 case ${MLU_REMOTE_SHIM:-cnrt} in
   cnrt) SHIM_DIR="$ROOT/build/shim" ;;
   driver) SHIM_DIR="$ROOT/build/driver-shim" ;;
-  *) echo "MLU_REMOTE_SHIM must be cnrt or driver" >&2; exit 2 ;;
+  both) SHIM_DIR="$ROOT/build/shim:$ROOT/build/driver-shim" ;;
+  *) echo "MLU_REMOTE_SHIM must be cnrt, driver or both" >&2; exit 2 ;;
 esac
 export LD_LIBRARY_PATH="$SHIM_DIR:$ROOT/build"
 export MLU_REMOTE_HOST=${MLU_REMOTE_HOST:-127.0.0.1}

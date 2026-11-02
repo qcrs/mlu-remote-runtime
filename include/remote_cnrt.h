@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 typedef struct mlu_remote_context mlu_remote_context;
+#include "generated/typed_api.h"
 typedef uint64_t mlu_remote_device_id;
 typedef uint64_t mlu_remote_allocation_id;
 typedef uint64_t mlu_remote_queue_id;

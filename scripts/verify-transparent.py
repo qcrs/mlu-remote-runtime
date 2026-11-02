@@ -76,6 +76,7 @@ try:
     if forbidden: raise RuntimeError('native Driver dependency leaked')
     run('generated',['python3','scripts/generate_rpc.py','--check'])
     run('compatibility-ledger',['python3','scripts/generate_compat.py','--check'])
+    run('api-contracts',['python3','scripts/verify-api-contracts.py'])
     run('client-response-faults',['python3','tests/client_response_faults.py'])
     run('driver-client-faults',['python3','tests/driver_client_faults.py'])
     run('client-transport-deadlines',['python3','tests/transport_deadlines.py'])

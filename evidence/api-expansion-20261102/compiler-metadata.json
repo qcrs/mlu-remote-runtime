@@ -1,0 +1,46 @@
+[
+  {
+    "symbol": "c_types",
+    "image_size": 3648,
+    "fingerprint": "0x6b6a7bf329bd096d",
+    "parameters": [
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      },
+      {
+        "size": 8,
+        "kind": "scalar"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      }
+    ]
+  },
+  {
+    "symbol": "no_args",
+    "image_size": 3648,
+    "fingerprint": "0x6b6a7bf329bd096d",
+    "parameters": []
+  },
+  {
+    "symbol": "_Z9templatedIyEvPT_S0_",
+    "image_size": 3648,
+    "fingerprint": "0x6b6a7bf329bd096d",
+    "parameters": [
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 8,
+        "kind": "scalar"
+      }
+    ]
+  }
+]

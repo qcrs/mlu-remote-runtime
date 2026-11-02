@@ -1,0 +1,6 @@
+PASS aggregate/vector/oversize scalar/indirect pointer require ABI review
+PASS image/symbol association across duplicate symbols
+PASS rejected metadata stale-image
+PASS rejected metadata wrong-size
+PASS rejected metadata wrong-kind
+PASS rejected metadata truncated

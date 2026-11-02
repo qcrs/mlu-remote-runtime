@@ -64,6 +64,7 @@ static int exchange_failed(mlu_remote_context *ctx, int writing, const char *mes
 static int valid_success(uint16_t op, const unsigned char *request,
                          uint32_t request_len, const unsigned char *p, uint32_t n) {
   switch (op) {
+#include "typed_success.inc"
     case MLU_OP_HELLO:
       return n == 16 && get32(p) == MLU_REMOTE_VERSION;
     case MLU_OP_DEVICE_QUERY:
@@ -243,6 +244,7 @@ int mlu_remote_memcpy_d2d(mlu_remote_context *ctx, uint64_t dst, uint64_t doff, 
 
 static int id_call(mlu_remote_context *ctx, uint16_t op, uint64_t id) { unsigned char p[8]; put64(p, id); return rpc(ctx, op, p, 8, NULL, &(uint32_t){0}); }
 #include "simple_rpc_client.inc"
+#include "typed_rpc_client.inc"
 int mlu_remote_queue_create(mlu_remote_context *ctx, uint64_t *q) { unsigned char *e = NULL; uint32_t n = 0; int st = rpc(ctx, MLU_OP_QUEUE_CREATE, NULL, 0, &e, &n); if (!st && n >= 8) *q = get64(e); free(e); return st; }
 int mlu_remote_notifier_create(mlu_remote_context *ctx, uint64_t *n) { unsigned char *e = NULL; uint32_t len = 0; int st = rpc(ctx, MLU_OP_NOTIFIER_CREATE, NULL, 0, &e, &len); if (!st && len >= 8) *n = get64(e); free(e); return st; }
 int mlu_remote_notifier_record(mlu_remote_context *ctx, uint64_t n, uint64_t q) { unsigned char p[16]; put64(p, n); put64(p + 8, q); return rpc(ctx, MLU_OP_NOTIFIER_RECORD, p, 16, NULL, &(uint32_t){0}); }

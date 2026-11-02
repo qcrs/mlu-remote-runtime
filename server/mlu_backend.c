@@ -1,6 +1,7 @@
 #include "mlu_backend.h"
 #include "remote_protocol.h"
 #include "operator_registry.h"
+#include <cnrt.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -461,9 +462,9 @@ int mlu_backend_memcpy(mlu_backend_session *s, int direction,
   return (int)r;
 }
 
-int mlu_backend_queue_create(mlu_backend_session *s, uint64_t *id) {
+static int mlu_backend_queue_create_options(mlu_backend_session *s, uint32_t flags, int priority, uint64_t *id) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) if (!s->queues[i].live) {
-    CNqueue q = NULL; CNresult r = cnCreateQueue(&q, 0); if (r != CN_SUCCESS) return (int)r;
+    CNqueue q = NULL; CNresult r = cnCreateQueueWithPriority(&q, flags, priority); if (r != CN_SUCCESS) return (int)r;
     uint64_t object_id = 0; uint32_t generation = 0;
     int registry_status = register_object(s, MLU_OBJECT_QUEUE, &object_id, &generation);
     if (registry_status != 0) { cnDestroyQueue(q); return registry_status; }
@@ -471,6 +472,9 @@ int mlu_backend_queue_create(mlu_backend_session *s, uint64_t *id) {
                                        .generation = generation, .live = 1}; *id = s->queues[i].id; return 0;
   }
   return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+}
+int mlu_backend_queue_create(mlu_backend_session *s, uint64_t *id) {
+  return mlu_backend_queue_create_options(s,0,0,id);
 }
 int mlu_backend_queue_destroy(mlu_backend_session *s, uint64_t id) {
   mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
@@ -489,9 +493,9 @@ int mlu_backend_queue_query(mlu_backend_session *s, uint64_t id) {
   mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
   return (int)cnQueryQueue(q->handle);
 }
-int mlu_backend_notifier_create(mlu_backend_session *s, uint64_t *id) {
+static int mlu_backend_notifier_create_options(mlu_backend_session *s, uint32_t flags, uint64_t *id) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) if (!s->notifiers[i].live) {
-    CNnotifier n = NULL; CNresult r = cnCreateNotifier(&n, 0); if (r != CN_SUCCESS) return (int)r;
+    CNnotifier n = NULL; CNresult r = cnCreateNotifier(&n, flags); if (r != CN_SUCCESS) return (int)r;
     uint64_t object_id = 0; uint32_t generation = 0;
     int registry_status = register_object(s, MLU_OBJECT_NOTIFIER, &object_id, &generation);
     if (registry_status != 0) { cnDestroyNotifier(n); return registry_status; }
@@ -499,6 +503,9 @@ int mlu_backend_notifier_create(mlu_backend_session *s, uint64_t *id) {
                                              .generation = generation, .live = 1}; *id = s->notifiers[i].id; return 0;
   }
   return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+}
+int mlu_backend_notifier_create(mlu_backend_session *s, uint64_t *id) {
+  return mlu_backend_notifier_create_options(s,0,id);
 }
 int mlu_backend_notifier_destroy(mlu_backend_session *s, uint64_t id) {
   mlu_backend_notifier *n = find_notifier(s, id); if (!n) return (int)CN_ERROR_INVALID_HANDLE;
@@ -913,3 +920,54 @@ const char *mlu_backend_error_string(int code) {
   const char *s = NULL; if (cnGetErrorString((CNresult)code, &s) == CN_SUCCESS && s) return s;
   switch ((unsigned)code) { case MLU_REMOTE_UNSUPPORTED: return "backend capability is unavailable"; default: return "remote protocol error"; }
 }
+
+/* Ordinary linear fills share the owned allocation range and native queue
+ * mapping. Count is in elements, not bytes, for D16/D32. */
+static int mlu_backend_memset(mlu_backend_session *s,uint64_t id,uint64_t off,
+                              uint32_t value,uint32_t width,uint64_t count,
+                              uint64_t qid,uint32_t async) {
+  if((width!=1 && width!=2 && width!=4) || async>1 || count>UINT64_MAX/width || off%width)
+    return (int)CN_ERROR_INVALID_VALUE;
+  CNaddr dst; int st=range(find_alloc(s,id),off,count*width,&dst); if(st) return st;
+  mlu_backend_queue *q=qid ? find_queue(s,qid) : NULL;
+  if(qid && !q) return (int)MLU_REMOTE_BAD_OBJECT;
+  if(async && !qid) s->default_queue_used=1;
+  if(width==1) return (int)(async ? cnMemsetD8Async(dst,(unsigned char)value,count,q ? q->handle : NULL) : cnMemsetD8(dst,(unsigned char)value,count));
+  if(width==2) return (int)(async ? cnMemsetD16Async(dst,(unsigned short)value,count,q ? q->handle : NULL) : cnMemsetD16(dst,(unsigned short)value,count));
+  return (int)(async ? cnMemsetD32Async(dst,value,count,q ? q->handle : NULL) : cnMemsetD32(dst,value,count));
+}
+static int mlu_backend_copy2d(mlu_backend_session *s,const mlu_api_copy2d_request *in) {
+  if(!in->height || !in->width || in->width>in->dpitch || in->width>in->spitch ||
+      (in->height-1)>(UINT64_MAX-in->width)/in->dpitch ||
+      (in->height-1)>(UINT64_MAX-in->width)/in->spitch) return (int)CN_ERROR_INVALID_VALUE;
+  CNaddr dst,src;
+  if(range(find_alloc(s,in->dst),in->dst_offset,(in->height-1)*in->dpitch+in->width,&dst) ||
+     range(find_alloc(s,in->src),in->src_offset,(in->height-1)*in->spitch+in->width,&src)) return (int)CN_ERROR_INVALID_VALUE;
+  return (int)cnMemcpyDtoD2D(dst,in->dpitch,src,in->spitch,in->width,in->height);
+}
+/* Compute the full allocation span before entering native CE code. */
+static int copy3d_span(uint64_t pitch,uint64_t ysize,uint64_t x,uint64_t y,uint64_t z,
+                         uint64_t w,uint64_t h,uint64_t d,uint64_t *span) {
+  if(!pitch || !ysize || !w || !h || !d || x>pitch || w>pitch-x || y>ysize || h>ysize-y ||
+      z>UINT64_MAX-(d-1) || pitch>UINT64_MAX/ysize) return -1;
+  uint64_t slice=pitch*ysize, lastz=z+d-1;
+  if(lastz>UINT64_MAX/slice) return -1;
+  uint64_t base=lastz*slice, row=(y+h-1)*pitch;
+  if(row>UINT64_MAX-base || x+w>UINT64_MAX-base-row) return -1;
+  *span=base+row+x+w; return 0;
+}
+static int mlu_backend_copy3d(mlu_backend_session *s,const mlu_api_copy3d_request *in) {
+  uint64_t ds,ss; CNaddr dst,src;
+  if(copy3d_span(in->dpitch,in->dysize,in->dx,in->dy,in->dz,in->width,in->height,in->depth,&ds) ||
+     copy3d_span(in->spitch,in->sysize,in->sx,in->sy,in->sz,in->width,in->height,in->depth,&ss) ||
+     range(find_alloc(s,in->dst),in->dst_offset,ds,&dst) || range(find_alloc(s,in->src),in->src_offset,ss,&src))
+    return (int)CN_ERROR_INVALID_VALUE;
+  CNmemcpy3dParam p={0};
+  p.dst=(void *)(uintptr_t)dst; p.src=(void *)(uintptr_t)src;
+  p.dstPtr=(CNpitchedPtr){in->dpitch,(void *)(uintptr_t)dst,in->width,in->dysize};
+  p.srcPtr=(CNpitchedPtr){in->spitch,(void *)(uintptr_t)src,in->width,in->sysize};
+  p.dstPos=(CNpos){in->dx,in->dy,in->dz}; p.srcPos=(CNpos){in->sx,in->sy,in->sz};
+  p.extent=(CNextent){in->depth,in->height,in->width};
+  return (int)cnMemcpyDtoD3D(&p);
+}
+#include "typed_backend.inc"

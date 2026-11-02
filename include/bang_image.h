@@ -13,6 +13,10 @@ int bang_image_span(const void *image, size_t available, size_t *span);
 int bang_image_validate(const void *image, size_t size);
 int bang_classify_params(const char *symbol, const bang_param_layout *layout,
                            unsigned char pointer[BANG_MAX_ARGS]);
+/* 0 = compiler types found, 1 = absent (legacy demangler allowed), -1 = invalid. */
+int bang_metadata_classify(const void *host, const void *image, size_t size,
+                           const char *symbol, const bang_param_layout *layout,
+                           unsigned char pointer[BANG_MAX_ARGS]);
 int bang_image_params(const void *image, size_t size, const char *symbol,
                       bang_param_layout *layout);
 /* Measured uninitialized device object; no host symbol address API implied. */

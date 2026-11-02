@@ -120,11 +120,13 @@ python3 scripts/generate_rpc.py
 python3 scripts/generate_rpc.py --check
 python3 scripts/generate_compat.py
 python3 scripts/generate_compat.py --check
+python3 scripts/verify-api-contracts.py
+python3 scripts/verify-api-families.py
 ```
 
-`schema/mlu_api_schema.json` 保留 operator registry，并新增 `simple_rpc`；目前生成 10 对单对象 ID 包装/分派，同时校验 opcode 与协议头一致。关键的内存/异步/注册/归属语义仍手写。不要通过添加成功空函数提高兼容数字。
+`schema/mlu_api_schema.json` 保留 operator registry 和 10 对 `simple_rpc`；新增 20 typed RPC 编解码/分派/binding、21 公共包装、导出 map、test plan/template。关键的内存/异步/注册/归属语义仍手写。不要通过添加成功空函数提高兼容数字。[自动化扩展指南](API_AUTOMATION.md) 说明 Schema 字段、compiler metadata、生成边界和 Native/Remote 功能族测试。
 
-`compat/annotations.json` 是人工语义审查；生成器遍历安装头文件、核对真实导出，输出 310 行公共 API。更新 SDK 后先核对 diff、原生语义与证据，再调整状态。新增能力按 [M1～M4](../design/MILESTONES.md) 的交付门槛更新。
+人工语义审查在 Schema 的 `apis` 中维护，`compat/annotations.json` 是生成的兼容视图；生成器遍历安装头文件、核对签名和真实导出，输出 310 行公共 API 及逐项 blocker/优先级。更新 SDK 后先核对 diff、原生语义与证据，再调整状态。新增能力按 [M1～M4](../design/MILESTONES.md) 的交付门槛更新。
 
 旧 preset 加载仍需同目录 manifest，server 验证 module、kernel symbol、架构、dtype/rank/count/scalar ABI。`MLU_REMOTE_MODULE_DIR` 可覆盖目录；`run-server.sh` 默认用项目绝对目录。透明 image upload 路径不依赖该目录。
 

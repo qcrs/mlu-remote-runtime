@@ -43,6 +43,7 @@ enum mlu_remote_opcode {
   MLU_OP_MODULE_LOAD_BINARY = 30,
   MLU_OP_SESSION_CLOSE = 31,
   MLU_OP_CONTEXT_SYNC = 32,
+#include "generated/typed_opcodes.inc"
 };
 
 #define MLU_CAP_MODULE_IMAGE 0x100u
@@ -50,6 +51,7 @@ enum mlu_remote_opcode {
 #define MLU_CAP_TRANSFER_RELEASE 0x400u
 #define MLU_CAP_MODULE_KERNELS 0x800u
 #define MLU_CAP_DRIVER_CONTEXT 0x1000u
+#define MLU_CAP_TYPED_API 0x2000u
 /* Generic scalar bytes are LP64 little endian. Framing remains network order. */
 #define MLU_REMOTE_KERNEL_ABI 0x08010001u
 

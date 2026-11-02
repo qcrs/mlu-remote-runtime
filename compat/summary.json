@@ -6,15 +6,15 @@
   "scope": "installed preprocessed public headers; deprecated transitive declarations included; private BANG hooks counted separately",
   "counts": {
     "CNRT": {
-      "NOT_IMPLEMENTED": 96,
-      "UNSUPPORTED": 8,
-      "PARTIAL_IMPLEMENTED": 14,
-      "IMPLEMENTED": 12
+      "NOT_IMPLEMENTED": 88,
+      "IMPLEMENTED": 19,
+      "PARTIAL_IMPLEMENTED": 20,
+      "UNSUPPORTED": 3
     },
     "CNDrv": {
-      "NOT_IMPLEMENTED": 146,
-      "PARTIAL_IMPLEMENTED": 27,
-      "IMPLEMENTED": 6,
+      "NOT_IMPLEMENTED": 124,
+      "PARTIAL_IMPLEMENTED": 38,
+      "IMPLEMENTED": 17,
       "UNSUPPORTED": 1
     }
   },
@@ -33,5 +33,7 @@
   "legacy_exports_outside_headers": [
     "cnrtInit"
   ],
-  "generated_object_rpc_count": 10
+  "generated_object_rpc_count": 10,
+  "generated_typed_rpc_count": 20,
+  "generated_public_wrapper_count": 21
 }

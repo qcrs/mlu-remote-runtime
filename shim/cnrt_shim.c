@@ -74,6 +74,15 @@ static object *get_object(object *table, uint64_t token) {
   for(unsigned i=0;i<256;++i) if(table[i].live && table[i].token==token) return table+i;
   return NULL;
 }
+static object *get_queue(cnrtQueue_t handle);
+static cnrtRet_t api_queue(cnrtQueue_t handle,uint64_t *id) {
+  object *q=get_queue(handle); if(!q) return cnrtErrorInvalidResourceHandle;
+  *id=q->id; return cnrtSuccess;
+}
+static cnrtRet_t api_notifier(cnrtNotifier_t handle,uint64_t *id) {
+  object *n=get_object(notifiers,(uintptr_t)handle); if(!n) return cnrtErrorInvalidResourceHandle;
+  *id=n->id; return cnrtSuccess;
+}
 static object *new_object(object *table) {
   for(unsigned i=0;i<256;++i) if(!table[i].live) return table+i;
   return NULL;
@@ -254,7 +263,10 @@ void __bangRegisterFunction(void **handle,const char *host,char *symbol,const ch
     kernel *k=calloc(1,sizeof(*k));
     if(k) {
       k->reg=r; k->host=host; k->name=strdup(symbol);
-      k->valid=k->name && !bang_image_params(r->image,r->size,symbol,&k->layout) && !bang_classify_params(k->name,&k->layout,k->pointer);
+      if(k->name && !bang_image_params(r->image,r->size,symbol,&k->layout)) {
+        int metadata=bang_metadata_classify(host,r->image,r->size,symbol,&k->layout,k->pointer);
+        k->valid=metadata==0 || (metadata==1 && !bang_classify_params(k->name,&k->layout,k->pointer));
+      }
       k->next=kernels; kernels=k;
       if(!k->valid) fprintf(stderr,"[mlu-shim] unsupported kernel ABI: %s\n",symbol);
     }
@@ -349,18 +361,56 @@ const char *cnrtGetErrorStr(cnrtRet_t e) { return cnrtGetErrorName(e); }
 cnrtRet_t cnrtMallocConstant(void **p,size_t n) { (void)p; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }
 cnrtRet_t cnrtHostMalloc(void **p,size_t n) { (void)p; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }
 cnrtRet_t cnrtFreeHost(void *p) { (void)p; ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtGetDeviceProperties_V2(cnrtDeviceProp_t *p,int d) { (void)p; (void)d; ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtDeviceGetAttribute(int *p,cnrtDeviceAttr_t a,int d) { (void)p; (void)a; (void)d; ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtMemset(void *p,int v,size_t n) { (void)p; (void)v; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtMemsetAsync(void *p,int v,size_t n,cnrtQueue_t q) { (void)p; (void)v; (void)n; (void)q; ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtNotifierElapsedTime(cnrtNotifier_t a,cnrtNotifier_t b,float *v) { (void)a; (void)b; (void)v; ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtQueueCreateWithPriority(cnrtQueue_t *q,unsigned flags,int priority) { if(!flags && !priority) return cnrtQueueCreate(q); ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtQueueGetPriority(cnrtQueue_t h,int *p) { ENTER(); object *q=get_object(queues,(uintptr_t)h); if(!q || !p) RETURN(cnrtErrorArgsInvalid); *p=0; RETURN(cnrtSuccess); }
-cnrtRet_t cnrtNotifierCreateWithFlags(cnrtNotifier_t *n,unsigned flags) { if(!flags) return cnrtNotifierCreate(n); ENTER(); RETURN(cnrtErrorNotSupport); }
+#include "cnrt_api.inc"
 __attribute__((destructor)) static void shutdown_remote(void) {
   ENTER(); if(ctx) { mlu_remote_disconnect(ctx); ctx=NULL; }
   while(allocations) { allocation *a=allocations; allocations=a->next; munmap(a->base,a->mapped); free(a); }
   while(kernels) { kernel *k=kernels; kernels=k->next; free(k->name); free(k); }
   while(registrations) { registration *r=registrations; registrations=r->next; free(r->image); free(r); }
   pthread_mutex_unlock(&lock);
+}
+
+cnrtRet_t cnrtQueueCreateWithPriority(cnrtQueue_t *out,unsigned flags,int priority) {
+  ENTER(); if(!out) RETURN(cnrtErrorArgsInvalid); CONNECT();
+  object *q=new_object(queues); if(!q) RETURN(cnrtErrorSysNoMem);
+  mlu_api_queue_create_request in={.flags=flags,.priority=priority}; mlu_api_queue_create_response result={0};
+  int st=mlu_remote_api_queue_create(ctx,&in,&result);
+  if(!st) { *q=(object){++next_token,result.id,1}; *out=(cnrtQueue_t)(uintptr_t)q->token; }
+  RETURN(status(st));
+}
+cnrtRet_t cnrtNotifierCreateWithFlags(cnrtNotifier_t *out,unsigned flags) {
+  ENTER(); if(!out) RETURN(cnrtErrorArgsInvalid); CONNECT();
+  object *n=new_object(notifiers); if(!n) RETURN(cnrtErrorSysNoMem);
+  mlu_api_notifier_create_request in={.flags=flags}; mlu_api_notifier_create_response result={0};
+  int st=mlu_remote_api_notifier_create(ctx,&in,&result);
+  if(!st) { *n=(object){++next_token,result.id,1}; *out=(cnrtNotifier_t)(uintptr_t)n->token; }
+  RETURN(status(st));
+}
+static cnrtRet_t fill(void *ptr,int value,size_t bytes,cnrtQueue_t queue,int async) {
+  uint64_t off=0,qid=0; allocation *a=lookup(ptr,&off);
+  if(!a || bytes>a->bytes-off) return cnrtErrorArgsInvalid;
+  if(async && api_queue(queue,&qid)) return cnrtErrorInvalidResourceHandle;
+  mlu_api_memset_request in={.allocation=a->id,.offset=off,.value=(unsigned char)value,.count=bytes,.width=1,.queue=qid,.async=async};
+  mlu_api_memset_response out={0}; return status(mlu_remote_api_memset(ctx,&in,&out));
+}
+cnrtRet_t cnrtMemset(void *ptr,int value,size_t bytes) { ENTER(); CONNECT(); RETURN(fill(ptr,value,bytes,NULL,0)); }
+cnrtRet_t cnrtMemsetAsync(void *ptr,int value,size_t bytes,cnrtQueue_t queue) { ENTER(); CONNECT(); RETURN(fill(ptr,value,bytes,queue,1)); }
+cnrtRet_t cnrtMemcpy2D(void *dst,size_t dpitch,const void *src,size_t spitch,size_t width,size_t height,cnrtMemTransDir_t direction) {
+  ENTER(); CONNECT();
+  if(direction!=cnrtMemcpyDevToDev && direction!=cnrtMemcpyNoDirection) RETURN(cnrtErrorMemcpyDirectionInvalid);
+  mlu_api_copy2d_request in={.dpitch=dpitch,.spitch=spitch,.width=width,.height=height}; mlu_api_copy2d_response out={0};
+  allocation *d=lookup(dst,&in.dst_offset),*s=lookup(src,&in.src_offset);
+  if(!d || !s) RETURN(cnrtErrorArgsInvalid);
+  in.dst=d->id; in.src=s->id;
+  RETURN(status(mlu_remote_api_copy2d(ctx,&in,&out)));
+}
+cnrtRet_t cnrtMemcpy3D(const cnrtMemcpy3dParam_t *p) {
+  ENTER(); if(!p) RETURN(cnrtErrorArgsInvalid); CONNECT();
+  if(p->dir!=cnrtMemcpyDevToDev && p->dir!=cnrtMemcpyNoDirection) RETURN(cnrtErrorMemcpyDirectionInvalid);
+  mlu_api_copy3d_request in={.dpitch=p->dstPtr.pitch,.dysize=p->dstPtr.ysize,.dx=p->dstPos.x,.dy=p->dstPos.y,.dz=p->dstPos.z,
+    .spitch=p->srcPtr.pitch,.sysize=p->srcPtr.ysize,.sx=p->srcPos.x,.sy=p->srcPos.y,.sz=p->srcPos.z,
+    .width=p->extent.width,.height=p->extent.height,.depth=p->extent.depth}; mlu_api_copy3d_response out={0};
+  allocation *d=lookup(p->dst ? p->dst : p->dstPtr.ptr,&in.dst_offset),*s=lookup(p->src ? p->src : p->srcPtr.ptr,&in.src_offset);
+  if(!d || !s) RETURN(cnrtErrorArgsInvalid);
+  in.dst=d->id; in.src=s->id; RETURN(status(mlu_remote_api_copy3d(ctx,&in,&out)));
 }

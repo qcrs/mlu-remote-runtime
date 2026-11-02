@@ -1,0 +1,235 @@
+{
+  "baseline_commit": "6280171819335924f7a4b37195271aa7cc7e74ff",
+  "new_exports": [
+    {
+      "name": "cnrtDeviceGetQueuePriorityRange",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnrtDriverGetVersion",
+      "library": "CNRT",
+      "family": "device_context",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnrtGetLibVersion",
+      "library": "CNRT",
+      "family": "device_context",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnrtMemGetInfo",
+      "library": "CNRT",
+      "family": "memory",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnrtMemcpy2D",
+      "library": "CNRT",
+      "family": "memcpy",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnrtMemcpy3D",
+      "library": "CNRT",
+      "family": "memcpy",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnrtNotifierDuration",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnrtQueueWaitNotifier",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnCreateQueueWithPriority",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnCtxGetQueuePriorityRange",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnDeviceGetAttribute",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnDriverGetVersion",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnGetDriverVersion",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnGetLibVersion",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnKernelGetAttribute",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnMemGetInfo",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnMemcpy2D",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnMemcpy3D",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnMemcpyDtoD2D",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnMemcpyDtoD3D",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnMemsetD16",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnMemsetD16Async",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnMemsetD32",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnMemsetD32Async",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnMemsetD8",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnMemsetD8Async",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnNotifierElapsedExecTime",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnNotifierElapsedTime",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnQueueGetPriority",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnQueueWaitNotifier",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "status": "PARTIAL_IMPLEMENTED"
+    }
+  ],
+  "previous_rejectors_implemented": [
+    {
+      "name": "cnrtDeviceGetAttribute",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnrtGetDeviceProperties_V2",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnrtMemset",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "cnrtMemsetAsync",
+      "status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnrtNotifierElapsedTime",
+      "status": "PARTIAL_IMPLEMENTED"
+    }
+  ],
+  "baseline_counts": {
+    "CNRT": {
+      "NOT_IMPLEMENTED": 96,
+      "UNSUPPORTED": 8,
+      "PARTIAL_IMPLEMENTED": 14,
+      "IMPLEMENTED": 12
+    },
+    "CNDrv": {
+      "NOT_IMPLEMENTED": 146,
+      "PARTIAL_IMPLEMENTED": 27,
+      "IMPLEMENTED": 6,
+      "UNSUPPORTED": 1
+    }
+  },
+  "current_counts": {
+    "CNRT": {
+      "NOT_IMPLEMENTED": 88,
+      "IMPLEMENTED": 19,
+      "PARTIAL_IMPLEMENTED": 20,
+      "UNSUPPORTED": 3
+    },
+    "CNDrv": {
+      "NOT_IMPLEMENTED": 124,
+      "PARTIAL_IMPLEMENTED": 38,
+      "IMPLEMENTED": 17,
+      "UNSUPPORTED": 1
+    }
+  }
+}

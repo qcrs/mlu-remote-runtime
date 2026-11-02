@@ -47,3 +47,7 @@ LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/native_bang_generic
 - [资源隔离与关闭验证证据](evidence/resources-20261102/README.md)
 - [原生 CNDrv Shim、context/module/NULL queue 语义](docs/DRIVER_SHIM.md)
 - [Driver native/replacement/preload 与隔离验证证据](evidence/driver-shim-20261102/README.md)
+
+## API 自动化扩展（2026-11-02）
+
+新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；另修复 5 个原拒绝入口。Schema 覆盖全部 310 个公共声明，生成 20 typed RPC、21 公共 wrapper 和导出/台账/契约检查。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[功能族计划](compat/family-plan.md)、[本轮证据](evidence/api-expansion-20261102/README.md)。

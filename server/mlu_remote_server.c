@@ -106,7 +106,7 @@ static int parse_hello(int fd, const struct mlu_remote_wire_header *h, const uns
   unsigned char out[16]; put32(out, MLU_REMOTE_VERSION); put32(out + 4, (uint32_t)count);
   /* Capability bits: device, allocation, copies, queue, notifier, preset
    * module, generic operators, and TransferID completion. */
-  put32(out + 8, 0xffu | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT);
+  put32(out + 8, 0xffu | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API);
   put32(out + 12, MLU_REMOTE_KERNEL_ABI);
   int sent = send_response(fd, MLU_OP_HELLO, ntohll_u(h->request_id), (uint32_t)st, out, sizeof(out));
   return st ? -1 : sent;
@@ -119,6 +119,7 @@ static int handle_request(int fd, mlu_backend_session *s, const struct mlu_remot
   unsigned char out[512];
   switch (op) {
 #include "simple_rpc_server.inc"
+#include "typed_rpc_server.inc"
     case MLU_OP_MODULE_LOAD_BINARY: {
       if (n < 4 || !get32(p) || get32(p) != n-4)
         return send_response(fd,op,req,MLU_REMOTE_BAD_LENGTH,NULL,0);

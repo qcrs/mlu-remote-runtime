@@ -1,0 +1,29 @@
+PASS generated malformed frame runtime_version
+PASS generated malformed frame runtime_driver_version
+PASS generated malformed frame driver_version
+PASS generated malformed frame driver_legacy_version
+PASS generated malformed frame driver_lib_version
+PASS generated malformed frame runtime_attribute
+PASS generated malformed frame driver_attribute
+PASS generated malformed frame runtime_properties
+PASS generated malformed frame priority_range
+PASS generated malformed frame memory_info
+PASS generated malformed frame queue_priority
+PASS generated malformed frame queue_wait
+PASS generated malformed frame notifier_elapsed
+PASS generated malformed frame notifier_exec
+PASS generated malformed frame queue_create
+PASS generated malformed frame notifier_create
+PASS generated malformed frame memset
+PASS generated malformed frame copy2d
+PASS generated malformed frame kernel_attribute
+PASS generated malformed frame copy3d
+PASS rejected cross-session 100006
+PASS rejected overflow 100006
+PASS rejected offset 100006
+PASS rejected alignment 100006
+PASS rejected width 100006
+PASS rejected wrong-queue 2147483652
+PASS rejected copy3d depth-overflow 100006
+PASS rejected copy3d row-span 100006
+PASS valid fill after rejection and stale allocation

@@ -8,6 +8,7 @@
 #include "object_registry.h"
 #include "bang_image.h"
 #include "resource_limits.h"
+#include "remote_cnrt.h"
 
 #define MLU_BACKEND_MAX_OBJECTS 1024
 
@@ -202,4 +203,5 @@ int mlu_backend_kernel_launch_vector_add(mlu_backend_session *s, uint64_t kernel
 const char *mlu_backend_error_name(int code);
 const char *mlu_backend_error_string(int code);
 
+#include "typed_backend_decls.inc"
 #endif

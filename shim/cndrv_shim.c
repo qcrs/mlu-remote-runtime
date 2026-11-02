@@ -231,9 +231,10 @@ CNresult cnMemcpyDtoDAsync(CNaddr dst,CNaddr src,cn_uint64_t n,CNqueue q) { ENTE
 CNresult cnMemcpyDtoHAsync(void *dst,CNaddr src,cn_uint64_t n,CNqueue q) { (void)dst;(void)src;(void)n;(void)q; ENTER(); CURRENT(); (void)c; RETURN(CN_OPS_ERROR_NOT_SUPPORTED); }
 
 CNresult cnCreateQueue(CNqueue *out,unsigned flags) {
-  ENTER(); CURRENT(); if(!out) RETURN(CN_ERROR_INVALID_VALUE); if(flags) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);
+  ENTER(); CURRENT(); if(!out) RETURN(CN_ERROR_INVALID_VALUE);
   object *o=new_object(c,QUEUE); if(!o) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);
-  int st=mlu_remote_queue_create(c->remote,&o->id); if(!st) { o->live=1; *out=(CNqueue)(uintptr_t)o->token; }
+  mlu_api_queue_create_request in={.flags=flags}; mlu_api_queue_create_response value={0};
+  int st=mlu_remote_api_queue_create(c->remote,&in,&value); if(!st) o->id=value.id; if(!st) { o->live=1; *out=(CNqueue)(uintptr_t)o->token; }
   else discard_object(o);
   RETURN(result(st));
 }
@@ -250,9 +251,10 @@ CNresult cnQueryQueue(CNqueue handle) {
   object *o=find_object(c,QUEUE,(uintptr_t)handle); RETURN(o ? result(mlu_remote_queue_query(c->remote,o->id)) : CN_QUEUE_ERROR_INVALID);
 }
 CNresult cnCreateNotifier(CNnotifier *out,unsigned flags) {
-  ENTER(); CURRENT(); if(!out) RETURN(CN_ERROR_INVALID_VALUE); if(flags) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);
+  ENTER(); CURRENT(); if(!out) RETURN(CN_ERROR_INVALID_VALUE);
   object *o=new_object(c,NOTIFIER); if(!o) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);
-  int st=mlu_remote_notifier_create(c->remote,&o->id); if(!st) { o->live=1; *out=(CNnotifier)(uintptr_t)o->token; }
+  mlu_api_notifier_create_request in={.flags=flags}; mlu_api_notifier_create_response value={0};
+  int st=mlu_remote_api_notifier_create(c->remote,&in,&value); if(!st) o->id=value.id; if(!st) { o->live=1; *out=(CNnotifier)(uintptr_t)o->token; }
   else discard_object(o);
   RETURN(result(st));
 }
@@ -349,3 +351,44 @@ __attribute__((destructor)) static void finish(void) {
   if(control) mlu_remote_disconnect(control);
   pthread_mutex_unlock(&lock);
 }
+#include "cndrv_api.inc"
+
+CNresult cnCreateQueueWithPriority(CNqueue *out,unsigned flags,int priority) {
+  ENTER(); CURRENT(); if(!out) RETURN(CN_ERROR_INVALID_VALUE);
+  object *q=new_object(c,QUEUE); if(!q) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);
+  mlu_api_queue_create_request in={.flags=flags,.priority=priority}; mlu_api_queue_create_response value={0};
+  int st=mlu_remote_api_queue_create(c->remote,&in,&value);
+  if(!st) { q->id=value.id; q->live=1; *out=(CNqueue)(uintptr_t)q->token; } else discard_object(q);
+  RETURN(result(st));
+}
+static CNresult fill(context *c,CNaddr ptr,uint32_t value,uint32_t width,uint64_t count,CNqueue queue,int async) {
+  mlu_api_memset_request in={.count=count,.value=value,.width=width,.async=async}; mlu_api_memset_response out={0};
+  if(count>UINT64_MAX/width || bounds(c,ptr,count*width,&in.allocation,&in.offset)) return CN_MEMORY_ERROR_INVALID_ADDRESS;
+  if(queue_id(c,queue,&in.queue)) return CN_QUEUE_ERROR_INVALID;
+  return result(mlu_remote_api_memset(c->remote,&in,&out));
+}
+#define FILL(bits,type) \
+CNresult cnMemsetD##bits(CNaddr ptr,type value,cn_uint64_t count) { ENTER(); CURRENT(); RETURN(fill(c,ptr,value,bits/8,count,NULL,0)); } \
+CNresult cnMemsetD##bits##Async(CNaddr ptr,type value,cn_uint64_t count,CNqueue queue) { ENTER(); CURRENT(); RETURN(fill(c,ptr,value,bits/8,count,queue,1)); }
+FILL(8,unsigned char)
+FILL(16,unsigned short)
+FILL(32,unsigned int)
+#undef FILL
+CNresult cnMemcpyDtoD2D(CNaddr dst,cn_uint64_t dpitch,CNaddr src,cn_uint64_t spitch,cn_uint64_t width,cn_uint64_t height) {
+  ENTER(); CURRENT(); mlu_api_copy2d_request in={.dpitch=dpitch,.spitch=spitch,.width=width,.height=height}; mlu_api_copy2d_response out={0};
+  if(bounds(c,dst,0,&in.dst,&in.dst_offset) || bounds(c,src,0,&in.src,&in.src_offset)) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);
+  RETURN(result(mlu_remote_api_copy2d(c->remote,&in,&out)));
+}
+CNresult cnMemcpy2D(CNaddr dst,cn_uint64_t dpitch,CNaddr src,cn_uint64_t spitch,cn_uint64_t width,cn_uint64_t height) {
+  return cnMemcpyDtoD2D(dst,dpitch,src,spitch,width,height);
+}
+CNresult cnMemcpyDtoD3D(CNmemcpy3dParam *p) {
+  ENTER(); CURRENT(); if(!p) RETURN(CN_ERROR_INVALID_VALUE);
+  mlu_api_copy3d_request in={.dpitch=p->dstPtr.pitch,.dysize=p->dstPtr.ysize,.dx=p->dstPos.x,.dy=p->dstPos.y,.dz=p->dstPos.z,
+    .spitch=p->srcPtr.pitch,.sysize=p->srcPtr.ysize,.sx=p->srcPos.x,.sy=p->srcPos.y,.sz=p->srcPos.z,
+    .width=p->extent.width,.height=p->extent.height,.depth=p->extent.depth}; mlu_api_copy3d_response out={0};
+  if(bounds(c,(uintptr_t)(p->dst ? p->dst : p->dstPtr.ptr),0,&in.dst,&in.dst_offset) ||
+     bounds(c,(uintptr_t)(p->src ? p->src : p->srcPtr.ptr),0,&in.src,&in.src_offset)) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);
+  RETURN(result(mlu_remote_api_copy3d(c->remote,&in,&out)));
+}
+CNresult cnMemcpy3D(CNmemcpy3dParam *p) { return cnMemcpyDtoD3D(p); }

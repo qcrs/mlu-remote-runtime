@@ -1,0 +1,30 @@
+#include <bang.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#define OK(e) do { if((e)!=cnrtSuccess) { fprintf(stderr,"line %d\n",__LINE__); exit(2); } } while(0)
+enum Mode { ADD=7 };
+extern "C" __mlu_entry__ void c_types(unsigned long long *out,Mode mode,unsigned long long scalar,const int *nullable) {
+  out[0]=scalar; out[1]=(unsigned long long)mode; out[2]=nullable ? 1 : 0;
+}
+template<typename T> __mlu_entry__ void templated(T *out,T value) { *out=value; }
+extern "C" __mlu_entry__ void no_args(void) {}
+int main(void) {
+  unsigned long long *d,h[4]={0}; OK(cnrtMalloc((void **)&d,sizeof(h)));
+  cnrtDim3_t dim={1,1,1}; cnrtQueue_t q; OK(cnrtQueueCreate(&q));
+  /* CNCC emits .s48 for this i64 argument even with unsigned long long.
+   * Native tagged VAs lose their upper bits in the kernel. Replacement VAs
+   * fit 48 bits; the scalar exactly matches a fake allocation address and
+   * must not be relocated. Retain the actual native observation in stderr. */
+  unsigned long long scalar=(uintptr_t)d;
+  c_types<<<dim,cnrtFuncTypeBlock,q>>>(d,ADD,scalar,(const int *)NULL); OK(cnrtGetLastError());
+  templated<unsigned long long><<<dim,cnrtFuncTypeBlock,q>>>(d+3,(unsigned long long)123456789); OK(cnrtGetLastError());
+  no_args<<<dim,cnrtFuncTypeBlock,q>>>(); OK(cnrtGetLastError());
+  OK(cnrtQueueSync(q)); OK(cnrtMemcpy(h,d,sizeof(h),cnrtMemcpyDevToHost));
+  fprintf(stderr,"scalar tag observation: input=%llx output=%llx expected-low48=%llx\n",scalar,h[0],scalar & 0x0000ffffffffffffULL);
+  if(h[0]!=(scalar & 0x0000ffffffffffffULL) || h[1]!=7 || h[2]!=0 || h[3]!=123456789) {
+    fprintf(stderr,"values %llu %llu %llu %llu expected %llu\n",(unsigned long long)h[0],(unsigned long long)h[1],(unsigned long long)h[2],(unsigned long long)h[3],(unsigned long long)scalar); return 3;
+  }
+  OK(cnrtQueueDestroy(q)); OK(cnrtFree(d));
+  puts("PASS compiler metadata: C/enum/template/zero args; scalar bits; pointer offset/null; multiple kernels");
+}

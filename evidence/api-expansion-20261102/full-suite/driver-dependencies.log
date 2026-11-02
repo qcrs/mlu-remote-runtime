@@ -1,0 +1,73 @@
+COMMAND ['bash', '-c', 'readelf -d build/native_driver; readelf -d build/driver-shim/libcndrv.so; LD_LIBRARY_PATH=build/driver-shim:build ldd build/native_driver']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+
+Dynamic section at offset 0x4bd8 contains 30 entries:
+  Tag        Type                         Name/Value
+ 0x0000000000000001 (NEEDED)             Shared library: [libcndrv.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-aarch64.so.1]
+ 0x000000000000001d (RUNPATH)            Library runpath: [/usr/local/neuware/lib64]
+ 0x000000000000000c (INIT)               0x1298
+ 0x000000000000000d (FINI)               0x3754
+ 0x0000000000000019 (INIT_ARRAY)         0x14bc8
+ 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)
+ 0x000000000000001a (FINI_ARRAY)         0x14bd0
+ 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)
+ 0x000000006ffffef5 (GNU_HASH)           0x298
+ 0x0000000000000005 (STRTAB)             0x870
+ 0x0000000000000006 (SYMTAB)             0x2b8
+ 0x000000000000000a (STRSZ)              857 (bytes)
+ 0x000000000000000b (SYMENT)             24 (bytes)
+ 0x0000000000000015 (DEBUG)              0x0
+ 0x0000000000000003 (PLTGOT)             0x14df8
+ 0x0000000000000002 (PLTRELSZ)           1296 (bytes)
+ 0x0000000000000014 (PLTREL)             RELA
+ 0x0000000000000017 (JMPREL)             0xd88
+ 0x0000000000000007 (RELA)               0xc98
+ 0x0000000000000008 (RELASZ)             240 (bytes)
+ 0x0000000000000009 (RELAENT)            24 (bytes)
+ 0x000000000000001e (FLAGS)              BIND_NOW
+ 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE
+ 0x000000006ffffffe (VERNEED)            0xc48
+ 0x000000006fffffff (VERNEEDNUM)         2
+ 0x000000006ffffff0 (VERSYM)             0xbca
+ 0x000000006ffffff9 (RELACOUNT)          4
+ 0x0000000000000000 (NULL)               0x0
+
+Dynamic section at offset 0xad90 contains 30 entries:
+  Tag        Type                         Name/Value
+ 0x0000000000000001 (NEEDED)             Shared library: [libremote_cnrt.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-aarch64.so.1]
+ 0x000000000000000e (SONAME)             Library soname: [libcndrv.so]
+ 0x000000000000001d (RUNPATH)            Library runpath: [$ORIGIN/..]
+ 0x000000000000000c (INIT)               0x2450
+ 0x000000000000000d (FINI)               0x92a0
+ 0x0000000000000019 (INIT_ARRAY)         0x1ad78
+ 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)
+ 0x000000000000001a (FINI_ARRAY)         0x1ad80
+ 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)
+ 0x000000006ffffef5 (GNU_HASH)           0x228
+ 0x0000000000000005 (STRTAB)             0x10f8
+ 0x0000000000000006 (SYMTAB)             0x3f0
+ 0x000000000000000a (STRSZ)              2452 (bytes)
+ 0x000000000000000b (SYMENT)             24 (bytes)
+ 0x0000000000000003 (PLTGOT)             0x1afe8
+ 0x0000000000000002 (PLTRELSZ)           1920 (bytes)
+ 0x0000000000000014 (PLTREL)             RELA
+ 0x0000000000000017 (JMPREL)             0x1cd0
+ 0x000000006ffffef6 (TLSDESC_PLT)        0x2980
+ 0x000000006ffffef7 (TLSDESC_GOT)        0x1afe0
+ 0x0000000000000007 (RELA)               0x1bf8
+ 0x0000000000000008 (RELASZ)             216 (bytes)
+ 0x0000000000000009 (RELAENT)            24 (bytes)
+ 0x000000006ffffffe (VERNEED)            0x1ba8
+ 0x000000006fffffff (VERNEEDNUM)         2
+ 0x000000006ffffff0 (VERSYM)             0x1a8c
+ 0x000000006ffffff9 (RELACOUNT)          4
+ 0x0000000000000000 (NULL)               0x0
+	linux-vdso.so.1 (0x0000ffff95820000)
+	libcndrv.so => build/driver-shim/libcndrv.so (0x0000ffff957b0000)
+	libc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffff95600000)
+	/lib/ld-linux-aarch64.so.1 (0x0000ffff957e7000)
+	libremote_cnrt.so => build/libremote_cnrt.so (0x0000ffff955e0000)
