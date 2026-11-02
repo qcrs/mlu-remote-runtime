@@ -1,0 +1,11 @@
+PASS {"name": "first-ALLOC-before-HELLO", "passed": true}
+PASS {"name": "bad-HELLO-length", "passed": true}
+PASS {"name": "bad-frame-version", "passed": true}
+PASS {"name": "nonzero-request-status", "passed": true}
+PASS {"name": "zero-sequence", "passed": true}
+PASS {"name": "bad-HELLO-version", "passed": true}
+PASS {"name": "unsupported-HELLO-flags", "passed": true}
+Traceback (most recent call last):
+  File "/home/lvtong/mlu-remote-runtime/tests/server_transport.py", line 125, in <module>
+    assert status == expected, (name, status, expected)
+AssertionError: ('invalid-device-HELLO', 100005, 100006)

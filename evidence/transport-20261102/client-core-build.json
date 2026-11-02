@@ -1,0 +1,20 @@
+{
+  "command": "CLIENT_CORE_ONLY=1 NEUWARE_HOME=/nonexistent ./scripts/build-client.sh",
+  "same_artifacts_as_final_suite": true,
+  "hashes": {
+    "build/mlu-remote-server": "f113cb9600d6528e54472d3909ab7824237a0c3aaa91ee8eac5c5552b9eea037",
+    "build/native_bang_module": "bbec8f5eb8b912e2593523e8c9053b8b06a6d744883b6ec7aae79339dd800257",
+    "build/libnative_bang_module.so": "2b35df1a0b3726b5bc5d36b7575ce6f0b00a3e6077eab4fde75a34595aeef8c9",
+    "build/libremote_cnnl.so": "eed0741d6df3acbeaeffc54631c25fd8df79a5bec0b8dc916141960dd5d22ee7",
+    "build/native_bang_abi": "28ebac5d5f1f03b300ab6bfadc4a766a0d4307cc6711048112eea82b988e6efd",
+    "build/native_bang_generic": "2e3cbbca4a5c24489d2caf6b18ff414164b43011bcc302b37ec777db09195320",
+    "build/libremote_cnrt.so": "d37aca2018146cee3c127b5e5d3bf38b73124ad4f2e29fdb9944efe68c9fcee0",
+    "build/bang-image-bounds": "45c8e07dc52cec86294d0dcbfdc6d674930816270ae40eb2c6c5982363f5674b",
+    "build/libmlu_remote_cnrt_shim.so": "4a345f4bd1a5d689a3d199aea24721bb4b1eb2453f1d505089b8039b441b2b41",
+    "build/libmlu_remote_client.a": "91bc83ce4fee0a107b5fb8f6f27b76421f4bc1a36c4e091e5c27757c50785201",
+    "build/native_bang_module_dso": "f354979193db7b8428934e01e85491b7ff4119b33f154b78edad5cde994d5a55",
+    "build/native_bang_remote": "558fc7b6519c5343a75dd50df1bf3f0bc003c42fbf94c0dcdf90400bbe62d1b1",
+    "build/object-identity-test": "a118b135cd23f3bb85868916454852c45a992524023ff9db10a47b6b8ca8b1c8",
+    "build/shim/libcnrt.so": "4a345f4bd1a5d689a3d199aea24721bb4b1eb2453f1d505089b8039b441b2b41"
+  }
+}

@@ -1,0 +1,3 @@
+COMMAND ['gcc', '-std=c11', '-I/usr/local/neuware/include', 'probes/probe_semantics.c', '-L/usr/local/neuware/lib64', '-Wl,-rpath,/usr/local/neuware/lib64', '-lcnrt', '-o', 'build/probes/probe_semantics']
+ENV {'NEUWARE_HOME': '/usr/local/neuware', 'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+RETURN_CODE 0

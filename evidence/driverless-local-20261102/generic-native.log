@@ -1,0 +1,4 @@
+COMMAND ['build/native_bang_generic']
+ENV {'NEUWARE_HOME': '/usr/local/neuware', 'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+PASS generic_add_one BANG C numerical check
+RETURN_CODE 0

@@ -1,0 +1,3 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_bang_module_dso']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '52343', 'LD_PRELOAD': '/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so', 'MLU_TEST_SHIM': '1'}
+PASS 20 DSO reloads, retained loader reference, pending-work unload and reset

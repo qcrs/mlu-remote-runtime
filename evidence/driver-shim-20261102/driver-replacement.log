@@ -1,0 +1,7 @@
+Driver device=MLU370-S4[mtp_372.41] bytes=25769803776 count=1
+PASS Driver file/fatbinary load, two kernels share globals, two contexts isolate state, TLS bind/unbind
+PASS Driver mixed primitive args, pointer offsets/NULL, xyz, 1200 launches, 1200 async H2D, D2D, notifier
+Driver pending queue default=0 status=1
+Driver pending queue default=1 status=1
+PASS Driver explicit/NULL queue module unload drains finite kernel and preserves its result
+PASS Driver explicit destroy drains resources and invalidates context children

@@ -1,0 +1,28 @@
+#include <bang.h>
+#include <stdint.h>
+#include <stdio.h>
+
+/* Finite work makes a real pending queue observable during server shutdown.
+ * Volatile prevents the compiler from replacing the recurrence with a formula. */
+__mlu_entry__ void drain_work(unsigned int *out, int iterations) {
+  volatile unsigned int value = 7;
+  for (int i = 0; i < iterations; ++i) value = value * 1664525u + 1013904223u;
+  *out = value;
+}
+
+int main(void) {
+  unsigned int *out = NULL, got = 0, expected = 7;
+  const int iterations = 500000;
+  cnrtQueue_t queue;
+  if (cnrtMalloc((void **)&out, sizeof(got)) || cnrtQueueCreate(&queue)) return 2;
+  cnrtDim3_t dim = {1, 1, 1};
+  drain_work<<<dim, cnrtFuncTypeBlock, queue>>>(out, iterations);
+  if (cnrtGetLastError()) return 3;
+  printf("pending_queue_status=%d\n", (int)cnrtQueueQuery(queue));
+  if (cnrtQueueSync(queue) ||
+      cnrtMemcpy(&got, out, sizeof(got), cnrtMemcpyDevToHost)) return 3;
+  for (int i = 0; i < iterations; ++i) expected = expected * 1664525u + 1013904223u;
+  if (got != expected || cnrtQueueDestroy(queue) || cnrtFree(out)) return 4;
+  puts("PASS finite drain_work BANG C numerical check");
+  return 0;
+}

@@ -1,0 +1,57 @@
+[
+  {
+    "name": "native-CNDrv-memory-free-context-destroy-reference",
+    "passed": true,
+    "before": 0,
+    "allocated": 80,
+    "after_free": 112,
+    "after_reset": 32,
+    "after_worker_exit": 0
+  },
+  {
+    "name": "invalid-resource-settings-fail-before-listen",
+    "passed": true,
+    "cases": 6
+  },
+  {
+    "name": "device-session-and-total-limits-other-session-continues",
+    "passed": true,
+    "native_mib_before": 0,
+    "native_mib_during": 80
+  },
+  {
+    "name": "native-memory-free-versus-context-reset",
+    "passed": true,
+    "after_free": 112,
+    "after_reset": 32
+  },
+  {
+    "name": "transfer-kernel-quota-rejects-before-native-state-change",
+    "passed": true
+  },
+  {
+    "name": "transfer-copy-quota-rejects-before-memory-change-and-recovers",
+    "passed": true
+  },
+  {
+    "name": "staging-byte-quota-recovers-after-queue-completion",
+    "passed": true
+  },
+  {
+    "name": "image-session-total-quotas-malformed-rollback-and-unload-recovery",
+    "passed": true
+  },
+  {
+    "name": "session-reset-returns-all-quotas-with-stale-identity-rejection",
+    "passed": true
+  },
+  {
+    "name": "abrupt-EOF-releases-global-quota-for-another-session",
+    "passed": true
+  },
+  {
+    "name": "native-physical-memory-reclaimed-after-server-workers-exit",
+    "passed": true,
+    "after": 0
+  }
+]

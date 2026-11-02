@@ -1,0 +1,16 @@
+PASS Python syntax (7 files)
+PASS local Markdown links
+PASS 29 full suite result entries
+PASS 20 capability rows and status counts
+COMMAND ['bash', '-n', 'scripts/build-client.sh', 'scripts/run-isolated-client.sh', 'scripts/build.sh']
+PASS
+COMMAND ['python3', 'scripts/generate_rpc.py', '--check']
+simple RPC schema: 10 generated client wrappers + server cases
+PASS
+COMMAND ['python3', 'scripts/generate_compat.py', '--check']
+{"CNRT": {"NOT_IMPLEMENTED": 96, "UNSUPPORTED": 8, "PARTIAL_IMPLEMENTED": 14, "IMPLEMENTED": 12}, "CNDrv": {"NOT_IMPLEMENTED": 180}}
+PASS
+COMMAND ['git', 'diff', '--check']
+PASS
+PASS no unignored files larger than 1MiB
+PASS recorded source SHA-256 matches current working tree

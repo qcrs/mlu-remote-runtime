@@ -1,0 +1,23 @@
+#include <bang.h>
+#include <stdio.h>
+
+/* Deliberately does not match any server preset.  Its image is registered by
+ * the CNCC host stub and uploaded through MODULE_LOAD_IMAGE. */
+__mlu_entry__ void generic_add_one(float *dst, int n) {
+  if (!dst || n <= 0) return;
+  for (int i = 0; i < n; ++i) dst[i] += 1.0f;
+}
+
+int main(void) {
+  const int n = 8; float host[n];
+  for (int i = 0; i < n; ++i) host[i] = (float)i;
+  float *device = NULL;
+  if (cnrtMalloc((void **)&device, sizeof(host))) return 2;
+  if (cnrtMemcpy(device, host, sizeof(host), cnrtMemcpyHostToDev)) return 3;
+  cnrtDim3_t dim = {1, 1, 1};
+  generic_add_one<<<dim, cnrtFuncTypeBlock, NULL>>>(device, n);
+  if (cnrtSyncDevice()) return 4;
+  if (cnrtMemcpy(host, device, sizeof(host), cnrtMemcpyDevToHost)) return 5;
+  for (int i = 0; i < n; ++i) if (host[i] != (float)i + 1.0f) return 6;
+  cnrtFree(device); puts("PASS generic_add_one BANG C numerical check"); return 0;
+}

@@ -1,0 +1,4 @@
+#include <bang.h>
+/* CNCC 4.5.1 / mtp_372 reproducer: even a double parameter load/store crashes
+ * this installed compiler. Excluded from the normal passing build. */
+__mlu_entry__ void double_parameter(double *out, double value) { out[0] = value; }

@@ -1,0 +1,12 @@
+{
+  "sdk": "/nonexistent",
+  "before": {
+    "build/libremote_cnrt.so": "eaf4312d170abffaf4bfabcba8aa35f49f8a86619e612eb53ac78166020f4d86",
+    "build/libremote_cnnl.so": "eed0741d6df3acbeaeffc54631c25fd8df79a5bec0b8dc916141960dd5d22ee7"
+  },
+  "after": {
+    "build/libremote_cnrt.so": "eaf4312d170abffaf4bfabcba8aa35f49f8a86619e612eb53ac78166020f4d86",
+    "build/libremote_cnnl.so": "eed0741d6df3acbeaeffc54631c25fd8df79a5bec0b8dc916141960dd5d22ee7"
+  },
+  "suite_artifacts_unchanged": true
+}

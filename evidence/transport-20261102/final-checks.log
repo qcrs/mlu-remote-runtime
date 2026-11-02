@@ -1,0 +1,14 @@
+COMMAND ['git', 'diff', '--check']
+COMMAND ['bash', '-n', 'scripts/build.sh', 'scripts/build-client.sh', 'scripts/run-isolated-client.sh']
+COMMAND ['python3', 'scripts/generate_rpc.py', '--check']
+simple RPC schema: 10 generated client wrappers + server cases
+COMMAND ['python3', 'scripts/generate_compat.py', '--check']
+{"CNRT": {"NOT_IMPLEMENTED": 96, "UNSUPPORTED": 8, "PARTIAL_IMPLEMENTED": 14, "IMPLEMENTED": 12}, "CNDrv": {"NOT_IMPLEMENTED": 180}}
+PASS Python syntax
+PASS 42/42 final suite
+PASS 21 server / 3 restart / 14 client deadline / 31 response fault checks
+PASS original restart failure evidence retained
+PASS scoped API counts unchanged
+PASS no-SDK client rebuild hash equality
+PASS local documentation links
+PASS all recorded source/artifact/evidence SHA-256 values

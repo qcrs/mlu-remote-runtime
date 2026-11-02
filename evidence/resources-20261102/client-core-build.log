@@ -1,0 +1,2 @@
+COMMAND CLIENT_CORE_ONLY=1 NEUWARE_HOME=/nonexistent ./scripts/build-client.sh
+simple RPC schema: 10 generated client wrappers + server cases

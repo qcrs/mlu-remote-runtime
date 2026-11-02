@@ -1,0 +1,159 @@
+CNCC 4.5.1 AArch64 host assembly evidence
+REBUILD ./scripts/build.sh (-save-temps for tests/native_bang_abi.mlu)
+SOURCE build/audit/native_bang_abi-host-aarch64-unknown-linux-gnu.s
+SHA256 2ae815a96207b1a32ef1e104adc78a6e0e0cb286c25922ab705a15bee8fa9b30
+Embedded binary .asciz content is deliberately omitted.
+
+1: 	.text
+2: 	.file	"native_bang_abi.mlu"
+3: 	.globl	_Z10vector_addPfPKfS1_i         // -- Begin function _Z10vector_addPfPKfS1_i
+4: 	.p2align	2
+5: 	.type	_Z10vector_addPfPKfS1_i,@function
+6: _Z10vector_addPfPKfS1_i:                // @_Z10vector_addPfPKfS1_i
+7: 	.cfi_startproc
+8: // %bb.0:
+9: 	sub	sp, sp, #144                    // =144
+10: 	stp	x29, x30, [sp, #128]            // 16-byte Folded Spill
+11: 	add	x29, sp, #128                   // =128
+12: 	.cfi_def_cfa w29, 16
+13: 	.cfi_offset w30, -8
+14: 	.cfi_offset w29, -16
+15: 	sub	x8, x29, #8                     // =8
+16: 	stur	x0, [x29, #-8]
+17: 	sub	x9, x29, #16                    // =16
+18: 	stur	x1, [x29, #-16]
+19: 	sub	x10, x29, #24                   // =24
+20: 	stur	x2, [x29, #-24]
+21: 	sub	x11, x29, #28                   // =28
+22: 	stur	w3, [x29, #-28]
+23: 	add	x12, sp, #16                    // =16
+24: 	str	x8, [sp, #16]
+25: 	str	x9, [x12, #8]
+26: 	str	x10, [x12, #16]
+27: 	str	x11, [x12, #24]
+28: 	sub	x0, x29, #40                    // =40
+29: 	sub	x1, x29, #44                    // =44
+30: 	add	x2, sp, #64                     // =64
+31: 	str	x12, [sp, #8]                   // 8-byte Folded Spill
+32: 	bl	__bangPopCallConfiguration
+33: 	ldur	x5, [x29, #-56]
+34: 	ldr	x6, [sp, #64]
+35: 	ldur	x8, [x29, #-40]
+36: 	str	x8, [sp, #48]
+37: 	ldur	w13, [x29, #-32]
+38: 	str	w13, [sp, #56]
+39: 	ldr	x1, [sp, #48]
+40: 	ldr	x2, [sp, #56]
+41: 	ldur	w3, [x29, #-44]
+42: 	adrp	x8, _Z10vector_addPfPKfS1_i
+43: 	add	x8, x8, :lo12:_Z10vector_addPfPKfS1_i
+44: 	mov	x0, x8
+45: 	ldr	x4, [sp, #8]                    // 8-byte Folded Reload
+46: 	bl	cnrtInvokeKernel
+47: // %bb.1:
+48: 	ldp	x29, x30, [sp, #128]            // 16-byte Folded Reload
+49: 	add	sp, sp, #144                    // =144
+50: 	ret
+51: .Lfunc_end0:
+52: 	.size	_Z10vector_addPfPKfS1_i, .Lfunc_end0-_Z10vector_addPfPKfS1_i
+53: 	.cfi_endproc
+
+435: 	ldr	x8, [x10, #272]
+436: 	str	x8, [x10, #256]
+437: 	ldur	w11, [x29, #-216]
+438: 	stur	w11, [x29, #-232]
+439: 	ldr	x3, [x10, #288]
+440: 	ldr	x8, [x10, #256]
+441: 	str	x8, [x10, #240]
+442: 	ldur	w11, [x29, #-232]
+443: 	stur	w11, [x29, #-248]
+444: 	ldr	x0, [x10, #240]
+445: 	ldr	x1, [x10, #248]
+446: 	mov	w2, #1
+447: 	bl	__bangPushCallConfiguration
+448: 	cbnz	w0, .LBB5_30
+449: // %bb.29:
+450: 	ldr	x8, [sp, #8]                    // 8-byte Folded Reload
+451: 	ldr	x0, [x8, #320]
+
+1713: 	str	x0, [sp, #24]                   // 8-byte Folded Spill
+1714: 	adrp	x1, _Z10vector_addPfPKfS1_i
+1715: 	add	x1, x1, :lo12:_Z10vector_addPfPKfS1_i
+1716: 	adrp	x8, .L__unnamed_1
+1717: 	add	x8, x8, :lo12:.L__unnamed_1
+1718: 	mov	x2, x8
+1719: 	mov	x3, x8
+1720: 	mov	w9, #-1
+1721: 	mov	w4, w9
+1722: 	mov	x8, xzr
+1723: 	mov	x5, x8
+1724: 	mov	x6, x8
+1725: 	mov	x7, x8
+1726: 	str	w9, [sp, #20]                   // 4-byte Folded Spill
+1727: 	str	x8, [sp, #8]                    // 8-byte Folded Spill
+1728: 	bl	__bangRegisterFunction
+1729: 	ldr	x1, [sp, #24]                   // 8-byte Folded Reload
+1730: 	mov	x0, x1
+1731: 	adrp	x1, _Z5mixedPfPKfhsixfS1_
+
+1788: 	.p2align	2                               // -- Begin function __bang_module_ctor
+1789: 	.type	__bang_module_ctor,@function
+1790: __bang_module_ctor:                     // @__bang_module_ctor
+1791: 	.cfi_startproc
+1792: // %bb.0:
+1793: 	str	x30, [sp, #-16]!                // 8-byte Folded Spill
+1794: 	.cfi_def_cfa_offset 16
+1795: 	.cfi_offset w30, -16
+1796: 	adrp	x8, __bang_fatbin_wrapper
+1797: 	add	x8, x8, :lo12:__bang_fatbin_wrapper
+1798: 	mov	x0, x8
+1799: 	bl	__bangRegisterFatBinary
+1800: 	adrp	x8, __bang_mlubin_handle
+1801: 	add	x8, x8, :lo12:__bang_mlubin_handle
+1802: 	str	x0, [x8]
+1803: 	bl	__bang_register_globals
+1804: 	ldr	x30, [sp], #16                  // 8-byte Folded Reload
+1805: 	ret
+1806: .Lfunc_end8:
+1807: 	.size	__bang_module_ctor, .Lfunc_end8-__bang_module_ctor
+1808: 	.cfi_endproc
+1809:                                         // -- End function
+1810: 	.p2align	2                               // -- Begin function __bang_module_dtor
+1811: 	.type	__bang_module_dtor,@function
+1812: __bang_module_dtor:                     // @__bang_module_dtor
+1813: 	.cfi_startproc
+1814: // %bb.0:
+1815: 	str	x30, [sp, #-16]!                // 8-byte Folded Spill
+1816: 	.cfi_def_cfa_offset 16
+1817: 	.cfi_offset w30, -16
+1818: 	adrp	x8, __bang_mlubin_handle
+1819: 	ldr	x8, [x8, :lo12:__bang_mlubin_handle]
+1820: 	mov	x0, x8
+1821: 	bl	__bangUnregisterFatBinary
+1822: 	ldr	x30, [sp], #16                  // 8-byte Folded Reload
+1823: 	ret
+1824: .Lfunc_end9:
+1825: 	.size	__bang_module_dtor, .Lfunc_end9-__bang_module_dtor
+1826: 	.cfi_endproc
+1827:                                         // -- End function
+
+1944: 	.type	__bang_fatbin_wrapper,@object   // @__bang_fatbin_wrapper
+1945: 	.section	.cnFatBinSegment,"a",@progbits
+1946: 	.p2align	3
+1947: __bang_fatbin_wrapper:
+1948: 	.word	1180844977                      // 0x466243b1
+1949: 	.word	1                               // 0x1
+1950: 	.xword	.L__unnamed_6
+1951: 	.xword	0
+1952: 	.size	__bang_fatbin_wrapper, 24
+1953: 
+1954: 	.type	__bang_mlubin_handle,@object    // @__bang_mlubin_handle
+1955: 	.local	__bang_mlubin_handle
+1956: 	.comm	__bang_mlubin_handle,8,8
+1957: 	.section	.init_array,"aw",@init_array
+1958: 	.p2align	3
+1959: 	.xword	__bang_module_ctor
+1960: 	.section	.fini_array,"aw",@fini_array
+1961: 	.p2align	3
+1962: 	.xword	__bang_module_dtor
+1963: 	.ident	"cncc 4.5.1 clang version 11.1.0"

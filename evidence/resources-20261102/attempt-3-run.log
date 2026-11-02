@@ -1,0 +1,17 @@
+PASS {"name": "native-CNDrv-memory-free-context-destroy-reference", "passed": true, "before": 0, "allocated": 80, "after_free": 112, "after_reset": 32, "after_worker_exit": 0}
+PASS {"name": "invalid-resource-settings-fail-before-listen", "passed": true, "cases": 6}
+PASS {"name": "device-session-and-total-limits-other-session-continues", "passed": true, "native_mib_before": 0, "native_mib_during": 80}
+PASS {"name": "native-memory-free-versus-context-reset", "passed": true, "after_free": 112, "after_reset": 32}
+PASS {"name": "transfer-kernel-quota-rejects-before-native-state-change", "passed": true}
+PASS {"name": "transfer-copy-quota-rejects-before-memory-change-and-recovers", "passed": true}
+PASS {"name": "staging-byte-quota-recovers-after-queue-completion", "passed": true}
+PASS {"name": "image-session-total-quotas-malformed-rollback-and-unload-recovery", "passed": true}
+PASS {"name": "session-reset-returns-all-quotas-with-stale-identity-rejection", "passed": true}
+PASS {"name": "abrupt-EOF-releases-global-quota-for-another-session", "passed": true}
+PASS {"name": "native-physical-memory-reclaimed-after-server-workers-exit", "passed": true, "after": 0}
+Traceback (most recent call last):
+  File "/home/lvtong/mlu-remote-runtime/tests/server_resources.py", line 290, in <module>
+    ta = slow_work(a, ma, ka, qa, aa)
+  File "/home/lvtong/mlu-remote-runtime/tests/server_resources.py", line 112, in slow_work
+    assert status == 100051, ('expected native queue not ready', status)
+AssertionError: ('expected native queue not ready', 1)

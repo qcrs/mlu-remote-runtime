@@ -1,0 +1,31 @@
+================CNMON v5.10.35================
+Card 0
+    Product Name                   : MLU370-S4 
+    SN                             : 532503300048 
+    UUID                           : 48003003-2553-0000-0000-000000000000 
+    Vendor                         : Cambricon 
+    Firmware                       : v1.1.6 
+    Driver                         : v5.10.35 
+    Compute Mode                   : Default 
+    Mode                           : FULL 
+    Health State                   :  
+        Device                     : Good 
+        Driver                     : Running 
+    Physical Memory Usage          :  
+        Total                      : 23365 MiB
+        Used                       : 0 MiB
+        Free                       : 23365 MiB
+    Channel Memory Usage           :  
+        Channel 0                  : 0 MiB
+    Virtual Memory Usage           :  
+        Total                      : 1048576 MiB
+        Used                       : 10240 MiB
+        Free                       : 1038336 MiB
+    Device System Memory Usage     :  
+        Total                      : 607512 KB
+        Used                       : 143668 KB
+        Free                       : 463844 KB
+    Fast Alloc Memory              :  
+        Total                      : 0 KB
+        Used                       : 0 KB
+        Free                       : 0 KB

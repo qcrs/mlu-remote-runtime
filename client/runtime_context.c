@@ -1,10 +1,14 @@
 #include "remote_cnrt.h"
 #include "remote_operator.h"
-#include <cn_api.h>
+#include "remote_io.h"
+/* Wire value captured from CNDrv 2.5.2; the transport needs no SDK headers. */
+#define CN_ERROR_SYSTEM_OUT_OF_MEMORY 100010
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <netdb.h>
+#include <netinet/tcp.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +20,8 @@ struct mlu_remote_context {
   int fd;
   uint64_t next_request;
   pthread_mutex_t lock;
+  uint32_t capabilities, kernel_abi;
+  uint32_t rpc_timeout_ms;
   mlu_remote_error error;
 };
 
@@ -27,15 +33,6 @@ static uint64_t ntohll_u(uint64_t x) {
 #endif
 }
 static uint64_t htonll_u(uint64_t x) { return ntohll_u(x); }
-static int io_full(int fd, void *buf, size_t n, int write_mode) {
-  unsigned char *p = (unsigned char *)buf;
-  while (n) {
-    ssize_t r = write_mode ? send(fd, p, n, MSG_NOSIGNAL) : recv(fd, p, n, 0);
-    if (r == 0) return -1; if (r < 0) { if (errno == EINTR) continue; return -1; }
-    p += r; n -= (size_t)r;
-  }
-  return 0;
-}
 static void put32(unsigned char *p, uint32_t x) { x = htonl(x); memcpy(p, &x, 4); }
 static void put64(unsigned char *p, uint64_t x) { x = htonll_u(x); memcpy(p, &x, 8); }
 static uint32_t get32(const unsigned char *p) { uint32_t x; memcpy(&x, p, 4); return ntohl(x); }
@@ -45,58 +42,187 @@ static void set_local_error(mlu_remote_context *ctx, uint32_t code, const char *
   ctx->error.code = code; snprintf(ctx->error.name, sizeof(ctx->error.name), "%s", name ? name : "REMOTE_CLIENT_ERROR"); snprintf(ctx->error.message, sizeof(ctx->error.message), "%s", message ? message : "remote request failed");
 }
 
+/* A failed exchange leaves execution/completion uncertain. Never reuse or
+ * transparently replay that session, even if the peer sends more bytes. */
+static int break_connection(mlu_remote_context *ctx, uint32_t code,
+                            const char *name, const char *message) {
+  set_local_error(ctx, code, name, message);
+  if (ctx->fd >= 0) { close(ctx->fd); ctx->fd = -1; }
+  return (int)code;
+}
+
+static int exchange_failed(mlu_remote_context *ctx, int writing, const char *message) {
+  if (errno == ETIMEDOUT)
+    return break_connection(ctx, MLU_REMOTE_TIMEOUT, "REMOTE_TIMEOUT",
+                            "RPC deadline expired; execution may have occurred; session closed");
+  return break_connection(ctx, MLU_REMOTE_PROTOCOL_ERROR,
+                          writing ? "REMOTE_SEND_FAILED" : "REMOTE_RECV_FAILED", message);
+}
+
+/* Validate before any wrapper can publish handles or copy D2H bytes. Exact
+ * lengths are part of MLUR v1; network success alone is not API success. */
+static int valid_success(uint16_t op, const unsigned char *request,
+                         uint32_t request_len, const unsigned char *p, uint32_t n) {
+  switch (op) {
+    case MLU_OP_HELLO:
+      return n == 16 && get32(p) == MLU_REMOTE_VERSION;
+    case MLU_OP_DEVICE_QUERY:
+      return n >= 16 && get32(p + 12) == n - 16;
+    case MLU_OP_ALLOC: case MLU_OP_QUEUE_CREATE: case MLU_OP_NOTIFIER_CREATE:
+    case MLU_OP_OPERATOR_LAUNCH: case MLU_OP_KERNEL_LAUNCH_GENERIC:
+    case MLU_OP_MODULE_GET_KERNEL: case MLU_OP_MODULE_LOAD_BINARY:
+      return n == 8;
+    case MLU_OP_MODULE_LOAD_PRESET: case MLU_OP_MODULE_LOAD_IMAGE:
+    case MLU_OP_OPERATOR_CREATE:
+      return n == 16;
+    case MLU_OP_MEMCPY:
+      if (request_len < 56) return 0;
+      if (get32(request) != MLU_MEMCPY_D2H) return n == 8;
+      return n >= 16 && get64(p + 8) == get64(request + 44) &&
+             get64(p + 8) == (uint64_t)n - 16;
+    default:
+      return n == 0;
+  }
+}
+
 /* Caller owns *extra and must free it. The returned extra excludes the common
  * error name/message prefix. */
 static int rpc_locked(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len,
                       unsigned char **extra, uint32_t *extra_len) {
+  if (extra) *extra = NULL;
+  if (extra_len) *extra_len = 0;
+  if (ctx->fd < 0) {
+    set_local_error(ctx, MLU_REMOTE_PROTOCOL_ERROR, "REMOTE_CONTEXT_POISONED", "previous exchange failed; create a new session, do not replay requests");
+    return (int)MLU_REMOTE_PROTOCOL_ERROR;
+  }
   struct mlu_remote_wire_header h; memset(&h, 0, sizeof(h));
   uint64_t req = ++ctx->next_request; h.magic = htonl(MLU_REMOTE_MAGIC); h.version = htons(MLU_REMOTE_VERSION); h.opcode = htons(opcode); h.request_id = htonll_u(req); h.payload_len = htonl(payload_len); h.status = 0;
-  if (io_full(ctx->fd, &h, sizeof(h), 1) || (payload_len && io_full(ctx->fd, (void *)payload, payload_len, 1))) { set_local_error(ctx, MLU_REMOTE_PROTOCOL_ERROR, "REMOTE_SEND_FAILED", strerror(errno)); return (int)MLU_REMOTE_PROTOCOL_ERROR; }
-  if (io_full(ctx->fd, &h, sizeof(h), 0)) { set_local_error(ctx, MLU_REMOTE_PROTOCOL_ERROR, "REMOTE_RECV_FAILED", strerror(errno)); return (int)MLU_REMOTE_PROTOCOL_ERROR; }
-  uint32_t n = ntohl(h.payload_len), status = ntohl(h.status); if (ntohl(h.magic) != MLU_REMOTE_MAGIC || ntohs(h.version) != MLU_REMOTE_VERSION || ntohs(h.opcode) != opcode || ntohll_u(h.request_id) != req || n > MLU_REMOTE_MAX_PAYLOAD) { set_local_error(ctx, MLU_REMOTE_PROTOCOL_ERROR, "REMOTE_BAD_RESPONSE", "invalid response frame"); return (int)MLU_REMOTE_PROTOCOL_ERROR; }
-  unsigned char *p = n ? (unsigned char *)malloc(n) : NULL; if (n && !p) { set_local_error(ctx, CN_ERROR_SYSTEM_OUT_OF_MEMORY, "HOST_OUT_OF_MEMORY", "response allocation failed"); return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
-  if (n && io_full(ctx->fd, p, n, 0)) { free(p); set_local_error(ctx, MLU_REMOTE_PROTOCOL_ERROR, "REMOTE_RECV_FAILED", strerror(errno)); return (int)MLU_REMOTE_PROTOCOL_ERROR; }
-  if (n < 8) { free(p); set_local_error(ctx, MLU_REMOTE_BAD_LENGTH, "REMOTE_BAD_LENGTH", "response lacks error prefix"); return (int)MLU_REMOTE_BAD_LENGTH; }
-  uint32_t nl = get32(p), ml = get32(p + 4); if (nl > n - 8 || ml > n - 8 - nl) { free(p); set_local_error(ctx, MLU_REMOTE_BAD_LENGTH, "REMOTE_BAD_LENGTH", "invalid response error strings"); return (int)MLU_REMOTE_BAD_LENGTH; }
+  int64_t deadline = mlu_deadline_after(ctx->rpc_timeout_ms);
+  if (mlu_io_full(ctx->fd, &h, sizeof(h), 1, deadline) != 1 ||
+      (payload_len && mlu_io_full(ctx->fd, (void *)payload, payload_len, 1, deadline) != 1))
+    return exchange_failed(ctx, 1, "request send incomplete");
+  if (mlu_io_full(ctx->fd, &h, sizeof(h), 0, deadline) != 1)
+    return exchange_failed(ctx, 0, "response header incomplete");
+  uint32_t n = ntohl(h.payload_len), status = ntohl(h.status); if (ntohl(h.magic) != MLU_REMOTE_MAGIC || ntohs(h.version) != MLU_REMOTE_VERSION || ntohs(h.opcode) != opcode || ntohll_u(h.request_id) != req || n > MLU_REMOTE_MAX_PAYLOAD) return break_connection(ctx, MLU_REMOTE_PROTOCOL_ERROR, "REMOTE_BAD_RESPONSE", "invalid response frame");
+  unsigned char *p = n ? (unsigned char *)malloc(n) : NULL; if (n && !p) return break_connection(ctx, CN_ERROR_SYSTEM_OUT_OF_MEMORY, "HOST_OUT_OF_MEMORY", "response allocation failed");
+  if (n && mlu_io_full(ctx->fd, p, n, 0, deadline) != 1) {
+    int saved = errno; free(p); errno = saved;
+    return exchange_failed(ctx, 0, "response payload incomplete");
+  }
+  if (n < 8) { free(p); return break_connection(ctx, MLU_REMOTE_BAD_LENGTH, "REMOTE_BAD_LENGTH", "response lacks error prefix"); }
+  uint32_t nl = get32(p), ml = get32(p + 4); if (nl > n - 8 || ml > n - 8 - nl) { free(p); return break_connection(ctx, MLU_REMOTE_BAD_LENGTH, "REMOTE_BAD_LENGTH", "invalid response error strings"); }
+  uint32_t rest = n - 8 - nl - ml;
+  if (!status && !valid_success(opcode, payload, payload_len, p + 8 + nl + ml, rest)) {
+    free(p); return break_connection(ctx, MLU_REMOTE_BAD_LENGTH, "REMOTE_BAD_LENGTH", "success response has an invalid operation result");
+  }
   if (status) { size_t l = nl < sizeof(ctx->error.name) - 1 ? nl : sizeof(ctx->error.name) - 1; memcpy(ctx->error.name, p + 8, l); ctx->error.name[l] = 0; l = ml < sizeof(ctx->error.message) - 1 ? ml : sizeof(ctx->error.message) - 1; memcpy(ctx->error.message, p + 8 + nl, l); ctx->error.message[l] = 0; ctx->error.code = status; }
   else { ctx->error.code = 0; ctx->error.name[0] = 0; ctx->error.message[0] = 0; }
-  uint32_t rest = n - 8 - nl - ml; if (extra) { *extra_len = rest; *extra = rest ? (unsigned char *)malloc(rest) : NULL; if (rest && !*extra) { free(p); set_local_error(ctx, CN_ERROR_SYSTEM_OUT_OF_MEMORY, "HOST_OUT_OF_MEMORY", "response allocation failed"); return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY; } if (rest) memcpy(*extra, p + 8 + nl + ml, rest); } free(p); return (int)status;
+  if (extra) { *extra_len = rest; *extra = rest ? (unsigned char *)malloc(rest) : NULL; if (rest && !*extra) { free(p); return break_connection(ctx, CN_ERROR_SYSTEM_OUT_OF_MEMORY, "HOST_OUT_OF_MEMORY", "response allocation failed"); } if (rest) memcpy(*extra, p + 8 + nl + ml, rest); } free(p); return (int)status;
 }
 
 static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
   pthread_mutex_lock(&ctx->lock); int r = rpc_locked(ctx, opcode, payload, payload_len, extra, extra_len); pthread_mutex_unlock(&ctx->lock); return r;
 }
 
-static mlu_remote_context *connect_impl(const char *host, uint16_t port, uint32_t requested_device) {
+static _Thread_local mlu_remote_error connect_error;
+const mlu_remote_error *mlu_remote_last_connect_error(void) { return &connect_error; }
+static mlu_remote_context *connect_failure(uint32_t code, const char *name, const char *message, int error) {
+  connect_error.code = code;
+  snprintf(connect_error.name, sizeof(connect_error.name), "%s", name);
+  snprintf(connect_error.message, sizeof(connect_error.message), "%s", message);
+  errno = error; return NULL;
+}
+
+static mlu_remote_context *connect_impl(const char *host, uint16_t port, uint32_t requested_device, int driver, uint32_t flags) {
+  memset(&connect_error, 0, sizeof(connect_error));
+  uint32_t connect_ms, rpc_ms;
+  if (mlu_timeout_env("MLU_REMOTE_CONNECT_TIMEOUT_MS", 5000, &connect_ms) ||
+      mlu_timeout_env("MLU_REMOTE_RPC_TIMEOUT_MS", 120000, &rpc_ms))
+    return connect_failure(MLU_REMOTE_BAD_LENGTH, "REMOTE_BAD_TIMEOUT",
+                           "timeout must be an integer from 1 to 3600000 milliseconds", EINVAL);
   if (!host) host = "127.0.0.1";
   char service[16]; snprintf(service, sizeof(service), "%u", port);
   struct addrinfo hints, *list = NULL; memset(&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_STREAM; hints.ai_family = AF_UNSPEC;
-  if (getaddrinfo(host, service, &hints, &list) != 0) return NULL;
-  int fd = -1;
+  int gai = getaddrinfo(host, service, &hints, &list);
+  if (gai) return connect_failure(MLU_REMOTE_PROTOCOL_ERROR, "REMOTE_RESOLVE_FAILED", gai_strerror(gai), EHOSTUNREACH);
+  /* DNS is outside this budget. All resolved addresses share one deadline. */
+  int64_t deadline = mlu_deadline_after(connect_ms);
+  int fd = -1, saved = ECONNREFUSED;
   for (struct addrinfo *it = list; it; it = it->ai_next) {
+    if (mlu_deadline_remaining(deadline) < 0) { saved = errno; break; }
     fd = socket(it->ai_family, it->ai_socktype, it->ai_protocol);
-    if (fd >= 0 && connect(fd, it->ai_addr, it->ai_addrlen) == 0) break;
-    if (fd >= 0) { close(fd); fd = -1; }
+    if (fd < 0) { saved = errno; continue; }
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags >= 0 && fcntl(fd, F_SETFL, flags | O_NONBLOCK) == 0) {
+      int r = connect(fd, it->ai_addr, it->ai_addrlen);
+      if (!r) break;
+      if (errno == EINPROGRESS || errno == EINTR) {
+        if (!mlu_wait_socket(fd, POLLOUT, deadline)) {
+          int error = 0; socklen_t size = sizeof(error);
+          if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &size) == 0) {
+            if (!error) break;
+            errno = error;
+          }
+        }
+      }
+    }
+    saved = errno; close(fd); fd = -1;
+    if (saved == ETIMEDOUT) break;
   }
-  freeaddrinfo(list); if (fd < 0) return NULL;
+  freeaddrinfo(list);
+  if (fd < 0) return connect_failure(saved == ETIMEDOUT ? MLU_REMOTE_TIMEOUT : MLU_REMOTE_PROTOCOL_ERROR,
+                                    saved == ETIMEDOUT ? "REMOTE_CONNECT_TIMEOUT" : "REMOTE_CONNECT_FAILED", strerror(saved), saved);
+  int no_delay = 1; setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &no_delay, sizeof(no_delay));
   mlu_remote_context *ctx = (mlu_remote_context *)calloc(1, sizeof(*ctx));
-  if (!ctx) { close(fd); return NULL; }
-  ctx->fd = fd; pthread_mutex_init(&ctx->lock, NULL);
-  unsigned char hello[12]; put32(hello, MLU_REMOTE_VERSION); put32(hello + 4, 0); put32(hello + 8, requested_device);
+  if (!ctx) { close(fd); return connect_failure(CN_ERROR_SYSTEM_OUT_OF_MEMORY, "HOST_OUT_OF_MEMORY", "context allocation failed", ENOMEM); }
+  ctx->fd = fd; ctx->rpc_timeout_ms = rpc_ms; pthread_mutex_init(&ctx->lock, NULL);
+  unsigned char hello[16]; put32(hello, MLU_REMOTE_VERSION); put32(hello + 4, 0); put32(hello + 8, requested_device); put32(hello + 12, flags);
   unsigned char *extra = NULL; uint32_t n = 0;
-  int st = rpc(ctx, MLU_OP_HELLO, hello, sizeof(hello), &extra, &n);
-  if (st || n < 16) { free(extra); mlu_remote_disconnect(ctx); return NULL; }
+  int st = rpc(ctx, MLU_OP_HELLO, hello, driver ? 16 : 12, &extra, &n);
+  if (st || n < 16) {
+    connect_error = ctx->error; free(extra); mlu_remote_disconnect(ctx);
+    errno = (uint32_t)st == MLU_REMOTE_TIMEOUT ? ETIMEDOUT : EPROTO; return NULL;
+  }
+  ctx->capabilities = get32(extra + 8); ctx->kernel_abi = get32(extra + 12);
   free(extra); return ctx;
 }
 mlu_remote_context *mlu_remote_connect(const char *host, uint16_t port) {
   uint32_t requested = UINT32_MAX;
   const char *env = getenv("MLU_REMOTE_DEVICE");
   if (env && *env) { char *end = NULL; unsigned long value = strtoul(env, &end, 10); if (end && *end == 0 && value <= UINT32_MAX) requested = (uint32_t)value; }
-  return connect_impl(host, port, requested);
+  return connect_impl(host, port, requested, 0, 0);
 }
 mlu_remote_context *mlu_remote_connect_device(const char *host, uint16_t port, uint32_t device) {
-  return connect_impl(host, port, device);
+  return connect_impl(host, port, device, 0, 0);
+}
+mlu_remote_context *mlu_remote_connect_driver(const char *host, uint16_t port, uint32_t device, uint32_t flags) {
+  mlu_remote_context *ctx=connect_impl(host,port,device,1,flags);
+  if (ctx && !(ctx->capabilities & MLU_CAP_DRIVER_CONTEXT)) {
+    mlu_remote_disconnect(ctx);
+    return connect_failure(MLU_REMOTE_UNSUPPORTED,"REMOTE_DRIVER_UNSUPPORTED","server lacks native Driver context support",EPROTO);
+  }
+  return ctx;
+}
+int mlu_remote_context_sync(mlu_remote_context *ctx) {
+  if (!ctx) return MLU_REMOTE_BAD_OBJECT;
+  if (!(ctx->capabilities & MLU_CAP_DRIVER_CONTEXT)) return MLU_REMOTE_UNSUPPORTED;
+  return rpc(ctx,MLU_OP_CONTEXT_SYNC,NULL,0,NULL,&(uint32_t){0});
+}
+int mlu_remote_session_close(mlu_remote_context *ctx) {
+  if (!ctx) return MLU_REMOTE_BAD_OBJECT;
+  if (!(ctx->capabilities & MLU_CAP_DRIVER_CONTEXT)) return MLU_REMOTE_UNSUPPORTED;
+  return rpc(ctx,MLU_OP_SESSION_CLOSE,NULL,0,NULL,&(uint32_t){0});
+}
+int mlu_remote_module_load_binary(mlu_remote_context *ctx,const void *image,size_t size,uint64_t *module) {
+  if (!ctx || !image || !module || !size || size>MLU_REMOTE_MAX_PAYLOAD-4) return MLU_REMOTE_BAD_LENGTH;
+  if (!(ctx->capabilities & MLU_CAP_DRIVER_CONTEXT)) return MLU_REMOTE_UNSUPPORTED;
+  unsigned char *p=malloc(size+4),*extra=NULL; uint32_t n=0;
+  if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  put32(p,(uint32_t)size); memcpy(p+4,image,size);
+  int st=rpc(ctx,MLU_OP_MODULE_LOAD_BINARY,p,(uint32_t)(size+4),&extra,&n);
+  if (!st) *module=get64(extra);
+  free(p); free(extra); return st;
 }
 void mlu_remote_disconnect(mlu_remote_context *ctx) { if (!ctx) return; if (ctx->fd >= 0) close(ctx->fd); pthread_mutex_destroy(&ctx->lock); free(ctx); }
 const mlu_remote_error *mlu_remote_last_error(const mlu_remote_context *ctx) { return ctx ? &ctx->error : NULL; }
@@ -116,18 +242,84 @@ int mlu_remote_memcpy_d2h(mlu_remote_context *ctx, void *dst, uint64_t src, uint
 int mlu_remote_memcpy_d2d(mlu_remote_context *ctx, uint64_t dst, uint64_t doff, uint64_t src, uint64_t soff, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_D2D, dst, doff, src, soff, NULL, NULL, bytes, q, t); }
 
 static int id_call(mlu_remote_context *ctx, uint16_t op, uint64_t id) { unsigned char p[8]; put64(p, id); return rpc(ctx, op, p, 8, NULL, &(uint32_t){0}); }
+#include "simple_rpc_client.inc"
 int mlu_remote_queue_create(mlu_remote_context *ctx, uint64_t *q) { unsigned char *e = NULL; uint32_t n = 0; int st = rpc(ctx, MLU_OP_QUEUE_CREATE, NULL, 0, &e, &n); if (!st && n >= 8) *q = get64(e); free(e); return st; }
-int mlu_remote_queue_destroy(mlu_remote_context *ctx, uint64_t q) { return id_call(ctx, MLU_OP_QUEUE_DESTROY, q); }
-int mlu_remote_queue_sync(mlu_remote_context *ctx, uint64_t q) { return id_call(ctx, MLU_OP_QUEUE_SYNC, q); }
-int mlu_remote_queue_query(mlu_remote_context *ctx, uint64_t q) { return id_call(ctx, MLU_OP_QUEUE_QUERY, q); }
 int mlu_remote_notifier_create(mlu_remote_context *ctx, uint64_t *n) { unsigned char *e = NULL; uint32_t len = 0; int st = rpc(ctx, MLU_OP_NOTIFIER_CREATE, NULL, 0, &e, &len); if (!st && len >= 8) *n = get64(e); free(e); return st; }
-int mlu_remote_notifier_destroy(mlu_remote_context *ctx, uint64_t n) { return id_call(ctx, MLU_OP_NOTIFIER_DESTROY, n); }
 int mlu_remote_notifier_record(mlu_remote_context *ctx, uint64_t n, uint64_t q) { unsigned char p[16]; put64(p, n); put64(p + 8, q); return rpc(ctx, MLU_OP_NOTIFIER_RECORD, p, 16, NULL, &(uint32_t){0}); }
-int mlu_remote_notifier_query(mlu_remote_context *ctx, uint64_t n) { return id_call(ctx, MLU_OP_NOTIFIER_QUERY, n); }
-int mlu_remote_notifier_sync(mlu_remote_context *ctx, uint64_t n) { return id_call(ctx, MLU_OP_NOTIFIER_SYNC, n); }
 int mlu_remote_session_reset(mlu_remote_context *ctx) { return rpc(ctx, MLU_OP_SESSION_RESET, NULL, 0, NULL, &(uint32_t){0}); }
 int mlu_remote_module_load_preset(mlu_remote_context *ctx, const char *name, uint64_t *module, uint64_t *kernel) { if (!name) return MLU_REMOTE_BAD_LENGTH; size_t sl = strlen(name); if (sl > 128) return MLU_REMOTE_BAD_LENGTH; uint32_t l = (uint32_t)sl; unsigned char *p = (unsigned char *)malloc(4 + l); if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY; put32(p, l); memcpy(p + 4, name, l); unsigned char *e = NULL; uint32_t n = 0; int st = rpc(ctx, MLU_OP_MODULE_LOAD_PRESET, p, 4 + l, &e, &n); free(p); if (!st && n >= 16) { if (module) *module = get64(e); if (kernel) *kernel = get64(e + 8); } free(e); return st; }
-int mlu_remote_module_unload_preset(mlu_remote_context *ctx, uint64_t module) { unsigned char p[8]; put64(p, module); return rpc(ctx, MLU_OP_MODULE_UNLOAD_PRESET, p, sizeof(p), NULL, &(uint32_t){0}); }
+
+int mlu_remote_module_load_image(mlu_remote_context *ctx, const void *image,
+                                 size_t image_size, const char *kernel_name,
+                                 uint64_t *module, uint64_t *kernel) {
+  if (!ctx || !image || !image_size || image_size > MLU_REMOTE_MAX_PAYLOAD - 8 || !kernel_name)
+    return MLU_REMOTE_BAD_LENGTH;
+  if (!(ctx->capabilities & MLU_CAP_MODULE_IMAGE) || ctx->kernel_abi != MLU_REMOTE_KERNEL_ABI)
+    return MLU_REMOTE_UNSUPPORTED;
+  size_t name_size = strlen(kernel_name);
+  if (!name_size || name_size > 1024 || image_size > MLU_REMOTE_MAX_PAYLOAD - 8 - name_size)
+    return MLU_REMOTE_BAD_LENGTH;
+  uint32_t total = (uint32_t)(8 + image_size + name_size);
+  unsigned char *p = (unsigned char *)malloc(total);
+  if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  put32(p, (uint32_t)image_size); put32(p + 4, (uint32_t)name_size);
+  memcpy(p + 8, image, image_size); memcpy(p + 8 + image_size, kernel_name, name_size);
+  unsigned char *e = NULL; uint32_t n = 0;
+  int st = rpc(ctx, MLU_OP_MODULE_LOAD_IMAGE, p, total, &e, &n);
+  free(p);
+  if (!st && n >= 16) { if (module) *module = get64(e); if (kernel) *kernel = get64(e + 8); }
+  free(e); return st;
+}
+
+int mlu_remote_module_get_kernel(mlu_remote_context *ctx, uint64_t module,
+                                 const char *name, uint64_t *kernel) {
+  if (!ctx || !name || !kernel || !*name || strlen(name) >= 256)
+    return MLU_REMOTE_BAD_LENGTH;
+  if (!(ctx->capabilities & MLU_CAP_MODULE_KERNELS) || ctx->kernel_abi != MLU_REMOTE_KERNEL_ABI)
+    return MLU_REMOTE_UNSUPPORTED;
+  size_t length = strlen(name);
+  unsigned char p[12 + 255]; put64(p, module); put32(p + 8, (uint32_t)length);
+  memcpy(p + 12, name, length);
+  unsigned char *extra = NULL; uint32_t n = 0;
+  int st = rpc(ctx, MLU_OP_MODULE_GET_KERNEL, p, (uint32_t)(12 + length), &extra, &n);
+  if (!st) *kernel = get64(extra);
+  free(extra); return st;
+}
+
+int mlu_remote_kernel_launch_generic(mlu_remote_context *ctx, uint64_t module,
+                                     uint64_t kernel, uint64_t queue,
+                                     uint32_t dim_x, uint32_t dim_y,
+                                     uint32_t dim_z, uint32_t kernel_class,
+                                     const mlu_remote_kernel_arg *args,
+                                     uint32_t arg_count, uint64_t *transfer) {
+  if (!ctx || arg_count > 256 || (arg_count && !args)) return MLU_REMOTE_BAD_LENGTH;
+  if (!(ctx->capabilities & MLU_CAP_GENERIC_LAUNCH) || ctx->kernel_abi != MLU_REMOTE_KERNEL_ABI)
+    return MLU_REMOTE_UNSUPPORTED;
+  size_t total = 44;
+  for (uint32_t i = 0; i < arg_count; ++i) {
+    if (args[i].kind != 1 && args[i].kind != 2) return MLU_REMOTE_BAD_LENGTH;
+    if (!args[i].size || args[i].size > 4096 || (args[i].kind == 2 && !args[i].scalar)) return MLU_REMOTE_BAD_LENGTH;
+    if (args[i].kind == 1 && args[i].size != 8) return MLU_REMOTE_BAD_LENGTH;
+    if (total > MLU_REMOTE_MAX_PAYLOAD - (32u + args[i].size)) return MLU_REMOTE_BAD_LENGTH;
+    total += 32u + args[i].size;
+  }
+  unsigned char *p = (unsigned char *)calloc(1, total);
+  if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  put64(p, module); put64(p + 8, kernel); put64(p + 16, queue);
+  put32(p + 24, dim_x); put32(p + 28, dim_y); put32(p + 32, dim_z);
+  put32(p + 36, kernel_class); put32(p + 40, arg_count);
+  unsigned char *cursor = p + 44;
+  for (uint32_t i = 0; i < arg_count; ++i) {
+    put32(cursor, args[i].kind); put32(cursor + 4, args[i].size);
+    put64(cursor + 8, args[i].allocation); put64(cursor + 16, args[i].offset);
+    put64(cursor + 24, 0); cursor += 32;
+    if (args[i].kind == 2) memcpy(cursor, args[i].scalar, args[i].size);
+    cursor += args[i].size;
+  }
+  unsigned char *e = NULL; uint32_t n = 0;
+  int st = rpc(ctx, MLU_OP_KERNEL_LAUNCH_GENERIC, p, (uint32_t)total, &e, &n);
+  free(p); if (!st && n >= 8 && transfer) *transfer = get64(e); free(e); return st;
+}
 int mlu_remote_kernel_launch_vector_add(mlu_remote_context *ctx, uint64_t kernel, uint64_t q, uint64_t dst, uint64_t a, uint64_t b, uint32_t elements, uint32_t grid_x) { unsigned char p[56] = {0}; put64(p, kernel); put64(p + 8, q); put64(p + 16, dst); put64(p + 24, a); put64(p + 32, b); put32(p + 40, elements); put32(p + 44, grid_x); return rpc(ctx, MLU_OP_KERNEL_LAUNCH, p, 56, NULL, &(uint32_t){0}); }
 
 static size_t operator_tensor_wire_size(const mlu_remote_operator_tensor *t) {
@@ -182,8 +374,6 @@ int mlu_remote_operator_launch(mlu_remote_context *ctx, uint32_t operator_id,
   unsigned char *e = NULL; uint32_t n = 0; int st = rpc(ctx, MLU_OP_OPERATOR_LAUNCH, p, (uint32_t)size, &e, &n);
   free(p); if (!st && n >= 8 && transfer) *transfer = get64(e); free(e); return st;
 }
-int mlu_remote_transfer_query(mlu_remote_context *ctx, uint64_t transfer) { unsigned char p[8]; put64(p, transfer); return rpc(ctx, MLU_OP_TRANSFER_QUERY, p, 8, NULL, &(uint32_t){0}); }
-int mlu_remote_transfer_sync(mlu_remote_context *ctx, uint64_t transfer) { unsigned char p[8]; put64(p, transfer); return rpc(ctx, MLU_OP_TRANSFER_SYNC, p, 8, NULL, &(uint32_t){0}); }
 int mlu_remote_operator_query(mlu_remote_context *ctx, uint64_t transfer) { return mlu_remote_transfer_query(ctx, transfer); }
 int mlu_remote_operator_sync(mlu_remote_context *ctx, uint64_t transfer) { return mlu_remote_transfer_sync(ctx, transfer); }
 

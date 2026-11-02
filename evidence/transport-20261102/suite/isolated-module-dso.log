@@ -1,0 +1,10 @@
+COMMAND ['bash', 'scripts/run-isolated-client.sh', 'build/native_bang_module_dso']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '52341', 'MLU_TEST_SHIM': '1'}
+ISOLATION user/mount namespace; host network retained
+user user:[4026542131]
+mnt mnt:[4026542132]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:52341
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_bang_module_dso
+PASS 20 DSO reloads, retained loader reference, pending-work unload and reset

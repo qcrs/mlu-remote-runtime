@@ -76,6 +76,7 @@ static int verify_operator_manifest(const char *dir, const operator_descriptor *
 
 int mlu_backend_global_init(void) {
   if (backend_ready) return 0;
+  if (mlu_resource_limits_init()) return (int)CN_ERROR_INVALID_VALUE;
   CNresult r = cnInit(0);
   if (r != CN_SUCCESS) return (int)r;
   backend_ready = 1;
@@ -146,19 +147,54 @@ static mlu_backend_module *find_module_by_id(mlu_backend_session *s, uint64_t id
         s->modules[i].module_id == id && mlu_object_registry_contains(&s->objects, MLU_OBJECT_MODULE, id)) return &s->modules[i];
   return NULL;
 }
-static int record_transfer(mlu_backend_session *s, uint64_t queue_id, uint64_t *transfer_id) {
+static mlu_backend_kernel *find_generic_kernel(mlu_backend_session *s, uint64_t id) {
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
+    if (s->kernels[i].live && s->kernels[i].owner == s->owner_token &&
+        s->kernels[i].id == id &&
+        mlu_object_registry_contains(&s->objects, MLU_OBJECT_KERNEL, id)) return &s->kernels[i];
+  return NULL;
+}
+static void invalidate_module_kernels(mlu_backend_session *s, uint64_t module_id) {
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
+    mlu_backend_kernel *k = &s->kernels[i];
+    if (!k->live || k->module_id != module_id) continue;
+    mlu_object_registry_release(&s->objects, MLU_OBJECT_KERNEL, k->id);
+    memset(k, 0, sizeof(*k));
+  }
+}
+static void reap_transfers(mlu_backend_session *s) {
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
+    mlu_backend_transfer *t = &s->transfers[i];
+    if (!t->live || !t->release_requested) continue;
+    if (t->notifier_live && cnQueryNotifier(t->notifier) != CN_SUCCESS) continue;
+    if (t->notifier_live && cnDestroyNotifier(t->notifier) != CN_SUCCESS) continue;
+    mlu_object_registry_release(&s->objects, MLU_OBJECT_TRANSFER, t->id);
+    t->live = t->notifier_live = 0;
+  }
+}
+static int transfer_capacity(mlu_backend_session *s) {
+  reap_transfers(s);
+  unsigned count = 0;
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) count += !!s->transfers[i].live;
+  if (count < mlu_resource_max_transfers()) return 0;
+  fprintf(stderr, "[server] RESOURCE_LIMIT kind=TRANSFER owner=%llu used=%u\n",
+          (unsigned long long)s->owner_token, count);
+  return (int)MLU_REMOTE_RESOURCE_LIMIT;
+}
+static int record_transfer(mlu_backend_session *s, uint64_t queue_id, int asynchronous, uint64_t *transfer_id) {
   if (!transfer_id) return (int)CN_ERROR_INVALID_VALUE;
+  reap_transfers(s);
   size_t slot = MLU_BACKEND_MAX_OBJECTS;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (!s->transfers[i].live) { slot = i; break; }
   if (slot == MLU_BACKEND_MAX_OBJECTS) return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY;
   CNnotifier notifier = NULL;
-  if (queue_id) {
-    mlu_backend_queue *q = find_queue(s, queue_id);
-    if (!q) return (int)CN_ERROR_INVALID_HANDLE;
+  if (asynchronous) {
+    mlu_backend_queue *q = queue_id ? find_queue(s, queue_id) : NULL;
+    if (queue_id && !q) return (int)CN_ERROR_INVALID_HANDLE;
     CNresult r = cnCreateNotifier(&notifier, 0);
     if (r != CN_SUCCESS) return (int)r;
-    r = cnPlaceNotifier(notifier, q->handle);
+    r = cnPlaceNotifier(notifier, q ? q->handle : NULL);
     if (r != CN_SUCCESS) { cnDestroyNotifier(notifier); return (int)r; }
   }
   uint64_t registered_id = 0; uint32_t generation = 0;
@@ -179,7 +215,7 @@ static int record_transfer(mlu_backend_session *s, uint64_t queue_id, uint64_t *
       .sequence = sequence, .dependency = dependency,
       .owner = s->owner_token, .generation = generation,
       .state = MLU_BACKEND_OPERATION_SUBMITTED,
-      .notifier_live = queue_id ? 1 : 0, .live = 1};
+      .notifier_live = notifier != NULL, .live = 1};
   *transfer_id = s->transfers[slot].id;
   return 0;
 }
@@ -189,10 +225,19 @@ static mlu_backend_transfer *find_transfer(mlu_backend_session *s, uint64_t id) 
         s->transfers[i].id == id && mlu_object_registry_contains(&s->objects, MLU_OBJECT_TRANSFER, id)) return &s->transfers[i];
   return NULL;
 }
-static void destroy_transfer_notifiers(mlu_backend_session *s) {
+static int cleanup_result(int *first, const char *op, uint64_t id, CNresult result) {
+  if (result != CN_SUCCESS) {
+    if (!*first) *first = (int)result;
+    fprintf(stderr, "[server] CLEANUP_ERROR op=%s id=%llu status=%d\n", op,
+            (unsigned long long)id, (int)result);
+  }
+  return (int)result;
+}
+static void destroy_transfer_notifiers(mlu_backend_session *s, int *first) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
     if (s->transfers[i].live && s->transfers[i].notifier_live) {
-      cnDestroyNotifier(s->transfers[i].notifier);
+      cleanup_result(first, "cnDestroyNotifier(transfer)", s->transfers[i].id,
+                     cnDestroyNotifier(s->transfers[i].notifier));
       s->transfers[i].notifier_live = 0;
     }
     if (s->transfers[i].live)
@@ -204,18 +249,24 @@ static void release_staging(mlu_backend_session *s, uint64_t queue_id) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->staging[i].live && (!queue_id || s->staging[i].queue_id == queue_id)) {
       free(s->staging[i].host); s->staging[i].live = 0;
+      mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, s->staging[i].bytes);
     }
 }
 
 int mlu_backend_session_init(mlu_backend_session *s, int ordinal) {
+  return mlu_backend_session_init_flags(s, ordinal, CN_CTX_SCHED_SYNC_WAIT);
+}
+int mlu_backend_session_init_flags(mlu_backend_session *s, int ordinal, unsigned flags) {
   memset(s, 0, sizeof(*s));
   s->device_ordinal = ordinal;
   s->owner_token = __sync_add_and_fetch(&next_session_owner, 1);
+  if (mlu_object_registry_init(&s->objects, s->owner_token))
+    return (int)CN_ERROR_OPERATING_SYSTEM;
   int r = mlu_backend_global_init();
   if (r) return r;
   CNresult cr = cnDeviceGet(&s->device, ordinal);
   if (cr != CN_SUCCESS) return (int)cr;
-  cr = cnCtxCreate(&s->context, CN_CTX_SCHED_SYNC_WAIT, s->device);
+  cr = cnCtxCreate(&s->context, flags, s->device);
   if (cr != CN_SUCCESS) return (int)cr;
   cr = cnCtxSetCurrent(s->context);
   if (cr != CN_SUCCESS) {
@@ -223,10 +274,6 @@ int mlu_backend_session_init(mlu_backend_session *s, int ordinal) {
     s->context = NULL;
     return (int)cr;
   }
-  /* Include a process-local session generation in every opaque ID. This keeps
-   * an ID from a disconnected session from aliasing a new session's slot. */
-  s->next_id = (s->owner_token << 32) | 1000u;
-  mlu_object_registry_init(&s->objects, s->owner_token, s->next_id);
   return 0;
 }
 
@@ -238,6 +285,12 @@ static int session_has_resources(const mlu_backend_session *s) {
   return 0;
 }
 
+int mlu_backend_context_sync(mlu_backend_session *s) {
+  CNresult r=cnCtxSync();
+  if (r==CN_SUCCESS) { release_staging(s,0); reap_transfers(s); }
+  return (int)r;
+}
+
 int mlu_backend_session_select_device(mlu_backend_session *s, int ordinal) {
   if (!s || ordinal < 0) return (int)CN_ERROR_INVALID_DEVICE;
   int count = 0;
@@ -246,47 +299,81 @@ int mlu_backend_session_select_device(mlu_backend_session *s, int ordinal) {
   if (ordinal >= count) return (int)CN_ERROR_INVALID_DEVICE;
   if (ordinal == s->device_ordinal) return 0;
   if (session_has_resources(s)) return (int)CN_OPS_ERROR_NOT_PERMITTED;
-  mlu_backend_session_cleanup(s);
+  st = mlu_backend_session_cleanup(s);
+  if (st) return st;
   return mlu_backend_session_init(s, ordinal);
 }
 
 int mlu_backend_session_reset(mlu_backend_session *s) {
   if (!s) return (int)CN_ERROR_INVALID_VALUE;
   int ordinal = s->device_ordinal;
-  mlu_backend_session_cleanup(s);
+  int st = mlu_backend_session_cleanup(s);
+  if (st) return st;
   return mlu_backend_session_init(s, ordinal);
 }
 
-void mlu_backend_session_cleanup(mlu_backend_session *s) {
-  if (!s) return;
-  if (s->context) cnCtxSetCurrent(s->context);
+int mlu_backend_session_cleanup(mlu_backend_session *s) {
+  if (!s) return 0;
+  int first = 0, synchronized = 1;
+  if (s->context && cleanup_result(&first, "cnCtxSetCurrent", 0, cnCtxSetCurrent(s->context)))
+    synchronized = 0;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
-    if (s->queues[i].live) cnQueueSync(s->queues[i].handle);
+    if (s->queues[i].live && cleanup_result(&first, "cnQueueSync", s->queues[i].id,
+                                           cnQueueSync(s->queues[i].handle))) synchronized = 0;
+  }
+  if (s->default_queue_used && cleanup_result(&first,"cnQueueSync(NULL)",0,cnQueueSync(NULL))) synchronized=0;
+  /* On a synchronization error, retain host memory until context destruction
+   * confirms no native operation can access it. Never free in-flight staging. */
+  if (synchronized) release_staging(s, 0);
+  destroy_transfer_notifiers(s, &first);
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
+    if (s->modules[i].live && !cleanup_result(&first, "cnModuleUnload", s->modules[i].module_id,
+                                             cnModuleUnload(s->modules[i].module))) {
+      free(s->modules[i].image); s->modules[i].image = NULL;
+      mlu_resource_release(&s->usage, MLU_RESOURCE_IMAGE, s->modules[i].image_size);
+      s->modules[i].live = 0;
+    }
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
+    if (s->notifiers[i].live) cleanup_result(&first, "cnDestroyNotifier", s->notifiers[i].id, cnDestroyNotifier(s->notifiers[i].handle));
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
+    if (s->queues[i].live) cleanup_result(&first, "cnDestroyQueue", s->queues[i].id, cnDestroyQueue(s->queues[i].handle));
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
+    if (s->allocations[i].live && !cleanup_result(&first, "cnFree", s->allocations[i].id, cnFree(s->allocations[i].address))) {
+      mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, s->allocations[i].bytes);
+      s->allocations[i].live = 0;
+    }
+  int destroyed = !s->context || !cleanup_result(&first, "cnCtxDestroy", 0, cnCtxDestroy(s->context));
+  if (!destroyed) {
+    /* Quarantine unconfirmed native charges and retained host memory until
+     * process exit. Do not reopen/reset this session after failed cleanup. */
+    fprintf(stderr, "[server] CLEANUP_QUARANTINED owner=%llu\n", (unsigned long long)s->owner_token);
+    s->cleanup_failed = first;
+    return first;
   }
   release_staging(s, 0);
-  destroy_transfer_notifiers(s);
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->modules[i].live) { cnModuleUnload(s->modules[i].module); s->modules[i].live = 0; }
-  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->notifiers[i].live) { cnDestroyNotifier(s->notifiers[i].handle); s->notifiers[i].live = 0; }
-  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->queues[i].live) { cnDestroyQueue(s->queues[i].handle); s->queues[i].live = 0; }
-  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->allocations[i].live) { cnFree(s->allocations[i].address); s->allocations[i].live = 0; }
+    if (s->modules[i].live) free(s->modules[i].image);
+  for (unsigned kind = 0; kind < MLU_RESOURCE_KINDS; ++kind)
+    mlu_resource_release(&s->usage, (enum mlu_resource_kind)kind, s->usage.bytes[kind]);
   mlu_object_registry_clear(&s->objects);
-  if (s->context) cnCtxDestroy(s->context);
   memset(s, 0, sizeof(*s));
+  s->cleanup_failed = first;
+  return first;
 }
 
 int mlu_backend_alloc(mlu_backend_session *s, uint64_t bytes, uint64_t *id) {
   if (!bytes || !id) return (int)CN_ERROR_INVALID_VALUE;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) if (!s->allocations[i].live) {
+    if (mlu_resource_reserve(&s->usage, MLU_RESOURCE_DEVICE, bytes)) return (int)MLU_REMOTE_RESOURCE_LIMIT;
     CNaddr p = 0;
     CNresult r = cnMalloc(&p, bytes);
-    if (r != CN_SUCCESS) return (int)r;
+    if (r != CN_SUCCESS) { mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, bytes); return (int)r; }
     uint64_t object_id = 0; uint32_t generation = 0;
     int registry_status = register_object(s, MLU_OBJECT_ALLOCATION, &object_id, &generation);
-    if (registry_status != 0) { cnFree(p); return registry_status; }
+    if (registry_status != 0) {
+      if (cnFree(p) == CN_SUCCESS) mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, bytes);
+      return registry_status;
+    }
     s->allocations[i] = (mlu_backend_allocation){.id = object_id, .address = p, .bytes = bytes,
                                                 .owner = s->owner_token, .generation = generation, .live = 1};
     *id = s->allocations[i].id;
@@ -300,9 +387,13 @@ int mlu_backend_free(mlu_backend_session *s, uint64_t id) {
   if (!a) return (int)CN_ERROR_INVALID_HANDLE;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->queues[i].live) { CNresult qr = cnQueueSync(s->queues[i].handle); if (qr != CN_SUCCESS) return (int)qr; }
+  if (s->default_queue_used) { CNresult qr=cnQueueSync(NULL); if(qr) return (int)qr; }
   release_staging(s, 0);
   CNresult r = cnFree(a->address);
-  if (r == CN_SUCCESS) { a->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_ALLOCATION, id); }
+  if (r == CN_SUCCESS) {
+    mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, a->bytes);
+    a->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_ALLOCATION, id);
+  }
   return (int)r;
 }
 
@@ -320,41 +411,50 @@ int mlu_backend_memcpy(mlu_backend_session *s, int direction,
   if (!bytes) return (int)CN_ERROR_INVALID_VALUE;
   mlu_backend_queue *q = queue_id ? find_queue(s, queue_id) : NULL;
   if (queue_id && !q) return (int)CN_ERROR_INVALID_HANDLE;
+  if (transfer_id) { int st = transfer_capacity(s); if (st) return st; }
   CNaddr dst = 0, src = 0;
   CNresult r;
   if (direction == MLU_MEMCPY_H2D) {
     if (range(find_alloc(s, dst_id), dst_offset, bytes, &dst)) return (int)CN_ERROR_INVALID_VALUE;
     if (!host_src) return (int)CN_ERROR_INVALID_ADDRESS;
     if (q) {
+      /* Only a completed queue makes every staging buffer on it reclaimable.
+       * Poll before adding work so a long async-copy stream does not leak. */
+      if (cnQueryQueue(q->handle) == CN_SUCCESS) release_staging(s, queue_id);
       size_t staging_slot = MLU_BACKEND_MAX_OBJECTS;
       for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
         if (!s->staging[i].live) { staging_slot = i; break; }
       if (staging_slot == MLU_BACKEND_MAX_OBJECTS) return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+      if (mlu_resource_reserve(&s->usage, MLU_RESOURCE_STAGING, bytes)) return (int)MLU_REMOTE_RESOURCE_LIMIT;
       void *staging = malloc((size_t)bytes);
-      if (!staging) return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+      if (!staging) { mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, bytes); return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
       memcpy(staging, host_src, (size_t)bytes);
       r = cnMemcpyHtoDAsync(dst, staging, bytes, q->handle);
       if (r == CN_SUCCESS) {
-        s->staging[staging_slot] = (mlu_backend_staging){.queue_id = queue_id, .host = staging,
+        s->staging[staging_slot] = (mlu_backend_staging){.queue_id = queue_id, .host = staging, .bytes = bytes,
                                                          .owner = s->owner_token, .generation = new_generation(s), .live = 1};
         staging = NULL;
       }
-      if (staging) free(staging);
+      if (staging) { free(staging); mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, bytes); }
     } else r = cnMemcpyHtoD(dst, host_src, bytes);
   } else if (direction == MLU_MEMCPY_D2H) {
     if (range(find_alloc(s, src_id), src_offset, bytes, &src)) return (int)CN_ERROR_INVALID_VALUE;
     if (!host_dst) return (int)CN_ERROR_INVALID_ADDRESS;
-    r = q ? cnMemcpyDtoHAsync(host_dst, src, bytes, q->handle) : cnMemcpyDtoH(host_dst, src, bytes);
-    if (r == CN_SUCCESS && q) r = cnQueueSync(q->handle);
+    /* This protocol returns D2H bytes in the response. Wait before using a
+     * synchronous native copy: a failed queue wait must never leave an async
+     * writer referencing the response buffer that the dispatcher will free. */
+    r = q ? cnQueueSync(q->handle) : CN_SUCCESS;
+    if (r == CN_SUCCESS && q) release_staging(s, queue_id);
+    if (r == CN_SUCCESS) r = cnMemcpyDtoH(host_dst, src, bytes);
   } else if (direction == MLU_MEMCPY_D2D) {
     if (range(find_alloc(s, dst_id), dst_offset, bytes, &dst)) return (int)CN_ERROR_INVALID_VALUE;
     if (range(find_alloc(s, src_id), src_offset, bytes, &src)) return (int)CN_ERROR_INVALID_VALUE;
     r = q ? cnMemcpyDtoDAsync(dst, src, bytes, q->handle) : cnMemcpyDtoD(dst, src, bytes);
   } else return (int)CN_ERROR_INVALID_VALUE;
   if (transfer_id && r == CN_SUCCESS) {
-    int tr = record_transfer(s, queue_id, transfer_id);
+    int tr = record_transfer(s, queue_id, queue_id!=0, transfer_id);
     if (tr != 0) {
-      if (q) { cnQueueSync(q->handle); release_staging(s, queue_id); }
+      if (q && cnQueueSync(q->handle) == CN_SUCCESS) release_staging(s, queue_id);
       return tr;
     }
   }
@@ -378,10 +478,14 @@ int mlu_backend_queue_destroy(mlu_backend_session *s, uint64_t id) {
   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
 }
 int mlu_backend_queue_sync(mlu_backend_session *s, uint64_t id) {
+  /* Driver NULL queue is passed through to CNDrv. It must not become a
+   * context-wide barrier or release staging owned by explicit queues. */
+  if (!id) { CNresult r=cnQueueSync(NULL); if(!r) reap_transfers(s); return (int)r; }
   mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
-  CNresult r = cnQueueSync(q->handle); if (r == CN_SUCCESS) release_staging(s, id); return (int)r;
+  CNresult r = cnQueueSync(q->handle); if (r == CN_SUCCESS) { release_staging(s, id); reap_transfers(s); } return (int)r;
 }
 int mlu_backend_queue_query(mlu_backend_session *s, uint64_t id) {
+  if (!id) return (int)cnQueryQueue(NULL);
   mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
   return (int)cnQueryQueue(q->handle);
 }
@@ -402,7 +506,8 @@ int mlu_backend_notifier_destroy(mlu_backend_session *s, uint64_t id) {
 }
 int mlu_backend_notifier_record(mlu_backend_session *s, uint64_t nid, uint64_t qid) {
   mlu_backend_notifier *n = find_notifier(s, nid); mlu_backend_queue *q = find_queue(s, qid);
-  if (!n || !q) return (int)CN_ERROR_INVALID_HANDLE; return (int)cnPlaceNotifier(n->handle, q->handle);
+  if (!n || (qid && !q)) return (int)CN_ERROR_INVALID_HANDLE;
+  return (int)cnPlaceNotifier(n->handle, q ? q->handle : NULL);
 }
 int mlu_backend_notifier_query(mlu_backend_session *s, uint64_t id) {
   mlu_backend_notifier *n = find_notifier(s, id); if (!n) return (int)CN_ERROR_INVALID_HANDLE;
@@ -428,6 +533,13 @@ int mlu_backend_transfer_sync(mlu_backend_session *s, uint64_t id) {
   if (st == CN_SUCCESS) t->state = MLU_BACKEND_OPERATION_COMPLETE;
   else t->state = MLU_BACKEND_OPERATION_FAILED;
   return st;
+}
+int mlu_backend_transfer_release(mlu_backend_session *s, uint64_t id) {
+  mlu_backend_transfer *t = find_transfer(s, id);
+  if (!t || t->release_requested) return (int)CN_ERROR_INVALID_HANDLE;
+  t->release_requested = 1;
+  reap_transfers(s);
+  return 0;
 }
 
 static int load_operator_module(mlu_backend_session *s, const operator_descriptor *desc,
@@ -471,6 +583,112 @@ int mlu_backend_module_load(mlu_backend_session *s, const char *name, uint64_t *
   return load_operator_module(s, desc, module_id, kernel_id);
 }
 
+int mlu_backend_module_get_kernel(mlu_backend_session *s, uint64_t module_id,
+                                  const char *name, uint64_t *kernel_id) {
+  if (!s || !name || !*name || strlen(name) >= 256 || !kernel_id)
+    return (int)CN_ERROR_INVALID_VALUE;
+  mlu_backend_module *m = find_module_by_id(s, module_id);
+  if (!m) return (int)CN_ERROR_INVALID_HANDLE;
+  if (!m->generic_image) return (int)MLU_REMOTE_UNSUPPORTED;
+  mlu_backend_kernel *slot = NULL;
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
+    mlu_backend_kernel *k = &s->kernels[i];
+    if (!k->live) { if (!slot) slot = k; continue; }
+    if (k->module_id == module_id && !strcmp(k->name, name)) {
+      *kernel_id = k->id; return 0;
+    }
+  }
+  if (!slot) return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  CNkernel handle = NULL;
+  CNresult r = cnModuleGetKernel(m->module, name, &handle);
+  if (r != CN_SUCCESS) return (int)r;
+  bang_param_layout params;
+  if (bang_image_params(m->image, m->image_size, name, &params))
+    return (int)MLU_REMOTE_UNSUPPORTED;
+  uint64_t id = 0; uint32_t generation = 0;
+  int st = register_object(s, MLU_OBJECT_KERNEL, &id, &generation);
+  if (st) return st;
+  *slot = (mlu_backend_kernel){.id = id, .module_id = module_id, .handle = handle,
+                               .params = params, .owner = s->owner_token,
+                               .generation = generation, .live = 1};
+  snprintf(slot->name, sizeof(slot->name), "%s", name);
+  *kernel_id = id; return 0;
+}
+
+int mlu_backend_module_load_binary(mlu_backend_session *s, const void *image,
+                                   uint64_t image_size, uint64_t *module_id) {
+  if (!s || !image || !image_size || image_size>MLU_REMOTE_MAX_PAYLOAD || !module_id)
+    return (int)CN_ERROR_INVALID_VALUE;
+  if (mlu_resource_reserve(&s->usage,MLU_RESOURCE_IMAGE,image_size)) return (int)MLU_REMOTE_RESOURCE_LIMIT;
+  if (bang_image_validate(image,image_size)) {
+    mlu_resource_release(&s->usage,MLU_RESOURCE_IMAGE,image_size);
+    return (int)MLU_REMOTE_UNSUPPORTED;
+  }
+  for (size_t i=0;i<MLU_BACKEND_MAX_OBJECTS;++i) if (!s->modules[i].live) {
+    void *owned=malloc(image_size);
+    if (!owned) { mlu_resource_release(&s->usage,MLU_RESOURCE_IMAGE,image_size); return CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
+    memcpy(owned,image,image_size);
+    CNmodule native=NULL; CNresult r=cnModuleLoadFatBinary(owned,&native);
+    if (r) { free(owned); mlu_resource_release(&s->usage,MLU_RESOURCE_IMAGE,image_size); return (int)r; }
+    uint64_t mid=0; uint32_t generation=0;
+    int st=register_object(s,MLU_OBJECT_MODULE,&mid,&generation);
+    s->modules[i]=(mlu_backend_module){.module_id=mid,.module=native,.generic_image=1,
+      .image=owned,.image_size=image_size,.owner=s->owner_token,.generation=generation,.live=1};
+    if (st) {
+      if (cnModuleUnload(native)==CN_SUCCESS) {
+        free(owned); mlu_resource_release(&s->usage,MLU_RESOURCE_IMAGE,image_size);
+        memset(&s->modules[i],0,sizeof(s->modules[i]));
+      }
+      return st;
+    }
+    *module_id=mid; return 0;
+  }
+  mlu_resource_release(&s->usage,MLU_RESOURCE_IMAGE,image_size);
+  return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+}
+
+int mlu_backend_module_load_image(mlu_backend_session *s, const void *image,
+                                  uint64_t image_size, const char *kernel_name,
+                                  uint64_t *module_id, uint64_t *kernel_id) {
+  if (!s || !image || !image_size || image_size > MLU_REMOTE_MAX_PAYLOAD ||
+      !kernel_name || !*kernel_name || strlen(kernel_name) >= 256 ||
+      !module_id || !kernel_id)
+    return (int)CN_ERROR_INVALID_VALUE;
+  if (mlu_resource_reserve(&s->usage, MLU_RESOURCE_IMAGE, image_size)) return (int)MLU_REMOTE_RESOURCE_LIMIT;
+  bang_param_layout params;
+  size_t exact = 0;
+  if (bang_image_span(image, image_size, &exact) || exact != image_size ||
+      bang_image_params(image, image_size, kernel_name, &params))
+    { mlu_resource_release(&s->usage, MLU_RESOURCE_IMAGE, image_size); return (int)MLU_REMOTE_UNSUPPORTED; }
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) if (!s->modules[i].live) {
+    void *owned_image = malloc(image_size);
+    if (!owned_image) { mlu_resource_release(&s->usage, MLU_RESOURCE_IMAGE, image_size); return CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
+    memcpy(owned_image, image, image_size);
+    CNmodule m = NULL; CNresult r = cnModuleLoadFatBinary(owned_image, &m);
+    if (r != CN_SUCCESS) { free(owned_image); mlu_resource_release(&s->usage, MLU_RESOURCE_IMAGE, image_size); return (int)r; }
+    uint64_t mid = 0, kid = 0; uint32_t mg = 0;
+    memset(&s->modules[i], 0, sizeof(s->modules[i]));
+    s->modules[i].module = m;
+    s->modules[i].generic_image = 1; s->modules[i].owner = s->owner_token;
+    s->modules[i].image = owned_image; s->modules[i].image_size = image_size;
+    s->modules[i].live = 1;
+    int st = register_object(s, MLU_OBJECT_MODULE, &mid, &mg);
+    s->modules[i].module_id = mid; s->modules[i].generation = mg;
+    if (!st) st = mlu_backend_module_get_kernel(s, mid, kernel_name, &kid);
+    if (st) {
+      if (cnModuleUnload(m) == CN_SUCCESS) {
+        free(owned_image); mlu_resource_release(&s->usage, MLU_RESOURCE_IMAGE, image_size);
+        memset(&s->modules[i], 0, sizeof(s->modules[i]));
+      }
+      mlu_object_registry_release(&s->objects, MLU_OBJECT_MODULE, mid);
+      return st;
+    }
+    *module_id = mid; *kernel_id = kid; return 0;
+  }
+  mlu_resource_release(&s->usage, MLU_RESOURCE_IMAGE, image_size);
+  return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+}
+
 int mlu_backend_operator_create(mlu_backend_session *s, uint32_t operator_id,
                                 uint64_t *module_id, uint64_t *kernel_id) {
   return load_operator_module(s, find_operator_descriptor(operator_id), module_id, kernel_id);
@@ -479,19 +697,7 @@ int mlu_backend_operator_create(mlu_backend_session *s, uint32_t operator_id,
 int mlu_backend_operator_destroy(mlu_backend_session *s, uint32_t operator_id) {
   mlu_backend_module *m = find_module_by_operator(s, operator_id);
   if (!m) return (int)CN_ERROR_INVALID_HANDLE;
-  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->queues[i].live) {
-      CNresult r = cnQueueSync(s->queues[i].handle);
-      if (r != CN_SUCCESS) return (int)r;
-    }
-  release_staging(s, 0);
-  CNresult r = cnModuleUnload(m->module);
-  if (r == CN_SUCCESS) {
-    m->live = 0;
-    mlu_object_registry_release(&s->objects, MLU_OBJECT_MODULE, m->module_id);
-    mlu_object_registry_release(&s->objects, MLU_OBJECT_KERNEL, m->kernel_id);
-  }
-  return (int)r;
+  return mlu_backend_module_unload(s, m->module_id);
 }
 
 int mlu_backend_module_unload(mlu_backend_session *s, uint64_t module_id) {
@@ -502,10 +708,14 @@ int mlu_backend_module_unload(mlu_backend_session *s, uint64_t module_id) {
       CNresult r = cnQueueSync(s->queues[i].handle);
       if (r != CN_SUCCESS) return (int)r;
     }
+  if (s->default_queue_used) { CNresult r=cnQueueSync(NULL); if(r) return (int)r; }
   release_staging(s, 0);
   CNresult r = cnModuleUnload(m->module);
   if (r == CN_SUCCESS) {
+    invalidate_module_kernels(s, module_id);
     m->live = 0;
+    free(m->image); m->image = NULL;
+    mlu_resource_release(&s->usage, MLU_RESOURCE_IMAGE, m->image_size);
     mlu_object_registry_release(&s->objects, MLU_OBJECT_MODULE, m->module_id);
     mlu_object_registry_release(&s->objects, MLU_OBJECT_KERNEL, m->kernel_id);
   }
@@ -570,6 +780,7 @@ int mlu_backend_operator_launch(mlu_backend_session *s,
   uint32_t gx = request->grid_x, gy = request->grid_y ? request->grid_y : 1, gz = request->grid_z ? request->grid_z : 1;
   (void)request->block_x; (void)request->block_y; (void)request->block_z;
   CNresult r;
+  int capacity = transfer_capacity(s); if (capacity) return capacity;
   if (request->operator_id == MLU_REMOTE_OPERATOR_VECTOR_ADD) {
     int n = (int)shape[0]; void *params[] = {&out_addr, &in0_addr, &in1_addr, &n};
     r = cnInvokeKernel(m->kernel, gx, gy, gz, CN_KERNEL_CLASS_BLOCK, 0, q->handle, params, NULL);
@@ -604,11 +815,78 @@ int mlu_backend_operator_launch(mlu_backend_session *s,
     r = cnInvokeKernel(m->kernel, gx, gy, gz, CN_KERNEL_CLASS_BLOCK, 0, q->handle, params, NULL);
   } else return (int)MLU_REMOTE_UNSUPPORTED;
   if (r != CN_SUCCESS) return (int)r;
-  int tr = record_transfer(s, request->queue_id, transfer_id);
+  int tr = record_transfer(s, request->queue_id, 1, transfer_id);
   if (tr != 0) {
-    cnQueueSync(q->handle);
-    release_staging(s, request->queue_id);
+    if (cnQueueSync(q->handle) == CN_SUCCESS) release_staging(s, request->queue_id);
     return tr;
+  }
+  return 0;
+}
+
+int mlu_backend_kernel_launch_generic(mlu_backend_session *s,
+                                       uint64_t module_id, uint64_t kernel_id,
+                                       uint64_t queue_id, uint32_t dim_x,
+                                       uint32_t dim_y, uint32_t dim_z,
+                                       uint32_t kernel_class,
+                                       const mlu_backend_kernel_arg *args,
+                                       uint32_t arg_count, uint64_t *transfer_id) {
+  if (!s || !transfer_id || arg_count > 256 || (arg_count && !args) ||
+      !dim_x || !dim_y || !dim_z)
+    return (int)CN_ERROR_INVALID_VALUE;
+  mlu_backend_module *m = find_module_by_id(s, module_id);
+  mlu_backend_kernel *k = find_generic_kernel(s, kernel_id);
+  mlu_backend_queue *q = queue_id ? find_queue(s, queue_id) : NULL;
+  if (!m || !k || (queue_id && !q) || k->module_id != module_id) return (int)CN_ERROR_INVALID_HANDLE;
+  if (!m->generic_image || arg_count != k->params.count) return CN_ERROR_INVALID_VALUE;
+  void **params = arg_count ? calloc(arg_count, sizeof(*params)) : NULL;
+  CNaddr *device_values = arg_count ? calloc(arg_count, sizeof(*device_values)) : NULL;
+  if (arg_count && (!params || !device_values)) {
+    free(params); free(device_values); return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  }
+  size_t scalar_bytes = 0;
+  for (uint32_t i = 0; i < arg_count; ++i) {
+    if ((args[i].kind != 1 && args[i].kind != 2) || !args[i].size || args[i].size > 4096 ||
+        args[i].size != k->params.sizes[i])
+      { free(params); free(device_values); return (int)CN_ERROR_INVALID_VALUE; }
+    if (args[i].kind == 1 && args[i].size != sizeof(CNaddr))
+      { free(params); free(device_values); return (int)CN_ERROR_INVALID_VALUE; }
+    if (args[i].kind == 2) {
+      if (!args[i].scalar || scalar_bytes > SIZE_MAX - args[i].size) { free(params); free(device_values); return (int)CN_ERROR_INVALID_VALUE; }
+      scalar_bytes += (args[i].size + 15u) & ~15u;
+    }
+  }
+  unsigned char *scalars = scalar_bytes ? calloc(1, scalar_bytes) : NULL;
+  if (scalar_bytes && !scalars) { free(params); free(device_values); return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
+  size_t scalar_cursor = 0;
+  for (uint32_t i = 0; i < arg_count; ++i) {
+    if (args[i].kind == 1) {
+      /* A kernel pointer is valid when it points inside an owned allocation;
+       * the allocation size is intentionally not guessed from user bytes. */
+      if (!args[i].allocation_id && !args[i].offset) { params[i] = &device_values[i]; continue; }
+      mlu_backend_allocation *a = find_alloc(s, args[i].allocation_id);
+      if (!a || args[i].offset > a->bytes) { free(scalars); free(params); free(device_values); return (int)CN_ERROR_INVALID_VALUE; }
+      device_values[i] = a->address + args[i].offset; params[i] = &device_values[i];
+    } else {
+      memcpy(scalars + scalar_cursor, args[i].scalar, args[i].size);
+      params[i] = scalars + scalar_cursor; scalar_cursor += (args[i].size + 15u) & ~15u;
+    }
+  }
+  KernelClass klass = (KernelClass)kernel_class;
+  if (klass != CN_KERNEL_CLASS_BLOCK && klass != CN_KERNEL_CLASS_UNION &&
+      klass != CN_KERNEL_CLASS_UNION2 && klass != CN_KERNEL_CLASS_UNION4 &&
+      klass != CN_KERNEL_CLASS_UNION8 && klass != CN_KERNEL_CLASS_UNION16)
+    { free(scalars); free(params); free(device_values); return (int)CN_ERROR_INVALID_VALUE; }
+  int capacity = transfer_capacity(s);
+  if (capacity) { free(scalars); free(params); free(device_values); return capacity; }
+  if (!queue_id) s->default_queue_used=1;
+  CNresult r = cnInvokeKernel(k->handle, dim_x, dim_y, dim_z, klass, 0,
+                              q ? q->handle : NULL, params, NULL);
+  free(scalars); free(params); free(device_values);
+  if (r != CN_SUCCESS) return (int)r;
+  int st = record_transfer(s, queue_id, 1, transfer_id);
+  if (st != 0) {
+    if (cnQueueSync(q ? q->handle : NULL) == CN_SUCCESS && queue_id) release_staging(s, queue_id);
+    return st;
   }
   return 0;
 }
@@ -626,10 +904,12 @@ int mlu_backend_kernel_launch_vector_add(mlu_backend_session *s, uint64_t kernel
 }
 
 const char *mlu_backend_error_name(int code) {
+  if ((unsigned)code == MLU_REMOTE_RESOURCE_LIMIT) return "REMOTE_RESOURCE_LIMIT";
   const char *s = NULL; if (cnGetErrorName((CNresult)code, &s) == CN_SUCCESS && s) return s;
   switch ((unsigned)code) { case MLU_REMOTE_UNSUPPORTED: return "REMOTE_UNSUPPORTED"; default: return "REMOTE_PROTOCOL_ERROR"; }
 }
 const char *mlu_backend_error_string(int code) {
+  if ((unsigned)code == MLU_REMOTE_RESOURCE_LIMIT) return "server resource quota exceeded; request not submitted";
   const char *s = NULL; if (cnGetErrorString((CNresult)code, &s) == CN_SUCCESS && s) return s;
   switch ((unsigned)code) { case MLU_REMOTE_UNSUPPORTED: return "backend capability is unavailable"; default: return "remote protocol error"; }
 }

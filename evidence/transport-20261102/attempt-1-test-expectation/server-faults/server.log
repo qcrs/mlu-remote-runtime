@@ -1,0 +1,19 @@
+[server] MLU_REMOTE_BIND=127.0.0.1 PORT=57019 device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+[server] listening handshake_timeout_ms=250 io_timeout_ms=350
+[server] session start fd=8 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] stopped

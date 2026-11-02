@@ -1,0 +1,6 @@
+PASS {"name": "invalid-resource-settings-fail-before-listen", "passed": true, "cases": 6}
+PASS {"name": "device-session-and-total-limits-other-session-continues", "passed": true, "native_mib_before": 0, "native_mib_during": 80}
+Traceback (most recent call last):
+  File "/home/lvtong/mlu-remote-runtime/tests/server_resources.py", line 144, in <module>
+    assert after <= baseline + 4, (baseline, after)
+AssertionError: (0, 32)

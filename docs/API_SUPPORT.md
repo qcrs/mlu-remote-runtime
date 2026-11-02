@@ -1,36 +1,13 @@
-# API support matrix
+# API 与能力支持入口
 
-Ground truth captured on 2026-10-31: MLU370-S4 (`mtp_372.41`), driver
-5.10.35, Neuware 3.5.2, CNRT 6.5.2, CNDrv 2.5.2, one visible device.
+[兼容性台账 CSV](../compat/api-ledger.csv) 是逐 API 的当前记录；[annotations](../compat/annotations.json) 保存人工审查，不能仅因出现导出就算已实现。[summary](../compat/summary.json) 提供头文件哈希及统计。
 
-| Capability | Status | Evidence / boundary |
-|---|---|---|
-| Fixed 24-byte TCP header, network byte order, request sequence | IMPLEMENTED | Independent client/server framing and request matching |
-| HELLO version and capability negotiation | IMPLEMENTED | Version 1 and capability bits returned by server |
-| Device count/name/total memory | IMPLEMENTED | CNDrv query and client-basic output |
-| Device selection | IMPLEMENTED | Session context can switch before session resources are created; invalid ordinals are rejected |
-| Initial device selection and session reset | IMPLEMENTED | HELLO requested device and `SESSION_RESET` context recreation |
-| Allocation/free and checked offsets | IMPLEMENTED | Native `cnMalloc`/`cnFree`, per-session AllocationID registry |
-| H2D/D2H/D2D and TransferID | IMPLEMENTED | Queue enqueue, host staging ownership, D2H completion before response |
-| Queue create/destroy/query/sync | IMPLEMENTED | Native CNDrv queue APIs |
-| Notifier create/record/query/sync | IMPLEMENTED | Native CNDrv notifier APIs |
-| Transfer query/sync | IMPLEMENTED | Each queued transfer has an internal CNDrv notifier; query/sync waits on that completion point |
-| Vendor error code/name/string | IMPLEMENTED | Common response prefix and client last-error |
-| EOF resource cleanup | IMPLEMENTED | Abrupt client plus `SESSION_CLEANUP_EMPTY` server records |
-| Preset module load/unload | IMPLEMENTED | Six validated `.fatbin` modules; no upload endpoint |
-| `vector_add` operator | IMPLEMENTED | F32 rank-1, two inputs and one output |
-| `scalar_add` operator | IMPLEMENTED | F32 rank-1, one input/output, one IEEE-754 F32 scalar |
-| `relu` operator | IMPLEMENTED | F32 rank-1, one input/output |
-| `tensor_add_strided` operator | IMPLEMENTED | F32 rank-2, per-tensor shape and row/column stride |
-| `scalar_mul` operator | IMPLEMENTED | F32 rank-1, one input/output, one IEEE-754 F32 scalar |
-| `tensor_mul_strided` operator | IMPLEMENTED | F32 rank-2, per-tensor shape and row/column stride |
-| Operator registry and generic launch | IMPLEMENTED | OperatorID validates descriptor, module, kernel and parameter layout |
-| Generated operator registry and preset ABI manifest | IMPLEMENTED | Build derives C registry/manifest from JSON schema; server validates before module load |
-| Generic object registry | IMPLEMENTED | Session-owned type/generation table backs allocation, queue, notifier, module, kernel, and transfer IDs |
-| Queue operation state/dependency metadata | IMPLEMENTED | Transfer records carry sequence, same-queue predecessor, and submitted/complete state |
-| Arbitrary module upload | BACKEND_UNSUPPORTED | First stage accepts only server-side `modules` presets |
-| Multi-device deployment | PARTIAL | Selection/rebind is implemented, but this host exposes one MLU device |
-| CNNL operation | GROUND_TRUTH_BLOCKED | This Neuware installation has no `cnnl.h` or `libcnnl.so` |
+当前 SDK 的 130 个 CNRT 公共入口中：12 已实现、14 部分实现、8 明确 NotSupport、96 未提供导出。180 个 CNDrv 公共入口中：6 已实现、27 部分实现、1 明确 NotSupport、146 未提供导出；服务端使用标记与客户端导出分别核对。6 个私有 BANG hooks 和 legacy cnrtInit 不计入公共 API 分母。
 
-The operator implementation uses BANG C and CNDrv directly; it does not
-emulate a CNNL or CUDA API.
+台账的 IMPLEMENTED 限于行内的单设备会话、当前 SDK/CPU 等测试边界。未实现入口可能在 loader 阶段失败；部分实现不能视为原生所有语义完整兼容；明确拒绝也不能视为原生硬件不支持。
+
+真实 image upload 和通用 launch 已实现，支持当前实测 CNCC/CNFB/ELF 及 primitive 参数，不再受六 preset 限制。一个 registration 现在持有一个 module 和多个 KernelID，已验证未初始化 device globals 的 Kernel 内部共享、reset/reload 和 DSO 生命周期；详见 [共享模块证据](../evidence/shared-module-20261102/README.md)。Host symbol API、初始化/constant globals、复杂参数、真异步 D2H、默认 queue/多设备尚有缺口。
+
+按工程能力统计的 20 项矩阵、证据、阻塞和不支持原因在 [PROJECT_STATE](PROJECT_STATE.md)；各 API 的 native_test/remote_test 见 CSV。CNNL 无 SDK、第二物理主机无连接配置属于能力阻塞，不能混进 CNRT/CNDrv API 分母。[M1～M4 路线](../design/MILESTONES.md) 给出每项依赖与验收标准。
+
+新增 [Driver Shim](DRIVER_SHIM.md) 已覆盖独立 native context/TLS、module 文件与内存上传、通用 launch、显式/NULL queue、基础 memory/notifier；context close 有 native cleanup ACK。异步 D2H、NULL queue 异步 copy、复杂 kernel 类型、其余 context/queue 模式仍有明确边界。不能据此声称 vendor CNRT 的全部内部 Driver 调用均可接管。

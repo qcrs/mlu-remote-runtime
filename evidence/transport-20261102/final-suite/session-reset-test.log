@@ -1,0 +1,3 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/mlu-remote-session-reset-test']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '52343', 'MLU_TEST_SHIM': '1'}
+PASS session_reset old_queue=13011591284628393165 old_allocation=13011591284628393162 stale_queue=100014 stale_allocation=100014

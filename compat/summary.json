@@ -1,0 +1,37 @@
+{
+  "headers_sha256": {
+    "cnrt.h": "d29d66084ab522bd42a7a3515c95b8ee4eee89512ae45e74012d51aa86bbf614",
+    "cn_api.h": "3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6"
+  },
+  "scope": "installed preprocessed public headers; deprecated transitive declarations included; private BANG hooks counted separately",
+  "counts": {
+    "CNRT": {
+      "NOT_IMPLEMENTED": 96,
+      "UNSUPPORTED": 8,
+      "PARTIAL_IMPLEMENTED": 14,
+      "IMPLEMENTED": 12
+    },
+    "CNDrv": {
+      "NOT_IMPLEMENTED": 146,
+      "PARTIAL_IMPLEMENTED": 27,
+      "IMPLEMENTED": 6,
+      "UNSUPPORTED": 1
+    }
+  },
+  "totals": {
+    "CNRT": 130,
+    "CNDrv": 180
+  },
+  "private_bang_hooks": [
+    "__bangPopCallConfiguration",
+    "__bangPushCallConfiguration",
+    "__bangRegisterFatBinary",
+    "__bangRegisterFunction",
+    "__bangRegisterVar",
+    "__bangUnregisterFatBinary"
+  ],
+  "legacy_exports_outside_headers": [
+    "cnrtInit"
+  ],
+  "generated_object_rpc_count": 10
+}

@@ -1,0 +1,12 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/backend-resources-test', '/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+[server] limit DEVICE session=1073741824 total=8589934592 bytes
+[server] limit STAGING session=67108864 total=268435456 bytes
+[server] limit IMAGE session=67108864 total=268435456 bytes
+[server] CLEANUP_ERROR op=cnQueueSync id=8361191932262035673 status=100006
+[server] RESOURCE_TOTAL device=0 staging=0 image=0
+PASS injected native allocation failure rolls back reservation
+PASS injected async-copy failure rolls back; real completion releases staging
+PASS injected native module-load failure rolls back image reservation
+PASS failed D2H queue wait preserves host output and pending staging
+PASS cleanup error observable; successful native context destruction returns retained host quota

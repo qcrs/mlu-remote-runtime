@@ -1,0 +1,10 @@
+COMMAND ['build/probes/probe_semantics']
+ENV {'NEUWARE_HOME': '/usr/local/neuware', 'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+2026-11-02 11:02:07.216090: [cnrtError] [454050] [Card: 0] Failed to find the device by ordinal -1
+malloc_zero=0 pointer_is_null=1
+free_null=0
+invalid_device=100006
+last_after_success=100006
+completed_queue_query=0
+PASS native API H2D/D2D/D2H/queue/error semantics family
+RETURN_CODE 0

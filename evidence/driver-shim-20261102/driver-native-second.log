@@ -1,0 +1,3 @@
+line 74 assertion: copied==1199
+Driver device=MLU370-S4[mtp_372.41] bytes=25769803776 count=1
+PASS Driver file/fatbinary load, two kernels share globals, two contexts isolate state, TLS bind/unbind

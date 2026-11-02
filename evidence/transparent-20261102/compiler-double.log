@@ -1,0 +1,17 @@
+COMMAND ['/usr/local/neuware/bin/cncc', '--bang-fatbin-only', '--bang-mlu-arch=mtp_372', 'probes/compiler_double.mlu', '-o', '/tmp/mlu-compiler-double.fatbin']
+cncc: error: unable to execute command: Segmentation fault (core dumped)
+cncc: error: clang frontend command failed due to signal (use -v to see invocation)
+cncc 4.5.1 clang version 11.1.0
+Target: aarch64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /usr/local/neuware/bin
+cncc: note: diagnostic msg: 
+********************
+
+PLEASE ATTACH THE FOLLOWING FILES TO THE BUG REPORT:
+Preprocessed source(s) and associated run script(s) are located at:
+cncc: note: diagnostic msg: /tmp/compiler_double-SxdMBy.mlu
+cncc: note: diagnostic msg: /tmp/compiler_double-SxdMBy.sh
+cncc: note: diagnostic msg: 
+
+********************

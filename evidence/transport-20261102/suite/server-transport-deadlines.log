@@ -1,0 +1,23 @@
+COMMAND ['python3', 'tests/server_transport.py', '--out', '/home/lvtong/mlu-remote-runtime/evidence/transport-20261102/suite/server-transport']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+PASS {"name": "first-ALLOC-before-HELLO", "passed": true}
+PASS {"name": "bad-HELLO-length", "passed": true}
+PASS {"name": "bad-frame-version", "passed": true}
+PASS {"name": "nonzero-request-status", "passed": true}
+PASS {"name": "zero-sequence", "passed": true}
+PASS {"name": "bad-HELLO-version", "passed": true}
+PASS {"name": "unsupported-HELLO-flags", "passed": true}
+PASS {"name": "invalid-device-HELLO", "passed": true}
+PASS {"name": "handshake-blackhole", "passed": true, "elapsed_seconds": 0.2509}
+PASS {"name": "handshake-partial-header", "passed": true, "elapsed_seconds": 0.2511}
+PASS {"name": "handshake-partial-body", "passed": true, "elapsed_seconds": 0.2508}
+PASS {"name": "handshake-shares-header-body-budget", "passed": true, "elapsed_seconds": 0.2505}
+PASS {"name": "no-native-context-before-valid-HELLO", "passed": true}
+PASS {"name": "legacy-8-byte-HELLO-accepted", "passed": true}
+PASS {"name": "duplicate-HELLO-closes-session-old-ID-rejected", "passed": true}
+PASS {"name": "ready-idle-deadline", "passed": true, "elapsed_seconds": 0.3513}
+PASS {"name": "ready-combined-header-body-budget", "passed": true, "elapsed_seconds": 0.3511}
+PASS {"name": "ready-partial-header-other-client-continues", "passed": true, "elapsed_seconds": 0.4013}
+PASS {"name": "ready-partial-body-other-client-continues", "passed": true, "elapsed_seconds": 0.4011}
+PASS {"name": "server-send-backpressure-other-client-continues", "passed": true, "elapsed_seconds": 0.7112}
+PASS {"name": "native-cleanup-paths-returned-not-resource-zero-measurement", "passed": true}

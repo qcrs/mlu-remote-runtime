@@ -1,0 +1,10 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_bang_abi']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+stage: memory/vector
+stage: mixed
+stage: notifier
+stage: threads
+2026-11-02 10:48:49.307557: [cnrtError] [447823] [Card: 0] Error occurred during calling 'cnCtxSync' in CNDrv interface.
+2026-11-02 10:48:49.307641: [cnrtError] [447823] [Card: 0] Return value is 100060, CN_QUEUE_ERROR_INVALID.
+2026-11-02 10:48:49.307649: [cnrtError] [447823] [Card: 0] cnrtSyncDevice: Failed to sync current device.
+line 30 status 632015

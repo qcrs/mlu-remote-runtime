@@ -1,0 +1,61 @@
+#include <bang.h>
+#include <stdio.h>
+
+/* One CNCC image, two entry points, and device state shared across launches.
+ * Host code never obtains or copies a symbol address. */
+__mlu_device__ int module_state[4];
+
+__mlu_entry__ void module_write(int seed) {
+  for (int i = 0; i < 4; ++i) module_state[i] = seed + i;
+}
+
+__mlu_entry__ void module_read(int *out, int bias) {
+  for (int i = 0; i < 4; ++i) out[i] = module_state[i] + bias;
+}
+
+static int check(cnrtRet_t status, const char *operation) {
+  if (!status) return 0;
+  fprintf(stderr, "%s: %d (%s)\n", operation, (int)status,
+          cnrtGetErrorName(status));
+  return 1;
+}
+
+extern "C" int module_submit(int *out, int seed, cnrtQueue_t queue) {
+  cnrtDim3_t dim = {1, 1, 1};
+  module_write<<<dim, cnrtFuncTypeBlock, queue>>>(seed);
+  if (check(cnrtGetLastError(), "write launch")) return 1;
+  module_read<<<dim, cnrtFuncTypeBlock, queue>>>(out, 37);
+  return check(cnrtGetLastError(), "read launch");
+}
+
+#ifndef MLU_MODULE_LIBRARY
+int main(void) {
+  int *out = NULL, host[4];
+  cnrtQueue_t queue;
+  if (check(cnrtMalloc((void **)&out, sizeof(host)), "malloc") ||
+      check(cnrtQueueCreate(&queue), "queue create")) return 2;
+  for (int seed = 11; seed < 15; ++seed) {
+    if (module_submit(out, seed, queue)) return 3;
+    if (check(cnrtQueueSync(queue), "queue sync") ||
+        check(cnrtMemcpy(host, out, sizeof(host), cnrtMemcpyDevToHost), "copy")) return 4;
+    for (int i = 0; i < 4; ++i) if (host[i] != seed + i + 37) {
+      fprintf(stderr, "state[%d]=%d expected=%d\n", i, host[i], seed + i + 37);
+      return 5;
+    }
+  }
+  if (check(cnrtQueueDestroy(queue), "queue destroy") ||
+      check(cnrtFree(out), "free")) return 6;
+  if (check(cnrtDeviceReset(), "reset") ||
+      check(cnrtMalloc((void **)&out, sizeof(host)), "malloc after reset") ||
+      check(cnrtQueueCreate(&queue), "queue after reset") ||
+      module_submit(out, 81, queue) ||
+      check(cnrtQueueSync(queue), "sync after reset") ||
+      check(cnrtMemcpy(host, out, sizeof(host), cnrtMemcpyDevToHost), "copy after reset")) return 7;
+  for (int i = 0; i < 4; ++i) if (host[i] != 81 + i + 37) return 8;
+  if (check(cnrtQueueDestroy(queue), "destroy after reset") ||
+      check(cnrtFree(out), "free after reset")) return 9;
+  puts("PASS two BANG C kernels share module device state");
+  puts("PASS retained registration reloads one shared module after reset");
+  return 0;
+}
+#endif

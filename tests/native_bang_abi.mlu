@@ -1,0 +1,88 @@
+#include <bang.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <pthread.h>
+#include <stdlib.h>
+#define CHECK(e) do { cnrtRet_t r=(e); if(r) { fprintf(stderr,"line %d status %d\n",__LINE__,(int)r); exit(2); } } while(0)
+/* Same source spelling as a preset, deliberately different computation. */
+__mlu_entry__ void vector_add(float *dst,const float *a,const float *b,int n) {
+  for(int i=taskId;i<n;i+=taskDim) dst[i]=a[i]-b[i]+17.0f;
+}
+__mlu_entry__ void mixed(float *dst,const float *src,unsigned char c,short s,int n,
+                        long long bias,float scale,const float *nullable) {
+  for(int i=taskId;i<n;i+=taskDim) dst[i]=src[i]*scale+(float)(c+s)+(nullable?1:0);
+  if(taskId==0 && bias!=123456LL) dst[1]=-999.0f;
+}
+__mlu_entry__ void tick(int *out) { out[taskId]=taskDim; }
+struct Payload { int x; int y; };
+__mlu_entry__ void aggregate(int *out,Payload p) { out[0]=p.x+p.y; }
+extern "C" __mlu_entry__ void plain_c(int *out,int n) { if(n) out[0]=n; }
+static void *worker(void *unused) {
+  (void)unused;
+  CHECK(cnrtSetDevice(0));
+  cnrtQueue_t q; CHECK(cnrtQueueCreate(&q));
+  int host[8]={0}; int *d=NULL; CHECK(cnrtMalloc((void **)&d,sizeof(host)));
+  cnrtDim3_t dim={2,2,2};
+  for(int i=0;i<400;++i) {
+    tick<<<dim,cnrtFuncTypeBlock,q>>>(d);
+    CHECK(cnrtGetLastError());
+  }
+  CHECK(cnrtQueueSync(q));
+  CHECK(cnrtMemcpy(host,d,sizeof(host),cnrtMemcpyDevToHost));
+  for(int i=0;i<8;++i) if(host[i]!=8) exit(3);
+  CHECK(cnrtFree(d)); CHECK(cnrtQueueDestroy(q));
+  return NULL;
+}
+int main(void) {
+  fprintf(stderr,"stage: memory/vector\n");
+  enum { N=12 }; float a[N],b[N],out[N];
+  for(int i=0;i<N;++i) { a[i]=i+1; b[i]=2*i; }
+  float *da,*db,*dc;
+  CHECK(cnrtMalloc((void **)&da,sizeof(a))); CHECK(cnrtMalloc((void **)&db,sizeof(b))); CHECK(cnrtMalloc((void **)&dc,sizeof(out)));
+  CHECK(cnrtMemcpy(da,a,sizeof(a),cnrtMemcpyHostToDev)); CHECK(cnrtMemcpy(db,b,sizeof(b),cnrtMemcpyHostToDev));
+  cnrtQueue_t q; CHECK(cnrtQueueCreate(&q)); cnrtDim3_t dim={2,2,1};
+  vector_add<<<dim,cnrtFuncTypeBlock,q>>>(dc,da,db,N); CHECK(cnrtGetLastError());
+  CHECK(cnrtSyncDevice()); CHECK(cnrtMemcpy(out,dc,sizeof(out),cnrtMemcpyDevToHost));
+  for(int i=0;i<N;++i) if(out[i]!=a[i]-b[i]+17) return 4;
+  fprintf(stderr,"stage: mixed\n");
+  mixed<<<dim,cnrtFuncTypeBlock,q>>>(dc+1,da+2,(unsigned char)3,(short)-4,N-2,(long long)123456,2.0f,(const float *)NULL);
+  CHECK(cnrtGetLastError()); CHECK(cnrtQueueSync(q)); CHECK(cnrtMemcpy(out,dc,sizeof(out),cnrtMemcpyDevToHost));
+  for(int i=0;i<N-2;++i) if(out[i+1]!=a[i+2]*2.0f-1.0f) return 5;
+  fprintf(stderr,"stage: notifier\n");
+  cnrtNotifier_t event; CHECK(cnrtNotifierCreate(&event)); CHECK(cnrtPlaceNotifier(event,q)); CHECK(cnrtWaitNotifier(event)); CHECK(cnrtNotifierDestroy(event));
+  CHECK(cnrtFree(da)); CHECK(cnrtFree(db)); CHECK(cnrtFree(dc)); CHECK(cnrtQueueDestroy(q));
+  fprintf(stderr,"stage: threads\n");
+  pthread_t threads[3]; for(int i=0;i<3;++i) pthread_create(threads+i,NULL,worker,NULL);
+  for(int i=0;i<3;++i) pthread_join(threads[i],NULL);
+  fprintf(stderr,"stage: async copy pressure\n");
+  int *copies; int value=0, copied=0; CHECK(cnrtMalloc((void **)&copies,sizeof(int)));
+  CHECK(cnrtQueueCreate(&q));
+  for(int i=0;i<1200;++i) { value=i; CHECK(cnrtMemcpyAsync(copies,&value,sizeof(value),q,cnrtMemcpyHostToDev)); }
+  CHECK(cnrtQueueSync(q)); CHECK(cnrtMemcpy(&copied,copies,sizeof(copied),cnrtMemcpyDevToHost));
+  if(copied!=1199) return 13;
+  CHECK(cnrtFree(copies)); CHECK(cnrtQueueDestroy(q));
+  /* Lifecycle and negative cases are only checked on the remote path. */
+  if(getenv("MLU_TEST_SHIM")) {
+    cnrtQueue_t stale; CHECK(cnrtQueueCreate(&stale)); CHECK(cnrtQueueDestroy(stale));
+    if(cnrtQueueSync(stale)!=cnrtErrorInvalidResourceHandle) return 6;
+    cnrtGetLastError();
+    int *p,*fresh; CHECK(cnrtMalloc((void **)&p,32)); CHECK(cnrtFree(p)); CHECK(cnrtMalloc((void **)&fresh,32));
+    if(p==fresh || cnrtFree(p)!=cnrtErrorInvalidResourceHandle) return 7;
+    cnrtGetLastError();
+    Payload payload={1,2};
+    aggregate<<<dim,cnrtFuncTypeBlock,NULL>>>(fresh,payload);
+    if(cnrtGetLastError()!=cnrtErrorNotSupport) return 8;
+    plain_c<<<dim,cnrtFuncTypeBlock,NULL>>>(fresh,2);
+    if(cnrtGetLastError()!=cnrtErrorNotSupport) return 9;
+    CHECK(cnrtDeviceReset());
+    if(cnrtFree(fresh)!=cnrtErrorInvalidResourceHandle) return 10;
+    cnrtGetLastError(); CHECK(cnrtMalloc((void **)&fresh,32));
+    cnrtDim3_t xyz={2,2,2};
+    tick<<<xyz,cnrtFuncTypeBlock,NULL>>>(fresh); CHECK(cnrtGetLastError());
+    CHECK(cnrtSyncDevice()); CHECK(cnrtFree(fresh));
+    if(cnrtQueueSync((cnrtQueue_t)(uintptr_t)0xdeadbeef)!=cnrtErrorInvalidResourceHandle) return 11;
+    if(cnrtPeekAtLastError()!=cnrtErrorInvalidResourceHandle || cnrtGetLastError()!=cnrtErrorInvalidResourceHandle || cnrtGetLastError()!=cnrtSuccess) return 12;
+  }
+  puts("PASS BANG ABI: original image; mixed scalars; pointer offsets/null; xyz; 1200 launches; 1200 async copies; threads; queue/notifier");
+  if(getenv("MLU_TEST_SHIM")) puts("PASS Shim reset/reload; stale handles/VA; unsupported ABI rejection; last error");
+}

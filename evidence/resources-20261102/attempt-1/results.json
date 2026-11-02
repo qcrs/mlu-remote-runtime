@@ -1,0 +1,13 @@
+[
+  {
+    "name": "invalid-resource-settings-fail-before-listen",
+    "passed": true,
+    "cases": 6
+  },
+  {
+    "name": "device-session-and-total-limits-other-session-continues",
+    "passed": true,
+    "native_mib_before": 0,
+    "native_mib_during": 80
+  }
+]

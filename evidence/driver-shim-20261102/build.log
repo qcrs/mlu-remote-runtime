@@ -1,0 +1,35 @@
+simple RPC schema: 10 generated client wrappers + server cases
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c: In function ‘mlu_backend_queue_destroy’:
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:478:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  478 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:478:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  478 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |                                                       ^~
+/home/lvtong/mlu-remote-runtime/tests/client_cnnl.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/tests/client_cnnl.c:10:73: warning: comparison of integer expressions of different signedness: ‘int’ and ‘enum mlu_remote_protocol_status’ [-Wsign-compare]
+   10 |   printf("CNNL_STATUS=%d\n", st); mlu_remote_disconnect(ctx); return st == MLU_REMOTE_UNSUPPORTED ? 0 : 1;
+      |                                                                         ^~
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c: In function ‘connect_to’:
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c:23:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   23 |   if (getaddrinfo(host, service, &hints, &list)) return -1; int fd = -1;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c:23:61: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   23 |   if (getaddrinfo(host, service, &hints, &list)) return -1; int fd = -1;
+      |                                                             ^~~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c: In function ‘mlu_backend_queue_destroy’:
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:478:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  478 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:478:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  478 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |                                                       ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_queue.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/probes/probe_queue.c:4:273: warning: operand of ‘?:’ changes signedness from ‘int’ to ‘cnrtRet_t’ due to unsignedness of other operand [-Wsign-compare]
+    4 | int main(void) { cnrtQueue_t q=NULL; cnrtNotifier_t n=NULL; cnrtRet_t r=cnrtSetDevice(0); if(!r)r=cnrtQueueCreate(&q); if(!r)r=cnrtNotifierCreate(&n); if(!r)r=cnrtPlaceNotifier(n,q); if(!r)r=cnrtQueueSync(q); printf("queue/notifier=%d query=%d\n",r,n?cnrtQueryNotifier(n):-1); if(n)cnrtNotifierDestroy(n);if(q)cnrtQueueDestroy(q);return r != cnrtSuccess; }
+      |                                                                                                                                                                                                                                                                                 ^~
+/home/lvtong/mlu-remote-runtime/tests/native_driver.c:3: warning: "_POSIX_C_SOURCE" redefined
+    3 | #define _POSIX_C_SOURCE 200809L
+      | 
+<command-line>: note: this is the location of the previous definition
+built in /home/lvtong/mlu-remote-runtime/build

@@ -1,0 +1,14 @@
+COMMAND ['python3', 'tests/shared_module_protocol.py']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '52291', 'MLU_TEST_SHIM': '1'}
+PASS one module has two stable child KernelIDs
+PASS kernels share parent state; separately loaded identical images keep independent state
+PASS cross-session-lookup
+PASS wrong-parent-type
+PASS cross-parent-launch
+PASS missing-symbol
+PASS empty-symbol
+PASS nul-symbol
+PASS trailing-lookup
+PASS short-lookup
+PASS pending-work unload completes and invalidates all children without ID reuse
+PASS reset invalidates all module and child identities

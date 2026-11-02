@@ -33,7 +33,25 @@ enum mlu_remote_opcode {
   MLU_OP_TRANSFER_QUERY = 23,
   MLU_OP_TRANSFER_SYNC = 24,
   MLU_OP_MODULE_UNLOAD_PRESET = 25,
+  /* Native BANG host stubs use these two operations.  Image bytes are
+   * bounded by MLU_REMOTE_MAX_PAYLOAD and are validated by the server before
+   * passing them to CNDrv. */
+  MLU_OP_MODULE_LOAD_IMAGE = 26,
+  MLU_OP_KERNEL_LAUNCH_GENERIC = 27,
+  MLU_OP_TRANSFER_RELEASE = 28,
+  MLU_OP_MODULE_GET_KERNEL = 29,
+  MLU_OP_MODULE_LOAD_BINARY = 30,
+  MLU_OP_SESSION_CLOSE = 31,
+  MLU_OP_CONTEXT_SYNC = 32,
 };
+
+#define MLU_CAP_MODULE_IMAGE 0x100u
+#define MLU_CAP_GENERIC_LAUNCH 0x200u
+#define MLU_CAP_TRANSFER_RELEASE 0x400u
+#define MLU_CAP_MODULE_KERNELS 0x800u
+#define MLU_CAP_DRIVER_CONTEXT 0x1000u
+/* Generic scalar bytes are LP64 little endian. Framing remains network order. */
+#define MLU_REMOTE_KERNEL_ABI 0x08010001u
 
 enum mlu_remote_memcpy_direction {
   MLU_MEMCPY_H2D = 1,
@@ -47,6 +65,8 @@ enum mlu_remote_protocol_status {
   MLU_REMOTE_BAD_LENGTH = 0x80000003u,
   MLU_REMOTE_BAD_OBJECT = 0x80000004u,
   MLU_REMOTE_UNSUPPORTED = 0x80000005u,
+  MLU_REMOTE_TIMEOUT = 0x80000006u,
+  MLU_REMOTE_RESOURCE_LIMIT = 0x80000007u,
 };
 
 /* Stable operator registry IDs.  These IDs describe server-side, validated

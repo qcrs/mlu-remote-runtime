@@ -1,0 +1,75 @@
+{
+  "time_utc": "2026-11-02T11:09:08.638179+00:00",
+  "hostname": "server310p",
+  "scope": "user-requested same-host driverless client simulation; real MLU server in a separate process",
+  "endpoint": "127.0.0.1:52181",
+  "binary_sha256_before": {
+    "build/native_bang_generic": "a5c40d16b948f02f9e326d74263c5bea05142dce1b9c0963a70d94f02103490b",
+    "build/native_bang_abi": "28ebac5d5f1f03b300ab6bfadc4a766a0d4307cc6711048112eea82b988e6efd"
+  },
+  "commands": [
+    {
+      "name": "generic-native",
+      "argv": [
+        "build/native_bang_generic"
+      ],
+      "env": {
+        "NEUWARE_HOME": "/usr/local/neuware",
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      }
+    },
+    {
+      "name": "native_bang_generic-isolated",
+      "argv": [
+        "bash",
+        "scripts/run-isolated-client.sh",
+        "build/native_bang_generic"
+      ],
+      "env": {
+        "NEUWARE_HOME": "/usr/local/neuware",
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "52181"
+      }
+    },
+    {
+      "name": "native_bang_abi-isolated",
+      "argv": [
+        "bash",
+        "scripts/run-isolated-client.sh",
+        "build/native_bang_abi"
+      ],
+      "env": {
+        "NEUWARE_HOME": "/usr/local/neuware",
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "52181"
+      }
+    }
+  ],
+  "results": [
+    {
+      "name": "generic-native",
+      "returncode": 0
+    },
+    {
+      "name": "native_bang_generic-isolated",
+      "returncode": 0
+    },
+    {
+      "name": "native_bang_abi-isolated",
+      "returncode": 0
+    }
+  ],
+  "server_pid": 456833,
+  "server_namespaces": {
+    "user": "user:[4026531837]",
+    "mnt": "mnt:[4026531841]",
+    "net": "net:[4026531840]"
+  },
+  "binary_sha256_after": {
+    "build/native_bang_generic": "a5c40d16b948f02f9e326d74263c5bea05142dce1b9c0963a70d94f02103490b",
+    "build/native_bang_abi": "28ebac5d5f1f03b300ab6bfadc4a766a0d4307cc6711048112eea82b988e6efd"
+  },
+  "executable_unchanged": true
+}

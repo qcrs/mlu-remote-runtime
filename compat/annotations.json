@@ -1,0 +1,420 @@
+{
+  "cnrtInit": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Legacy flags=0 session initialization only",
+    "next_step": "Probe legacy flags semantics"
+  },
+  "cnrtGetDeviceCount": {
+    "status": "IMPLEMENTED",
+    "native_test": "api-semantics-native.log",
+    "remote_test": "api-semantics-remote.log",
+    "boundary": "Remote visible device count"
+  },
+  "cnrtGetDevice": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Process selected device; native per-thread device semantics pending"
+  },
+  "cnrtSetDevice": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log; api-semantics-native.log",
+    "remote_test": "native_bang_abi-replacement.log; device-select-test.log",
+    "boundary": "One session/device per process; switching with live resources rejected; one physical device tested"
+  },
+  "cnrtDeviceReset": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "remote_test": "native_bang_abi-replacement.log; session-reset-test.log",
+    "boundary": "Session context reset and registration reload; full native reset effects not compared"
+  },
+  "cnrtSyncDevice": {
+    "status": "IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "All live queues in this process session; blocks until completion"
+  },
+  "cnrtMalloc": {
+    "status": "IMPLEMENTED",
+    "native_test": "api-semantics-native.log; native_bang_abi-native.log",
+    "remote_test": "api-semantics-remote.log; native_bang_abi-replacement.log",
+    "boundary": "Owned allocation and PROT_NONE fake VA; zero bytes returns NULL; 1024 live server allocations"
+  },
+  "cnrtFree": {
+    "status": "IMPLEMENTED",
+    "native_test": "api-semantics-native.log",
+    "remote_test": "native_bang_abi-replacement.log; api-semantics-remote.log",
+    "boundary": "Synchronizes session queues; NULL succeeds; stale and interior pointers rejected; VA tombstones retained until exit"
+  },
+  "cnrtMemcpy": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "api-semantics-native.log",
+    "remote_test": "client-test.log; native_bang_abi-replacement.log",
+    "boundary": "H2D/D2H/D2D; bounded one-frame payload; host-to-host/error corner cases not fully compared"
+  },
+  "cnrtMemcpyAsync": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "api-semantics-native.log; native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "H2D server snapshot and D2D enqueue; D2H blocks before response; no pinned-host completion writeback"
+  },
+  "cnrtQueueCreate": {
+    "status": "IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "Default flags; up to 256 live client queues"
+  },
+  "cnrtQueueDestroy": {
+    "status": "IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "Synchronizes queue; monotonic stale-handle rejection"
+  },
+  "cnrtQueueSync": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "Explicit queues verified; NULL maps to one session queue; full native default-queue ordering pending"
+  },
+  "cnrtQueueQuery": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "api-semantics-native.log",
+    "remote_test": "api-semantics-remote.log",
+    "boundary": "Native queue readiness; default-queue policy pending"
+  },
+  "cnrtNotifierCreate": {
+    "status": "IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "Default flags; up to 256 live client notifiers"
+  },
+  "cnrtNotifierDestroy": {
+    "status": "IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "Owned notifier; stale handle rejected"
+  },
+  "cnrtPlaceNotifier": {
+    "status": "IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "Record notifier on owned queue"
+  },
+  "cnrtQueryNotifier": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "build/probes/probe_queue",
+    "remote_test": "client-test.log (CNDrv seam)",
+    "boundary": "Native query delegation; transparent pending-notifier differential probe still needed"
+  },
+  "cnrtWaitNotifier": {
+    "status": "IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log",
+    "remote_test": "native_bang_abi-replacement.log",
+    "boundary": "Host waits on owned notifier"
+  },
+  "cnrtInvokeKernel": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log",
+    "remote_test": "native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log",
+    "boundary": "Measured ELF64 LE/CNFBv2 single image; primitive scalar and primitive/void single pointers; one module per registration with multiple KernelIDs; measured uninitialized device globals shared internally; no host symbol APIs, aggregate/extern-C kernel/templates"
+  },
+  "cnrtGetLastError": {
+    "status": "IMPLEMENTED",
+    "native_test": "api-semantics-native.log",
+    "remote_test": "native_bang_abi-replacement.log; api-semantics-remote.log",
+    "boundary": "Sticky thread-local API error, cleared on read; asynchronous error harvesting is sync/query driven"
+  },
+  "cnrtPeekAtLastError": {
+    "status": "IMPLEMENTED",
+    "native_test": "api-semantics-native.log",
+    "remote_test": "native_bang_abi-replacement.log; api-semantics-remote.log",
+    "boundary": "Read thread-local sticky error without clearing"
+  },
+  "cnrtGetErrorName": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Only common error names mapped; full enum table not generated"
+  },
+  "cnrtGetErrorStr": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Returns mapped name instead of native descriptive text"
+  },
+  "cnrtQueueCreateWithPriority": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Only flags=0 priority=0 delegates; other values explicitly rejected"
+  },
+  "cnrtQueueGetPriority": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Only explicit owned queues with default priority; differential probe pending"
+  },
+  "cnrtNotifierCreateWithFlags": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Only flags=0 delegates; other values explicitly rejected"
+  },
+  "cnrtMallocConstant": {
+    "status": "UNSUPPORTED",
+    "boundary": "Explicit NotSupport; constant memory and symbol registration not implemented"
+  },
+  "cnrtHostMalloc": {
+    "status": "UNSUPPORTED",
+    "boundary": "Explicit NotSupport; pinned host memory ownership not implemented"
+  },
+  "cnrtFreeHost": {
+    "status": "UNSUPPORTED",
+    "boundary": "Explicit NotSupport; pinned host memory ownership not implemented"
+  },
+  "cnrtGetDeviceProperties_V2": {
+    "status": "UNSUPPORTED",
+    "boundary": "Explicit NotSupport; native DTO has not been marshalled"
+  },
+  "cnrtDeviceGetAttribute": {
+    "status": "UNSUPPORTED",
+    "boundary": "Explicit NotSupport; native attribute mapping pending"
+  },
+  "cnrtMemset": {
+    "status": "UNSUPPORTED",
+    "boundary": "Explicit NotSupport; CNDrv implementation possible; not a hardware limitation"
+  },
+  "cnrtMemsetAsync": {
+    "status": "UNSUPPORTED",
+    "boundary": "Explicit NotSupport; CNDrv implementation possible; not a hardware limitation"
+  },
+  "cnrtNotifierElapsedTime": {
+    "status": "UNSUPPORTED",
+    "boundary": "Explicit NotSupport; clock/timing semantics not implemented"
+  },
+  "cnInit": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Reserved flags accepted; creates extra device-0 control session without binding a current context; control session occupies one admission slot; endpoint failures are not native initialization errors",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnDeviceGetCount": {
+    "status": "IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Remote visible device count; control connection requires a reachable server with at least one MLU",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnDeviceGet": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnDeviceGetName": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnDeviceTotalMem": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCtxGetCurrent": {
+    "status": "IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCtxSetCurrent": {
+    "status": "IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCtxGetDevice": {
+    "status": "IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCtxGetFlags": {
+    "status": "IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCtxSync": {
+    "status": "IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Actual native cnCtxSync for the selected context, releases completed H2D staging; no native execution timeout or cancellation",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCtxCreate": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Independent native remote context with flags 0..3; create binds caller TLS; acknowledged close drains resources; transport error invalidates children without replay; one MLU tested, runtime attach/configuration APIs absent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCtxDestroy": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Independent native remote context with flags 0..3; create binds caller TLS; acknowledged close drains resources; transport error invalidates children without replay; one MLU tested, runtime attach/configuration APIs absent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnMalloc": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Owned allocation and offset, zero malloc preserves output, NULL free succeeds; PROT_NONE VA tombstones until exit; free conservatively waits session queues including used native NULL queue; resource quota differs from native physical memory",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnFree": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Owned allocation and offset, zero malloc preserves output, NULL free succeeds; PROT_NONE VA tombstones until exit; free conservatively waits session queues including used native NULL queue; resource quota differs from native physical memory",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnMemcpyHtoD": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnMemcpyDtoH": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnMemcpyDtoD": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnMemcpyHtoDAsync": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Explicit queues enqueue native work; H2D server staging retained until completion, 1200 copies measured; NULL queue async copies explicitly unsupported until wire carries async intent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnMemcpyDtoDAsync": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Explicit queues enqueue native work; H2D server staging retained until completion, 1200 copies measured; NULL queue async copies explicitly unsupported until wire carries async intent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnMemcpyDtoHAsync": {
+    "status": "UNSUPPORTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Explicit NOT_SUPPORTED; true async host completion/writeback and pinned host lifetime not implemented",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCreateQueue": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Flags=0 explicit queue; owned/stale handles; destroy conservatively synchronizes before release, whereas native may return before pending work completes",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnDestroyQueue": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Flags=0 explicit queue; owned/stale handles; destroy conservatively synchronizes before release, whereas native may return before pending work completes",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnQueueSync": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Explicit owned queues and actual native NULL queue delegation, including pending finite kernel; full implicit cross-queue ordering and error cases not yet compared",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnQueryQueue": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Explicit owned queues and actual native NULL queue delegation, including pending finite kernel; full implicit cross-queue ordering and error cases not yet compared",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnCreateNotifier": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnDestroyNotifier": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnPlaceNotifier": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnQueryNotifier": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnWaitNotifier": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnModuleLoad": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Client-side file or readable mapping uploaded immediately; bounded ELF64 LE/CNFBv2 single image with parameter sections; image retained server-side through unload; other formats/native error equivalence not supported",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnModuleLoadFatBinary": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Client-side file or readable mapping uploaded immediately; bounded ELF64 LE/CNFBv2 single image with parameter sections; image retained server-side through unload; other formats/native error equivalence not supported",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnModuleGetKernel": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Native lookup first; missing symbol clears output as measured; shared parent module/multiple kernels; LP64 primitive/single pointer signatures only, aggregate/extern-C lookup explicitly unsupported",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnModuleUnload": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Owned module; drains explicit/used NULL queues then native unload, invalidates child kernels; conservative synchronization may exceed native module dependency scope",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnInvokeKernel": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+    "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+    "boundary": "Generic user image with primitive scalars/single pointers, offsets/NULL, xyz, explicit/native NULL queue and native transfer notifier; reserved=0 and extra=NULL; Block verified, Union forwarded but not verified; no complex ABI",
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  }
+}

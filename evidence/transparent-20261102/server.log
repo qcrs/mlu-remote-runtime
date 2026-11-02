@@ -1,0 +1,72 @@
+[server] MLU_REMOTE_BIND=127.0.0.1 PORT=50192 device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+[server] listening
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=10 backend=0
+[server] session start fd=8 backend=0
+[server] session fd=10 disconnected; cleaning native resources
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] SESSION_CLEANUP_EMPTY fd=10
+[server] session start fd=12 backend=0
+[server] session fd=12 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=12
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=8 backend=0
+[server] session start fd=9 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=12 backend=0
+[server] session fd=12 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=12
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] stopped

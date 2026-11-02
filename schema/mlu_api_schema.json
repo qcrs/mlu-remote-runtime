@@ -1,8 +1,20 @@
 {
   "protocol": "mlu-remote",
   "version": 1,
-  "wire": {"byte_order": "network", "max_payload": 67108864},
-  "object_ids": ["DeviceID", "AllocationID", "QueueID", "NotifierID", "TransferID", "ModuleID", "KernelID", "OperatorID"],
+  "wire": {
+    "byte_order": "network",
+    "max_payload": 67108864
+  },
+  "object_ids": [
+    "DeviceID",
+    "AllocationID",
+    "QueueID",
+    "NotifierID",
+    "TransferID",
+    "ModuleID",
+    "KernelID",
+    "OperatorID"
+  ],
   "operations": {
     "HELLO": 1,
     "DEVICE_QUERY": 2,
@@ -28,20 +40,91 @@
     "OPERATOR_LAUNCH": 22,
     "TRANSFER_QUERY": 23,
     "TRANSFER_SYNC": 24,
-    "MODULE_UNLOAD_PRESET": 25
+    "MODULE_UNLOAD_PRESET": 25,
+    "MODULE_LOAD_IMAGE": 26,
+    "KERNEL_LAUNCH_GENERIC": 27,
+    "TRANSFER_RELEASE": 28,
+    "MODULE_GET_KERNEL": 29,
+    "MODULE_LOAD_BINARY": 30,
+    "SESSION_CLOSE": 31,
+    "CONTEXT_SYNC": 32
   },
   "hello": {
-    "request": ["version", "capability_flags", "requested_device"],
-    "requested_device": "UINT32_MAX means server default device; otherwise session context is rebound before resources are created",
-    "response": ["version", "device_count", "capability_flags", "reserved"]
+    "request": [
+      "version",
+      "capability_flags",
+      "requested_device"
+    ],
+    "requested_device": "UINT32_MAX or legacy request selects default device 0; otherwise create the initial session context on this ordinal",
+    "response": [
+      "version",
+      "device_count",
+      "capability_flags",
+      "kernel_abi"
+    ],
+    "state": "First frame only; request flags must be zero; legacy 8-byte or 12-byte request; extended 16-byte request adds native context flags; invalid or duplicate HELLO closes the connection; native session context created only after valid complete HELLO"
   },
   "operator_registry": {
-    "1": {"name": "vector_add", "module": "vector_add.fatbin", "kernel": "_Z10vector_addPfPKfS1_i", "inputs": 2, "outputs": 1, "rank": 1, "datatype": "f32", "scalar_bytes": 0},
-    "2": {"name": "scalar_add", "module": "scalar_add.fatbin", "kernel": "_Z10scalar_addPfPKffi", "inputs": 1, "outputs": 1, "rank": 1, "datatype": "f32", "scalar_bytes": 4},
-    "3": {"name": "relu", "module": "relu.fatbin", "kernel": "_Z4reluPfPKfi", "inputs": 1, "outputs": 1, "rank": 1, "datatype": "f32", "scalar_bytes": 0},
-    "4": {"name": "tensor_add_strided", "module": "tensor_add_strided.fatbin", "kernel": "_Z18tensor_add_stridedPfPKfS1_iiiiiiii", "inputs": 2, "outputs": 1, "rank": 2, "datatype": "f32", "scalar_bytes": 0},
-    "5": {"name": "scalar_mul", "module": "scalar_mul.fatbin", "kernel": "_Z10scalar_mulPfPKffi", "inputs": 1, "outputs": 1, "rank": 1, "datatype": "f32", "scalar_bytes": 4},
-    "6": {"name": "tensor_mul_strided", "module": "tensor_mul_strided.fatbin", "kernel": "_Z18tensor_mul_stridedPfPKfS1_iiiiiiii", "inputs": 2, "outputs": 1, "rank": 2, "datatype": "f32", "scalar_bytes": 0}
+    "1": {
+      "name": "vector_add",
+      "module": "vector_add.fatbin",
+      "kernel": "_Z10vector_addPfPKfS1_i",
+      "inputs": 2,
+      "outputs": 1,
+      "rank": 1,
+      "datatype": "f32",
+      "scalar_bytes": 0
+    },
+    "2": {
+      "name": "scalar_add",
+      "module": "scalar_add.fatbin",
+      "kernel": "_Z10scalar_addPfPKffi",
+      "inputs": 1,
+      "outputs": 1,
+      "rank": 1,
+      "datatype": "f32",
+      "scalar_bytes": 4
+    },
+    "3": {
+      "name": "relu",
+      "module": "relu.fatbin",
+      "kernel": "_Z4reluPfPKfi",
+      "inputs": 1,
+      "outputs": 1,
+      "rank": 1,
+      "datatype": "f32",
+      "scalar_bytes": 0
+    },
+    "4": {
+      "name": "tensor_add_strided",
+      "module": "tensor_add_strided.fatbin",
+      "kernel": "_Z18tensor_add_stridedPfPKfS1_iiiiiiii",
+      "inputs": 2,
+      "outputs": 1,
+      "rank": 2,
+      "datatype": "f32",
+      "scalar_bytes": 0
+    },
+    "5": {
+      "name": "scalar_mul",
+      "module": "scalar_mul.fatbin",
+      "kernel": "_Z10scalar_mulPfPKffi",
+      "inputs": 1,
+      "outputs": 1,
+      "rank": 1,
+      "datatype": "f32",
+      "scalar_bytes": 4
+    },
+    "6": {
+      "name": "tensor_mul_strided",
+      "module": "tensor_mul_strided.fatbin",
+      "kernel": "_Z18tensor_mul_stridedPfPKfS1_iiiiiiii",
+      "inputs": 2,
+      "outputs": 1,
+      "rank": 2,
+      "datatype": "f32",
+      "scalar_bytes": 0
+    }
   },
   "parameter_kinds": {
     "scalar": "fixed-width integer or floating-point value in the payload",
@@ -52,12 +135,152 @@
     "object_id": "session-scoped opaque ID",
     "transfer_completion": "server-owned CNDrv notifier associated with the queued operation"
   },
-  "memcpy_parameters": ["direction", "QueueID", "AllocationID+offset", "bytes", "host_bytes"],
-  "kernel_parameters": ["KernelID", "QueueID", "AllocationID", "grid", "block", "shape", "stride", "layout", "datatype", "scalar bytes"],
+  "memcpy_parameters": [
+    "direction",
+    "QueueID",
+    "AllocationID+offset",
+    "bytes",
+    "host_bytes"
+  ],
+  "kernel_parameters": [
+    "KernelID",
+    "QueueID",
+    "AllocationID",
+    "grid",
+    "block",
+    "shape",
+    "stride",
+    "layout",
+    "datatype",
+    "scalar bytes"
+  ],
   "operator_request": {
-    "fixed_prefix": ["OperatorID", "KernelID", "QueueID", "input_count", "output_count", "scalar_bytes", "flags", "grid_x", "grid_y", "grid_z", "block_x", "block_y", "block_z"],
-    "tensor_descriptor": ["AllocationID", "offset", "rank", "layout", "datatype", "shape[]", "stride[]"],
-    "response": ["TransferID"],
-    "error_response": ["status", "error_name", "error_message"]
+    "fixed_prefix": [
+      "OperatorID",
+      "KernelID",
+      "QueueID",
+      "input_count",
+      "output_count",
+      "scalar_bytes",
+      "flags",
+      "grid_x",
+      "grid_y",
+      "grid_z",
+      "block_x",
+      "block_y",
+      "block_z"
+    ],
+    "tensor_descriptor": [
+      "AllocationID",
+      "offset",
+      "rank",
+      "layout",
+      "datatype",
+      "shape[]",
+      "stride[]"
+    ],
+    "response": [
+      "TransferID"
+    ],
+    "error_response": [
+      "status",
+      "error_name",
+      "error_message"
+    ]
+  },
+  "simple_rpc": [
+    {
+      "client": "mlu_remote_queue_destroy",
+      "operation": "QUEUE_DESTROY",
+      "backend": "mlu_backend_queue_destroy"
+    },
+    {
+      "client": "mlu_remote_queue_sync",
+      "operation": "QUEUE_SYNC",
+      "backend": "mlu_backend_queue_sync"
+    },
+    {
+      "client": "mlu_remote_queue_query",
+      "operation": "QUEUE_QUERY",
+      "backend": "mlu_backend_queue_query"
+    },
+    {
+      "client": "mlu_remote_notifier_destroy",
+      "operation": "NOTIFIER_DESTROY",
+      "backend": "mlu_backend_notifier_destroy"
+    },
+    {
+      "client": "mlu_remote_notifier_query",
+      "operation": "NOTIFIER_QUERY",
+      "backend": "mlu_backend_notifier_query"
+    },
+    {
+      "client": "mlu_remote_notifier_sync",
+      "operation": "NOTIFIER_SYNC",
+      "backend": "mlu_backend_notifier_sync"
+    },
+    {
+      "client": "mlu_remote_transfer_query",
+      "operation": "TRANSFER_QUERY",
+      "backend": "mlu_backend_transfer_query"
+    },
+    {
+      "client": "mlu_remote_transfer_sync",
+      "operation": "TRANSFER_SYNC",
+      "backend": "mlu_backend_transfer_sync"
+    },
+    {
+      "client": "mlu_remote_transfer_release",
+      "operation": "TRANSFER_RELEASE",
+      "backend": "mlu_backend_transfer_release"
+    },
+    {
+      "client": "mlu_remote_module_unload_preset",
+      "operation": "MODULE_UNLOAD_PRESET",
+      "backend": "mlu_backend_module_unload"
+    }
+  ],
+  "generic_kernel": {
+    "abi": "LP64 little endian scalar bytes; metadata sizes must agree",
+    "image": "ELF64 LE CNFB v2 single image; max 64 MiB",
+    "arguments": "count then descriptors kind/size/allocation/offset/reserved and size bytes",
+    "limits": "256 arguments; 4096 bytes each; null or owned allocation pointers only"
+  },
+  "module_get_kernel": {
+    "capability": "0x800 MLU_CAP_MODULE_KERNELS",
+    "request": [
+      "u64 ModuleID",
+      "u32 symbol_bytes",
+      "symbol_bytes bytes, no NUL"
+    ],
+    "response": [
+      "u64 KernelID"
+    ],
+    "limits": "1..255 symbol bytes; owned generic module only",
+    "lifetime": "Stable per parent module/symbol; parent unload/reset invalidates all children; no cross-module image deduplication"
+  },
+  "transport": {
+    "deadlines": "Absolute CLOCK_MONOTONIC; short I/O and EINTR do not renew the deadline",
+    "client": "Connect: 5000ms after DNS across all candidate addresses; RPC: 120000ms total send+receive after context lock",
+    "server": "First HELLO receive: 5000ms; established frame receive including idle: 120000ms; each response send: 120000ms; native execution excluded",
+    "configuration": "MLU_REMOTE_CONNECT_TIMEOUT_MS / RPC_TIMEOUT_MS / SERVER_HANDSHAKE_TIMEOUT_MS / SERVER_IO_TIMEOUT_MS; decimal 1..3600000; captured on connect/startup",
+    "timeout": "Local status 0x80000006 MLU_REMOTE_TIMEOUT; close/poison; no reconnect/replay; server receive/send timeout closes connection",
+    "identity": "Process-global never-reused 64-bit sequence XOR kernel-random startup nonce; per-session owner/type/live validation; probabilistic cross-restart collision resistance",
+    "not_bounded": "DNS, mutex wait, parameter packing/allocation, native CNDrv/cleanup, worker drain"
+  },
+  "resource_lifecycle": {
+    "quotas": "Startup positive decimal SESSION/TOTAL_DEVICE_BYTES (1/8 GiB), STAGING_BYTES (64/256 MiB), IMAGE_BYTES (64/256 MiB), with MLU_REMOTE_ prefix; requested/reserved byte accounting, not physical/native-internal memory",
+    "admission": "MLU_REMOTE_MAX_CONNECTIONS default 32 range 1..1024; includes pre-HELLO and cleanup; excess sockets closed",
+    "completion": "MLU_REMOTE_SESSION_MAX_TRANSFERS default/range 1024/1..1024; includes completed unreleased objects; capacity checked before copy/launch submission",
+    "error": "0x80000007 MLU_REMOTE_RESOURCE_LIMIT / REMOTE_RESOURCE_LIMIT; rejected before native submission; healthy session retained; CNRT maps to cnrtErrorNoMem",
+    "shutdown": "SIGINT/SIGTERM self-pipe stops accept, shutdowns tracked sockets and waits worker native cleanup; no native time bound; cleanup failures reported/nonzero exit; failed context destruction stops admission and quarantines retained buffers/charges until exit",
+    "D2H": "Queue wait before synchronous native copy; failed wait must not leave async writers targeting dispatcher response buffers"
+  },
+  "driver_context": {
+    "capability": "0x1000",
+    "hello": "version/u32, zero/u32, ordinal/u32, native_context_flags/u32",
+    "module_load_binary": "image_bytes/u32 + exact ELF/CNFB image; reply ModuleID/u64; no first kernel required",
+    "context_sync": "empty request/reply; actual cnCtxSync, completion releases H2D staging",
+    "session_close": "empty request/reply; native cleanup acknowledged, connection closed, context not recreated"
   }
 }

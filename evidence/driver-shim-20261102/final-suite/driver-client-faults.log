@@ -1,0 +1,7 @@
+COMMAND ['python3', 'tests/driver_client_faults.py']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+PASS Driver config : no replay, stale context invalid, control session independent
+PASS Driver close-bad-reply : no replay, stale context invalid, control session independent
+PASS Driver close-EOF : no replay, stale context invalid, control session independent
+PASS Driver sync-bad-reply : no replay, stale context invalid, control session independent
+PASS Driver old-capability : no replay, stale context invalid, control session independent

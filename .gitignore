@@ -3,3 +3,6 @@ modules/*.fatbin
 modules/*.fatbin.c
 modules/*.manifest
 build/generated/
+__pycache__/
+core
+core.*

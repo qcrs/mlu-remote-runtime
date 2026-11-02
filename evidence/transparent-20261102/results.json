@@ -1,0 +1,147 @@
+[
+  {
+    "name": "environment",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_remote-native",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_remote-replacement",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_remote-preload",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_generic-native",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_generic-replacement",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_generic-preload",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_abi-native",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_abi-replacement",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "native_bang_abi-preload",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "api-semantics-native",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "api-semantics-remote",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "client-test",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "operator-test",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "custom-kernel-test",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "protocol-error-test",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "session-isolation-test",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "device-select-test",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "session-reset-test",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "cnnl-test",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "generic-protocol",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "isolated-client",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "abrupt",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "dependencies",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "no-driver-access",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "generated",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "compatibility-ledger",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "client-response-faults",
+    "returncode": 0,
+    "expected": 0
+  },
+  {
+    "name": "parser-bounds",
+    "returncode": 0,
+    "expected": 0
+  }
+]

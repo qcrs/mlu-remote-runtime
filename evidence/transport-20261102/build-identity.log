@@ -1,0 +1,27 @@
+simple RPC schema: 10 generated client wrappers + server cases
+/home/lvtong/mlu-remote-runtime/server/mlu_remote_server.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/server/mlu_remote_server.c:333:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  333 |   if (listen_fd >= 0) close(listen_fd); fprintf(stderr, "[server] stopped\n"); return 0;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/mlu_remote_server.c:333:41: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  333 |   if (listen_fd >= 0) close(listen_fd); fprintf(stderr, "[server] stopped\n"); return 0;
+      |                                         ^~~~~~~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c: In function ‘mlu_backend_session_init’:
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:241:17: error: ‘CN_ERROR_SYSTEM’ undeclared (first use in this function)
+  241 |     return (int)CN_ERROR_SYSTEM;
+      |                 ^~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:241:17: note: each undeclared identifier is reported only once for each function it appears in
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c: In function ‘mlu_backend_queue_destroy’:
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:405:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  405 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:405:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  405 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |                                                       ^~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c: In function ‘mlu_backend_notifier_record’:
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:432:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  432 |   if (!n || !q) return (int)CN_ERROR_INVALID_HANDLE; return (int)cnPlaceNotifier(n->handle, q->handle);
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:432:54: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  432 |   if (!n || !q) return (int)CN_ERROR_INVALID_HANDLE; return (int)cnPlaceNotifier(n->handle, q->handle);
+      |                                                      ^~~~~~

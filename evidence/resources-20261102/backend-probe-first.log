@@ -1,0 +1,9 @@
+[server] limit DEVICE session=1073741824 total=8589934592 bytes
+[server] limit STAGING session=67108864 total=268435456 bytes
+[server] limit IMAGE session=67108864 total=268435456 bytes
+[server] CLEANUP_ERROR op=cnQueueSync id=9866529113426010887 status=100006
+[server] RESOURCE_TOTAL device=0 staging=0 image=0
+PASS injected native allocation failure rolls back reservation
+PASS injected async-copy failure rolls back; real completion releases staging
+PASS injected native module-load failure rolls back image reservation
+PASS cleanup error observable; successful native context destruction returns retained host quota

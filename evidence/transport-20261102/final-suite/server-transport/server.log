@@ -1,0 +1,72 @@
+[server] MLU_REMOTE_BIND=127.0.0.1 PORT=59703 device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+[server] listening handshake_timeout_ms=250 io_timeout_ms=350
+[server] session start fd=8 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] receive failed fd=8 phase=header ready=0 errno=110 (Connection timed out)
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] receive failed fd=9 phase=header ready=0 errno=110 (Connection timed out)
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] receive failed fd=8 phase=payload ready=0 errno=110 (Connection timed out)
+[server] SESSION_NO_NATIVE_CONTEXT fd=8
+[server] session start fd=9 awaiting HELLO
+[server] receive failed fd=9 phase=payload ready=0 errno=110 (Connection timed out)
+[server] SESSION_NO_NATIVE_CONTEXT fd=9
+[server] session start fd=8 awaiting HELLO
+[server] native context created fd=8 device=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 awaiting HELLO
+[server] native context created fd=9 device=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0
+[server] session fd=10 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10
+[server] session start fd=8 awaiting HELLO
+[server] native context created fd=8 device=0
+[server] receive failed fd=8 phase=header ready=1 errno=110 (Connection timed out)
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 awaiting HELLO
+[server] native context created fd=9 device=0
+[server] receive failed fd=9 phase=payload ready=1 errno=110 (Connection timed out)
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=8 awaiting HELLO
+[server] native context created fd=8 device=0
+[server] session start fd=9 awaiting HELLO
+[server] native context created fd=9 device=0
+[server] receive failed fd=9 phase=header ready=1 errno=110 (Connection timed out)
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=12 awaiting HELLO
+[server] native context created fd=12 device=0
+[server] receive failed fd=12 phase=payload ready=1 errno=110 (Connection timed out)
+[server] session fd=12 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=12
+[server] session start fd=9 awaiting HELLO
+[server] native context created fd=9 device=0
+[server] response failed fd=9 opcode=5 request=3 errno=110 (Connection timed out)
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] stopped

@@ -1,0 +1,30 @@
+[
+  {
+    "name": "first-ALLOC-before-HELLO",
+    "passed": true
+  },
+  {
+    "name": "bad-HELLO-length",
+    "passed": true
+  },
+  {
+    "name": "bad-frame-version",
+    "passed": true
+  },
+  {
+    "name": "nonzero-request-status",
+    "passed": true
+  },
+  {
+    "name": "zero-sequence",
+    "passed": true
+  },
+  {
+    "name": "bad-HELLO-version",
+    "passed": true
+  },
+  {
+    "name": "unsupported-HELLO-flags",
+    "passed": true
+  }
+]

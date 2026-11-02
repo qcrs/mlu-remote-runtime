@@ -25,7 +25,10 @@ int main(void) {
   uint64_t module = 0, kernel = 0, transfer = 0;
   CHECK(ctx, mlu_remote_operator_create(ctx, MLU_REMOTE_OPERATOR_VECTOR_ADD, &module, &kernel), "create_vector_add");
   CHECK(ctx, mlu_remote_operator_launch_vector_add(ctx, kernel, q, dout, da, db, n, 1, &transfer), "launch_vector_add");
-  CHECK(ctx, mlu_remote_operator_query(ctx, transfer), "query_vector_add"); CHECK(ctx, mlu_remote_operator_sync(ctx, transfer), "sync_vector_add");
+  int pending = mlu_remote_operator_query(ctx, transfer);
+  if (pending != 0 && pending != 1) return report(ctx, "query_vector_add", pending);
+  CHECK(ctx, mlu_remote_operator_sync(ctx, transfer), "sync_vector_add");
+  CHECK(ctx, mlu_remote_operator_query(ctx, transfer), "query_completed_vector_add");
   CHECK(ctx, mlu_remote_memcpy_d2h(ctx, out, dout, 0, bytes, q, NULL), "d2h_vector_add");
   for (uint32_t i = 0; i < n; ++i) if (out[i] != a[i] + b[i]) return report(ctx, "vector_add_value", -1);
   printf("PASS operator vector_add module=%llu kernel=%llu transfer=%llu\n", (unsigned long long)module, (unsigned long long)kernel, (unsigned long long)transfer);

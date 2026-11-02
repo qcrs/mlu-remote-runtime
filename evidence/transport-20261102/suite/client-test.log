@@ -1,0 +1,6 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/mlu-remote-client-test']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '52341', 'MLU_TEST_SHIM': '1'}
+HELLO device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+PASS error code=100014 name=CN_ERROR_INVALID_HANDLE
+PASS memory H2D/D2D/D2H queue=77309412329 notifier=77309412330 transfer=77309412335
+CNNL elementwise_add_f32 status=-2147483643 (expected GROUND_TRUTH_BLOCKED when CNNL is absent)

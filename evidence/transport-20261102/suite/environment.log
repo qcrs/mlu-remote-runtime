@@ -1,0 +1,28 @@
+COMMAND ['bash', '-c', 'uname -a; cnmon; /usr/local/neuware/bin/cncc --version; sha256sum /usr/local/neuware/include/cnrt.h /usr/local/neuware/include/cn_api.h']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+Linux server310p 5.15.0-185-generic #195-Ubuntu SMP Fri Jun 19 17:16:34 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux
+Mon Nov  2 11:44:51 2026
++------------------------------------------------------------------------------+
+| CNMON v5.10.35                                               Driver v5.10.35 |
++-------------------------------+----------------------+-----------------------+
+| Card  VF  Name       Firmware |               Bus-Id | Util        Ecc-Error |
+| Fan   Temp      Pwr:Usage/Cap |         Memory-Usage | Mode     Compute-Mode |
+|===============================+======================+=======================|
+| 0     /   MLU370-S4    v1.1.6 |         0000:84:00.0 | 0%                N/A |
+|  0%   51C          22 W/ 75 W |     0 MiB/ 23365 MiB | FULL          Default |
++-------------------------------+----------------------+-----------------------+
+
++------------------------------------------------------------------------------+
+| Processes:                                                                   |
+|  Card  MI  PID     Command Line                             MLU Memory Usage |
+|==============================================================================|
+|  No running processes found                                                  |
++------------------------------------------------------------------------------+
+
+
+cncc 4.5.1 clang version 11.1.0
+Target: aarch64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /usr/local/neuware/bin
+d29d66084ab522bd42a7a3515c95b8ee4eee89512ae45e74012d51aa86bbf614  /usr/local/neuware/include/cnrt.h
+3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6  /usr/local/neuware/include/cn_api.h

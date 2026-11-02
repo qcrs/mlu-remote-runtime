@@ -1,0 +1,19 @@
+{
+  "equal": true,
+  "observations": {
+    "native": {
+      "malloc_zero": "malloc_zero=0 pointer_is_null=1",
+      "free_null": "free_null=0",
+      "invalid_device": "invalid_device=100006",
+      "last_after_success": "last_after_success=100006",
+      "completed_queue_query": "completed_queue_query=0"
+    },
+    "remote": {
+      "malloc_zero": "malloc_zero=0 pointer_is_null=1",
+      "free_null": "free_null=0",
+      "invalid_device": "invalid_device=100006",
+      "last_after_success": "last_after_success=100006",
+      "completed_queue_query": "completed_queue_query=0"
+    }
+  }
+}

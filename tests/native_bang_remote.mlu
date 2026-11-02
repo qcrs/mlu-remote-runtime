@@ -1,0 +1,25 @@
+#include <bang.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+__mlu_entry__ void vector_add(float *dst, const float *a, const float *b, int n) {
+  if (!dst || !a || !b || n <= 0) return;
+  for (int i = 0; i < n; ++i) dst[i] = a[i] + b[i];
+}
+
+int main(void) {
+  const int n = 8;
+  float a[n], b[n], out[n];
+  for (int i = 0; i < n; ++i) { a[i] = (float)i; b[i] = (float)(2 * i); out[i] = 0.0f; }
+  float *da = NULL, *db = NULL, *dc = NULL;
+  if (cnrtMalloc((void **)&da, sizeof(a)) || cnrtMalloc((void **)&db, sizeof(b)) || cnrtMalloc((void **)&dc, sizeof(out))) return 2;
+  if (cnrtMemcpy(da, a, sizeof(a), cnrtMemcpyHostToDev) || cnrtMemcpy(db, b, sizeof(b), cnrtMemcpyHostToDev)) return 3;
+  cnrtDim3_t dim = {1, 1, 1};
+  vector_add<<<dim, cnrtFuncTypeBlock, NULL>>>(dc, da, db, n);
+  if (cnrtSyncDevice()) return 4;
+  if (cnrtMemcpy(out, dc, sizeof(out), cnrtMemcpyDevToHost)) return 5;
+  for (int i = 0; i < n; ++i) if (out[i] != a[i] + b[i]) return 6;
+  cnrtFree(da); cnrtFree(db); cnrtFree(dc);
+  puts("PASS native BANG C through CNRT shim");
+  return 0;
+}

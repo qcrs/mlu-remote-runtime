@@ -8,16 +8,9 @@ LDFLAGS="-L$NEUWARE_HOME/lib64 -Wl,-rpath,$NEUWARE_HOME/lib64"
 mkdir -p "$ROOT/build" "$ROOT/build/generated" "$ROOT/build/probes" "$ROOT/modules"
 python3 "$ROOT/scripts/generate_operator_registry.py"
 
-"$CC" $CFLAGS -c "$ROOT/client/runtime_context.c" -o "$ROOT/build/runtime_context.o"
-"$CC" $CFLAGS -c "$ROOT/client/remote_cnrt.c" -o "$ROOT/build/remote_cnrt.o"
-"$CC" $CFLAGS -c "$ROOT/client/transfer.c" -o "$ROOT/build/transfer.o"
-"$CC" $CFLAGS -c "$ROOT/client/remote_operator.c" -o "$ROOT/build/remote_operator.o"
-"$CC" $CFLAGS -c "$ROOT/client/remote_cnnl.c" -o "$ROOT/build/remote_cnnl.o"
-ar rcs "$ROOT/build/libmlu_remote_client.a" "$ROOT/build/runtime_context.o" "$ROOT/build/remote_cnrt.o" "$ROOT/build/transfer.o" "$ROOT/build/remote_operator.o" "$ROOT/build/remote_cnnl.o"
-"$CC" -shared "$ROOT/build/runtime_context.o" "$ROOT/build/remote_cnrt.o" "$ROOT/build/transfer.o" "$ROOT/build/remote_operator.o" -o "$ROOT/build/libremote_cnrt.so" -lpthread
-"$CC" -shared "$ROOT/build/remote_cnnl.o" -L"$ROOT/build" -lremote_cnrt -Wl,-rpath,"$ROOT/build" -o "$ROOT/build/libremote_cnnl.so"
+"$ROOT/scripts/build-client.sh"
 
-"$CC" $CFLAGS "$ROOT/server/mlu_remote_server.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/object_registry.c" "$ROOT/server/server_session.c" -o "$ROOT/build/mlu-remote-server" $LDFLAGS -lcndrv -lpthread
+"$CC" $CFLAGS "$ROOT/server/mlu_remote_server.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/resource_limits.c" "$ROOT/server/object_registry.c" "$ROOT/server/server_session.c" "$ROOT/common/bang_image.c" -o "$ROOT/build/mlu-remote-server" $LDFLAGS -lcndrv -lpthread -ldl
 CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/client_basic.c" -o "$ROOT/build/mlu-remote-client-test" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/client_cnnl.c" -o "$ROOT/build/mlu-remote-cnnl-test" $CLIENT_LIBS $LDFLAGS -lpthread
@@ -25,6 +18,9 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/client_operator.c" -o "$ROOT/build/mlu-remote-operator-test" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/client_abrupt.c" -o "$ROOT/build/mlu-remote-abrupt-client" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/protocol_errors.c" -o "$ROOT/build/mlu-remote-protocol-error-test" $LDFLAGS
+"$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/object_identity.c" "$ROOT/server/object_registry.c" -Wl,--wrap=getrandom -lpthread -o "$ROOT/build/object-identity-test"
+"$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/backend_resources.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/resource_limits.c" "$ROOT/server/object_registry.c" "$ROOT/common/bang_image.c" -Wl,--wrap=cnMalloc,--wrap=cnModuleLoadFatBinary,--wrap=cnMemcpyHtoDAsync,--wrap=cnQueueSync,--wrap=cnCtxDestroy $LDFLAGS -lcndrv -lpthread -ldl -o "$ROOT/build/backend-resources-test"
+"$CC" $CFLAGS -shared "$ROOT/tests/fault_cleanup.c" -o "$ROOT/build/libtest-fail-cleanup.so"
 "$CC" $CFLAGS "$ROOT/tests/client_isolation.c" -o "$ROOT/build/mlu-remote-session-isolation-test" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/client_device_select.c" -o "$ROOT/build/mlu-remote-device-select-test" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/client_reset.c" -o "$ROOT/build/mlu-remote-session-reset-test" $CLIENT_LIBS $LDFLAGS -lpthread
@@ -33,6 +29,10 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/probes/probe_queue.c" -o "$ROOT/build/probes/probe_queue" $LDFLAGS -lcnrt
 "$CC" $CFLAGS "$ROOT/probes/probe_cnnl.c" -o "$ROOT/build/probes/probe_cnnl" -ldl
 "$CC" $CFLAGS "$ROOT/probes/probe_kernel.c" -o "$ROOT/build/probes/probe_kernel"
+"$CC" $CFLAGS "$ROOT/probes/probe_semantics.c" -o "$ROOT/build/probes/probe_semantics" $LDFLAGS -lcnrt
+"$CC" $CFLAGS "$ROOT/probes/probe_driver_semantics.c" -o "$ROOT/build/probes/probe_driver_semantics" $LDFLAGS -lcndrv
+"$CC" $CFLAGS "$ROOT/tests/native_driver.c" -o "$ROOT/build/native_driver" $LDFLAGS -lcndrv -lpthread
+"$CC" -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I"$ROOT/include" "$ROOT/common/bang_image.c" "$ROOT/tests/bang_image_bounds.c" -ldl -o "$ROOT/build/bang-image-bounds"
 
 if command -v cncc >/dev/null 2>&1 || [ -x "$NEUWARE_HOME/bin/cncc" ] || [ -x /usr/local/neuware/bin/cncc ]; then
   CNCC=$(command -v cncc || true); [ -n "$CNCC" ] || CNCC=/usr/local/neuware/bin/cncc
@@ -40,8 +40,21 @@ if command -v cncc >/dev/null 2>&1 || [ -x "$NEUWARE_HOME/bin/cncc" ] || [ -x /u
   # independently loadable preset module so stale or unsupported symbols are
   # isolated to that operator.
   for OP in vector_add scalar_add relu tensor_add_strided scalar_mul tensor_mul_strided; do
-    "$CNCC" --bang-fatbin-only --bang-mlu-arch=mtp_372 "$ROOT/kernels/$OP/$OP.mlu" -o "$ROOT/modules/$OP.fatbin" || echo "WARN: $OP.fatbin was not produced"
+    "$CNCC" --bang-fatbin-only --bang-mlu-arch=mtp_372 "$ROOT/kernels/$OP/$OP.mlu" -o "$ROOT/modules/$OP.fatbin"
   done
+  for TEST in native_bang_remote native_bang_generic; do
+    "$CNCC" --bang-mlu-arch=mtp_372 "$ROOT/tests/$TEST.mlu" -o "$ROOT/build/$TEST"
+  done
+  # Keep the actual embedded ELF container/host stub for ABI and parser probes.
+  mkdir -p "$ROOT/build/audit"
+  (cd "$ROOT/build/audit" && "$CNCC" --bang-mlu-arch=mtp_372 -save-temps "$ROOT/tests/native_bang_abi.mlu" -o "$ROOT/build/native_bang_abi")
+  mkdir -p "$ROOT/build/module-audit"
+  (cd "$ROOT/build/module-audit" && "$CNCC" --bang-mlu-arch=mtp_372 -save-temps "$ROOT/tests/native_bang_module.mlu" -o "$ROOT/build/native_bang_module")
+  mkdir -p "$ROOT/build/drain-audit"
+  (cd "$ROOT/build/drain-audit" && "$CNCC" --bang-mlu-arch=mtp_372 -save-temps "$ROOT/tests/native_bang_drain.mlu" -o "$ROOT/build/native_bang_drain")
+  "$CNCC" --bang-mlu-arch=mtp_372 -shared -fPIC -DMLU_MODULE_LIBRARY "$ROOT/tests/native_bang_module.mlu" -o "$ROOT/build/libnative_bang_module.so"
+  "$CC" $CFLAGS "$ROOT/tests/native_bang_module_dso.c" -o "$ROOT/build/native_bang_module_dso" $LDFLAGS -lcnrt -ldl
+
 else
   echo "WARN: cncc not found; preset kernel remains PARTIAL"
 fi

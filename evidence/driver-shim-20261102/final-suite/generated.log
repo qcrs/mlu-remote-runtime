@@ -1,0 +1,3 @@
+COMMAND ['python3', 'scripts/generate_rpc.py', '--check']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+simple RPC schema: 10 generated client wrappers + server cases

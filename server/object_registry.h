@@ -25,13 +25,14 @@ typedef struct {
 
 typedef struct {
   uint64_t owner_token;
-  uint64_t next_id;
   uint32_t generation;
   mlu_object_entry entries[MLU_OBJECT_REGISTRY_MAX];
 } mlu_object_registry;
 
-void mlu_object_registry_init(mlu_object_registry *registry,
-                              uint64_t owner_token, uint64_t id_seed);
+/* Process-wide monotonic identities masked by a kernel-random startup nonce.
+ * Init fails closed if secure entropy is unavailable. Cross-restart collision
+ * resistance is probabilistic (64-bit space), not authorization. */
+int mlu_object_registry_init(mlu_object_registry *registry, uint64_t owner_token);
 int mlu_object_registry_register(mlu_object_registry *registry,
                                  uint16_t type, uint64_t *id,
                                  uint32_t *generation);

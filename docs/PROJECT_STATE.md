@@ -1,102 +1,57 @@
-# Project state
+# 当前工程状态
 
-Updated 2026-10-31 after independent TCP client/server operator verification.
+更新：2026-11-02。主线已经从预置算子 RPC 扩展到原生 CNRT ABI、CNCC 注册 hooks、真实 image 上传和通用 launch。旧 TCP、Session、对象表及六 preset 保留。
 
-## Ground truth
+MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 native、replacement、LD_PRELOAD 均通过。独立 namespace 隐藏 SDK 和 `/dev` 后客户端仍通过。按用户后续要求，本轮采用本机双终端/namespace 模拟无 NPU 客户端，另已通过普通 kernel 和完整 ABI 程序，见 [本机模拟证据](../evidence/driverless-local-20261102/README.md)。**第二物理主机的部署验证仍是后续独立项，最终跨主机目标尚未全部完成。**
 
-- Product: MLU370-S4 (`cnmon` reports one visible device), architecture
-  `mtp_372.41`.
-- Driver: 5.10.35; firmware v1.1.6.
-- Neuware: `/usr/local/neuware-3.5.2`.
-- CNRT: 6.5.2. CNDrv: 2.5.2.
-- CNCC: `/usr/local/neuware/bin/cncc`.
-- CNNL: no `cnnl.h` and no `libcnnl.so`; CNNL remains
-  `GROUND_TRUTH_BLOCKED`.
+## API 统计
 
-## Build and module artifacts
+分母为当前 SDK 预处理后的公共声明，含传递 deprecated 声明，宏别名按链接符号归一；详见 [逐 API 台账](../compat/api-ledger.csv)。
 
-```text
-./scripts/build.sh
-```
+| 层 | 已实现 | 部分实现 | 明确不支持 | 未实现 | 合计 |
+|---|---:|---:|---:|---:|---:|
+| CNRT client ABI | 12 | 14 | 8 | 96 | 130 |
+| CNDrv client ABI | 6 | 27 | 1 | 146 | 180 |
 
-The build uses:
+另有 6 个私有 `__bang*` hooks；legacy `cnrtInit` 不在当前公共头文件分母内。CNDrv 的 backend_used 与 client_export 分别核对，只有人工审查与原生/远程证据支持的入口才提升状态。未实现入口可能 loader 失败；明确不支持入口返回 NotSupport。
 
-```text
-cncc --bang-fatbin-only --bang-mlu-arch=mtp_372 kernels/<operator>/<operator>.mlu -o modules/<operator>.fatbin
-```
+## 能力统计
 
-The server registry loads only `vector_add.fatbin`, `scalar_add.fatbin`,
-`relu.fatbin`, `tensor_add_strided.fatbin`, `scalar_mul.fatbin`, and
-`tensor_mul_strided.fatbin` from `MLU_REMOTE_MODULE_DIR` (default `modules`).
-The binaries are built for `mtp_372`; another MLU architecture requires
-rebuilding the presets.
-The build also creates `build/generated/operator_registry.h` and sidecar
-manifests. A manifest mismatch is rejected before `cnModuleLoad` (verified by
-running the server with `MLU_REMOTE_MLU_ARCH=bad`).
+下面固定 20 个工程能力项：已实现 7、部分实现 9、阻塞 2、明确不支持 2、未实现 0。这里的工程能力与上面的 API 数量是不同分母；已实现仍限定在列明测试范围。
 
-## Verified localhost results
+| 能力 | 状态 | 范围及证据 |
+|---|---|---|
+| TCP framing / session | 已实现 | 独立进程、序号及长度验证；首包强制 HELLO，完整合法后才创建 native context，重复握手拒绝；`server-transport-deadlines.log` |
+| Client 原生依赖解耦 | 已实现 | 纯 core 无 SDK 构建；运行不依赖 Driver；`client-core-build.log`、`isolated-client.log` |
+| 原生 CNRT ABI | 部分实现 | 26 个有实现的公共入口及 8 个明确拒绝入口；详见 API 台账 |
+| 原生 CNDrv client ABI | 部分实现 | 独立 libcndrv.so；context/TLS、立即 module load、通用 launch、显式/NULL queue、基础 memory/notifier；[范围和证据](DRIVER_SHIM.md)，仍非完整 vendor CNRT 底层替代 |
+| Kernel 注册及远程加载 | 部分实现 | 当前 CNCC wrapper / ELF64 LE / CNFB v2 单 image；一个 registration/module→多个 KernelID；DSO 20 次重载、pending-work unload、reset/reload 已测 |
+| 通用 kernel launch | 部分实现 | 用户 image、primitive scalar/单层 pointer、offset/NULL、xyz、已测未初始化 device globals 内部共享；Host symbol API/复杂 ABI 仍未支持 |
+| 内存与 fake VA | 已实现 | owned allocation+offset；free/reset 失效；VA tombstone 防旧指针复用；`native_bang_abi-replacement.log` |
+| H2D staging / D2D enqueue | 已实现 | native/remote 对照、1200 async H2D；staging 完成前保持存活 |
+| 真异步 D2H | 部分实现 | 有正确数据回传，但回复前阻塞同步；pinned/writeback 未实现 |
+| Queue / Notifier | 部分实现 | 基础 create/record/query/wait；默认 queue、priority、flags、timing 语义不完整 |
+| 所有权、生命周期和异常清理 | 部分实现 | 跨 session/stale/reset/unload/EOF/restart；配额预留/回滚、pending H2D、native 错误逐项报告、失败 quarantine、worker drain 已测；长期计量及 native 取消待做 |
+| 台账与 RPC codegen | 已实现 | 310 个公共声明盘点；10 对对象包装/分派；两个生成器 `--check` |
+| 回复校验与故障连接失效 | 已实现 | 短成功回复、错误形状、截断、序号错误、socket 超时/kill/restart 拒绝且不重放；`client-response-faults.log`、`client-transport-deadlines.log`、`server-restart.log` |
+| 原有六 preset | 已实现 | 六组数值、TransferID、manifest 验证；`operator-test.log` |
+| pinned/Host symbol/复杂 kernel ABI | 明确不支持 | pinned、复杂 launch ABI 显式拒绝；Host symbol API 尚无导出，加载或调用时失败；initialized/constant/external globals 注册拒绝 |
+| CNNL 原生执行 | 阻塞 | 当前 SDK 无 cnnl.h/libcnnl.so；已有 seam 明确拒绝，`cnnl-test.log` 不算 CNNL 成功 |
+| 多设备语义 | 部分实现 | 初始 ordinal/select/reset 有实现，仅一物理设备；TLS device 尚未实现 |
+| 跨第二物理主机验收 | 阻塞 | 无第二主机地址/连接配置；本机独立 TCP 和 namespace 证据不替代此项 |
+| 生产连接与部署管理 | 部分实现 | 已有 connect/RPC/首包/收发 deadline、连接/设备字节/staging/image/transfer 配额、SIGINT/SIGTERM drain；DNS/native 取消、认证/TLS、租户公平隔离、显式应用恢复仍待做 |
+| 异构 CPU / 未知 SDK ABI | 明确不支持 | scalar LP64 LE，只验收 AArch64→AArch64；新 ABI 先做 M1 |
 
-Server command:
+## 测试结论与依赖
 
-```text
-MLU_REMOTE_BIND=127.0.0.1 MLU_REMOTE_PORT=50072 \
-MLU_REMOTE_MODULE_DIR=/home/lvtong/mlu-remote-runtime/modules \
-./build/mlu-remote-server
-```
+最新自动验证 [58 项 results.json](../evidence/driver-shim-20261102/final-suite/results.json) 均返回期望值，保留之前 [48 项资源批次](../evidence/resources-20261102/final-suite/results.json)、[42 项连接加固批次](../evidence/transport-20261102/final-suite/results.json)、[38 项共享模块批次](../evidence/shared-module-20261102/suite/results.json) 和 [29 项基线](../evidence/transparent-20261102/results.json)；其中 CNNL 项验证的是明确拒绝。六组 CNCC 程序与普通 Driver 程序的 native/replacement/preload、四组隔离客户端、ABI/线程/1200 launch/copy、共享 module/globals、DSO 生命周期、协议与故障注入、旧六 preset 回归、ASan/UBSan parser 共 6000 次 mutation 均通过。
 
-Client outputs from separate processes on the same TCP listener:
+新一轮 [Driver Shim 回归](../evidence/driver-shim-20261102/README.md) 在此前基础上新增普通 Driver 程序的 native/replacement/preload、语义逐行比较、隔离客户端、Driver 协议、坏回复/EOF/configuration 故障和依赖检查。真实 CNDrv NULL queue 的 kernel/notifier/sync/query 已接入，pending NULL queue 在 module unload/context close 时完成清理；同步 copy 与 NULL queue 异步 copy 的 wire 区分仍待扩展，后者当前明确拒绝。
 
-```text
-HELLO device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
-PASS error code=100014 name=CN_ERROR_INVALID_HANDLE
-PASS memory H2D/D2D/D2H queue=4294968297 notifier=4294968298 transfer=4294968303
-CNNL elementwise_add_f32 status=-2147483643 (expected GROUND_TRUTH_BLOCKED when CNNL is absent)
-PASS operator vector_add module=8589935599 kernel=8589935600 transfer=8589935601
-PASS operator parameter and registry errors
-PASS operator scalar_add transfer=8589935605
-PASS operator scalar_mul transfer=8589935609
-PASS operator relu transfer=8589935614
-PASS operator tensor_add_strided rank=2 stride=6 transfer=8589935623
-PASS operator tensor_mul_strided rank=2 stride=6 transfer=8589935627
-PASS operator two_queue_ordering queue1=8589935593 queue2=8589935629
-PASS preset BANG vector_add module=12884902889 kernel=12884902890
-PASS device_selection available=1 invalid_status=100005 resource_switch_status=0
-PASS session_reset old_queue=21474837481 old_allocation=21474837482 stale_queue=100014 stale_allocation=100014
-MLU_REMOTE_DEVICE=1 -> connect failed (one visible device)
-PASS protocol oversized_payload and truncated_payload rejected
-PASS session isolation queue_a=30064772073 queue_b=34359739369 cross_status=100014
-CNNL_STATUS=-2147483643
-ABRUPT_LIVE queue=51539608553 allocation=51539608554
-```
+新增 14 组 Client deadline/配置故障测试、21 组真机 server 握手/收发/另一客户端继续工作检查、3 组暂停/kill/restart 检查，以及 entropy 失败/2048 并发 registry 身份检查均通过。首次 restart 测试实际复现了跨进程旧 AllocationID 重复，修复前后证据均保留。配置、时间保证范围与未完成项见 [连接生命周期](TRANSPORT_LIFECYCLE.md)。
 
-Server records one cleanup for every socket, including the abrupt client:
+资源与关闭新增 [19 组真机集成检查](../evidence/resources-20261102/final-suite/server-resources/results.json) 及两个 backend 失败注入模式：并发抢占全局配额不超额、拒绝前不改变 kernel/内存状态、坏 image/native 失败回滚、reset/EOF 恢复、pending kernel/H2D 和 socket backpressure 的关闭等待、context 清理失败停止准入并非零退出。D2H wait 失败不会留下向回复缓冲写入的异步任务。纯 native 三线程与远程 `cnmon` 对照同样观察到 free 后 112 MiB、context reset 后 32 MiB、worker 退出后 0；配额计请求字节，不能当作物理硬隔离或长期无泄漏证明。见 [资源生命周期](RESOURCE_LIFECYCLE.md) 和 [本轮证据](../evidence/resources-20261102/README.md)。
 
-```text
-[server] session fd=10 disconnected; cleaning native resources
-[server] SESSION_CLEANUP_EMPTY fd=10
-```
+编译器 double 参数崩溃与 native 多线程 context-sync/queue-teardown 竞态保留了独立失败日志；没有把它们隐藏成通过。详见 [证据索引](../evidence/transparent-20261102/README.md)。
 
-The full independent commands are listed in `docs/DEVELOPMENT.md`.
-
-## Status
-
-- `IMPLEMENTED`: TCP framing and request sequence, HELLO capabilities,
-  session-scoped object IDs, allocation/free, checked offset copies, queue and
-  notifier lifecycle, internal TransferID completion notifiers, preset module
-  lifecycle, generic operator RPC, six validated BANG C operators, device
-  selection before resource creation, session reset, error responses, and EOF
-  cleanup, generated registry/manifest validation, and operation sequence
-  metadata.
-- `PARTIAL`: this host exposes one device, so multi-device placement is not
-  ground-truth tested; arbitrary module upload is intentionally absent.
-- `BACKEND_UNSUPPORTED`: arbitrary module upload is outside the first-stage
-  trusted preset boundary.
-- `GROUND_TRUTH_BLOCKED`: CNNL execution because the installed Neuware image
-  has no CNNL development or runtime library.
-
-## Known limits and next extension
-
-The current registry supports F32 only, ranks one and two, and the six presets
-above. A future extension can add more datatypes and explicit completion
-policies while retaining the TransferID/notifier wire boundary. Multi-device
-stress coverage is the next validation step when another device is visible.
+共享 module→多个 kernel、typed CNDrv Shim 的基础已落地，M3.1/M3.5 仍有并发卸载、跨 DSO image 引用、更广 globals/context/default-queue 语义待验收。下一阶段按 [M1～M4 路线](../design/MILESTONES.md) 推进可靠参数类型、异步 D2H/pinned、NULL queue 异步 copy、多设备，以及故障/配额/部署和跨主机验收。

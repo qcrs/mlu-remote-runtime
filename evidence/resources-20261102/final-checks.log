@@ -1,0 +1,15 @@
+COMMAND ['python3', 'scripts/generate_rpc.py', '--check']
+simple RPC schema: 10 generated client wrappers + server cases
+COMMAND ['python3', 'scripts/generate_compat.py', '--check']
+{"CNRT": {"NOT_IMPLEMENTED": 96, "UNSUPPORTED": 8, "PARTIAL_IMPLEMENTED": 14, "IMPLEMENTED": 12}, "CNDrv": {"NOT_IMPLEMENTED": 180}}
+COMMAND ['git', 'diff', '--check']
+PASS Python syntax
+COMMAND ['bash', '-n', '/home/lvtong/mlu-remote-runtime/scripts/build-client.sh', '/home/lvtong/mlu-remote-runtime/scripts/build.sh', '/home/lvtong/mlu-remote-runtime/scripts/run-abrupt-cleanup-test.sh', '/home/lvtong/mlu-remote-runtime/scripts/run-client-test.sh', '/home/lvtong/mlu-remote-runtime/scripts/run-isolated-client.sh', '/home/lvtong/mlu-remote-runtime/scripts/run-server.sh']
+PASS shell syntax
+PASS 107 local Markdown links across 14 documents
+PASS final-suite 48/48; resource integration 19/19
+PASS API ledger totals/states and 6 private hooks/10 generated RPC pairs
+PASS capability ledger 20 rows: 7 implemented, 8 partial, 2 blocked, 2 unsupported, 1 not implemented
+PASS clean final server drain, no recorded client Driver access, SDK-free core rebuild 72 unchanged artifacts
+PASS all snapshot source/artifact/evidence/SDK hashes
+NO COMMIT CREATED; CROSS-PHYSICAL-HOST ACCEPTANCE REMAINS OPEN

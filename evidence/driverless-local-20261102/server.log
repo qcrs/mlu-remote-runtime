@@ -1,0 +1,14 @@
+COMMAND bash scripts/run-server.sh
+ENV {'MLU_REMOTE_PORT': '52181', 'MLU_REMOTE_BIND': '127.0.0.1'}
+[server] MLU_REMOTE_BIND=127.0.0.1 PORT=52181 device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+[server] listening
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] session start fd=9 backend=0
+[server] session fd=9 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=9
+[server] session start fd=8 backend=0
+[server] session fd=8 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=8
+[server] stopped

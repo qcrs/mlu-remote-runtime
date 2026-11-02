@@ -1,0 +1,13 @@
+{
+  "recorded_at_utc": "2026-11-02T11:04:20.991189+00:00",
+  "reason": "After the full suite, extend the memory family probe with native/remote D2D and verify the SDK-free core build.",
+  "passed": [
+    "semantics-build",
+    "api-semantics-native (H2D/D2D/D2H)",
+    "api-semantics-remote (H2D/D2D/D2H)",
+    "api-semantics-comparison",
+    "client-core-build",
+    "image-audit"
+  ],
+  "full_suite_results": "results.json"
+}

@@ -1,0 +1,57 @@
+{
+  "outer_size": 4824,
+  "outer_sha256": "5834e9638ce7b021bab3b3657d7a5ef16dcd792a23adfb69344202a9c9f1168f",
+  "cnfb_offset": 144,
+  "packed": 3631,
+  "padded_device_size": 50624,
+  "expanded_device_size": 50576,
+  "compressed_size": 3611,
+  "device_object_byte_equal": true,
+  "device_sha256": "9fd135b0f3e1e720efcfb6b82d42717b1e535b6b04bf49b89da8f0730a598264",
+  "params_sizes_then_offsets": {
+    "_Z10vector_addPfPKfS1_i": [
+      8,
+      8,
+      8,
+      4,
+      0,
+      8,
+      16,
+      24
+    ],
+    "_Z5mixedPfPKfhsixfS1_": [
+      8,
+      8,
+      1,
+      2,
+      4,
+      8,
+      4,
+      8,
+      0,
+      8,
+      16,
+      18,
+      20,
+      24,
+      32,
+      40
+    ],
+    "_Z4tickPi": [
+      8,
+      0
+    ],
+    "_Z9aggregatePi7Payload": [
+      8,
+      8,
+      0,
+      8
+    ],
+    "plain_c": [
+      8,
+      4,
+      0,
+      8
+    ]
+  }
+}
