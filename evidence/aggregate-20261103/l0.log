@@ -1,0 +1,7 @@
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 40 RPC codecs/dispatch/bindings, 46 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 77, "IMPLEMENTED": 20, "PARTIAL_IMPLEMENTED": 30, "UNSUPPORTED": 3}, "CNDrv": {"NOT_IMPLEMENTED": 106, "PARTIAL_IMPLEMENTED": 48, "IMPLEMENTED": 25, "UNSUPPORTED": 1}}
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 40 RPC codecs/dispatch/bindings, 46 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 77, "IMPLEMENTED": 20, "PARTIAL_IMPLEMENTED": 30, "UNSUPPORTED": 3}, "CNDrv": {"NOT_IMPLEMENTED": 106, "PARTIAL_IMPLEMENTED": 48, "IMPLEMENTED": 25, "UNSUPPORTED": 1}}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence

@@ -1887,10 +1887,10 @@
       ],
       "implementation": "manual",
       "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Compiler metadata attached to host ELF: exact image fingerprint + symbol + device ELF layout; C/enum/template/zero args, scalar and direct pointers numerically tested. Legacy primitive demangler retained; by-value aggregates, pointer graphs, multi-arch images and unknown ABI not certified",
-      "native_test": "native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log",
-      "remote_test": "native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log",
-      "next_step": "Extend compiler type metadata to aggregate fields, initialized globals and Driver module descriptors with native ground truth"
+      "boundary": "Compiler metadata: exact image fingerprint + symbol + device ELF layout; C/enum/template/zero args, scalar/direct pointers and pointer-free natural-layout byval structs, nested structs and fixed arrays numerically tested. Legacy primitive demangler retained; embedded pointers, pointer graphs, packed/opaque aggregates, multi-arch images and unknown ABI not certified",
+      "native_test": "aggregate-20261103/metadata-native.log; native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log",
+      "remote_test": "aggregate-20261103/metadata-remote.log; native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log",
+      "next_step": "Extend compiler metadata to embedded pointer relocation, initialized globals and Driver module descriptors with native ground truth"
     },
     {
       "name": "cnrtIpcGetNotifierHandle",
@@ -7643,8 +7643,8 @@
       "implementation": "generated",
       "status": "PARTIAL_IMPLEMENTED",
       "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
-      "native_test": "api-expansion-20261103/driver-error-native.log",
-      "remote_test": "api-expansion-20261103/driver-error-remote.log",
+      "native_test": "api-expansion-20261103/driver-native.log",
+      "remote_test": "api-expansion-20261103/driver-remote.log",
       "next_step": "Expand error catalogue and test additional SDK revisions",
       "rpc": "driver_error_text",
       "wrapper": {"rpc":"driver_error_text","inputs":{"error":"error","kind":"0"},"outputs":["memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"],"prepare":["static _Thread_local char error_buffer[256];"],"current":false,"required":["pStr"]},
@@ -7681,8 +7681,8 @@
       "implementation": "generated",
       "status": "PARTIAL_IMPLEMENTED",
       "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
-      "native_test": "api-expansion-20261103/driver-error-native.log",
-      "remote_test": "api-expansion-20261103/driver-error-remote.log",
+      "native_test": "api-expansion-20261103/driver-native.log",
+      "remote_test": "api-expansion-20261103/driver-remote.log",
       "next_step": "Expand error catalogue and test additional SDK revisions",
       "rpc": "driver_error_text",
       "wrapper": {"rpc":"driver_error_text","inputs":{"error":"error","kind":"1"},"outputs":["memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"],"prepare":["static _Thread_local char error_buffer[256];"],"current":false,"required":["pStr"]},
@@ -15431,11 +15431,11 @@
   "compiler_metadata": {
     "format": "MLUABI01 in host ELF .mlu.remote.abi",
     "producer": "scripts/generate_bang_metadata.py",
-    "types": "CNCC mlisa_kernel LLVM IR primitive scalar/direct pointer; per-image exact symbol",
-    "layout": "cross-check sizes/count against device ELF .params.text",
+    "types": "CNCC mlisa_kernel LLVM IR scalar (kind 0), direct pointer (kind 1), pointer-free byval aggregate (kind 2); per-image exact symbol",
+    "layout": "Exact reviewed CNCC datalayout; natural struct padding/nested structs/fixed arrays, maximum 4096 bytes; cross-check sizes/count against device ELF .params.text; field layout in build manifest",
     "fallback": "legacy demangler only when metadata absent; invalid or stale metadata rejects",
     "blocked": [
-      "byval aggregates",
+      "pointer-containing, packed, opaque or recursive aggregates",
       "pointer graphs",
       "unknown LLVM types",
       "cross-architecture scalar semantics"

@@ -9,6 +9,13 @@ extern "C" __mlu_entry__ void c_types(unsigned long long *out,Mode mode,unsigned
 }
 template<typename T> __mlu_entry__ void templated(T *out,T value) { *out=value; }
 extern "C" __mlu_entry__ void no_args(void) {}
+struct Inner { short bias; int count; };
+struct Payload { unsigned char tag; Inner inner; float weights[3]; long long delta; };
+extern "C" __mlu_entry__ void structured(int *out, Payload value) {
+  out[0]=value.tag+value.inner.bias+value.inner.count;
+  out[1]=(int)(value.weights[0]+value.weights[1]+value.weights[2]);
+  out[2]=(int)value.delta;
+}
 int main(void) {
   unsigned long long *d,h[4]={0}; OK(cnrtMalloc((void **)&d,sizeof(h)));
   cnrtDim3_t dim={1,1,1}; cnrtQueue_t q; OK(cnrtQueueCreate(&q));
@@ -20,7 +27,17 @@ int main(void) {
   c_types<<<dim,cnrtFuncTypeBlock,q>>>(d,ADD,scalar,(const int *)NULL); OK(cnrtGetLastError());
   templated<unsigned long long><<<dim,cnrtFuncTypeBlock,q>>>(d+3,(unsigned long long)123456789); OK(cnrtGetLastError());
   no_args<<<dim,cnrtFuncTypeBlock,q>>>(); OK(cnrtGetLastError());
+  int *aggregate_out, aggregate_host[3]={0};
+  OK(cnrtMalloc((void **)&aggregate_out,sizeof(aggregate_host)));
+  Payload payload={5,{-3,19},{1.5f,2.5f,7.0f},-123};
+  structured<<<dim,cnrtFuncTypeBlock,q>>>(aggregate_out,payload); OK(cnrtGetLastError());
   OK(cnrtQueueSync(q)); OK(cnrtMemcpy(h,d,sizeof(h),cnrtMemcpyDevToHost));
+  OK(cnrtMemcpy(aggregate_host,aggregate_out,sizeof(aggregate_host),cnrtMemcpyDevToHost));
+  if(aggregate_host[0]!=21 || aggregate_host[1]!=11 || aggregate_host[2]!=-123) {
+    fprintf(stderr,"aggregate values %d %d %d\n",aggregate_host[0],aggregate_host[1],aggregate_host[2]); return 3;
+  }
+  printf("PASS aggregate nested/array/padding/signed/float: %d %d %d\n",aggregate_host[0],aggregate_host[1],aggregate_host[2]);
+  OK(cnrtFree(aggregate_out));
   fprintf(stderr,"scalar tag observation: input=%llx output=%llx expected-low48=%llx\n",scalar,h[0],scalar & 0x0000ffffffffffffULL);
   if(h[0]!=(scalar & 0x0000ffffffffffffULL) || h[1]!=7 || h[2]!=0 || h[3]!=123456789) {
     fprintf(stderr,"values %llu %llu %llu %llu expected %llu\n",(unsigned long long)h[0],(unsigned long long)h[1],(unsigned long long)h[2],(unsigned long long)h[3],(unsigned long long)scalar); return 3;

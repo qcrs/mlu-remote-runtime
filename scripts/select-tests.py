@@ -35,7 +35,7 @@ for path in paths:
         families.add("host_memory")
     if any(word in path for word in ("server_session", "object_registry", "resource_limits", "remote_protocol", "transport")):
         full = True
-    if any(word in path for word in ("bang_registration", "module_registry", "kernel_registry", "host_completion")):
+    if any(word in path for word in ("bang_registration", "bang_metadata", "module_registry", "kernel_registry", "host_completion", "runtime_context", "mlu_backend")):
         full = True
 if not families and paths:
     families.add("device_context")

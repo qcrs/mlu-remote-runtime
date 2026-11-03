@@ -10,7 +10,7 @@ BANG C Application / CNCC host stub
   → ServerSession → Native CNDrv → MLU
 ```
 
-当前在 MLU370-S4 / Neuware 3.5.2 真机上验证了原生、动态库替换、LD_PRELOAD、隐藏 SDK 和设备节点的客户端运行。真实注册 image、混合标量、指针偏移/NULL、三维 task grid、1200 次 launch、1200 次异步 H2D、线程、资源回收和旧六算子均有证据。**跨第二台物理主机的最终验收尚未完成。**
+当前在 MLU370-S4 / Neuware 3.5.2 真机上验证了原生、动态库替换、LD_PRELOAD、隐藏 SDK 和设备节点的客户端运行。真实注册 image、pointer-free 按值 struct/嵌套 struct/固定数组（[证据](evidence/aggregate-20261103/README.md)）、混合标量、指针偏移/NULL、三维 task grid、1200 次 launch、1200 次异步 H2D、线程、资源回收和旧六算子均有证据。**跨第二台物理主机的最终验收尚未完成。**
 
 ```sh
 ./scripts/build.sh

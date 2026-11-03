@@ -32,7 +32,7 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 | 原生 CNRT ABI | 部分实现 | 48 个有实现的公共入口及 3 个明确拒绝入口；详见 API 台账 |
 | 原生 CNDrv client ABI | 部分实现 | 独立 libcndrv.so；context/TLS、立即 module load、通用 launch、显式/NULL queue、基础 memory/notifier、Driver error text；[范围和证据](DRIVER_SHIM.md)，仍非完整 vendor CNRT 底层替代 |
 | Kernel 注册及远程加载 | 部分实现 | 当前 CNCC wrapper / ELF64 LE / CNFB v2 单 image；一个 registration/module→多个 KernelID；DSO 20 次重载、pending-work unload、reset/reload 已测 |
-| 通用 kernel launch | 部分实现 | 新增 compiler IR→host ELF metadata；C/enum/template/zero args、scalar/fake VA、offset/NULL 已测；原多 kernel/globals 保留；aggregate/pointer graph/Host symbol 未完成 |
+| 通用 kernel launch | 部分实现 | 新增 compiler IR→host ELF metadata；C/enum/template/zero args、scalar/fake VA、offset/NULL 已测；原多 kernel/globals 保留；pointer-free byval/nested struct/array 已测；嵌入 pointer/pointer graph/Host symbol 未完成 |
 | 内存与 fake VA | 已实现 | owned allocation+offset；free/reset 失效；VA tombstone 防旧指针复用；`native_bang_abi-replacement.log` |
 | H2D staging / D2D enqueue | 已实现 | native/remote 对照、1200 async H2D；staging 完成前保持存活 |
 | 真异步 D2H | 部分实现 | 有正确数据回传，但回复前阻塞同步；pinned/writeback 未实现 |
@@ -60,4 +60,4 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 编译器 double 参数崩溃与 native 多线程 context-sync/queue-teardown 竞态保留了独立失败日志；没有把它们隐藏成通过。详见 [证据索引](../evidence/transparent-20261102/README.md)。
 
-共享 module→多个 kernel、typed CNDrv Shim 和 compiler 类型 metadata 基础已落地，M3.1/M3.5 仍有并发卸载、跨 DSO image 引用、更广 globals/context/default-queue 语义待验收。Context flags/TLS、QueueID 0 默认队列顺序、零长度/one-past/owned allocation 边界已补入 [续批证据](../evidence/query-boundaries-next-20261102/README.md)，并通过完整透明回归 [证据](../evidence/context-default-20261102-final/README.md)。CNRT flags 和 default Queue 仍按单设备/当前 SDK 语义保留部分实现；下一阶段推进 Host memory/completion/writeback、aggregate 与 symbol ABI。Graph/IPC/Peer 按依赖推进；第二物理主机及生产安全体系不作为本阶段门槛。
+共享 module→多个 kernel、typed CNDrv Shim 和 compiler 类型 metadata 基础已落地，M3.1/M3.5 仍有并发卸载、跨 DSO image 引用、更广 globals/context/default-queue 语义待验收。Context flags/TLS、QueueID 0 默认队列顺序、零长度/one-past/owned allocation 边界已补入 [续批证据](../evidence/query-boundaries-next-20261102/README.md)，并通过完整透明回归 [证据](../evidence/context-default-20261102-final/README.md)。CNRT flags 和 default Queue 仍按单设备/当前 SDK 语义保留部分实现；下一阶段推进 Host memory/completion/writeback、嵌入 pointer aggregate 与 symbol ABI。Graph/IPC/Peer 按依赖推进；第二物理主机及生产安全体系不作为本阶段门槛。

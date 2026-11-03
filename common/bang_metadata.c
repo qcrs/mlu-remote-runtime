@@ -56,7 +56,7 @@ int bang_metadata_classify(const void *host,const void *image,size_t size,const 
       result=0;
       for(unsigned k=0;k<layout->count;++k) {
         uint32_t n=u32(r+276+k*5); unsigned char kind=r[280+k*5];
-        if(n!=layout->sizes[k] || kind>1 || (kind && n!=8)) { result=-1; break; }
+        if(n!=layout->sizes[k] || !n || n>4096 || kind>2 || (kind==1 && n!=8)) { result=-1; break; }
         pointer[k]=kind;
       }
       break;

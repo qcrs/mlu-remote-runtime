@@ -1,0 +1,10 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/mlu-remote-operator-test']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50214', 'MLU_TEST_SHIM': '1'}
+PASS operator vector_add module=5367263386453278640 kernel=5367263386453278641 transfer=5367263386453278646
+PASS operator parameter and registry errors
+PASS operator scalar_add transfer=5367263386453278634
+PASS operator scalar_mul transfer=5367263386453278638
+PASS operator relu transfer=5367263386453278627
+PASS operator tensor_add_strided rank=2 stride=6 transfer=5367263386453274712
+PASS operator tensor_mul_strided rank=2 stride=6 transfer=5367263386453274716
+PASS operator two_queue_ordering queue1=5367263386453278654 queue2=5367263386453274706

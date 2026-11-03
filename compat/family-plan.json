@@ -1627,7 +1627,7 @@
         "priority": 2,
         "depends_on": "image/typed arguments",
         "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "Extend compiler type metadata to aggregate fields, initialized globals and Driver module descriptors with native ground truth"
+        "next_step": "Extend compiler metadata to embedded pointer relocation, initialized globals and Driver module descriptors with native ground truth"
       },
       {
         "api": "cnInvokeKernel",

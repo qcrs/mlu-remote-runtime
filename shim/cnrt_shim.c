@@ -337,7 +337,7 @@ cnrtRet_t cnrtInvokeKernel(const void *host,cnrtDim3_t dim,cnrtFunctionType_t ty
   for(unsigned i=0;i<k->layout.count;++i) {
     if(!args[i]) RETURN(cnrtErrorArgsInvalid);
     wire[i].size=k->layout.sizes[i];
-    if(k->pointer[i]) {
+    if(k->pointer[i]==1) {
       void *value; memcpy(&value,args[i],8);
       wire[i].kind=1;
       if(value) {

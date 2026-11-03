@@ -141,10 +141,10 @@
   },
   "cnrtInvokeKernel": {
     "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Compiler metadata attached to host ELF: exact image fingerprint + symbol + device ELF layout; C/enum/template/zero args, scalar and direct pointers numerically tested. Legacy primitive demangler retained; by-value aggregates, pointer graphs, multi-arch images and unknown ABI not certified",
-    "native_test": "native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log",
-    "remote_test": "native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log",
-    "next_step": "Extend compiler type metadata to aggregate fields, initialized globals and Driver module descriptors with native ground truth"
+    "boundary": "Compiler metadata: exact image fingerprint + symbol + device ELF layout; C/enum/template/zero args, scalar/direct pointers and pointer-free natural-layout byval structs, nested structs and fixed arrays numerically tested. Legacy primitive demangler retained; embedded pointers, pointer graphs, packed/opaque aggregates, multi-arch images and unknown ABI not certified",
+    "native_test": "aggregate-20261103/metadata-native.log; native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log",
+    "remote_test": "aggregate-20261103/metadata-remote.log; native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log",
+    "next_step": "Extend compiler metadata to embedded pointer relocation, initialized globals and Driver module descriptors with native ground truth"
   },
   "cnrtMalloc": {
     "status": "IMPLEMENTED",
@@ -569,15 +569,15 @@
   "cnGetErrorName": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
-    "native_test": "api-expansion-20261103/driver-error-native.log",
-    "remote_test": "api-expansion-20261103/driver-error-remote.log",
+    "native_test": "api-expansion-20261103/driver-native.log",
+    "remote_test": "api-expansion-20261103/driver-remote.log",
     "next_step": "Expand error catalogue and test additional SDK revisions"
   },
   "cnGetErrorString": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
-    "native_test": "api-expansion-20261103/driver-error-native.log",
-    "remote_test": "api-expansion-20261103/driver-error-remote.log",
+    "native_test": "api-expansion-20261103/driver-native.log",
+    "remote_test": "api-expansion-20261103/driver-remote.log",
     "next_step": "Expand error catalogue and test additional SDK revisions"
   },
   "cnGetLibVersion": {

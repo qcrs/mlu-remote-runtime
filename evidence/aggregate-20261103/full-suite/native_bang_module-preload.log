@@ -1,0 +1,4 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_bang_module']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50214', 'LD_PRELOAD': '/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so', 'MLU_TEST_SHIM': '1'}
+PASS two BANG C kernels share module device state
+PASS retained registration reloads one shared module after reset

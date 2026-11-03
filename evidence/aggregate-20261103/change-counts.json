@@ -1,0 +1,27 @@
+{
+  "baseline_commit": "cfa33990cb10da5300a186b26816166a0c2c4e63",
+  "census": 310,
+  "new_apis": [],
+  "new_status_counts": {},
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 183,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 78,
+    "UNSUPPORTED": 4
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 183,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 78,
+    "UNSUPPORTED": 4
+  },
+  "generated_before": {
+    "typed_rpc": 40,
+    "public_wrappers": 46
+  },
+  "generated_after": {
+    "typed_rpc": 40,
+    "public_wrappers": 46
+  }
+}

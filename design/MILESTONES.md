@@ -62,7 +62,7 @@ flowchart LR
 
 M3.1 已完成一个 registration→一个 ModuleID→多个 KernelID、重复 lookup 身份稳定、parent/child 归属及级联失效，并通过两个 kernel 共享未初始化 device globals、独立加载相同 image 的状态隔离、reset 后重载、20 次 DSO 重载/保留 loader 引用/pending-work unload 的 native/remote 对照。隐藏 SDK 与设备的客户端也通过。见 [38 项验证及共享模块证据](../evidence/shared-module-20261102/README.md)。并发 dlclose、跨 DSO image 引用、Host symbol API、initialized/constant/external globals 仍未验收，**M3.1 只部分完成**。
 
-M3.2 新增 CNCC `mlisa_kernel` IR→宿主 ELF 类型 metadata，按 image 指纹/精确 symbol/设备参数大小交叉核对；同一 module 的 C、enum、template、zero-arg kernel 数值通过，scalar 与 fake VA 相同也不误重定位。无 metadata 的旧程序保留保守 demangler。aggregate、pointer graph、Host symbol 和设备 i64→s48 语义边界仍需原生证据，M3.2 部分完成。
+M3.2 新增 CNCC `mlisa_kernel` IR→宿主 ELF 类型 metadata，按 image 指纹/精确 symbol/设备参数大小交叉核对；同一 module 的 C、enum、template、zero-arg kernel 数值通过，scalar 与 fake VA 相同也不误重定位。无 metadata 的旧程序保留保守 demangler。pointer-free 自然布局 byval aggregate、nested struct、fixed array 已通过 Native/Remote 数值对照（21/11/-123）；嵌入 pointer、pointer graph、Host symbol 和更广设备 i64→s48 语义边界仍需原生证据，M3.2 部分完成。
 
 M3.6 已完成本轮自动化门槛：310 声明的 Schema 签名/功能族/参数/状态；原 10 对对象 RPC，加 39 typed RPC 的编解码/dispatch/binding、44 公共 wrapper（含后续查询批次）、导出 map、台账/功能族计划和测试模板；contract checker 核对 SDK/Schema/Protocol/Export/Ledger/evidence，全部生成 RPC 的坏请求与坏成功回复实测通过。该生成范围已验收，buffer/复杂 lifecycle 的通用生成仍需继续扩展。H2D staging、非阻塞 transfer release、1200 次 launch/copy 保留原回归。
 

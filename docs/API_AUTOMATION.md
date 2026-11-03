@@ -37,13 +37,13 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 `scripts/generate_bang_metadata.py` 接受同一构建的 device LLVM IR 与实际嵌入的 `.cnfatbin`，提取 `mlisa_kernel` 参数，写入宿主 executable/DSO 的非加载 ELF section `.mlu.remote.abi`。构建命令见 `scripts/build.sh` 的 `metadata-audit` 段；也可重复传 `--pair LL:IMAGE` 附带多个 image 的记录。无需额外导出 helper，无运行时 SDK、环境 sidecar 路径或业务源码分支。
 
-记录包含 image 字节数、FNV64 指纹、精确符号、参数数量、大小和 scalar/pointer 分类。指纹用于发现过期构建产物，不提供密码学认证。客户端通过注册的 host stub 定位宿主 ELF，独立读取设备 ELF 大小/offset，再交叉核对类型；不匹配或损坏会拒绝。无 metadata 的已有 binary 继续用原保守 demangler。
+记录包含 image 字节数、FNV64 指纹、精确符号、参数数量、大小和 scalar/pointer/aggregate 分类。指纹用于发现过期构建产物，不提供密码学认证。客户端通过注册的 host stub 定位宿主 ELF，独立读取设备 ELF 大小/offset，再交叉核对类型；不匹配或损坏会拒绝。无 metadata 的已有 binary 继续用原保守 demangler。
 
 已通过 C 链接符号、枚举、模板、零参数、一个 module 的三个 kernel、NULL/offset pointer 和与 fake VA 位值相同的 scalar 数值验证。重定位复用现有 allocation ID+offset→native address 机制，完全不按 kernel 名称、参数个数或 scalar 位值猜类型。四类 stale/损坏 metadata 均被拒绝；旧 aggregate/C-symbol 无 metadata 拒绝测试保留。
 
 本机 CNCC 在 LLVM IR 中给出 i64，却在设备 MLISA 中发出 `.s48`；Native tagged VA 作为 scalar 的高位会被截断，`unsigned long long` 也不能消除这个观察。测试保留实际 input/output 到 stderr，并按原生 low48 语义断言；没有宣称任意 64 位数值都能跨 ABI 保真。IR 类型有助于区分 pointer，但不能单独证明设备算术语义。
 
-byval aggregate、嵌套 pointer graph、未知 IR 类型、复杂地址空间仍显式阻塞。Device Globals 沿用已有 Var 注册校验和 module 内未初始化 globals 共享测试；Host symbol 地址/拷贝、initialized/constant/external globals、Driver module 的 compiler 类型关联仍需实现，不能由 kernel 元数据成功推导完成。
+新增 pointer-free 自然布局 byval struct、嵌套 struct 和固定数组：按 CNCC datalayout 计算成员 offset、alignment 和 padding，构建 manifest 保留布局；设备 ELF 参数大小再交叉验证。真机 Native/Remote 输出 `21 / 11 / -123`，覆盖 signed/float 字段。嵌入 pointer、pointer graph、packed/opaque/recursive aggregate、未知 IR 类型、复杂地址空间仍显式阻塞。见 [aggregate 证据](../evidence/aggregate-20261103/README.md)。Device Globals 沿用已有 Var 注册校验和 module 内未初始化 globals 共享测试；Host symbol 地址/拷贝、initialized/constant/external globals、Driver module 的 compiler 类型关联仍需实现，不能由 kernel 元数据成功推导完成。
 
 ## 扩展流程与回归
 
@@ -61,7 +61,7 @@ python3 scripts/verify-transparent.py --out evidence/<batch>/full-suite
 
 2026-11-03 续批为 memcpy wire 增加可选 async 标志。旧 56-byte 请求继续由 server 接受，60-byte 扩展只在 host payload 长度唯一匹配时启用；因此默认 Queue 的 QueueID 0 语义可以扩展而不破坏已有协议负例。该字段由手工 memcpy adapter 使用，普通 typed RPC 生成器仍负责固定请求/响应、长度和成功回复校验。
 
-剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range、Context flags、QueueID 0 default ordering 和 owned allocation 边界已接入；后续实现 client host pages/completion/writeback，扩展 module/symbol 与 aggregate metadata；Graph/IPC/Peer 等等待相应依赖。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
+剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range、Context flags、QueueID 0 default ordering 和 owned allocation 边界已接入；后续实现 client host pages/completion/writeback，扩展 module/symbol 与嵌入 pointer aggregate metadata；Graph/IPC/Peer 等等待相应依赖。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
 
 ## 查询边界续批
 
