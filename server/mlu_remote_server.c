@@ -161,9 +161,17 @@ static int handle_request(int fd, mlu_backend_session *s, const struct mlu_remot
     case MLU_OP_MEMCPY: {
       if (n < 56) return send_response(fd, op, req, MLU_REMOTE_BAD_LENGTH, NULL, 0);
       uint32_t dir = get32(p); uint64_t q = get64(p + 4), dst = get64(p + 12), dstoff = get64(p + 20), src = get64(p + 28), srcoff = get64(p + 36), bytes = get64(p + 44); uint32_t host_len = get32(p + 52);
-      if (bytes > MLU_REMOTE_MAX_PAYLOAD - 16 || host_len != n - 56 || (dir == MLU_MEMCPY_H2D && host_len != bytes) || (dir != MLU_MEMCPY_H2D && host_len != 0)) return send_response(fd, op, req, MLU_REMOTE_BAD_LENGTH, NULL, 0);
+      /* v1 clients used a 56-byte header.  The async extension is
+       * unambiguous when the payload has the extra flag and its host length
+       * matches the 60-byte header; retain the old form for a 4-byte H2D
+       * payload whose total length is also 60. */
+      uint32_t asynchronous = 0, header = 56;
+      if (n >= 60 && host_len == n - 60 && get32(p + 56) <= 1) {
+        asynchronous = get32(p + 56); header = 60;
+      }
+      if (bytes > MLU_REMOTE_MAX_PAYLOAD - 16 || host_len != n - header || (dir == MLU_MEMCPY_H2D && host_len != bytes) || (dir != MLU_MEMCPY_H2D && host_len != 0)) return send_response(fd, op, req, MLU_REMOTE_BAD_LENGTH, NULL, 0);
       void *host = NULL; if (dir == MLU_MEMCPY_D2H) host = malloc((size_t)bytes); if (dir == MLU_MEMCPY_D2H && !host) return send_response(fd, op, req, CN_ERROR_SYSTEM_OUT_OF_MEMORY, NULL, 0);
-      st = mlu_backend_memcpy(s, (int)dir, dst, dstoff, src, srcoff, dir == MLU_MEMCPY_H2D ? p + 56 : NULL, host, bytes, q, &tid);
+      st = mlu_backend_memcpy_ex(s, (int)dir, dst, dstoff, src, srcoff, dir == MLU_MEMCPY_H2D ? p + header : NULL, host, bytes, q, asynchronous, &tid);
       put64(out, tid); put64(out + 8, (st == 0 && dir == MLU_MEMCPY_D2H) ? bytes : 0);
       unsigned char *response_extra = out;
       if (st == 0 && dir == MLU_MEMCPY_D2H && bytes) {

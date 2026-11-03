@@ -154,6 +154,12 @@ int mlu_backend_memcpy(mlu_backend_session *s, int direction,
                        uint64_t src_id, uint64_t src_offset,
                        const void *host_src, void *host_dst, uint64_t bytes,
                        uint64_t queue_id, uint64_t *transfer_id);
+int mlu_backend_memcpy_ex(mlu_backend_session *s, int direction,
+                          uint64_t dst_id, uint64_t dst_offset,
+                          uint64_t src_id, uint64_t src_offset,
+                          const void *host_src, void *host_dst, uint64_t bytes,
+                          uint64_t queue_id, uint32_t asynchronous,
+                          uint64_t *transfer_id);
 int mlu_backend_queue_create(mlu_backend_session *s, uint64_t *id);
 int mlu_backend_queue_destroy(mlu_backend_session *s, uint64_t id);
 int mlu_backend_queue_sync(mlu_backend_session *s, uint64_t id);

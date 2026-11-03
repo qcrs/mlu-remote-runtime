@@ -37,7 +37,7 @@ NULL queue launch 与显式 queue 一样创建真实 transfer notifier，release
 
 当前 MEMCPY wire 的 queue=0 表示同步操作，无法区分 native NULL queue 的异步 copy 意图；`cnMemcpyHtoDAsync/DtoDAsync` 的非零字节 NULL queue 调用明确 NotSupported，不能伪装同步为已实现的异步。`cnMemcpyDtoHAsync` 整个入口明确 NotSupported，等待 pinned/host completion/writeback 设计。
 
-Queue/Notifier 创建仅 flags=0。queue destroy、free 和 module unload 使用保守同步，可能比 native 等待更久；因此这些族仍为部分实现。完整 default queue 隐式跨队列排序、priority、附加 notifier flags、context attach/configuration、完整 Driver 内部调用面仍待实现。
+Queue/Notifier 创建仅 flags=0。queue destroy、free 和 module unload 使用保守同步，可能比 native 等待更久；因此这些族仍为部分实现。跨队列隐式排序、priority、附加 notifier flags、context attach/configuration、完整 Driver 内部调用面仍待实现；QueueID 0 的常用 H2D/D2D async 和 completion 已接入。
 
 ## 原生细节与配置
 

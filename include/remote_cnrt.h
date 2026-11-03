@@ -64,6 +64,12 @@ int mlu_remote_free(mlu_remote_context *ctx, mlu_remote_allocation_id allocation
 int mlu_remote_memcpy_h2d(mlu_remote_context *ctx, mlu_remote_allocation_id dst,
                           uint64_t dst_offset, const void *src, uint64_t bytes,
                           mlu_remote_queue_id queue, mlu_remote_transfer_id *transfer);
+/* Explicit asynchronous variants are needed for the native NULL/default
+ * queue.  QueueID zero otherwise denotes a synchronous native copy on the
+ * wire, while an explicit queue has historically implied async work. */
+int mlu_remote_memcpy_h2d_async(mlu_remote_context *ctx, mlu_remote_allocation_id dst,
+                                uint64_t dst_offset, const void *src, uint64_t bytes,
+                                mlu_remote_queue_id queue, mlu_remote_transfer_id *transfer);
 int mlu_remote_memcpy_d2h(mlu_remote_context *ctx, void *dst,
                           mlu_remote_allocation_id src, uint64_t src_offset,
                           uint64_t bytes, mlu_remote_queue_id queue,
@@ -72,6 +78,10 @@ int mlu_remote_memcpy_d2d(mlu_remote_context *ctx, mlu_remote_allocation_id dst,
                           uint64_t dst_offset, mlu_remote_allocation_id src,
                           uint64_t src_offset, uint64_t bytes,
                           mlu_remote_queue_id queue, mlu_remote_transfer_id *transfer);
+int mlu_remote_memcpy_d2d_async(mlu_remote_context *ctx, mlu_remote_allocation_id dst,
+                                uint64_t dst_offset, mlu_remote_allocation_id src,
+                                uint64_t src_offset, uint64_t bytes,
+                                mlu_remote_queue_id queue, mlu_remote_transfer_id *transfer);
 
 int mlu_remote_queue_create(mlu_remote_context *ctx, mlu_remote_queue_id *queue);
 int mlu_remote_queue_destroy(mlu_remote_context *ctx, mlu_remote_queue_id queue);

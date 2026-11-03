@@ -179,7 +179,8 @@
     "QueueID",
     "AllocationID+offset",
     "bytes",
-    "host_bytes"
+    "host_bytes",
+    "asynchronous flag (QueueID 0 preserves native default queue)"
   ],
   "kernel_parameters": [
     "KernelID",
@@ -1376,7 +1377,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "CNRT reports device flags as process/device state; multi-device and shared-context TLS remain unverified",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtGetDeviceFlag(uint32_t *pFlags);",
       "parameters": [
@@ -1389,12 +1390,12 @@
           "mapping": "review_required"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Client export; validates output pointer and returns native SPIN/AUTO state; valid setters preserve native reported SPIN and active resources reject changes",
+      "native_test": "query-boundaries-next-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-next-20261102/runtime-remote.log",
+      "next_step": "Extend native/remote matrix when multi-device or shared context is available"
     },
     {
       "name": "cnrtGetDeviceProperties_V2",
@@ -2401,10 +2402,10 @@
       ],
       "implementation": "manual",
       "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "H2D server snapshot and D2D enqueue; D2H blocks before response; no pinned-host completion writeback",
-      "native_test": "api-semantics-native.log; native_bang_abi-native.log",
-      "remote_test": "native_bang_abi-replacement.log",
-      "next_step": "Probe and implement this functional family"
+      "boundary": "Explicit async bit preserves native NULL/default Queue ordering; explicit queues retain staging; D2H response remains blocking until Host completion work",
+      "native_test": "query-boundaries-next-20261102/runtime-native.log; native_bang_abi-native.log",
+      "remote_test": "query-boundaries-next-20261102/runtime-remote.log; native_bang_abi-replacement.log",
+      "next_step": "Implement pinned Host ownership and deferred D2H writeback before promotion"
     },
     {
       "name": "cnrtMemcpyFromSymbol",
@@ -4140,7 +4141,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "CNRT reports device flags as process/device state; multi-device and shared-context TLS remain unverified",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtSetDeviceFlag(uint32_t flags);",
       "parameters": [
@@ -4153,12 +4154,12 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Valid flags accepted before allocations/queues; invalid flags and active-resource changes return native errors; current device setting is process scoped",
+      "native_test": "query-boundaries-next-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-next-20261102/runtime-remote.log",
+      "next_step": "Extend native/remote matrix when multi-device or shared context is available"
     },
     {
       "name": "cnrtSyncDevice",
@@ -9595,12 +9596,12 @@
           "mapping": "review_required"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Generic device-to-device async copy supports explicit and native NULL queues with checked owned allocation offsets; multi-context and completion matrix remains partial",
+      "native_test": "query-boundaries-next-20261102/driver-native.log",
+      "remote_test": "query-boundaries-next-20261102/driver-remote.log",
+      "next_step": "Extend cross-context and completion ordering cases"
     },
     {
       "name": "cnMemcpyDtoD",
@@ -9804,9 +9805,9 @@
       ],
       "implementation": "manual",
       "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Explicit queues enqueue native work; H2D server staging retained until completion, 1200 copies measured; NULL queue async copies explicitly unsupported until wire carries async intent",
-      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
-      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "boundary": "Explicit and native NULL queues enqueue native D2D work; transfer completion is tracked by server notifier; cross-context ordering remains partial",
+      "native_test": "query-boundaries-next-20261102/driver-native.log",
+      "remote_test": "query-boundaries-next-20261102/driver-remote.log",
       "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
     },
     {
@@ -9988,9 +9989,9 @@
       ],
       "implementation": "manual",
       "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Explicit queues enqueue native work; H2D server staging retained until completion, 1200 copies measured; NULL queue async copies explicitly unsupported until wire carries async intent",
-      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
-      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "boundary": "Explicit and native NULL queues enqueue native H2D work; server staging is retained through notifier completion; pinned Host ownership remains outside this API",
+      "native_test": "query-boundaries-next-20261102/driver-native.log",
+      "remote_test": "query-boundaries-next-20261102/driver-remote.log",
       "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
     },
     {

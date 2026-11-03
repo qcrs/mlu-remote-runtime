@@ -1,0 +1,44 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542130]
+mnt mnt:[4026542131]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50318
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_query_boundaries
+PCI 13 0000:84:00.0
+PCI 14 0000:84:00.0
+PCI 64 0000:84:00.0
+PCI short 100006
+invalid PCI device 18446744073709551615
+PCI invalid 100005
+context API 205002
+context NULL version 100006
+context config 0 0 0
+context config 1 0 1024
+context config 2 0 0
+context config 3 0 33554432
+context config 4 100006 -1
+context tasks 1 0 24
+context tasks 2 100006 -1
+context tasks 4 0 6
+context tasks 8 0 3
+context tasks 16 0 1
+context tasks 32 0 0
+context tasks 64 0 0
+node memory invariants and optional outputs PASS
+memory attr 1 width 4 value 2
+memory attr 2 width 8 value 1
+memory attr 3 width 8 value 0
+memory attr 4 width 4 value 0
+memory attr 6 width 8 value 1
+memory attr 7 width 4 value 0
+memory attr 17 width 8 value 1
+memory attr 18 width 8 value 123
+memory attr 21 width 4 value 4294967295
+memory attr 22 width 1 value 1
+memory attr 23 width 4 value 0
+memory attr 24 width 4 value 0
+batch partial 0 type 2 size 123
+queue nonzero window 100006
+queue invalid attr 100006
+PASS driver Context/PCI/memory/queue boundaries

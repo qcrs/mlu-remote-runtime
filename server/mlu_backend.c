@@ -253,6 +253,13 @@ static void release_staging(mlu_backend_session *s, uint64_t queue_id) {
       mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, s->staging[i].bytes);
     }
 }
+static void release_staging_default(mlu_backend_session *s) {
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
+    if (s->staging[i].live && s->staging[i].queue_id == 0) {
+      free(s->staging[i].host); s->staging[i].live = 0;
+      mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, s->staging[i].bytes);
+    }
+}
 
 int mlu_backend_session_init(mlu_backend_session *s, int ordinal) {
   return mlu_backend_session_init_flags(s, ordinal, CN_CTX_SCHED_SYNC_WAIT);
@@ -404,24 +411,31 @@ static int range(mlu_backend_allocation *a, uint64_t off, uint64_t bytes, CNaddr
   return 0;
 }
 
-int mlu_backend_memcpy(mlu_backend_session *s, int direction,
-                       uint64_t dst_id, uint64_t dst_offset,
-                       uint64_t src_id, uint64_t src_offset,
-                       const void *host_src, void *host_dst, uint64_t bytes,
-                       uint64_t queue_id, uint64_t *transfer_id) {
+int mlu_backend_memcpy_ex(mlu_backend_session *s, int direction,
+                          uint64_t dst_id, uint64_t dst_offset,
+                          uint64_t src_id, uint64_t src_offset,
+                          const void *host_src, void *host_dst, uint64_t bytes,
+                          uint64_t queue_id, uint32_t asynchronous,
+                          uint64_t *transfer_id) {
   if (!bytes) return (int)CN_ERROR_INVALID_VALUE;
+  if (asynchronous > 1) return (int)CN_ERROR_INVALID_VALUE;
   mlu_backend_queue *q = queue_id ? find_queue(s, queue_id) : NULL;
   if (queue_id && !q) return (int)CN_ERROR_INVALID_HANDLE;
+  int queued = asynchronous || queue_id != 0;
   if (transfer_id) { int st = transfer_capacity(s); if (st) return st; }
   CNaddr dst = 0, src = 0;
   CNresult r;
   if (direction == MLU_MEMCPY_H2D) {
     if (range(find_alloc(s, dst_id), dst_offset, bytes, &dst)) return (int)CN_ERROR_INVALID_VALUE;
     if (!host_src) return (int)CN_ERROR_INVALID_ADDRESS;
-    if (q) {
+    if (queued) {
       /* Only a completed queue makes every staging buffer on it reclaimable.
        * Poll before adding work so a long async-copy stream does not leak. */
-      if (cnQueryQueue(q->handle) == CN_SUCCESS) release_staging(s, queue_id);
+      CNresult ready = q ? cnQueryQueue(q->handle) : cnQueryQueue(NULL);
+      if (ready == CN_SUCCESS) {
+        if (q) release_staging(s, queue_id);
+        else release_staging_default(s);
+      }
       size_t staging_slot = MLU_BACKEND_MAX_OBJECTS;
       for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
         if (!s->staging[i].live) { staging_slot = i; break; }
@@ -430,7 +444,7 @@ int mlu_backend_memcpy(mlu_backend_session *s, int direction,
       void *staging = malloc((size_t)bytes);
       if (!staging) { mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, bytes); return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
       memcpy(staging, host_src, (size_t)bytes);
-      r = cnMemcpyHtoDAsync(dst, staging, bytes, q->handle);
+      r = cnMemcpyHtoDAsync(dst, staging, bytes, q ? q->handle : NULL);
       if (r == CN_SUCCESS) {
         s->staging[staging_slot] = (mlu_backend_staging){.queue_id = queue_id, .host = staging, .bytes = bytes,
                                                          .owner = s->owner_token, .generation = new_generation(s), .live = 1};
@@ -444,22 +458,33 @@ int mlu_backend_memcpy(mlu_backend_session *s, int direction,
     /* This protocol returns D2H bytes in the response. Wait before using a
      * synchronous native copy: a failed queue wait must never leave an async
      * writer referencing the response buffer that the dispatcher will free. */
-    r = q ? cnQueueSync(q->handle) : CN_SUCCESS;
+    r = q ? cnQueueSync(q->handle) : (queued ? cnQueueSync(NULL) : CN_SUCCESS);
     if (r == CN_SUCCESS && q) release_staging(s, queue_id);
+    if (r == CN_SUCCESS && queued && !q) release_staging_default(s);
     if (r == CN_SUCCESS) r = cnMemcpyDtoH(host_dst, src, bytes);
   } else if (direction == MLU_MEMCPY_D2D) {
     if (range(find_alloc(s, dst_id), dst_offset, bytes, &dst)) return (int)CN_ERROR_INVALID_VALUE;
     if (range(find_alloc(s, src_id), src_offset, bytes, &src)) return (int)CN_ERROR_INVALID_VALUE;
-    r = q ? cnMemcpyDtoDAsync(dst, src, bytes, q->handle) : cnMemcpyDtoD(dst, src, bytes);
+    r = queued ? cnMemcpyDtoDAsync(dst, src, bytes, q ? q->handle : NULL) : cnMemcpyDtoD(dst, src, bytes);
   } else return (int)CN_ERROR_INVALID_VALUE;
   if (transfer_id && r == CN_SUCCESS) {
-    int tr = record_transfer(s, queue_id, queue_id!=0, transfer_id);
+    int tr = record_transfer(s, queue_id, queued, transfer_id);
     if (tr != 0) {
       if (q && cnQueueSync(q->handle) == CN_SUCCESS) release_staging(s, queue_id);
+      if (!q && queued && cnQueueSync(NULL) == CN_SUCCESS) release_staging_default(s);
       return tr;
     }
   }
   return (int)r;
+}
+
+int mlu_backend_memcpy(mlu_backend_session *s, int direction,
+                       uint64_t dst_id, uint64_t dst_offset,
+                       uint64_t src_id, uint64_t src_offset,
+                       const void *host_src, void *host_dst, uint64_t bytes,
+                       uint64_t queue_id, uint64_t *transfer_id) {
+  return mlu_backend_memcpy_ex(s, direction, dst_id, dst_offset, src_id, src_offset,
+                               host_src, host_dst, bytes, queue_id, 0, transfer_id);
 }
 
 static int mlu_backend_queue_create_options(mlu_backend_session *s, uint32_t flags, int priority, uint64_t *id) {
@@ -484,7 +509,7 @@ int mlu_backend_queue_destroy(mlu_backend_session *s, uint64_t id) {
 int mlu_backend_queue_sync(mlu_backend_session *s, uint64_t id) {
   /* Driver NULL queue is passed through to CNDrv. It must not become a
    * context-wide barrier or release staging owned by explicit queues. */
-  if (!id) { CNresult r=cnQueueSync(NULL); if(!r) reap_transfers(s); return (int)r; }
+  if (!id) { CNresult r=cnQueueSync(NULL); if(!r) { release_staging_default(s); reap_transfers(s); } return (int)r; }
   mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
   CNresult r = cnQueueSync(q->handle); if (r == CN_SUCCESS) { release_staging(s, id); reap_transfers(s); } return (int)r;
 }

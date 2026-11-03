@@ -68,6 +68,9 @@ static void abi(const char *path,state *s) {
   int uploads[1200];
   for(int i=0;i<1200;++i) { uploads[i]=i; CHECK(cnMemcpyHtoDAsync(src,uploads+i,sizeof(int),s->queue)); }
   CHECK(cnMemcpyDtoDAsync(copy,src,4,s->queue));
+  int default_value=4242, default_read=0; CHECK(cnMemcpyHtoDAsync(s->out,&default_value,sizeof(default_value),NULL));
+  CNresult default_ready=cnQueryQueue(NULL); REQUIRE(default_ready==CN_SUCCESS || default_ready==CN_ERROR_NOT_READY);
+  CHECK(cnQueueSync(NULL)); CHECK(cnMemcpyDtoH(&default_read,s->out,sizeof(default_read))); REQUIRE(default_read==default_value);
   CNnotifier event; CHECK(cnCreateNotifier(&event,0)); CHECK(cnPlaceNotifier(event,s->queue));
   CNresult ready=cnQueryNotifier(event); REQUIRE(ready==CN_SUCCESS || ready==CN_ERROR_NOT_READY);
   CHECK(cnWaitNotifier(event)); CHECK(cnQueryNotifier(event)); CHECK(cnDestroyNotifier(event));

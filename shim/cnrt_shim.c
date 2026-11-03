@@ -17,6 +17,10 @@
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static mlu_remote_context *ctx;
 static int device;
+/* CNRT keeps this process/device setting separate from the TLS call
+ * configuration.  Neuware starts before an active device at AUTO (3), then
+ * uses SPIN (0) after cnrtSetDevice. */
+static uint32_t device_flags = cnrtDeviceScheduleAuto;
 static __thread cnrtRet_t last_error;
 #define ENTER() pthread_mutex_lock(&lock)
 static cnrtRet_t leave(cnrtRet_t r) {
@@ -69,7 +73,9 @@ static allocation *lookup(const void *p, uint64_t *off) {
 /* Handles are monotonic tokens, never dereferenced and never recycled. */
 typedef struct { uint64_t token,id; int live; } object;
 static object queues[256], notifiers[256];
-static uint64_t next_token=0x400000, default_queue;
+static uint64_t next_token=0x400000;
+static int default_queue_used;
+static object default_queue_object={.token=0,.id=0,.live=1};
 static object *get_object(object *table, uint64_t token) {
   for(unsigned i=0;i<256;++i) if(table[i].live && table[i].token==token) return table+i;
   return NULL;
@@ -94,10 +100,7 @@ static cnrtRet_t create_queue(uint64_t *token) {
 }
 static object *get_queue(cnrtQueue_t handle) {
   uint64_t token=(uintptr_t)handle;
-  if(!token) {
-    if(!default_queue && create_queue(&default_queue)) return NULL;
-    token=default_queue;
-  }
+  if(!token) { default_queue_used=1; return &default_queue_object; }
   return get_object(queues,token);
 }
 static cnrtRet_t release_transfer(uint64_t id) {
@@ -152,16 +155,28 @@ static size_t readable_span(const void *p) {
 cnrtRet_t cnrtInit(unsigned flags) { ENTER(); if(flags) RETURN(cnrtErrorArgsInvalid); CONNECT(); RETURN(cnrtSuccess); }
 cnrtRet_t cnrtGetDeviceCount(unsigned *n) { ENTER(); if(!n) RETURN(cnrtErrorArgsInvalid); CONNECT(); RETURN(status(mlu_remote_device_count(ctx,n))); }
 cnrtRet_t cnrtGetDevice(int *d) { ENTER(); if(!d) RETURN(cnrtErrorArgsInvalid); CONNECT(); *d=device; RETURN(cnrtSuccess); }
-cnrtRet_t cnrtSetDevice(int d) { ENTER(); if(d<0) RETURN(cnrtErrorArgsInvalid); CONNECT(); int st=mlu_remote_select_device(ctx,d); if(!st) device=d; RETURN(status(st)); }
+cnrtRet_t cnrtSetDevice(int d) { ENTER(); if(d<0) RETURN(cnrtErrorArgsInvalid); CONNECT(); int st=mlu_remote_select_device(ctx,d); if(!st) { device=d; device_flags=cnrtDeviceScheduleSpin; } RETURN(status(st)); }
+cnrtRet_t cnrtGetDeviceFlag(uint32_t *flags) { ENTER(); if(!flags) RETURN(cnrtErrorArgsInvalid); CONNECT(); *flags=device_flags; RETURN(cnrtSuccess); }
+cnrtRet_t cnrtSetDeviceFlag(uint32_t flags) {
+  ENTER(); if(flags>=cnrtDeviceFlagsMaxNum) RETURN(cnrtErrorArgsInvalid); CONNECT();
+  if(default_queue_used) RETURN(cnrtErrorSetOnActiveProcess);
+  for(unsigned i=0;i<256;++i) if(queues[i].live) RETURN(cnrtErrorSetOnActiveProcess);
+  for(unsigned i=0;i<256;++i) if(notifiers[i].live) RETURN(cnrtErrorSetOnActiveProcess);
+  for(allocation *a=allocations;a;a=a->next) if(a->live) RETURN(cnrtErrorSetOnActiveProcess);
+  /* Neuware accepts the setter but reports the effective MLU370 scheduler as
+   * SPIN on the next query; preserve that observed native result. */
+  (void)flags; device_flags=cnrtDeviceScheduleSpin; RETURN(cnrtSuccess);
+}
 cnrtRet_t cnrtSyncDevice(void) {
   ENTER(); CONNECT();
   for(unsigned i=0;i<256;++i) if(queues[i].live) { int st=mlu_remote_queue_sync(ctx,queues[i].id); if(st) RETURN(status(st)); }
+  if(default_queue_used) { int st=mlu_remote_queue_sync(ctx,0); if(st) RETURN(status(st)); }
   RETURN(cnrtSuccess);
 }
 cnrtRet_t cnrtDeviceReset(void) {
   ENTER(); CONNECT(); int st=mlu_remote_session_reset(ctx); if(st) RETURN(status(st));
   for(allocation *a=allocations;a;a=a->next) a->live=0;
-  memset(queues,0,sizeof(queues)); memset(notifiers,0,sizeof(notifiers)); default_queue=0;
+  memset(queues,0,sizeof(queues)); memset(notifiers,0,sizeof(notifiers)); default_queue_used=0; default_queue_object.live=1;
   for(registration *r=registrations;r;r=r->next) r->mid=0;
   for(kernel *k=kernels;k;k=k->next) k->kid=0;
   RETURN(cnrtSuccess);
@@ -195,11 +210,13 @@ static cnrtRet_t copy(void *dst,void *src,size_t bytes,cnrtQueue_t handle,cnrtMe
   allocation *da=lookup(dst,&doff),*sa=lookup(src,&soff);
   int r;
   if(dir==cnrtMemcpyHostToDev && da && bytes<=da->bytes-doff && !sa)
-    r=mlu_remote_memcpy_h2d(ctx,da->id,doff,src,bytes,q->id,&tid);
+    r=sync ? mlu_remote_memcpy_h2d(ctx,da->id,doff,src,bytes,q->id,&tid)
+           : mlu_remote_memcpy_h2d_async(ctx,da->id,doff,src,bytes,q->id,&tid);
   else if(dir==cnrtMemcpyDevToHost && sa && bytes<=sa->bytes-soff && !da)
     r=mlu_remote_memcpy_d2h(ctx,dst,sa->id,soff,bytes,q->id,&tid);
   else if(dir==cnrtMemcpyDevToDev && da && sa && bytes<=da->bytes-doff && bytes<=sa->bytes-soff)
-    r=mlu_remote_memcpy_d2d(ctx,da->id,doff,sa->id,soff,bytes,q->id,&tid);
+    r=sync ? mlu_remote_memcpy_d2d(ctx,da->id,doff,sa->id,soff,bytes,q->id,&tid)
+           : mlu_remote_memcpy_d2d_async(ctx,da->id,doff,sa->id,soff,bytes,q->id,&tid);
   else return cnrtErrorArgsInvalid;
   if(r) return status(r);
   if(sync && (r=mlu_remote_queue_sync(ctx,q->id))) return status(r);

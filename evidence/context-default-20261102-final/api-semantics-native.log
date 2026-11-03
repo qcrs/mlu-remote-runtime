@@ -1,0 +1,9 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/probes/probe_semantics']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+2026-11-03 01:27:11.955036: [cnrtError] [721903] [Card: 0] Failed to find the device by ordinal -1
+malloc_zero=0 pointer_is_null=1
+free_null=0
+invalid_device=100006
+last_after_success=100006
+completed_queue_query=0
+PASS native API H2D/D2D/D2H/queue/error semantics family

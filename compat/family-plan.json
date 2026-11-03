@@ -4,8 +4,8 @@
     "priority": 0,
     "counts": {
       "IMPLEMENTED": 23,
-      "PARTIAL_IMPLEMENTED": 13,
-      "NOT_IMPLEMENTED": 9
+      "PARTIAL_IMPLEMENTED": 15,
+      "NOT_IMPLEMENTED": 7
     },
     "remaining": [
       {
@@ -54,8 +54,8 @@
         "api": "cnrtGetDeviceFlag",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "CNRT reports device flags as process/device state; multi-device and shared-context TLS remain unverified",
+        "next_step": "Extend native/remote matrix when multi-device or shared context is available"
       },
       {
         "api": "cnrtSetDevice",
@@ -68,8 +68,8 @@
         "api": "cnrtSetDeviceFlag",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "CNRT reports device flags as process/device state; multi-device and shared-context TLS remain unverified",
+        "next_step": "Extend native/remote matrix when multi-device or shared context is available"
       },
       {
         "api": "cnCtxCreate",
@@ -1203,8 +1203,8 @@
     "family": "memcpy",
     "priority": 1,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 13,
-      "NOT_IMPLEMENTED": 6,
+      "PARTIAL_IMPLEMENTED": 14,
+      "NOT_IMPLEMENTED": 5,
       "UNSUPPORTED": 1
     },
     "remaining": [
@@ -1234,7 +1234,7 @@
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Implement pinned Host ownership and deferred D2H writeback before promotion"
       },
       {
         "api": "cnrtMemcpyFromSymbol",
@@ -1290,7 +1290,7 @@
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Extend cross-context and completion ordering cases"
       },
       {
         "api": "cnMemcpyDtoD",

@@ -1,10 +1,10 @@
 # 当前工程状态
 
-更新：2026-11-02。主线已经从预置算子 RPC 扩展到原生 CNRT ABI、CNCC 注册 hooks、真实 image 上传和通用 launch。旧 TCP、Session、对象表及六 preset 保留。
+更新：2026-11-03。主线已经从预置算子 RPC 扩展到原生 CNRT ABI、CNCC 注册 hooks、真实 image 上传和通用 launch。旧 TCP、Session、对象表及六 preset 保留。
 
 本阶段已交付 [API 自动化与功能族扩展](API_AUTOMATION.md)：新增 30 个公共 API（15 完整、15 部分），将 5 个原拒绝入口接入 native backend（3 完整、2 部分），并补齐已有 queue/notifier 创建选项。完整支持判定限定在当前 SDK、单设备会话和台账边界。新增功能族 15 项、原有完整回归 59 项均通过；[证据与增量计数](../evidence/api-expansion-20261102/README.md) 可复核。
 
-续批已交付 [Context/PCI、内存属性与 Queue 边界](QUERY_BOUNDARIES.md)：在 `8dbd336` 上新增 24 个公共 API（9 完整、15 部分），无旧入口状态提升。新增对照 11/11、原功能族 15/15、完整回归 59/59 通过；[增量和证据](../evidence/query-boundaries-20261102/README.md) 可复核。总计 45 完整、73 部分、4 拒绝、188 未实现。
+续批已交付 [Context/PCI、内存属性与 Queue 边界](QUERY_BOUNDARIES.md)：在 `8dbd336` 上新增 24 个公共 API（9 完整、15 部分），无旧入口状态提升。新增对照 11/11、原功能族 15/15、完整回归 59/59 通过；[增量和证据](../evidence/query-boundaries-20261102/README.md) 可复核。本批继续补齐 Context flags、默认 Queue 和内存边界；当前台账为 45 完整、76 部分、4 拒绝、185 未实现。
 
 MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 native、replacement、LD_PRELOAD 均通过。独立 namespace 隐藏 SDK 和 `/dev` 后客户端仍通过。按用户后续要求，本轮采用本机双终端/namespace 模拟无 NPU 客户端，另已通过普通 kernel 和完整 ABI 程序，见 [本机模拟证据](../evidence/driverless-local-20261102/README.md)。**第二物理主机的部署验证仍是后续独立项，最终跨主机目标尚未全部完成。**
 
@@ -14,8 +14,8 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 | 层 | 已实现 | 部分实现 | 明确不支持 | 未实现 | 合计 |
 |---|---:|---:|---:|---:|---:|
-| CNRT client ABI | 20 | 28 | 3 | 79 | 130 |
-| CNDrv client ABI | 25 | 45 | 1 | 109 | 180 |
+| CNRT client ABI | 20 | 30 | 3 | 77 | 130 |
+| CNDrv client ABI | 25 | 46 | 1 | 108 | 180 |
 
 另有 6 个私有 `__bang*` hooks；legacy `cnrtInit` 不在当前公共头文件分母内。CNDrv 的 backend_used 与 client_export 分别核对，只有人工审查与原生/远程证据支持的入口才提升状态。未实现入口可能 loader 失败；明确不支持入口返回 NotSupport。
 
@@ -50,7 +50,7 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 最新 [查询边界 11 项](../evidence/query-boundaries-20261102/results.json)、[原功能族 15 项](../evidence/query-boundaries-20261102/family-regression/results.json) 和 [完整 59 项](../evidence/query-boundaries-20261102/full-suite/results.json) 均通过。此前 [API 扩展 15 项](../evidence/api-expansion-20261102/results.json) 与 [完整回归 59 项](../evidence/api-expansion-20261102/full-suite/results.json) 均返回期望值；保留之前 [58 项 Driver 批次](../evidence/driver-shim-20261102/final-suite/results.json)、[48 项资源批次](../evidence/resources-20261102/final-suite/results.json)、[42 项连接加固批次](../evidence/transport-20261102/final-suite/results.json)、[38 项共享模块批次](../evidence/shared-module-20261102/suite/results.json) 和 [29 项基线](../evidence/transparent-20261102/results.json)。CNNL 项验证的是明确拒绝。六组 CNCC 程序与普通 Driver 程序的 native/replacement/preload、隔离客户端、ABI/线程/1200 launch/copy、共享 module/globals、DSO 生命周期、协议与故障注入、六 preset、ASan/UBSan parser 均通过。
 
-新一轮 [Driver Shim 回归](../evidence/driver-shim-20261102/README.md) 在此前基础上新增普通 Driver 程序的 native/replacement/preload、语义逐行比较、隔离客户端、Driver 协议、坏回复/EOF/configuration 故障和依赖检查。真实 CNDrv NULL queue 的 kernel/notifier/sync/query 已接入，pending NULL queue 在 module unload/context close 时完成清理；同步 copy 与 NULL queue 异步 copy 的 wire 区分仍待扩展，后者当前明确拒绝。
+新一轮 [Driver Shim 回归](../evidence/driver-shim-20261102/README.md) 在此前基础上新增普通 Driver 程序的 native/replacement/preload、语义逐行比较、隔离客户端、Driver 协议、坏回复/EOF/configuration 故障和依赖检查。真实 CNDrv NULL queue 的 kernel/notifier/sync/query 已接入，pending NULL queue 在 module unload/context close 时完成清理；同步 copy 与 NULL queue 异步 copy 已由可选 wire async 位区分；真异步 D2H/pinned writeback 仍明确拒绝。
 
 新增 14 组 Client deadline/配置故障测试、21 组真机 server 握手/收发/另一客户端继续工作检查、3 组暂停/kill/restart 检查，以及 entropy 失败/2048 并发 registry 身份检查均通过。首次 restart 测试实际复现了跨进程旧 AllocationID 重复，修复前后证据均保留。配置、时间保证范围与未完成项见 [连接生命周期](TRANSPORT_LIFECYCLE.md)。
 
@@ -58,4 +58,4 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 编译器 double 参数崩溃与 native 多线程 context-sync/queue-teardown 竞态保留了独立失败日志；没有把它们隐藏成通过。详见 [证据索引](../evidence/transparent-20261102/README.md)。
 
-共享 module→多个 kernel、typed CNDrv Shim 和 compiler 类型 metadata 基础已落地，M3.1/M3.5 仍有并发卸载、跨 DSO image 引用、更广 globals/context/default-queue 语义待验收。Context/config/PCI、owned allocation 属性/range 和 queue 属性基础已扩展；下一阶段按 [功能族计划](../compat/family-plan.md) 补 Context flags/TLS、默认队列和更广内存边界，推进 Host memory/completion/writeback、aggregate 与 symbol ABI。Graph/IPC/Peer 按依赖推进；第二物理主机及生产安全体系不作为本阶段门槛。
+共享 module→多个 kernel、typed CNDrv Shim 和 compiler 类型 metadata 基础已落地，M3.1/M3.5 仍有并发卸载、跨 DSO image 引用、更广 globals/context/default-queue 语义待验收。Context flags/TLS、QueueID 0 默认队列顺序、零长度/one-past/owned allocation 边界已补入 [续批证据](../evidence/query-boundaries-next-20261102/README.md)，并通过完整透明回归 [证据](../evidence/context-default-20261102-final/README.md)。CNRT flags 和 default Queue 仍按单设备/当前 SDK 语义保留部分实现；下一阶段推进 Host memory/completion/writeback、aggregate 与 symbol ABI。Graph/IPC/Peer 按依赖推进；第二物理主机及生产安全体系不作为本阶段门槛。

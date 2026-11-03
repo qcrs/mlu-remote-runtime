@@ -40,6 +40,10 @@ static void driver(void) {
   OK(cnMemGetNodeInfo(NULL,&total,0)); OK(cnMemGetNodeInfo(&free,NULL,0)); OK(cnMemGetNodeInfo(NULL,NULL,0));
   CHECK(cnMemGetNodeInfo(&free,&total,99)!=0); puts("node memory invariants and optional outputs PASS");
   CNaddr p,base; cn_uint64_t size; OK(cnMalloc(&p,123));
+  unsigned char one=1; OK(cnMemcpyHtoD(p+123,&one,0)); CHECK(cnMemcpyHtoD(p+124,&one,1)!=CN_SUCCESS);
+  CNaddr copy_src=0,copy_dst=0; int copy_in=8,copy_old=1199,copy_out=0;
+  OK(cnMalloc(&copy_src,4)); OK(cnMalloc(&copy_dst,4)); OK(cnMemcpyHtoD(copy_src,&copy_in,4)); OK(cnMemcpyHtoD(copy_dst,&copy_old,4));
+  OK(cnMemcpyAsync(copy_dst,copy_src,4,NULL)); OK(cnQueueSync(NULL)); OK(cnMemcpyDtoH(&copy_out,copy_dst,4)); CHECK(copy_out==copy_in);
   for(unsigned off=0;off<123;off+=41) { OK(cnMemGetAddressRange(&base,&size,p+off)); CHECK(base==p && size==123); }
   OK(cnMemGetAddressRange(NULL,NULL,p)); OK(cnMemGetAddressRange(&base,NULL,p+1)); OK(cnMemGetAddressRange(NULL,&size,p+122));
   CHECK(cnMemGetAddressRange(&base,&size,p+123)!=0);
@@ -82,20 +86,28 @@ static void driver(void) {
   CHECK(cnMemGetAddressRange(&base,&size,p)==CN_CONTEXT_ERROR_INVALID);
   CHECK(cnGetMemAttribute(&owner,CN_MEM_ATTRIBUTE_CONTEXT,p)==CN_CONTEXT_ERROR_INVALID);
   OK(cnCtxDestroy(other)); OK(cnCtxSetCurrent(ctx)); OK(cnQueueSync(NULL)); OK(cnQueryQueue(NULL)); OK(cnCtxResetPersistingL2Cache());
-  OK(cnDestroyQueue(q)); OK(cnDestroyQueue(q2)); OK(cnFree(p));
+  OK(cnDestroyQueue(q)); OK(cnDestroyQueue(q2)); OK(cnFree(copy_src)); OK(cnFree(copy_dst)); OK(cnFree(p));
   CHECK(cnMemGetAddressRange(&base,&size,p)!=0); OK(cnCtxDestroy(ctx)); puts("PASS driver Context/PCI/memory/queue boundaries");
 }
 static void runtime(void) {
-  OK(cnrtSetDevice(0)); pci(1);
+  OK(cnrtSetDevice(0));
+  uint32_t flag=99; OK(cnrtGetDeviceFlag(&flag)); printf("runtime initial flag %u\n",flag); CHECK(flag==cnrtDeviceScheduleSpin);
+  for(unsigned f=0; f<cnrtDeviceFlagsMaxNum; ++f) { OK(cnrtSetDeviceFlag(f)); OK(cnrtGetDeviceFlag(&flag)); printf("runtime flag %u\n",flag); CHECK(flag==cnrtDeviceScheduleSpin); }
+  CHECK(cnrtSetDeviceFlag(cnrtDeviceFlagsMaxNum)!=cnrtSuccess);
+  pci(1);
   for(int i=0;i<4;++i) { int64_t value=-1; int st=cnrtDeviceGetConfig(&value,(cnrtDeviceConfig_t)i); printf("runtime config %d %d %ld\n",i,st,(long)value); if(!st) OK(cnrtDeviceSetConfig((cnrtDeviceConfig_t)i,value)); }
   OK(cnrtDeviceSetConfig(cnrtDeviceConfigPrintfFifoNum,2048)); int64_t value=0; OK(cnrtDeviceGetConfig(&value,cnrtDeviceConfigPrintfFifoNum)); CHECK(value==2048); OK(cnrtDeviceSetConfig(cnrtDeviceConfigPrintfFifoNum,1024));
+  void *zero=(void *)(uintptr_t)0x1234; OK(cnrtMalloc(&zero,0)); CHECK(zero==NULL);
   void *p; OK(cnrtMalloc(&p,123));
+  unsigned char one=1; OK(cnrtMemcpy((char *)p+123,&one,0,cnrtMemcpyHostToDev)); CHECK(cnrtMemcpy((char *)p+124,&one,1,cnrtMemcpyHostToDev)!=cnrtSuccess);
+  unsigned default_value=55, default_read=0; OK(cnrtMemcpyAsync(p,&default_value,sizeof(default_value),NULL,cnrtMemcpyHostToDev));
+  int default_status=cnrtQueueQuery(NULL); CHECK(default_status==cnrtSuccess || default_status==cnrtErrorNotReady); OK(cnrtQueueSync(NULL)); OK(cnrtMemcpy(&default_read,p,sizeof(default_read),cnrtMemcpyDevToHost)); CHECK(default_read==default_value);
   for(unsigned off=0;off<123;off+=41) { cnrtPointerAttributes_t a={0}; OK(cnrtPointerGetAttributes(&a,(char *)p+off)); CHECK(a.type==cnrtMemTypeDevice && a.device==0 && a.size==123 && a.devicePointer==(char *)p+off && !a.hostPointer && a.deviceBasePointer==p); printf("runtime pointer %u type %d size %lu cache %d\n",off,a.type,(unsigned long)a.size,a.cacheMode); }
   cnrtQueue_t q,q2; OK(cnrtQueueCreate(&q)); OK(cnrtQueueCreate(&q2)); cnrtQueueAttrValue_t policy={0};
   OK(cnrtQueueGetAttribute(q,cnrtQueueAttributeAccessPolicyWindow,&policy)); CHECK(!policy.accessPolicyWindow.baseAddr);
   policy.accessPolicyWindow=(cnrtAccessPolicyWindow_t){(char *)p+16,0,.5,cnrtAccessPolicyPersisting,cnrtAccessPolicyNormal}; OK(cnrtQueueSetAttribute(q,1,&policy));
   OK(cnrtQueueCopyAttributes(q2,q)); memset(&policy,0,sizeof(policy)); OK(cnrtQueueGetAttribute(q2,1,&policy)); CHECK(policy.accessPolicyWindow.baseAddr==(char *)p+16 && policy.accessPolicyWindow.hitRatio==.5);
   policy.accessPolicyWindow.numBytes=16; int st=cnrtQueueSetAttribute(q,1,&policy); CHECK(st); printf("runtime nonzero window %d\n",st);
-  OK(cnrtDeviceResetPersistingL2Cache()); OK(cnrtSyncDevice()); OK(cnrtQueueDestroy(q)); OK(cnrtQueueDestroy(q2)); OK(cnrtFree(p)); puts("PASS runtime Context/PCI/memory/queue boundaries");
+  CHECK(cnrtSetDeviceFlag(cnrtDeviceScheduleBlock)==cnrtErrorSetOnActiveProcess); OK(cnrtDeviceResetPersistingL2Cache()); OK(cnrtSyncDevice()); OK(cnrtQueueDestroy(q)); OK(cnrtQueueDestroy(q2)); OK(cnrtFree(p)); puts("PASS runtime Context/PCI/memory/queue boundaries");
 }
 int main(int argc,char **argv) { if(argc>1 && !strcmp(argv[1],"driver")) driver(); else runtime(); return 0; }

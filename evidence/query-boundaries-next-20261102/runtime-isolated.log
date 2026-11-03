@@ -1,0 +1,27 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542129]
+mnt mnt:[4026542130]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50318
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_query_boundaries
+runtime initial flag 0
+runtime flag 0
+runtime flag 0
+runtime flag 0
+runtime flag 0
+PCI 13 0000:84:00.0
+PCI 14 0000:84:00.0
+PCI 64 0000:84:00.0
+PCI short 100006
+invalid PCI device 99
+PCI invalid 632015
+runtime config 0 0 0
+runtime config 1 0 1024
+runtime config 2 0 0
+runtime config 3 100006 -1
+runtime pointer 0 type 2 size 123 cache -1
+runtime pointer 41 type 2 size 123 cache -1
+runtime pointer 82 type 2 size 123 cache -1
+runtime nonzero window 100006
+PASS runtime Context/PCI/memory/queue boundaries

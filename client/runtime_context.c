@@ -235,12 +235,23 @@ int mlu_remote_select_device(mlu_remote_context *ctx, uint32_t device) { unsigne
 int mlu_remote_alloc(mlu_remote_context *ctx, uint64_t bytes, uint64_t *allocation) { unsigned char p[8]; put64(p, bytes); unsigned char *e = NULL; uint32_t n = 0; int st = rpc(ctx, MLU_OP_ALLOC, p, 8, &e, &n); if (!st && n >= 8) *allocation = get64(e); free(e); return st; }
 int mlu_remote_free(mlu_remote_context *ctx, uint64_t allocation) { unsigned char p[8]; put64(p, allocation); return rpc(ctx, MLU_OP_FREE, p, 8, NULL, &(uint32_t){0}); }
 
-static int memcpy_call(mlu_remote_context *ctx, uint32_t dir, uint64_t dst, uint64_t dstoff, uint64_t src, uint64_t srcoff, const void *in, void *outbuf, uint64_t bytes, uint64_t queue, uint64_t *transfer) {
-  if (bytes > MLU_REMOTE_MAX_PAYLOAD - 56 || (dir == MLU_MEMCPY_H2D && !in) || (dir == MLU_MEMCPY_D2H && !outbuf)) return MLU_REMOTE_BAD_LENGTH; uint32_t n = 56 + (dir == MLU_MEMCPY_H2D ? (uint32_t)bytes : 0); unsigned char *p = (unsigned char *)calloc(1, n); if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY; put32(p, dir); put64(p + 4, queue); put64(p + 12, dst); put64(p + 20, dstoff); put64(p + 28, src); put64(p + 36, srcoff); put64(p + 44, bytes); put32(p + 52, dir == MLU_MEMCPY_H2D ? (uint32_t)bytes : 0); if (dir == MLU_MEMCPY_H2D) memcpy(p + 56, in, (size_t)bytes); unsigned char *e = NULL; uint32_t en = 0; int st = rpc(ctx, MLU_OP_MEMCPY, p, n, &e, &en); free(p); if (!st && en >= 8 && transfer) *transfer = get64(e); if (!st && dir == MLU_MEMCPY_D2H && en >= 16 + bytes && get64(e + 8) == bytes) memcpy(outbuf, e + 16, (size_t)bytes); free(e); return st;
+static int memcpy_call(mlu_remote_context *ctx, uint32_t dir, uint64_t dst, uint64_t dstoff, uint64_t src, uint64_t srcoff, const void *in, void *outbuf, uint64_t bytes, uint64_t queue, int asynchronous, uint64_t *transfer) {
+  if (bytes > MLU_REMOTE_MAX_PAYLOAD - 60 || (dir == MLU_MEMCPY_H2D && !in) || (dir == MLU_MEMCPY_D2H && !outbuf)) return MLU_REMOTE_BAD_LENGTH;
+  uint32_t n = 60 + (dir == MLU_MEMCPY_H2D ? (uint32_t)bytes : 0);
+  unsigned char *p = (unsigned char *)calloc(1, n); if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  put32(p, dir); put64(p + 4, queue); put64(p + 12, dst); put64(p + 20, dstoff); put64(p + 28, src); put64(p + 36, srcoff); put64(p + 44, bytes);
+  put32(p + 52, dir == MLU_MEMCPY_H2D ? (uint32_t)bytes : 0); put32(p + 56, asynchronous ? 1u : 0u);
+  if (dir == MLU_MEMCPY_H2D) memcpy(p + 60, in, (size_t)bytes);
+  unsigned char *e = NULL; uint32_t en = 0; int st = rpc(ctx, MLU_OP_MEMCPY, p, n, &e, &en); free(p);
+  if (!st && en >= 8 && transfer) *transfer = get64(e);
+  if (!st && dir == MLU_MEMCPY_D2H && en >= 16 + bytes && get64(e + 8) == bytes) memcpy(outbuf, e + 16, (size_t)bytes);
+  free(e); return st;
 }
-int mlu_remote_memcpy_h2d(mlu_remote_context *ctx, uint64_t dst, uint64_t off, const void *src, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_H2D, dst, off, 0, 0, src, NULL, bytes, q, t); }
-int mlu_remote_memcpy_d2h(mlu_remote_context *ctx, void *dst, uint64_t src, uint64_t off, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_D2H, 0, 0, src, off, NULL, dst, bytes, q, t); }
-int mlu_remote_memcpy_d2d(mlu_remote_context *ctx, uint64_t dst, uint64_t doff, uint64_t src, uint64_t soff, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_D2D, dst, doff, src, soff, NULL, NULL, bytes, q, t); }
+int mlu_remote_memcpy_h2d(mlu_remote_context *ctx, uint64_t dst, uint64_t off, const void *src, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_H2D, dst, off, 0, 0, src, NULL, bytes, q, 0, t); }
+int mlu_remote_memcpy_h2d_async(mlu_remote_context *ctx, uint64_t dst, uint64_t off, const void *src, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_H2D, dst, off, 0, 0, src, NULL, bytes, q, 1, t); }
+int mlu_remote_memcpy_d2h(mlu_remote_context *ctx, void *dst, uint64_t src, uint64_t off, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_D2H, 0, 0, src, off, NULL, dst, bytes, q, 0, t); }
+int mlu_remote_memcpy_d2d(mlu_remote_context *ctx, uint64_t dst, uint64_t doff, uint64_t src, uint64_t soff, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_D2D, dst, doff, src, soff, NULL, NULL, bytes, q, 0, t); }
+int mlu_remote_memcpy_d2d_async(mlu_remote_context *ctx, uint64_t dst, uint64_t doff, uint64_t src, uint64_t soff, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_D2D, dst, doff, src, soff, NULL, NULL, bytes, q, 1, t); }
 
 static int id_call(mlu_remote_context *ctx, uint16_t op, uint64_t id) { unsigned char p[8]; put64(p, id); return rpc(ctx, op, p, 8, NULL, &(uint32_t){0}); }
 #include "simple_rpc_client.inc"

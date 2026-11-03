@@ -49,3 +49,14 @@ Queue accessPolicyWindow 按 base AllocationID、offset、bytes、ratio/f32、hi
 2. P2：Host Memory 必须同时实现 client pinned ownership、server staging、TransferID completion/fetch、延后 writeback。Queue sync/query、Notifier wait/query、context sync/destroy/reset、host free 都必须规定写回时点和失败后的 ownership；不能以本地 malloc 或阻塞 D2H 宣称真异步。本包未改变 HostMalloc/FreeHost/D2HAsync 状态。
 3. P2：复杂 Kernel ABI/Symbol 仍需 aggregate/indirect pointer 类型、initialized/constant/external globals、symbol 地址和 module 生命周期；保留已有 compiler metadata 与 BANG 数值回归。
 4. P3/P4/P5：host 数值工具后置；Peer 缺双设备验证；Graph 缺 node/exec/异步生命周期，IPC 缺跨进程 ownership 和远程共享语义。CNNL 缺本机库。第二物理主机、TLS、公网认证、多租户和复杂 Fuzz 不作为本阶段门槛。
+
+
+## 2026-11-03 续批：Context flags、默认 Queue 与边界
+
+本批没有把查询 API 的成功误记为 Host Memory 或复杂 ABI 完成。CNRT 新增 `cnrtGetDeviceFlag` / `cnrtSetDeviceFlag` 的真实 wrapper：合法 flags 在无活动资源时接受，非法值和活动资源修改返回 native 错误；MLU370-S4 的 native 查询对合法 setter 保持 SPIN，因此 Schema 状态为部分实现。CNDrv 原有 TLS current Context 保持线程局部，并新增跨线程 Context 绑定、NULL Queue 异步复制对照。
+
+复制 wire 在原 56-byte 请求后增加可选 async 标志。服务端同时接受旧请求，只有长度和 host payload 能唯一匹配 60-byte 形式时才解析该标志。QueueID 0 直接映射 native NULL Queue；默认队列的 H2D staging 绑定到默认队列 completion，队列同步后才回收。`cnMemcpyAsync`、`cnMemcpyHtoDAsync` 和 `cnMemcpyDtoDAsync` 均支持显式和 NULL Queue 的 D2D/H2D 范围；D2H 仍等待后写回复缓冲。
+
+边界用例新增 CNRT/CNDrv 零长度分配、zero-byte one-past、非零越界、owned offset 和 default Queue 可见性。HostMalloc/FreeHost、真正异步 D2H writeback、pinned ownership、initialized/constant/external globals、aggregate/pointer graph 与 Host Symbol 仍保持原有部分或拒绝状态。
+
+对照命令和逐项结果见 [续批结果](../evidence/query-boundaries-next-20261102/README.md) 与 [完整回归](../evidence/context-default-20261102-final/README.md)。

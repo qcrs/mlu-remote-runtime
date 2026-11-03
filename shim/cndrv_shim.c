@@ -208,17 +208,18 @@ static CNresult copy(context *c,int direction,CNaddr dst,CNaddr src,const void *
   uint64_t q=0,di=0,si=0,doff=0,soff=0,transfer=0;
   if(queue_id(c,queue,&q)) return CN_QUEUE_ERROR_INVALID;
   if(!bytes) return CN_SUCCESS;
-  if(async && !queue) return CN_OPS_ERROR_NOT_SUPPORTED;
   if((direction!=MLU_MEMCPY_D2H && bounds(c,dst,bytes,&di,&doff)) ||
      (direction!=MLU_MEMCPY_H2D && bounds(c,src,bytes,&si,&soff))) return CN_MEMORY_ERROR_INVALID_ADDRESS;
   int st;
   if(direction==MLU_MEMCPY_H2D) {
     if(!in) return CN_ERROR_INVALID_VALUE;
-    st=mlu_remote_memcpy_h2d(c->remote,di,doff,in,bytes,q,&transfer);
+    st=async ? mlu_remote_memcpy_h2d_async(c->remote,di,doff,in,bytes,q,&transfer)
+             : mlu_remote_memcpy_h2d(c->remote,di,doff,in,bytes,q,&transfer);
   } else if(direction==MLU_MEMCPY_D2H) {
     if(!out) return CN_ERROR_INVALID_VALUE;
     st=mlu_remote_memcpy_d2h(c->remote,out,si,soff,bytes,q,&transfer);
-  } else st=mlu_remote_memcpy_d2d(c->remote,di,doff,si,soff,bytes,q,&transfer);
+  } else st=async ? mlu_remote_memcpy_d2d_async(c->remote,di,doff,si,soff,bytes,q,&transfer)
+                  : mlu_remote_memcpy_d2d(c->remote,di,doff,si,soff,bytes,q,&transfer);
   if(!st && !async) st=mlu_remote_transfer_sync(c->remote,transfer);
   return result(release(c,st,transfer));
 }
@@ -227,6 +228,7 @@ CNresult cnMemcpyDtoH(void *dst,CNaddr src,cn_uint64_t n) { ENTER(); CURRENT(); 
 CNresult cnMemcpyDtoD(CNaddr dst,CNaddr src,cn_uint64_t n) { ENTER(); CURRENT(); RETURN(copy(c,3,dst,src,NULL,NULL,n,NULL,0)); }
 CNresult cnMemcpyHtoDAsync(CNaddr dst,const void *src,cn_uint64_t n,CNqueue q) { ENTER(); CURRENT(); RETURN(copy(c,1,dst,0,src,NULL,n,q,1)); }
 CNresult cnMemcpyDtoDAsync(CNaddr dst,CNaddr src,cn_uint64_t n,CNqueue q) { ENTER(); CURRENT(); RETURN(copy(c,3,dst,src,NULL,NULL,n,q,1)); }
+CNresult cnMemcpyAsync(CNaddr dst,CNaddr src,cn_uint64_t n,CNqueue q) { ENTER(); CURRENT(); RETURN(copy(c,3,dst,src,NULL,NULL,n,q,1)); }
 /* Host completion/writeback cannot yet preserve the native async D2H API. */
 CNresult cnMemcpyDtoHAsync(void *dst,CNaddr src,cn_uint64_t n,CNqueue q) { (void)dst;(void)src;(void)n;(void)q; ENTER(); CURRENT(); (void)c; RETURN(CN_OPS_ERROR_NOT_SUPPORTED); }
 
