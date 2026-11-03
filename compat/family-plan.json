@@ -168,9 +168,8 @@
     "family": "error",
     "priority": 0,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 2,
-      "IMPLEMENTED": 2,
-      "NOT_IMPLEMENTED": 2
+      "PARTIAL_IMPLEMENTED": 4,
+      "IMPLEMENTED": 2
     },
     "remaining": [
       {
@@ -192,14 +191,14 @@
         "priority": 0,
         "depends_on": "status mapping",
         "blocker": "Full native string/error catalogue pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Expand error catalogue and test additional SDK revisions"
       },
       {
         "api": "cnGetErrorString",
         "priority": 0,
         "depends_on": "status mapping",
         "blocker": "Full native string/error catalogue pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Expand error catalogue and test additional SDK revisions"
       }
     ]
   },

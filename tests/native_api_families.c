@@ -43,6 +43,10 @@ int main(int argc,char **argv) {
     int major,minor,patch; OK(cnDriverGetVersion(&major,&minor,&patch)); printf("driver version %d.%d.%d\n",major,minor,patch);
     OK(cnGetDriverVersion(&major,&minor,&patch)); printf("driver legacy version %d.%d.%d\n",major,minor,patch);
     OK(cnGetLibVersion(&major,&minor,&patch)); printf("driver lib version %d.%d.%d\n",major,minor,patch);
+    const char *error_name=NULL,*error_text=NULL;
+    OK(cnGetErrorName(CN_SUCCESS,&error_name)); OK(cnGetErrorString(CN_SUCCESS,&error_text));
+    ASSERT(error_name && error_text);
+    printf("driver error %s: %s\n",error_name,error_text);
     for(int i=0;i<=CN_DEVICE_ATTRIBUTE_MAX;++i) {
       if(i>9 && !(i>=0x101 && i<=0x10a) && !(i>=0x201 && i<=0x20c) && !(i>=0x301 && i<=0x312) && i<0x401) continue;
       int v=-1; int st=cnDeviceGetAttribute(&v,(CNdevice_attribute)i,dev); printf("driver attr %d %d %d\n",i,st,st ? -1 : v);

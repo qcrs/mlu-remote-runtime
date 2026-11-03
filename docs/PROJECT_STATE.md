@@ -4,7 +4,9 @@
 
 本阶段已交付 [API 自动化与功能族扩展](API_AUTOMATION.md)：新增 30 个公共 API（15 完整、15 部分），将 5 个原拒绝入口接入 native backend（3 完整、2 部分），并补齐已有 queue/notifier 创建选项。完整支持判定限定在当前 SDK、单设备会话和台账边界。新增功能族 15 项、原有完整回归 59 项均通过；[证据与增量计数](../evidence/api-expansion-20261102/README.md) 可复核。
 
-续批已交付 [Context/PCI、内存属性与 Queue 边界](QUERY_BOUNDARIES.md)：在 `8dbd336` 上新增 24 个公共 API（9 完整、15 部分），无旧入口状态提升。新增对照 11/11、原功能族 15/15、完整回归 59/59 通过；[增量和证据](../evidence/query-boundaries-20261102/README.md) 可复核。本批继续补齐 Context flags、默认 Queue 和内存边界；当前台账为 45 完整、76 部分、4 拒绝、185 未实现。
+续批已交付 [Context/PCI、内存属性与 Queue 边界](QUERY_BOUNDARIES.md)：在 `8dbd336` 上新增 24 个公共 API（9 完整、15 部分），无旧入口状态提升。新增对照 11/11、原功能族 15/15、完整回归 59/59 通过；[增量和证据](../evidence/query-boundaries-20261102/README.md) 可复核。本批继续补齐 Context flags、默认 Queue 和内存边界。续批前台账为 45 完整、76 部分、4 拒绝、185 未实现。
+
+2026-11-03 增加 CNDrv `cnGetErrorName` / `cnGetErrorString` typed RPC 和生成 wrapper。Server 按 CNDrv native out-string ABI 查询并复制有界文本，client 返回线程局部副本；当前只验证 `CN_SUCCESS`，因此两项标 PARTIAL。当前台账为 45 完整、78 部分、4 拒绝、183 未实现。typed RPC 为 40、公共 wrapper 为 46、对象 RPC 仍为 10 对；Native/Remote 证据见 [本批记录](../evidence/api-expansion-20261103/README.md)。
 
 MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 native、replacement、LD_PRELOAD 均通过。独立 namespace 隐藏 SDK 和 `/dev` 后客户端仍通过。按用户后续要求，本轮采用本机双终端/namespace 模拟无 NPU 客户端，另已通过普通 kernel 和完整 ABI 程序，见 [本机模拟证据](../evidence/driverless-local-20261102/README.md)。**第二物理主机的部署验证仍是后续独立项，最终跨主机目标尚未全部完成。**
 
@@ -15,7 +17,7 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 | 层 | 已实现 | 部分实现 | 明确不支持 | 未实现 | 合计 |
 |---|---:|---:|---:|---:|---:|
 | CNRT client ABI | 20 | 30 | 3 | 77 | 130 |
-| CNDrv client ABI | 25 | 46 | 1 | 108 | 180 |
+| CNDrv client ABI | 25 | 48 | 1 | 106 | 180 |
 
 另有 6 个私有 `__bang*` hooks；legacy `cnrtInit` 不在当前公共头文件分母内。CNDrv 的 backend_used 与 client_export 分别核对，只有人工审查与原生/远程证据支持的入口才提升状态。未实现入口可能 loader 失败；明确不支持入口返回 NotSupport。
 
@@ -28,7 +30,7 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 | TCP framing / session | 已实现 | 独立进程、序号及长度验证；首包强制 HELLO，完整合法后才创建 native context，重复握手拒绝；`server-transport-deadlines.log` |
 | Client 原生依赖解耦 | 已实现 | 纯 core 无 SDK 构建；运行不依赖 Driver；`client-core-build.log`、`isolated-client.log` |
 | 原生 CNRT ABI | 部分实现 | 48 个有实现的公共入口及 3 个明确拒绝入口；详见 API 台账 |
-| 原生 CNDrv client ABI | 部分实现 | 独立 libcndrv.so；context/TLS、立即 module load、通用 launch、显式/NULL queue、基础 memory/notifier；[范围和证据](DRIVER_SHIM.md)，仍非完整 vendor CNRT 底层替代 |
+| 原生 CNDrv client ABI | 部分实现 | 独立 libcndrv.so；context/TLS、立即 module load、通用 launch、显式/NULL queue、基础 memory/notifier、Driver error text；[范围和证据](DRIVER_SHIM.md)，仍非完整 vendor CNRT 底层替代 |
 | Kernel 注册及远程加载 | 部分实现 | 当前 CNCC wrapper / ELF64 LE / CNFB v2 单 image；一个 registration/module→多个 KernelID；DSO 20 次重载、pending-work unload、reset/reload 已测 |
 | 通用 kernel launch | 部分实现 | 新增 compiler IR→host ELF metadata；C/enum/template/zero args、scalar/fake VA、offset/NULL 已测；原多 kernel/globals 保留；aggregate/pointer graph/Host symbol 未完成 |
 | 内存与 fake VA | 已实现 | owned allocation+offset；free/reset 失效；VA tombstone 防旧指针复用；`native_bang_abi-replacement.log` |
@@ -36,7 +38,7 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 | 真异步 D2H | 部分实现 | 有正确数据回传，但回复前阻塞同步；pinned/writeback 未实现 |
 | Queue / Notifier | 部分实现 | 真实 priority/range、flags、跨 queue wait、timing；新增 owner context 与属性 union 双向重定位；NULL 属性明确拒绝，非零 window/default ordering 仍待验收 |
 | 所有权、生命周期和异常清理 | 部分实现 | 跨 session/stale/reset/unload/EOF/restart；配额预留/回滚、pending H2D、native 错误逐项报告、失败 quarantine、worker drain 已测；长期计量及 native 取消待做 |
-| 台账与 RPC codegen | 已实现 | 310 个声明及功能族依赖；10 对对象 RPC + 39 typed RPC + 44 公共 wrapper；Protocol/Export/Ledger/evidence 契约检查 |
+| 台账与 RPC codegen | 已实现 | 310 个声明及功能族依赖；10 对对象 RPC + 40 typed RPC + 46 公共 wrapper；Protocol/Export/Ledger/evidence 契约检查 |
 | 回复校验与故障连接失效 | 已实现 | 短成功回复、错误形状、截断、序号错误、socket 超时/kill/restart 拒绝且不重放；`client-response-faults.log`、`client-transport-deadlines.log`、`server-restart.log` |
 | 原有六 preset | 已实现 | 六组数值、TransferID、manifest 验证；`operator-test.log` |
 | pinned/Host symbol/复杂 kernel ABI | 明确不支持 | pinned、复杂 launch ABI 显式拒绝；Host symbol API 尚无导出，加载或调用时失败；initialized/constant/external globals 注册拒绝 |

@@ -1,0 +1,44 @@
+{
+  "baseline_commit": "e8a2401ee16f8b57299fe7ef79688258eaa80f0c",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnGetErrorName",
+      "library": "CNDrv",
+      "family": "error",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnGetErrorString",
+      "library": "CNDrv",
+      "family": "error",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    }
+  ],
+  "new_status_counts": {
+    "PARTIAL_IMPLEMENTED": 2
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 185,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 76,
+    "UNSUPPORTED": 4
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 183,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 78,
+    "UNSUPPORTED": 4
+  },
+  "generated_before": {
+    "typed_rpc": 39,
+    "public_wrappers": 44
+  },
+  "generated_after": {
+    "typed_rpc": 40,
+    "public_wrappers": 46
+  }
+}

@@ -250,6 +250,14 @@ typedef struct {
 } mlu_api_driver_pci_device_response;
 int mlu_remote_api_driver_pci_device(mlu_remote_context *, const mlu_api_driver_pci_device_request *, mlu_api_driver_pci_device_response *);
 typedef struct {
+  uint32_t error;
+  uint32_t kind;
+} mlu_api_driver_error_text_request;
+typedef struct {
+  char text[256];
+} mlu_api_driver_error_text_response;
+int mlu_remote_api_driver_error_text(mlu_remote_context *, const mlu_api_driver_error_text_request *, mlu_api_driver_error_text_response *);
+typedef struct {
   int32_t device;
   int32_t length;
 } mlu_api_runtime_pci_id_request;

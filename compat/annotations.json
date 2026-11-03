@@ -566,6 +566,20 @@
     "remote_test": "api-expansion-20261102/driver-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
   },
+  "cnGetErrorName": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
+    "native_test": "api-expansion-20261103/driver-error-native.log",
+    "remote_test": "api-expansion-20261103/driver-error-remote.log",
+    "next_step": "Expand error catalogue and test additional SDK revisions"
+  },
+  "cnGetErrorString": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
+    "native_test": "api-expansion-20261103/driver-error-native.log",
+    "remote_test": "api-expansion-20261103/driver-error-remote.log",
+    "next_step": "Expand error catalogue and test additional SDK revisions"
+  },
   "cnGetLibVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",

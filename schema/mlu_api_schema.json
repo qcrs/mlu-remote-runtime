@@ -86,7 +86,8 @@
     "API_QUEUE_CONTEXT": 68,
     "API_QUEUE_ATTRIBUTE_GET": 69,
     "API_QUEUE_ATTRIBUTE_SET": 70,
-    "API_QUEUE_ATTRIBUTE_COPY": 71
+    "API_QUEUE_ATTRIBUTE_COPY": 71,
+    "API_DRIVER_ERROR_TEXT": 72
   },
   "hello": {
     "request": [
@@ -7634,17 +7635,21 @@
           "name": "pStr",
           "c_type": "const char **",
           "kind": "buffer",
-          "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "thread-local copied string",
+          "mapping": "nullable not supported; bounded response"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
+      "native_test": "api-expansion-20261103/driver-error-native.log",
+      "remote_test": "api-expansion-20261103/driver-error-remote.log",
+      "next_step": "Expand error catalogue and test additional SDK revisions",
+      "rpc": "driver_error_text",
+      "wrapper": {"rpc":"driver_error_text","inputs":{"error":"error","kind":"0"},"outputs":["memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"],"prepare":["static _Thread_local char error_buffer[256];"],"current":false,"required":["pStr"]},
+      "rpc_operations": ["API_DRIVER_ERROR_TEXT"],
+      "bindings": {"client_wrapper":"cnGetErrorName","client_source":"build/generated/cndrv_api.inc","request":"mlu_api_driver_error_text_request","response":"mlu_api_driver_error_text_response","server_handler":"mlu_backend_api_driver_error_text","backend_binding":"typed_rpc.driver_error_text.backend_binding"}
     },
     {
       "name": "cnGetErrorString",
@@ -7668,17 +7673,21 @@
           "name": "pStr",
           "c_type": "const char **",
           "kind": "buffer",
-          "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "thread-local copied string",
+          "mapping": "nullable not supported; bounded response"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
+      "native_test": "api-expansion-20261103/driver-error-native.log",
+      "remote_test": "api-expansion-20261103/driver-error-remote.log",
+      "next_step": "Expand error catalogue and test additional SDK revisions",
+      "rpc": "driver_error_text",
+      "wrapper": {"rpc":"driver_error_text","inputs":{"error":"error","kind":"1"},"outputs":["memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"],"prepare":["static _Thread_local char error_buffer[256];"],"current":false,"required":["pStr"]},
+      "rpc_operations": ["API_DRIVER_ERROR_TEXT"],
+      "bindings": {"client_wrapper":"cnGetErrorString","client_source":"build/generated/cndrv_api.inc","request":"mlu_api_driver_error_text_request","response":"mlu_api_driver_error_text_response","server_handler":"mlu_backend_api_driver_error_text","backend_binding":"typed_rpc.driver_error_text.backend_binding"}
     },
     {
       "name": "cnGetExportFunction",
@@ -14964,6 +14973,18 @@
       "backend_binding": [
         "CNdev dev=0; out->native_status=cnDeviceGetByPCIBusId(&dev,in->text);",
         "out->device=dev; return 0;"
+      ]
+    },
+    {
+      "name": "driver_error_text",
+      "operation": "API_DRIVER_ERROR_TEXT",
+      "opcode": 72,
+      "request": [{"name": "error", "type": "u32"}, {"name": "kind", "type": "u32"}],
+      "response": [{"name": "text", "type": "cstring", "count": 256}],
+      "backend_binding": [
+        "const char *text=NULL; int st=in->kind ? cnGetErrorString((CNresult)in->error,&text) : cnGetErrorName((CNresult)in->error,&text);",
+        "if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;",
+        "snprintf(out->text,sizeof(out->text),\"%s\",text); return 0;"
       ]
     },
     {

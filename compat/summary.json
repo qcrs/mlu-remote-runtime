@@ -12,8 +12,8 @@
       "UNSUPPORTED": 3
     },
     "CNDrv": {
-      "NOT_IMPLEMENTED": 108,
-      "PARTIAL_IMPLEMENTED": 46,
+      "NOT_IMPLEMENTED": 106,
+      "PARTIAL_IMPLEMENTED": 48,
       "IMPLEMENTED": 25,
       "UNSUPPORTED": 1
     }
@@ -34,6 +34,6 @@
     "cnrtInit"
   ],
   "generated_object_rpc_count": 10,
-  "generated_typed_rpc_count": 39,
-  "generated_public_wrapper_count": 44
+  "generated_typed_rpc_count": 40,
+  "generated_public_wrapper_count": 46
 }

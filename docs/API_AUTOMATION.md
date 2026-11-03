@@ -1,6 +1,8 @@
 # API 泛化与编译器元数据
 
-本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 39 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 44 个公共包装；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
+本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 40 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 46 个公共包装；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
+
+2026-11-03 新增 CNDrv `cnGetErrorName` 和 `cnGetErrorString`：共享 typed request 传错误码和查询类型，server 按真实 `CNresult(error, const char **)` ABI 查询后复制 bounded response，client 返回 thread-local 副本。Native/Remote 的 `CN_SUCCESS` name/string 一致；其他错误值和 SDK 变体尚未验收，因此状态为 PARTIAL。L0 build/schema/codegen/contracts 与 L1 family probe/L2 core smoke 通过；未触碰需要 Full Regression 的核心组件，未跑 L3。
 
 ## 实际参考与 MLU 取舍
 
@@ -29,7 +31,7 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 之前仅有 10 个 ObjectID RPC 能生成。普通 API 需要分别增加 header、client 编解码、server 长度检查/dispatch、backend、导出与台账；各处重复字段和 opcode。现在新增一个已审查的普通 API，主要填写 Schema 中的字段/映射/native binding，再补功能族语义断言；其余重复路径一次生成。
 
-首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；最新行数及哈希见 [制品清单](../evidence/query-boundaries-20261102/artifact-manifest.json)，另有协议头、导出 map 和测试模板。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；本批当前为 40/46，最新行数及哈希见[本批制品清单](../evidence/api-expansion-20261103/artifact-manifest.json)，另有协议头、导出 map 和测试模板。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
 ## BANG C 编译器类型 metadata
 
@@ -55,7 +57,7 @@ python3 scripts/verify-transparent.py --out evidence/<batch>/full-suite
 
 `generate_compat.py` 对 SDK 预处理 Census、头文件哈希、Schema 精确签名、真实链接导出和人工状态做校验，生成逐 API ledger、summary、功能族统计和剩余 API 的依赖计划。`verify-api-contracts.py` 再核对生成结果、opcode、codec/dispatch/binding、导出 allowlist、ledger 和完整状态的证据文件。
 
-新增功能族测试比较稳定 stdout；实时 free memory 只比不变量，时间值只比非负及 disabled-timing 错误，stderr 单独留存 native 诊断。生成 test plan 为全部 39 个 typed RPC 提供坏长度与坏成功回复测试，另加跨 session、overflow、stale、alignment、string 和元数据负例。生成模板不会被当作通过测试；语义断言仍由作者编写。
+新增功能族测试比较稳定 stdout；实时 free memory 只比不变量，时间值只比非负及 disabled-timing 错误，stderr 单独留存 native 诊断。生成 test plan 为全部 40 个 typed RPC 提供坏长度与坏成功回复测试，另加跨 session、overflow、stale、alignment、string 和元数据负例。生成模板不会被当作通过测试；语义断言仍由作者编写。
 
 2026-11-03 续批为 memcpy wire 增加可选 async 标志。旧 56-byte 请求继续由 server 接受，60-byte 扩展只在 host payload 长度唯一匹配时启用；因此默认 Queue 的 QueueID 0 语义可以扩展而不破坏已有协议负例。该字段由手工 memcpy adapter 使用，普通 typed RPC 生成器仍负责固定请求/响应、长度和成功回复校验。
 
