@@ -1,0 +1,26 @@
+#include "common.h"
+
+__mlu_entry__ void naive_gemm_kernel(float *a, float *b, float *c, int n) {
+  for(int idx=taskId;idx<n;idx+=taskDim){int row=idx/64,col=idx%64;float sum=0;for(int k=0;k<64;++k)sum+=a[row*64+k]*b[k*64+col];c[idx]=sum;}
+}
+
+int main(void) {
+  const int n=4096;
+  float *a=(float *)malloc(n*sizeof(float)),*b=(float *)malloc(n*sizeof(float));
+  float *ref=(float *)malloc(n*sizeof(float)),*out=(float *)malloc(n*sizeof(float));
+  if(!a||!b||!ref||!out)return 2;
+  for(int i=0;i<n;++i){a[i]=(float)((i%29)-14)/8.0f;b[i]=(float)((i%17)-8)/16.0f;}
+  for(int row=0;row<64;++row)for(int col=0;col<64;++col){float sum=0;for(int k=0;k<64;++k)sum+=a[row*64+k]*b[k*64+col];ref[row*64+col]=sum;}
+  float *da=device_copy(a,n),*dc=NULL;CHECK(cnrtMalloc((void **)&dc,n*sizeof(float)));
+  float *db=device_copy(b,n);
+  cnrtQueue_t queue=NULL;CHECK(cnrtQueueCreate(&queue));
+  cnrtDim3_t dim={4,1,1};
+  naive_gemm_kernel<<<dim,cnrtFuncTypeBlock,queue>>>(da,db,dc,n);
+  CHECK(cnrtGetLastError());
+  CHECK(cnrtQueueSync(queue));
+  CHECK(cnrtMemcpy(out,dc,n*sizeof(float),cnrtMemcpyDevToHost));
+  int result=report("naive_gemm","64x64x64",ref,out,n,1e-4f);
+  CHECK(cnrtQueueDestroy(queue));CHECK(cnrtFree(da));CHECK(cnrtFree(dc));
+  CHECK(cnrtFree(db));
+  free(a);free(b);free(ref);free(out);return result;
+}

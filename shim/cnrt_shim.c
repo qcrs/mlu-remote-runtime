@@ -182,11 +182,12 @@ cnrtRet_t cnrtDeviceReset(void) {
   RETURN(cnrtSuccess);
 }
 cnrtRet_t cnrtMalloc(void **ptr,size_t bytes) {
-  ENTER(); if(!ptr || bytes>SIZE_MAX-4095) RETURN(cnrtErrorArgsInvalid);
+  ENTER(); if(!ptr || bytes>SIZE_MAX-8191) RETURN(cnrtErrorArgsInvalid);
   if(!bytes) { *ptr=NULL; RETURN(cnrtSuccess); }
   CONNECT();
   allocation *a=calloc(1,sizeof(*a)); if(!a) RETURN(cnrtErrorSysNoMem);
-  a->mapped=(bytes+4095)&~(size_t)4095;
+  /* Separate each valid one-past address from neighboring host/device regions. */
+  a->mapped=((bytes+4095)&~(size_t)4095)+4096;
   a->base=mmap(NULL,a->mapped,PROT_NONE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
   if(a->base==MAP_FAILED) { free(a); RETURN(cnrtErrorSysNoMem); }
   int st=mlu_remote_alloc(ctx,bytes,&a->id);

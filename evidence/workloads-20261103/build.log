@@ -1,0 +1,53 @@
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 40 RPC codecs/dispatch/bindings, 46 public wrappers
+/home/lvtong/mlu-remote-runtime/shim/cnrt_shim.c: In function ‘cnrtQueueCreate’:
+/home/lvtong/mlu-remote-runtime/shim/cnrt_shim.c:229:156: warning: ‘t’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+  229 | cnrtRet_t cnrtQueueCreate(cnrtQueue_t *q) { ENTER(); if(!q) RETURN(cnrtErrorArgsInvalid); CONNECT(); uint64_t t; cnrtRet_t st=create_queue(&t); if(!st) *q=(cnrtQueue_t)(uintptr_t)t; RETURN(st); }
+      |                                                                                                                                                            ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c: In function ‘mlu_backend_queue_destroy’:
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:507:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  507 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:507:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  507 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |                                                       ^~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:999:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc: In function ‘mlu_backend_api_driver_error_text’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:21: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |                     ^~
+/home/lvtong/mlu-remote-runtime/tests/client_cnnl.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/tests/client_cnnl.c:10:73: warning: comparison of integer expressions of different signedness: ‘int’ and ‘enum mlu_remote_protocol_status’ [-Wsign-compare]
+   10 |   printf("CNNL_STATUS=%d\n", st); mlu_remote_disconnect(ctx); return st == MLU_REMOTE_UNSUPPORTED ? 0 : 1;
+      |                                                                         ^~
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c: In function ‘connect_to’:
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c:23:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   23 |   if (getaddrinfo(host, service, &hints, &list)) return -1; int fd = -1;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c:23:61: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   23 |   if (getaddrinfo(host, service, &hints, &list)) return -1; int fd = -1;
+      |                                                             ^~~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c: In function ‘mlu_backend_queue_destroy’:
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:507:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  507 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/mlu_backend.c:507:55: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  507 |   if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+      |                                                       ^~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:999:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc: In function ‘mlu_backend_api_driver_error_text’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:21: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |                     ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_queue.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/probes/probe_queue.c:4:273: warning: operand of ‘?:’ changes signedness from ‘int’ to ‘cnrtRet_t’ due to unsignedness of other operand [-Wsign-compare]
+    4 | int main(void) { cnrtQueue_t q=NULL; cnrtNotifier_t n=NULL; cnrtRet_t r=cnrtSetDevice(0); if(!r)r=cnrtQueueCreate(&q); if(!r)r=cnrtNotifierCreate(&n); if(!r)r=cnrtPlaceNotifier(n,q); if(!r)r=cnrtQueueSync(q); printf("queue/notifier=%d query=%d\n",r,n?cnrtQueryNotifier(n):-1); if(n)cnrtNotifierDestroy(n);if(q)cnrtQueueDestroy(q);return r != cnrtSuccess; }
+      |                                                                                                                                                                                                                                                                                 ^~
+BANG metadata: 4 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_bang_metadata
+built in /home/lvtong/mlu-remote-runtime/build

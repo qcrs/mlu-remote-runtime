@@ -1,0 +1,24 @@
+#include "common.h"
+
+__mlu_entry__ void image_blur_kernel(float *a, float *c, int n) {
+  for(int i=taskId;i<n;i+=taskDim){int y=i/512,x=i%512;float sum=0;if(x==0||y==0||x==511||y==511){c[i]=a[i];continue;}for(int dy=-1;dy<=1;++dy)for(int dx=-1;dx<=1;++dx)sum+=a[(y+dy)*512+x+dx];c[i]=sum/9.0f;}
+}
+
+int main(void) {
+  const int n=262144;
+  float *a=(float *)malloc(n*sizeof(float)),*b=(float *)malloc(n*sizeof(float));
+  float *ref=(float *)malloc(n*sizeof(float)),*out=(float *)malloc(n*sizeof(float));
+  if(!a||!b||!ref||!out)return 2;
+  for(int i=0;i<n;++i){a[i]=(float)((i*37+i/512*13)%256);b[i]=(float)((i%17)-8)/16.0f;}
+  for(int y=0;y<512;++y)for(int x=0;x<512;++x){int i=y*512+x;if(x==0||y==0||x==511||y==511){ref[i]=a[i];continue;}float sum=0;for(int dy=-1;dy<=1;++dy)for(int dx=-1;dx<=1;++dx)sum+=a[(y+dy)*512+x+dx];ref[i]=sum/9.0f;}
+  float *da=device_copy(a,n),*dc=NULL;CHECK(cnrtMalloc((void **)&dc,n*sizeof(float)));
+  cnrtQueue_t queue=NULL;CHECK(cnrtQueueCreate(&queue));
+  cnrtDim3_t dim={4,1,1};
+  image_blur_kernel<<<dim,cnrtFuncTypeBlock,queue>>>(da,dc,n);
+  CHECK(cnrtGetLastError());
+  CHECK(cnrtQueueSync(queue));
+  CHECK(cnrtMemcpy(out,dc,n*sizeof(float),cnrtMemcpyDevToHost));
+  int result=report("image_blur","512x512",ref,out,n,1e-4f);
+  CHECK(cnrtQueueDestroy(queue));CHECK(cnrtFree(da));CHECK(cnrtFree(dc));
+  free(a);free(b);free(ref);free(out);return result;
+}

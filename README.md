@@ -51,3 +51,7 @@ LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/native_bang_generic
 ## API 自动化扩展（2026-11-02）
 
 首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；另修复 5 个原拒绝入口。后续查询边界批次新增 24 个 API，2026-11-03 增加 2 个部分实现的 Driver error string API。Schema 覆盖 310 个公共声明，当前生成 40 个 typed RPC、46 个公共 wrapper，并维护导出/台账/契约检查。当前为 45 完整、78 部分、4 拒绝、183 未实现。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)、[本批证据](evidence/api-expansion-20261103/README.md)。
+
+## Application Workloads
+
+已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur）。四个新增应用均使用普通 BANG C Kernel、CNRT Memory 与 Queue，CPU reference 对照，Native/replacement/preload 运行同一 executable。运行方式和两个终端模拟本地/远程见 [workloads](workloads/README.md)，数值结果见 [证据](evidence/workloads-20261103/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。
