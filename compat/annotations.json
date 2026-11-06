@@ -1,4 +1,11 @@
 {
+  "cnrtCastDataType": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Host-local conversion for FLOAT32/INT32/UINT8 with null quantization: identity, signed nearest, u8 clamp/truncate. No device or remote buffer pointers.",
+    "native_test": "api-expansion-20261109/cast-native.log",
+    "remote_test": "api-expansion-20261109/cast-remote.log",
+    "next_step": "Expand type matrix only after Native/Remote numeric comparison"
+  },
   "cnrtDeviceGetAttribute": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",

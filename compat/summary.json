@@ -6,9 +6,9 @@
   "scope": "installed preprocessed public headers; deprecated transitive declarations included; private BANG hooks counted separately",
   "counts": {
     "CNRT": {
-      "NOT_IMPLEMENTED": 75,
+      "NOT_IMPLEMENTED": 74,
+      "PARTIAL_IMPLEMENTED": 33,
       "IMPLEMENTED": 20,
-      "PARTIAL_IMPLEMENTED": 32,
       "UNSUPPORTED": 3
     },
     "CNDrv": {

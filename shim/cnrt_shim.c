@@ -314,6 +314,26 @@ void __bangRegisterVar(void **handle,char *host,char *address,const char *name,i
   }
   pthread_mutex_unlock(&lock);
 }
+static int cast_size(cnrtDataType_t type) {
+  if(type==CNRT_FLOAT32 || type==CNRT_INT32) return 4;
+  if(type==CNRT_UINT8) return 1;
+  return 0;
+}
+cnrtRet_t cnrtCastDataType(void *src,cnrtDataType_t srcType,void *dst,cnrtDataType_t dstType,int count,cnrtQuantizedParam_t param) {
+  if(!src || !dst || count<0 || param) return cnrtErrorArgsInvalid;
+  int ss=cast_size(srcType), ds=cast_size(dstType); if(!ss || !ds) return cnrtErrorNotSupport;
+  if(srcType==dstType) { memmove(dst,src,(size_t)count*(size_t)ss); return cnrtSuccess; }
+  for(int i=0;i<count;++i) {
+    if(srcType==CNRT_FLOAT32 && dstType==CNRT_INT32) {
+      float x=((float *)src)[i]; float y=x>=0.0f?x+0.5f:x-0.5f; ((int *)dst)[i]=(int)y;
+    } else if(srcType==CNRT_INT32 && dstType==CNRT_FLOAT32) ((float *)dst)[i]=(float)((int *)src)[i];
+    else if(srcType==CNRT_FLOAT32 && dstType==CNRT_UINT8) {
+      float x=((float *)src)[i]; if(x<=0.0f)((unsigned char *)dst)[i]=0; else if(x>=255.0f)((unsigned char *)dst)[i]=255; else ((unsigned char *)dst)[i]=(unsigned char)x;
+    } else if(srcType==CNRT_UINT8 && dstType==CNRT_FLOAT32) ((float *)dst)[i]=(float)((unsigned char *)src)[i];
+    else return cnrtErrorNotSupport;
+  }
+  return cnrtSuccess;
+}
 cnrtRet_t cnrtGetSymbolSize(size_t *size,const void *symbol) {
   ENTER(); if(!size || !symbol) RETURN(cnrtErrorArgsInvalid);
   for(registration *r=registrations;r;r=r->next) for(variable *v=r->variables;v;v=v->next)

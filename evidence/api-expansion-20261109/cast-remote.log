@@ -1,0 +1,1 @@
+PASS cnrtCastDataType f32/i32/u8: -2 0 2 256 / 0 0 1 255\n

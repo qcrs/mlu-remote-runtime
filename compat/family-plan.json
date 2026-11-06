@@ -1037,15 +1037,16 @@
     "family": "host_utilities",
     "priority": 3,
     "counts": {
-      "NOT_IMPLEMENTED": 9
+      "PARTIAL_IMPLEMENTED": 1,
+      "NOT_IMPLEMENTED": 8
     },
     "remaining": [
       {
         "api": "cnrtCastDataType",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only f32/i32/u8 and null quantization validated; half/int4/fix/quantized and V2 rounding not included",
+        "next_step": "Expand type matrix only after Native/Remote numeric comparison"
       },
       {
         "api": "cnrtCastDataType_V2",
