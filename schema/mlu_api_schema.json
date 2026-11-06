@@ -1746,7 +1746,7 @@
       "family": "module_kernel",
       "priority": 2,
       "depends_on": "image/typed arguments",
-      "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
+      "blocker": "Only uninitialized __mlu_device__ variables registered by current CNCC hook; address/copy and initialized/constant/external globals remain unsupported",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtGetSymbolSize(size_t *size, const void *symbol);",
       "parameters": [
@@ -1767,12 +1767,13 @@
           "mapping": "review_required"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Returns registered uninitialized device variable byte size from host registration metadata; unknown symbol and null output reject. No device address or data copy.",
+      "native_test": "api-expansion-20261108/symbol-size-native.log",
+      "remote_test": "api-expansion-20261108/symbol-size-remote.log",
+      "next_step": "Add symbol address/copy after module symbol mapping is available",
+      "rpc_operations": []
     },
     {
       "name": "cnrtHostMalloc",

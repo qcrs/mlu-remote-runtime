@@ -70,6 +70,10 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 新增 CNDrv `cnGetCtxConfigParam_pt` / `cnSetCtxConfigParam_pt` 的 typed context RPC。Native/Remote 单设备对照覆盖 visible cluster、visible cluster number、union limit 查询，以及 union limit set/get；共享 TLS、visible-cluster setter 和多设备配置仍为 PARTIAL。证据见 [context config](../evidence/api-expansion-20261107/README.md)。
 
+## 2026-11-08 BANG symbol size
+
+`cnrtGetSymbolSize` 已接入现有 `__bangRegisterVar` metadata，支持当前 CNCC 注册的未初始化 `__mlu_device__` 变量；Native/Remote/preload 对同一 Module 的 `module_state[4]` 返回 16。Host symbol address、symbol copy、initialized/constant/external globals 和 pointer relocation 仍保持 PARTIAL/未实现。见 [symbol evidence](../evidence/api-expansion-20261108/README.md)。
+
 ## Application Workloads
 
 已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur）。四个新增应用均使用普通 BANG C Kernel、CNRT Memory 与 Queue，CPU reference 对照，Native/replacement/preload 运行同一 executable。运行方式和两个终端模拟本地/远程见 [workloads](../workloads/README.md)，数值结果见 [证据](../evidence/workloads-20261103/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。

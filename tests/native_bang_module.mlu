@@ -30,6 +30,8 @@ extern "C" int module_submit(int *out, int seed, cnrtQueue_t queue) {
 
 #ifndef MLU_MODULE_LIBRARY
 int main(void) {
+  size_t symbol_size=0;
+  if (check(cnrtGetSymbolSize(&symbol_size, module_state), "symbol size") || symbol_size != sizeof(module_state)) return 10;
   int *out = NULL, host[4];
   cnrtQueue_t queue;
   if (check(cnrtMalloc((void **)&out, sizeof(host)), "malloc") ||

@@ -139,6 +139,13 @@
     "remote_test": "api-expansion-20261102/runtime-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
   },
+  "cnrtGetSymbolSize": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Returns registered uninitialized device variable byte size from host registration metadata; unknown symbol and null output reject. No device address or data copy.",
+    "native_test": "api-expansion-20261108/symbol-size-native.log",
+    "remote_test": "api-expansion-20261108/symbol-size-remote.log",
+    "next_step": "Add symbol address/copy after module symbol mapping is available"
+  },
   "cnrtHostMalloc": {
     "status": "UNSUPPORTED",
     "boundary": "Explicit NotSupport; pinned host memory ownership not implemented",

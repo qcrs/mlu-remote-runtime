@@ -1596,8 +1596,8 @@
     "family": "module_kernel",
     "priority": 2,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 7,
-      "NOT_IMPLEMENTED": 5,
+      "PARTIAL_IMPLEMENTED": 8,
+      "NOT_IMPLEMENTED": 4,
       "IMPLEMENTED": 1
     },
     "remaining": [
@@ -1619,8 +1619,8 @@
         "api": "cnrtGetSymbolSize",
         "priority": 2,
         "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only uninitialized __mlu_device__ variables registered by current CNCC hook; address/copy and initialized/constant/external globals remain unsupported",
+        "next_step": "Add symbol address/copy after module symbol mapping is available"
       },
       {
         "api": "cnrtInvokeKernel",

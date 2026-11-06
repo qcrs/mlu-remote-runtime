@@ -107,11 +107,18 @@ static cnrtRet_t release_transfer(uint64_t id) {
   return status(mlu_remote_transfer_release(ctx,id));
 }
 
+typedef struct variable {
+  struct variable *next;
+  const void *host;
+  char *name;
+  size_t size;
+} variable;
 typedef struct registration {
   struct registration *next;
   unsigned char *image;
   size_t size;
   uint64_t mid;
+  variable *variables;
   int live, unsupported;
 } registration;
 typedef struct kernel {
@@ -300,8 +307,18 @@ void __bangRegisterVar(void **handle,char *host,char *address,const char *name,i
       bang_image_device_variable(r->image,r->size,name,(size_t)size)) {
     if(r) r->unsupported=1;
     last_error=cnrtErrorNotSupport;
+  } else {
+    variable *v=calloc(1,sizeof(*v));
+    if(!v || !(v->name=strdup(name))) { free(v); r->unsupported=1; last_error=cnrtErrorSysNoMem; }
+    else { v->host=host; v->size=(size_t)size; v->next=r->variables; r->variables=v; }
   }
   pthread_mutex_unlock(&lock);
+}
+cnrtRet_t cnrtGetSymbolSize(size_t *size,const void *symbol) {
+  ENTER(); if(!size || !symbol) RETURN(cnrtErrorArgsInvalid);
+  for(registration *r=registrations;r;r=r->next) for(variable *v=r->variables;v;v=v->next)
+    if(v->host==symbol) { *size=v->size; RETURN(cnrtSuccess); }
+  RETURN(cnrtErrorNotFound);
 }
 void __bangUnregisterFatBinary(void **handle) {
   ENTER(); registration *r=get_registration(handle);
@@ -311,6 +328,7 @@ void __bangUnregisterFatBinary(void **handle) {
       if(st) last_error=status(st);
     }
     r->mid=0;
+    variable *v=r->variables; while(v) { variable *next=v->next; free(v->name); free(v); v=next; } r->variables=NULL;
     kernel **link=&kernels;
     while(*link) {
       kernel *k=*link;

@@ -12,7 +12,7 @@
 | ipc | 12 | 0 | 0 | 0 | 12 | P5 |
 | memcpy | 20 | 0 | 15 | 1 | 4 | P1 |
 | memory | 42 | 9 | 18 | 1 | 14 | P1 |
-| module_kernel | 13 | 1 | 7 | 0 | 5 | P2 |
+| module_kernel | 13 | 1 | 8 | 0 | 4 | P2 |
 | peer | 7 | 0 | 0 | 0 | 7 | P4 |
 | queue_notifier | 40 | 10 | 28 | 0 | 2 | P1 |
 
