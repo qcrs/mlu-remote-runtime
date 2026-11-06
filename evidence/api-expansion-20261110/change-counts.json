@@ -1,0 +1,44 @@
+{
+  "baseline_commit": "475991f49ab7b39fe4c3f5fbe120eb57e7e210e9",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnrtCreateQuantizedParam",
+      "library": "CNRT",
+      "family": "host_utilities",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnrtDestroyQuantizedParam",
+      "library": "CNRT",
+      "family": "host_utilities",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    }
+  ],
+  "new_status_counts": {
+    "PARTIAL_IMPLEMENTED": 2
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 170,
+    "PARTIAL_IMPLEMENTED": 91,
+    "IMPLEMENTED": 45,
+    "UNSUPPORTED": 4
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 168,
+    "PARTIAL_IMPLEMENTED": 93,
+    "IMPLEMENTED": 45,
+    "UNSUPPORTED": 4
+  },
+  "generated_before": {
+    "typed_rpc": 43,
+    "public_wrappers": 47
+  },
+  "generated_after": {
+    "typed_rpc": 43,
+    "public_wrappers": 47
+  }
+}

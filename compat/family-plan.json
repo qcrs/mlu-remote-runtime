@@ -1037,8 +1037,8 @@
     "family": "host_utilities",
     "priority": 3,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 1,
-      "NOT_IMPLEMENTED": 8
+      "PARTIAL_IMPLEMENTED": 3,
+      "NOT_IMPLEMENTED": 6
     },
     "remaining": [
       {
@@ -1059,8 +1059,8 @@
         "api": "cnrtCreateQuantizedParam",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Basic opaque parameter lifecycle only; quantized cast and by-channel parameter semantics not validated",
+        "next_step": "Validate parameterized quantized cast against SDK"
       },
       {
         "api": "cnrtCreateQuantizedParamByChannel",
@@ -1073,8 +1073,8 @@
         "api": "cnrtDestroyQuantizedParam",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Basic opaque parameter lifecycle only; quantized cast and by-channel parameter semantics not validated",
+        "next_step": "Validate parameterized quantized cast against SDK"
       },
       {
         "api": "cnrtFilterReshape",

@@ -78,6 +78,10 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 `cnrtCastDataType` 已补充 host-local 的 FLOAT32/INT32/UINT8 子集：identity、signed nearest 和 UINT8 clamp/truncate，Native 与 remote shim 数值一致。量化参数、V2、half/int4/fix/quantized 类型和 rounding mode 继续保持 PARTIAL。见 [cast evidence](../evidence/api-expansion-20261109/README.md)。
 
+## 2026-11-10 Quantization parameter lifecycle
+
+补充 `cnrtCreateQuantizedParam` / `cnrtDestroyQuantizedParam` 的 host-local opaque 生命周期管理，并保持 `cnrtCastDataType` 已验证数值子集。带参数 quantized cast、by-channel 参数和更多数据类型仍为 PARTIAL。见 [quant evidence](../evidence/api-expansion-20261110/README.md)。
+
 ## Application Workloads
 
 已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur）。四个新增应用均使用普通 BANG C Kernel、CNRT Memory 与 Queue，CPU reference 对照，Native/replacement/preload 运行同一 executable。运行方式和两个终端模拟本地/远程见 [workloads](../workloads/README.md)，数值结果见 [证据](../evidence/workloads-20261103/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。

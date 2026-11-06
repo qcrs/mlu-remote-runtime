@@ -314,6 +314,18 @@ void __bangRegisterVar(void **handle,char *host,char *address,const char *name,i
   }
   pthread_mutex_unlock(&lock);
 }
+struct cnrtQuantizedParam { int pos; float scale; int offset; unsigned magic; };
+#define CNRT_QUANT_MAGIC 0x514e5451u
+cnrtRet_t cnrtCreateQuantizedParam(cnrtQuantizedParam_t *out,int pos,float scale,int offset) {
+  if(!out) return cnrtErrorArgsInvalid;
+  struct cnrtQuantizedParam *p=calloc(1,sizeof(*p)); if(!p) return cnrtErrorSysNoMem;
+  p->pos=pos; p->scale=scale; p->offset=offset; p->magic=CNRT_QUANT_MAGIC; *out=p; return cnrtSuccess;
+}
+cnrtRet_t cnrtDestroyQuantizedParam(cnrtQuantizedParam_t param) {
+  if(!param) return cnrtSuccess;
+  if(param->magic!=CNRT_QUANT_MAGIC) return cnrtErrorArgsInvalid;
+  param->magic=0; free(param); return cnrtSuccess;
+}
 static int cast_size(cnrtDataType_t type) {
   if(type==CNRT_FLOAT32 || type==CNRT_INT32) return 4;
   if(type==CNRT_UINT8) return 1;
