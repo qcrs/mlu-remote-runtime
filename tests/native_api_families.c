@@ -43,6 +43,8 @@ int main(int argc,char **argv) {
     int major,minor,patch; OK(cnDriverGetVersion(&major,&minor,&patch)); printf("driver version %d.%d.%d\n",major,minor,patch);
     OK(cnGetDriverVersion(&major,&minor,&patch)); printf("driver legacy version %d.%d.%d\n",major,minor,patch);
     OK(cnGetLibVersion(&major,&minor,&patch)); printf("driver lib version %d.%d.%d\n",major,minor,patch);
+    for(int config_type=0;config_type<3;++config_type) { CNctxConfigParam config={0}; OK(cnGetCtxConfigParam_pt(context,(CNctxConfigParamType)config_type,&config)); printf("ctx config %d value %llu\n",config_type,(unsigned long long)config.visibleCluster); }
+    CNctxConfigParam config={0}; config.visibleCluster=3; OK(cnSetCtxConfigParam_pt(context,CN_CTX_CONFIG_UNION_LIMIT,&config)); OK(cnGetCtxConfigParam_pt(context,CN_CTX_CONFIG_UNION_LIMIT,&config)); printf("ctx union limit after set %llu\n",(unsigned long long)config.visibleCluster);
     const char *error_name=NULL,*error_text=NULL;
     OK(cnGetErrorName(CN_SUCCESS,&error_name)); OK(cnGetErrorString(CN_SUCCESS,&error_text));
     ASSERT(error_name && error_text);

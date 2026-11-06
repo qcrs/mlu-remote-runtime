@@ -89,7 +89,8 @@
     "API_QUEUE_ATTRIBUTE_COPY": 71,
     "API_DRIVER_ERROR_TEXT": 72,
     "API_KERNEL_MEMORY_USAGE": 73,
-    "API_ALLOCATION_KIND": 74
+    "API_ALLOCATION_KIND": 74,
+    "API_CTX_CONFIG": 75
   },
   "hello": {
     "request": [
@@ -7464,7 +7465,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "Visible cluster/union limit get/set only; shared TLS and multi-device semantics not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnGetCtxConfigParam_pt(CNcontext context, CNctxConfigParamType type, CNctxConfigParam *param);",
       "parameters": [
@@ -7474,7 +7475,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "context_handle"
         },
         {
           "name": "type",
@@ -7488,17 +7489,29 @@
           "name": "param",
           "c_type": "CNctxConfigParam *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "union_u64"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Typed context-scoped value round trip. Get visible cluster/number/union limit; set union limit validated on current device; other setter types preserve native error.",
+      "native_test": "api-expansion-20261107/context-config-native.log",
+      "remote_test": "api-expansion-20261107/context-config-remote.log",
+      "next_step": "Extend setter matrix with multi-device/TLS hardware",
+      "rpc": "ctx_config",
+      "rpc_operations": [
+        "API_CTX_CONFIG"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetCtxConfigParam_pt",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_ctx_config_request",
+        "response": "mlu_api_ctx_config_response",
+        "server_handler": "mlu_backend_api_ctx_config",
+        "backend_binding": "typed_rpc.ctx_config.backend_binding"
+      }
     },
     {
       "name": "cnGetCtxMaxParallelUnionTasks",
@@ -11974,7 +11987,7 @@
       "family": "device_context",
       "priority": 0,
       "depends_on": "native context",
-      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "blocker": "Visible cluster/union limit get/set only; shared TLS and multi-device semantics not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnSetCtxConfigParam_pt(CNcontext context, CNctxConfigParamType type, CNctxConfigParam *param);",
       "parameters": [
@@ -11984,7 +11997,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "context_handle"
         },
         {
           "name": "type",
@@ -11998,17 +12011,29 @@
           "name": "param",
           "c_type": "CNctxConfigParam *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "in",
+          "length": "1",
+          "mapping": "union_u64"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Typed context-scoped value round trip. Get visible cluster/number/union limit; set union limit validated on current device; other setter types preserve native error.",
+      "native_test": "api-expansion-20261107/context-config-native.log",
+      "remote_test": "api-expansion-20261107/context-config-remote.log",
+      "next_step": "Extend setter matrix with multi-device/TLS hardware",
+      "rpc": "ctx_config",
+      "rpc_operations": [
+        "API_CTX_CONFIG"
+      ],
+      "bindings": {
+        "client_wrapper": "cnSetCtxConfigParam_pt",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_ctx_config_request",
+        "response": "mlu_api_ctx_config_response",
+        "server_handler": "mlu_backend_api_ctx_config",
+        "backend_binding": "typed_rpc.ctx_config.backend_binding"
+      }
     },
     {
       "name": "cnSetMemAttribute",
@@ -15632,6 +15657,36 @@
       ],
       "backend_binding": [
         "return backend_alloc_kind(s,in->bytes,in->kind,in->node,&out->allocation);"
+      ]
+    },
+    {
+      "name": "ctx_config",
+      "operation": "API_CTX_CONFIG",
+      "opcode": 75,
+      "request": [
+        {
+          "name": "type",
+          "type": "u32"
+        },
+        {
+          "name": "value",
+          "type": "u64"
+        },
+        {
+          "name": "set",
+          "type": "u32"
+        }
+      ],
+      "response": [
+        {
+          "name": "value",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "CNctxConfigParam p={0};",
+        "if(in->set) { p.visibleCluster=in->value; return (int)cnSetCtxConfigParam_pt(s->context,(CNctxConfigParamType)in->type,&p); }",
+        "int st=cnGetCtxConfigParam_pt(s->context,(CNctxConfigParamType)in->type,&p); if(!st) out->value=p.visibleCluster; return st;"
       ]
     }
   ],

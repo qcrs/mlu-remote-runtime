@@ -4,8 +4,8 @@
     "priority": 0,
     "counts": {
       "IMPLEMENTED": 23,
-      "PARTIAL_IMPLEMENTED": 15,
-      "NOT_IMPLEMENTED": 7
+      "PARTIAL_IMPLEMENTED": 17,
+      "NOT_IMPLEMENTED": 5
     },
     "remaining": [
       {
@@ -110,8 +110,8 @@
         "api": "cnGetCtxConfigParam_pt",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Visible cluster/union limit get/set only; shared TLS and multi-device semantics not validated",
+        "next_step": "Extend setter matrix with multi-device/TLS hardware"
       },
       {
         "api": "cnInit",
@@ -124,8 +124,8 @@
         "api": "cnSetCtxConfigParam_pt",
         "priority": 0,
         "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Visible cluster/union limit get/set only; shared TLS and multi-device semantics not validated",
+        "next_step": "Extend setter matrix with multi-device/TLS hardware"
       },
       {
         "api": "cnSharedContextAcquire",

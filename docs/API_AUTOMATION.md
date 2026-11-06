@@ -33,6 +33,10 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；本批当前为 40/46，最新行数及哈希见[本批制品清单](../evidence/api-expansion-20261103/artifact-manifest.json)，另有协议头、导出 map 和测试模板。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
+## 2026-11-07 Context configuration
+
+`cnGetCtxConfigParam_pt` / `cnSetCtxConfigParam_pt` 使用固定字段 typed RPC 传 context-owned type/value/set，server 在 session context 上调用 CNDrv native API；`CNctxConfigParam` union 不直接跨线。当前证据覆盖三类 getter 和 union-limit setter，setter/TLS/多设备边界保持 PARTIAL。
+
 ## 2026-11-06 Allocation family
 
 CNDrv `cnMallocNode`、`cnZmalloc`、`cnZmallocNode`、`cnMallocConstant`、`cnMallocNodeConstant`、`cnMallocSecurity`、`cnMallocFrameBuffer` 共享一个手写 semantic adapter：Schema/typed RPC 只传 bytes/kind/node，server 根据 kind 调用对应 native allocator，结果仍注册为 AllocationID；client 只生成 guarded fake VA。`cnMemcpy` 通过 registry ownership 推断 H2D/D2H/D2D/H2H，native device address 不穿过 wire。node 0、zero-fill、offset/range、owner 和 stale free 已对照；多设备/VMM/security consumer 保持 PARTIAL。

@@ -453,3 +453,18 @@ CNresult cnMemcpyDtoD3D(CNmemcpy3dParam *p) {
   RETURN(result(mlu_remote_api_copy3d(c->remote,&in,&out)));
 }
 CNresult cnMemcpy3D(CNmemcpy3dParam *p) { return cnMemcpyDtoD3D(p); }
+
+CNresult cnGetCtxConfigParam_pt(CNcontext handle,CNctxConfigParamType type,CNctxConfigParam *param) {
+  ENTER(); INIT(); if(!param) RETURN(CN_ERROR_INVALID_VALUE);
+  context *c=find_context((uintptr_t)handle); if(!c) RETURN(CN_CONTEXT_ERROR_INVALID);
+  mlu_api_ctx_config_request in={.type=(uint32_t)type,.set=0}; mlu_api_ctx_config_response out={0};
+  int st=mlu_remote_api_ctx_config(c->remote,&in,&out);
+  if(!st) param->visibleCluster=out.value;
+  RETURN(result(st));
+}
+CNresult cnSetCtxConfigParam_pt(CNcontext handle,CNctxConfigParamType type,CNctxConfigParam *param) {
+  ENTER(); INIT(); if(!param) RETURN(CN_ERROR_INVALID_VALUE);
+  context *c=find_context((uintptr_t)handle); if(!c) RETURN(CN_CONTEXT_ERROR_INVALID);
+  mlu_api_ctx_config_request in={.type=(uint32_t)type,.value=param->visibleCluster,.set=1}; mlu_api_ctx_config_response out={0};
+  RETURN(result(mlu_remote_api_ctx_config(c->remote,&in,&out)));
+}

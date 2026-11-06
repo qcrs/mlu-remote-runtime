@@ -1,0 +1,44 @@
+{
+  "baseline_commit": "203ebd474d8bd7be02e46303e74b116c1049f568",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnGetCtxConfigParam_pt",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnSetCtxConfigParam_pt",
+      "library": "CNDrv",
+      "family": "device_context",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    }
+  ],
+  "new_status_counts": {
+    "PARTIAL_IMPLEMENTED": 2
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 174,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 87,
+    "UNSUPPORTED": 4
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 172,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 89,
+    "UNSUPPORTED": 4
+  },
+  "generated_before": {
+    "typed_rpc": 42,
+    "public_wrappers": 47
+  },
+  "generated_after": {
+    "typed_rpc": 43,
+    "public_wrappers": 47
+  }
+}

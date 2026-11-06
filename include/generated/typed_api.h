@@ -418,4 +418,13 @@ typedef struct {
   uint64_t allocation;
 } mlu_api_allocation_kind_response;
 int mlu_remote_api_allocation_kind(mlu_remote_context *, const mlu_api_allocation_kind_request *, mlu_api_allocation_kind_response *);
+typedef struct {
+  uint32_t type;
+  uint64_t value;
+  uint32_t set;
+} mlu_api_ctx_config_request;
+typedef struct {
+  uint64_t value;
+} mlu_api_ctx_config_response;
+int mlu_remote_api_ctx_config(mlu_remote_context *, const mlu_api_ctx_config_request *, mlu_api_ctx_config_response *);
 #endif
