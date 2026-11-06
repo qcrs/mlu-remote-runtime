@@ -1045,8 +1045,8 @@
         "api": "cnrtCastDataType",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "Only f32/i32/u8 and null quantization validated; half/int4/fix/quantized and V2 rounding not included",
-        "next_step": "Expand type matrix only after Native/Remote numeric comparison"
+        "blocker": "V2/half/int4/fix/quantized variants and offset/dequantization semantics not fully validated",
+        "next_step": "Validate offset and additional data types against SDK"
       },
       {
         "api": "cnrtCastDataType_V2",

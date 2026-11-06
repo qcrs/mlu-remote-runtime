@@ -10,4 +10,5 @@ int main(){float f[4]={-2.2f,0,1.5f,255.7f};int i[4]={0};unsigned char u[4]={0};
  OK(cnrtCastDataType(i,CNRT_INT32,back,CNRT_FLOAT32,4,NULL));CHECK(back[0]==-2&&back[2]==2&&back[3]==256);
  cnrtQuantizedParam_t param=NULL; OK(cnrtCreateQuantizedParam(&param,2,0.5f,3)); OK(cnrtDestroyQuantizedParam(param));
  int poses[2]={1,2},dims[2]={2,4};float scales[2]={0.5f,0.25f},offsets[2]={3,4}; OK(cnrtCreateQuantizedParamByChannel(&param,poses,scales,offsets,2,dims,0)); OK(cnrtDestroyQuantizedParam(param));
+ cnrtCreateQuantizedParam(&param,0,2.0f,3); signed char q[4]={0}; OK(cnrtCastDataType(f,CNRT_FLOAT32,q,CNRT_INT8,4,param)); printf("f=%g,%g,%g,%g q=",f[0],f[1],f[2],f[3]); printf("q=%d,%d,%d,%d\n",q[0],q[1],q[2],q[3]); CHECK(q[0]==-4&&q[1]==0&&q[2]==3&&q[3]==127); OK(cnrtDestroyQuantizedParam(param));
  printf("PASS cnrtCastDataType f32/i32/u8: %d %d %d %d / %u %u %u %u\\n",i[0],i[1],i[2],i[3],u[0],u[1],u[2],u[3]);return 0;}

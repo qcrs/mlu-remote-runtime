@@ -86,6 +86,10 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 补充 `cnrtCreateQuantizedParamByChannel` 的 host-local 参数复制和销毁校验，Native/Remote shim 对照通过。实际 by-channel cast 数值语义和完整 SDK 类型矩阵继续保持 PARTIAL。见 [by-channel evidence](../evidence/api-expansion-20261111/README.md)。
 
+## 2026-11-12 Parameterized INT8 cast
+
+`cnrtCastDataType` 增加已观测的 FLOAT32↔INT8 scalar quantization 子集：`scale / 2^pos`、signed nearest rounding、INT8 clamp；Native/Remote shim 对照通过。offset 当前 SDK 路径未观察到作用，V2/half/int4/fix/by-channel cast 仍为 PARTIAL。见 [parameterized cast evidence](../evidence/api-expansion-20261112/README.md)。
+
 ## Application Workloads
 
 已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur）。四个新增应用均使用普通 BANG C Kernel、CNRT Memory 与 Queue，CPU reference 对照，Native/replacement/preload 运行同一 executable。运行方式和两个终端模拟本地/远程见 [workloads](../workloads/README.md)，数值结果见 [证据](../evidence/workloads-20261103/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。

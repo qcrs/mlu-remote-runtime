@@ -336,12 +336,20 @@ cnrtRet_t cnrtDestroyQuantizedParam(cnrtQuantizedParam_t param) {
 }
 static int cast_size(cnrtDataType_t type) {
   if(type==CNRT_FLOAT32 || type==CNRT_INT32) return 4;
-  if(type==CNRT_UINT8) return 1;
+  if(type==CNRT_UINT8 || type==CNRT_INT8) return 1;
   return 0;
 }
 cnrtRet_t cnrtCastDataType(void *src,cnrtDataType_t srcType,void *dst,cnrtDataType_t dstType,int count,cnrtQuantizedParam_t param) {
-  if(!src || !dst || count<0 || param) return cnrtErrorArgsInvalid;
+  if(!src || !dst || count<0) return cnrtErrorArgsInvalid;
+  if(param && param->magic!=CNRT_QUANT_MAGIC) return cnrtErrorArgsInvalid;
   int ss=cast_size(srcType), ds=cast_size(dstType); if(!ss || !ds) return cnrtErrorNotSupport;
+  if(param && ((srcType==CNRT_FLOAT32 && dstType==CNRT_INT8) || (srcType==CNRT_INT8 && dstType==CNRT_FLOAT32))) {
+    if(param->by_channel || param->pos<0 || param->pos>30 || param->scale<=0.0f) return cnrtErrorNotSupport;
+    float factor=param->scale/(float)(1u<<param->pos);
+    for(int i=0;i<count;++i) if(srcType==CNRT_FLOAT32) { float x=((float *)src)[i]*factor; float y=x>=0.0f?x+0.5f:x-0.5f; if(y>127)y=127;if(y<-128)y=-128;((signed char *)dst)[i]=(signed char)y; } else ((float *)dst)[i]=(float)((signed char *)src)[i]/factor;
+    return cnrtSuccess;
+  }
+  if(param) return cnrtErrorNotSupport;
   if(srcType==dstType) { memmove(dst,src,(size_t)count*(size_t)ss); return cnrtSuccess; }
   for(int i=0;i<count;++i) {
     if(srcType==CNRT_FLOAT32 && dstType==CNRT_INT32) {
