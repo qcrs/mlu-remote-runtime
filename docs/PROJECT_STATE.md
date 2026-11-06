@@ -92,7 +92,7 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 ## 2026-11-13 V2 datatype conversion
 
-`cnrtCastDataType_V2` 已补充 host-local FLOAT/INT/UCHAR 子集，支持 round-nearest、toward-zero、down、up 四种模式；Native/Remote shim 对照通过。half/bfloat/64-bit/quantized 与其他 rounding mode 继续为 PARTIAL。见 [V2 cast evidence](../evidence/api-expansion-20261113/README.md)。
+`cnrtCastDataType_V2` 已补充 host-local FLOAT/INT/UCHAR 子集，支持 round-nearest、toward-zero、down、up、round-off-zero、round-math 六种模式；Native/Remote shim 对照通过。half/bfloat/64-bit/quantized 继续为 PARTIAL。见 [V2 cast evidence](../evidence/api-expansion-20261113/README.md)。
 
 ## Application Workloads
 

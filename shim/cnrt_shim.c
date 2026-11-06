@@ -368,6 +368,7 @@ static int cast_round(float x,cnrtRoundingMode_t mode) {
   if(mode==cnrtRounding_rz) return y;
   if(mode==cnrtRounding_rd) return x<0.0f && x!=(float)y ? y-1 : y;
   if(mode==cnrtRounding_ru) return x>0.0f && x!=(float)y ? y+1 : y;
+  if(mode==cnrtRounding_ro) return x>0.0f ? (x!=(float)y ? y+1 : y) : (x!=(float)y ? y-1 : y);
   return (int)(x>=0.0f?x+0.5f:x-0.5f);
 }
 cnrtRet_t cnrtCastDataType_V2(const void *src,cnrtDataType_V2_t srcType,void *dst,cnrtDataType_V2_t dstType,int count,cnrtQuantizedParam_t param,cnrtRoundingMode_t mode) {

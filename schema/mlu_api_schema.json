@@ -469,7 +469,7 @@
       "family": "host_utilities",
       "priority": 3,
       "depends_on": "typed buffers/structs",
-      "blocker": "V2 float/int/u8 and rounding modes 0..3 only; half/bfloat/64-bit/quantized/ro/rm semantics not validated",
+      "blocker": "V2 half/bfloat/64-bit/quantized semantics not validated",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtCastDataType_V2(const void *src, cnrtDataType_V2_t srcDataType, void *dst, cnrtDataType_V2_t dstDataType, int count, cnrtQuantizedParam_t param, cnrtRoundingMode_t roundingMode);",
       "parameters": [
@@ -532,7 +532,7 @@
       ],
       "implementation": "manual",
       "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Host-local V2 FLOAT/INT/UCHAR conversion with rn/rz/rd/ru and null quantization. No remote buffers.",
+      "boundary": "Host-local V2 FLOAT/INT/UCHAR conversion with rn/rz/rd/ru/ro/rm rounding modes and null quantization. No remote buffers.",
       "native_test": "api-expansion-20261113/v2-cast-native.log",
       "remote_test": "api-expansion-20261113/v2-cast-remote.log",
       "next_step": "Extend V2 type matrix after Native/Remote numeric comparison"

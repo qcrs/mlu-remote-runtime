@@ -35,7 +35,7 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 ## 2026-11-13 V2 conversion
 
-`cnrtCastDataType_V2` 的 FLOAT/INT/UCHAR host-local 子集复用 checked conversion helper，显式处理四种 rounding mode；未验证类型继续保留 PARTIAL。
+`cnrtCastDataType_V2` 的 FLOAT/INT/UCHAR host-local 子集复用 checked conversion helper，显式处理六种 rounding mode；未验证类型继续保留 PARTIAL。
 
 ## 2026-11-12 Parameterized INT8 cast
 
