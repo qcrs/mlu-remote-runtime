@@ -33,6 +33,7 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/probes/probe_driver_semantics.c" -o "$ROOT/build/probes/probe_driver_semantics" $LDFLAGS -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_driver.c" -o "$ROOT/build/native_driver" $LDFLAGS -lcndrv -lpthread
 "$CC" $CFLAGS "$ROOT/tests/native_api_families.c" -o "$ROOT/build/native_api_families" $LDFLAGS -lcnrt -lcndrv
+"$CC" $CFLAGS "$ROOT/tests/native_memory_allocations.c" -o "$ROOT/build/native_memory_allocations" $LDFLAGS -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_query_boundaries.c" -o "$ROOT/build/native_query_boundaries" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/probes/probe_query_semantics.c" -o "$ROOT/build/probes/probe_query_semantics" $LDFLAGS -lcnrt -lcndrv
 "$CC" -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I"$ROOT/include" "$ROOT/common/bang_image.c" "$ROOT/tests/bang_image_bounds.c" -ldl -o "$ROOT/build/bang-image-bounds"

@@ -402,4 +402,20 @@ typedef struct {
   unsigned char unused;
 } mlu_api_queue_attribute_copy_response;
 int mlu_remote_api_queue_attribute_copy(mlu_remote_context *, const mlu_api_queue_attribute_copy_request *, mlu_api_queue_attribute_copy_response *);
+typedef struct {
+  unsigned char unused;
+} mlu_api_kernel_memory_usage_request;
+typedef struct {
+  uint64_t bytes;
+} mlu_api_kernel_memory_usage_response;
+int mlu_remote_api_kernel_memory_usage(mlu_remote_context *, const mlu_api_kernel_memory_usage_request *, mlu_api_kernel_memory_usage_response *);
+typedef struct {
+  uint64_t bytes;
+  uint32_t kind;
+  int32_t node;
+} mlu_api_allocation_kind_request;
+typedef struct {
+  uint64_t allocation;
+} mlu_api_allocation_kind_response;
+int mlu_remote_api_allocation_kind(mlu_remote_context *, const mlu_api_allocation_kind_request *, mlu_api_allocation_kind_response *);
 #endif

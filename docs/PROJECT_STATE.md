@@ -62,6 +62,10 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 共享 module→多个 kernel、typed CNDrv Shim 和 compiler 类型 metadata 基础已落地，M3.1/M3.5 仍有并发卸载、跨 DSO image 引用、更广 globals/context/default-queue 语义待验收。Context flags/TLS、QueueID 0 默认队列顺序、零长度/one-past/owned allocation 边界已补入 [续批证据](../evidence/query-boundaries-next-20261102/README.md)，并通过完整透明回归 [证据](../evidence/context-default-20261102-final/README.md)。CNRT flags 和 default Queue 仍按单设备/当前 SDK 语义保留部分实现；下一阶段推进 Host memory/completion/writeback、嵌入 pointer aggregate 与 symbol ABI。Graph/IPC/Peer 按依赖推进；第二物理主机及生产安全体系不作为本阶段门槛。
 
+## 2026-11-06 Memory allocation expansion
+
+新增 CNDrv allocation family 的七个入口：Node、zero-fill、constant、security 和 framebuffer 变体统一进入现有 AllocationID/fake VA/owner/range/free 路径；`cnMemcpy` 增加由 registry 推断 H2D/D2H/D2D/H2H 的同步适配。当前设备 Native/Remote 证据覆盖 zero-byte 输出保持、zero-fill、offset、owner、invalid node、stale free 和 unified copy。七个入口与 `cnMemcpy` 仍标 PARTIAL：node>0、多设备、VMM/shareable handle、security/codec 专用语义和 foreign mapping 未验收。`cnrtDeviceQueryKernelMemoryUsage` 已接 typed RPC，但按空上下文查询证据保留 PARTIAL。
+
 ## Application Workloads
 
 已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur）。四个新增应用均使用普通 BANG C Kernel、CNRT Memory 与 Queue，CPU reference 对照，Native/replacement/preload 运行同一 executable。运行方式和两个终端模拟本地/远程见 [workloads](../workloads/README.md)，数值结果见 [证据](../evidence/workloads-20261103/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。

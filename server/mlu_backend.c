@@ -369,13 +369,24 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
   return first;
 }
 
-int mlu_backend_alloc(mlu_backend_session *s, uint64_t bytes, uint64_t *id) {
-  if (!bytes || !id) return (int)CN_ERROR_INVALID_VALUE;
+static int backend_alloc_kind(mlu_backend_session *s, uint64_t bytes, uint32_t kind, int node, uint64_t *id) {
+  if (!id || kind>7) return (int)CN_ERROR_INVALID_VALUE;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) if (!s->allocations[i].live) {
     if (mlu_resource_reserve(&s->usage, MLU_RESOURCE_DEVICE, bytes)) return (int)MLU_REMOTE_RESOURCE_LIMIT;
     CNaddr p = 0;
-    CNresult r = cnMalloc(&p, bytes);
+    CNresult r;
+    switch(kind) {
+      case 0: r=cnMalloc(&p,bytes); break;
+      case 1: r=cnMallocNode(&p,bytes,node); break;
+      case 2: r=cnZmalloc(&p,bytes); break;
+      case 3: r=cnZmallocNode(&p,bytes,node); break;
+      case 4: r=cnMallocConstant(&p,bytes); break;
+      case 5: r=cnMallocNodeConstant(&p,bytes,node); break;
+      case 6: r=cnMallocSecurity(&p,bytes); break;
+      default: r=cnMallocFrameBuffer(&p,bytes,node); break;
+    }
     if (r != CN_SUCCESS) { mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, bytes); return (int)r; }
+    if (!bytes) { *id=0; return 0; } /* Native validates node but leaves output untouched. */
     uint64_t object_id = 0; uint32_t generation = 0;
     int registry_status = register_object(s, MLU_OBJECT_ALLOCATION, &object_id, &generation);
     if (registry_status != 0) {
@@ -388,6 +399,11 @@ int mlu_backend_alloc(mlu_backend_session *s, uint64_t bytes, uint64_t *id) {
     return 0;
   }
   return (int)CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+}
+
+int mlu_backend_alloc(mlu_backend_session *s, uint64_t bytes, uint64_t *id) {
+  if (!bytes) return CN_ERROR_INVALID_VALUE;
+  return backend_alloc_kind(s,bytes,0,0,id);
 }
 
 int mlu_backend_free(mlu_backend_session *s, uint64_t id) {

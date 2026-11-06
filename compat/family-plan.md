@@ -10,9 +10,9 @@
 | host_memory | 14 | 0 | 0 | 2 | 12 | P2 |
 | host_utilities | 9 | 0 | 0 | 0 | 9 | P3 |
 | ipc | 12 | 0 | 0 | 0 | 12 | P5 |
-| memcpy | 20 | 0 | 14 | 1 | 5 | P1 |
-| memory | 42 | 9 | 11 | 1 | 21 | P1 |
-| module_kernel | 13 | 1 | 6 | 0 | 6 | P2 |
+| memcpy | 20 | 0 | 15 | 1 | 4 | P1 |
+| memory | 42 | 9 | 18 | 1 | 14 | P1 |
+| module_kernel | 13 | 1 | 7 | 0 | 5 | P2 |
 | peer | 7 | 0 | 0 | 0 | 7 | P4 |
 | queue_notifier | 40 | 10 | 28 | 0 | 2 | P1 |
 

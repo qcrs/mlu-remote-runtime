@@ -184,18 +184,54 @@ CNresult cnCtxDestroy(CNcontext handle) {
   if(current==c->token) current=0;
   RETURN(result(st));
 }
-CNresult cnMalloc(CNaddr *out,cn_uint64_t bytes) {
-  ENTER(); CURRENT(); if(!out || bytes>SIZE_MAX-4095) RETURN(CN_ERROR_INVALID_VALUE);
-  if(!bytes) RETURN(CN_SUCCESS); /* Native leaves *out unchanged. */
-  allocation *a=calloc(1,sizeof(*a)); if(!a) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);
-  size_t mapped=((size_t)bytes+4095)&~(size_t)4095;
-  a->base=mmap(NULL,mapped,PROT_NONE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
-  if(a->base==MAP_FAILED) { free(a); RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY); }
-  int st=mlu_remote_alloc(c->remote,bytes,&a->id);
-  if(st) { munmap(a->base,mapped); free(a); RETURN(result(st)); }
-  a->owner=c; a->bytes=bytes; a->mapped=mapped; a->live=1; a->next=allocations; allocations=a;
-  *out=(CNaddr)(uintptr_t)a->base; RETURN(CN_SUCCESS);
+static CNresult allocate_kind(context *c,CNaddr *out,cn_uint64_t bytes,unsigned kind,int node) {
+  if(!out || bytes>SIZE_MAX-8191) return CN_ERROR_INVALID_VALUE;
+  allocation *a=NULL;
+  if(bytes) {
+    a=calloc(1,sizeof(*a)); if(!a) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+    /* A guard page keeps one-past addresses separate from adjacent mappings. */
+    a->mapped=(((size_t)bytes+4095)&~(size_t)4095)+4096;
+    a->base=mmap(NULL,a->mapped,PROT_NONE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+    if(a->base==MAP_FAILED) { free(a); return CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
+  }
+  uint64_t id=0; int st;
+  if(!kind) st=bytes ? mlu_remote_alloc(c->remote,bytes,&id) : 0;
+  else {
+    mlu_api_allocation_kind_request in={.bytes=bytes,.kind=kind,.node=node};
+    mlu_api_allocation_kind_response value={0};
+    st=mlu_remote_api_allocation_kind(c->remote,&in,&value); id=value.allocation;
+  }
+  if(st) { if(a) { munmap(a->base,a->mapped); free(a); } return result(st); }
+  if(!bytes) return CN_SUCCESS; /* Native leaves *out unchanged. */
+  if(!id) { munmap(a->base,a->mapped); free(a); return CN_ERROR_OPERATING_SYSTEM; }
+  a->owner=c; a->bytes=bytes; a->id=id; a->live=1; a->next=allocations; allocations=a;
+  *out=(CNaddr)(uintptr_t)a->base; return CN_SUCCESS;
 }
+CNresult cnMalloc(CNaddr *out,cn_uint64_t bytes) {
+  ENTER(); CURRENT(); RETURN(allocate_kind(c,out,bytes,0,0));
+}
+CNresult cnMallocNode(CNaddr *out,cn_uint64_t bytes,int node) {
+  ENTER(); CURRENT(); RETURN(allocate_kind(c,out,bytes,1,node));
+}
+CNresult cnZmalloc(CNaddr *out,cn_uint64_t bytes) {
+  ENTER(); CURRENT(); RETURN(allocate_kind(c,out,bytes,2,0));
+}
+CNresult cnZmallocNode(CNaddr *out,cn_uint64_t bytes,int node) {
+  ENTER(); CURRENT(); RETURN(allocate_kind(c,out,bytes,3,node));
+}
+CNresult cnMallocConstant(CNaddr *out,cn_uint64_t bytes) {
+  ENTER(); CURRENT(); RETURN(allocate_kind(c,out,bytes,4,0));
+}
+CNresult cnMallocNodeConstant(CNaddr *out,cn_uint64_t bytes,int node) {
+  ENTER(); CURRENT(); RETURN(allocate_kind(c,out,bytes,5,node));
+}
+CNresult cnMallocSecurity(CNaddr *out,cn_uint64_t bytes) {
+  ENTER(); CURRENT(); RETURN(allocate_kind(c,out,bytes,6,0));
+}
+CNresult cnMallocFrameBuffer(CNaddr *out,cn_uint64_t bytes,int node) {
+  ENTER(); CURRENT(); RETURN(allocate_kind(c,out,bytes,7,node));
+}
+
 CNresult cnFree(CNaddr value) {
   ENTER(); CURRENT(); if(!value) RETURN(CN_SUCCESS);
   uint64_t off; allocation *a=lookup(c,value,&off);
@@ -222,6 +258,28 @@ static CNresult copy(context *c,int direction,CNaddr dst,CNaddr src,const void *
                   : mlu_remote_memcpy_d2d(c->remote,di,doff,si,soff,bytes,q,&transfer);
   if(!st && !async) st=mlu_remote_transfer_sync(c->remote,transfer);
   return result(release(c,st,transfer));
+}
+/* Unified-copy direction comes from registry ownership, never native device
+ * pointer bits. Tombstones/guard pages must not be treated as host memory. */
+static int unified_device(context *c,CNaddr p,cn_uint64_t bytes) {
+  for(allocation *a=allocations;a;a=a->next) {
+    if(p>=(uintptr_t)a->base && p-(uintptr_t)a->base<a->mapped) {
+      uint64_t off=p-(uintptr_t)a->base;
+      if(!a->live || a->owner!=c || off>=a->bytes || bytes>a->bytes-off) return -1;
+      return 1;
+    }
+  }
+  return 0;
+}
+CNresult cnMemcpy(CNaddr dst,CNaddr src,cn_uint64_t bytes) {
+  ENTER(); CURRENT(); if(!bytes) RETURN(CN_SUCCESS);
+  if(!dst || !src) RETURN(CN_ERROR_INVALID_VALUE);
+  int d=unified_device(c,dst,bytes),s=unified_device(c,src,bytes);
+  if(d<0 || s<0) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);
+  if(d && s) RETURN(copy(c,MLU_MEMCPY_D2D,dst,src,NULL,NULL,bytes,NULL,0));
+  if(d) RETURN(copy(c,MLU_MEMCPY_H2D,dst,0,(void *)(uintptr_t)src,NULL,bytes,NULL,0));
+  if(s) RETURN(copy(c,MLU_MEMCPY_D2H,0,src,NULL,(void *)(uintptr_t)dst,bytes,NULL,0));
+  memmove((void *)(uintptr_t)dst,(void *)(uintptr_t)src,(size_t)bytes); RETURN(CN_SUCCESS);
 }
 CNresult cnMemcpyHtoD(CNaddr dst,const void *src,cn_uint64_t n) { ENTER(); CURRENT(); RETURN(copy(c,1,dst,0,src,NULL,n,NULL,0)); }
 CNresult cnMemcpyDtoH(void *dst,CNaddr src,cn_uint64_t n) { ENTER(); CURRENT(); RETURN(copy(c,2,0,src,NULL,dst,n,NULL,0)); }

@@ -87,7 +87,9 @@
     "API_QUEUE_ATTRIBUTE_GET": 69,
     "API_QUEUE_ATTRIBUTE_SET": 70,
     "API_QUEUE_ATTRIBUTE_COPY": 71,
-    "API_DRIVER_ERROR_TEXT": 72
+    "API_DRIVER_ERROR_TEXT": 72,
+    "API_KERNEL_MEMORY_USAGE": 73,
+    "API_ALLOCATION_KIND": 74
   },
   "hello": {
     "request": [
@@ -999,8 +1001,8 @@
       "library": "CNRT",
       "family": "module_kernel",
       "priority": 2,
-      "depends_on": "module image metadata",
-      "blocker": "Native memory usage query and descriptor review pending",
+      "depends_on": "native context",
+      "blocker": "Loaded module accounting needs additional native comparison",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtDeviceQueryKernelMemoryUsage(size_t *pBytes);",
       "parameters": [
@@ -1008,17 +1010,38 @@
           "name": "pBytes",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native query over typed u64 reply; empty-context Native/Remote value tested. Loaded module/process-wide attribution not yet certified.",
+      "native_test": "api-expansion-20261104/runtime-native.log",
+      "remote_test": "api-expansion-20261104/runtime-remote.log",
+      "next_step": "Retain family probe across SDK revisions",
+      "rpc": "kernel_memory_usage",
+      "wrapper": {
+        "rpc": "kernel_memory_usage",
+        "inputs": {},
+        "outputs": [
+          "*pBytes=(size_t)out.bytes;"
+        ],
+        "prepare": [],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_KERNEL_MEMORY_USAGE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceQueryKernelMemoryUsage",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_kernel_memory_usage_request",
+        "response": "mlu_api_kernel_memory_usage_response",
+        "server_handler": "mlu_backend_api_kernel_memory_usage",
+        "backend_binding": "typed_rpc.kernel_memory_usage.backend_binding"
+      }
     },
     {
       "name": "cnrtDeviceReset",
@@ -7647,9 +7670,34 @@
       "remote_test": "api-expansion-20261103/driver-remote.log",
       "next_step": "Expand error catalogue and test additional SDK revisions",
       "rpc": "driver_error_text",
-      "wrapper": {"rpc":"driver_error_text","inputs":{"error":"error","kind":"0"},"outputs":["memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"],"prepare":["static _Thread_local char error_buffer[256];"],"current":false,"required":["pStr"]},
-      "rpc_operations": ["API_DRIVER_ERROR_TEXT"],
-      "bindings": {"client_wrapper":"cnGetErrorName","client_source":"build/generated/cndrv_api.inc","request":"mlu_api_driver_error_text_request","response":"mlu_api_driver_error_text_response","server_handler":"mlu_backend_api_driver_error_text","backend_binding":"typed_rpc.driver_error_text.backend_binding"}
+      "wrapper": {
+        "rpc": "driver_error_text",
+        "inputs": {
+          "error": "error",
+          "kind": "0"
+        },
+        "outputs": [
+          "memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"
+        ],
+        "prepare": [
+          "static _Thread_local char error_buffer[256];"
+        ],
+        "current": false,
+        "required": [
+          "pStr"
+        ]
+      },
+      "rpc_operations": [
+        "API_DRIVER_ERROR_TEXT"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetErrorName",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_driver_error_text_request",
+        "response": "mlu_api_driver_error_text_response",
+        "server_handler": "mlu_backend_api_driver_error_text",
+        "backend_binding": "typed_rpc.driver_error_text.backend_binding"
+      }
     },
     {
       "name": "cnGetErrorString",
@@ -7685,9 +7733,34 @@
       "remote_test": "api-expansion-20261103/driver-remote.log",
       "next_step": "Expand error catalogue and test additional SDK revisions",
       "rpc": "driver_error_text",
-      "wrapper": {"rpc":"driver_error_text","inputs":{"error":"error","kind":"1"},"outputs":["memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"],"prepare":["static _Thread_local char error_buffer[256];"],"current":false,"required":["pStr"]},
-      "rpc_operations": ["API_DRIVER_ERROR_TEXT"],
-      "bindings": {"client_wrapper":"cnGetErrorString","client_source":"build/generated/cndrv_api.inc","request":"mlu_api_driver_error_text_request","response":"mlu_api_driver_error_text_response","server_handler":"mlu_backend_api_driver_error_text","backend_binding":"typed_rpc.driver_error_text.backend_binding"}
+      "wrapper": {
+        "rpc": "driver_error_text",
+        "inputs": {
+          "error": "error",
+          "kind": "1"
+        },
+        "outputs": [
+          "memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"
+        ],
+        "prepare": [
+          "static _Thread_local char error_buffer[256];"
+        ],
+        "current": false,
+        "required": [
+          "pStr"
+        ]
+      },
+      "rpc_operations": [
+        "API_DRIVER_ERROR_TEXT"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetErrorString",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_driver_error_text_request",
+        "response": "mlu_api_driver_error_text_response",
+        "server_handler": "mlu_backend_api_driver_error_text",
+        "backend_binding": "typed_rpc.driver_error_text.backend_binding"
+      }
     },
     {
       "name": "cnGetExportFunction",
@@ -8359,8 +8432,8 @@
       "library": "CNDrv",
       "family": "memory",
       "priority": 1,
-      "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnMallocConstant(CNaddr *pmluAddr, cn_uint64_t bytes);",
       "parameters": [
@@ -8368,9 +8441,9 @@
           "name": "pmluAddr",
           "c_type": "CNaddr *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "allocation_id + checked byte offset"
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
         },
         {
           "name": "bytes",
@@ -8381,20 +8454,32 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocConstant",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
     },
     {
       "name": "cnMallocFrameBuffer",
       "library": "CNDrv",
       "family": "memory",
       "priority": 1,
-      "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnMallocFrameBuffer(CNaddr *pmluAddr, cn_uint64_t bytes, int node);",
       "parameters": [
@@ -8402,9 +8487,9 @@
           "name": "pmluAddr",
           "c_type": "CNaddr *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "allocation_id + checked byte offset"
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
         },
         {
           "name": "bytes",
@@ -8423,12 +8508,24 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocFrameBuffer",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
     },
     {
       "name": "cnMallocHost",
@@ -8469,8 +8566,8 @@
       "library": "CNDrv",
       "family": "memory",
       "priority": 1,
-      "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnMallocNode(CNaddr *pmluAddr, cn_uint64_t bytes, int node);",
       "parameters": [
@@ -8478,9 +8575,9 @@
           "name": "pmluAddr",
           "c_type": "CNaddr *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "allocation_id + checked byte offset"
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
         },
         {
           "name": "bytes",
@@ -8499,20 +8596,32 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocNode",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
     },
     {
       "name": "cnMallocNodeConstant",
       "library": "CNDrv",
       "family": "memory",
       "priority": 1,
-      "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnMallocNodeConstant(CNaddr *pmluAddr, cn_uint64_t bytes, int node);",
       "parameters": [
@@ -8520,9 +8629,9 @@
           "name": "pmluAddr",
           "c_type": "CNaddr *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "allocation_id + checked byte offset"
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
         },
         {
           "name": "bytes",
@@ -8541,12 +8650,24 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocNodeConstant",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
     },
     {
       "name": "cnMallocPeerAble",
@@ -8587,8 +8708,8 @@
       "library": "CNDrv",
       "family": "memory",
       "priority": 1,
-      "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnMallocSecurity(CNaddr *pmluAddr, cn_uint64_t bytes);",
       "parameters": [
@@ -8596,9 +8717,9 @@
           "name": "pmluAddr",
           "c_type": "CNaddr *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "allocation_id + checked byte offset"
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
         },
         {
           "name": "bytes",
@@ -8609,12 +8730,24 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocSecurity",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
     },
     {
       "name": "cnMemAddressFree",
@@ -9410,8 +9543,8 @@
       "library": "CNDrv",
       "family": "memcpy",
       "priority": 1,
-      "depends_on": "allocation/queue",
-      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "depends_on": "owned allocation registry and synchronous memcpy",
+      "blocker": "Foreign native/unregistered device mappings and multiple physical devices excluded",
       "return_type": "CNresult",
       "signature": "CNresult cnMemcpy(CNaddr dstAddr, CNaddr srcAddr, cn_uint64_t bytes);",
       "parameters": [
@@ -9440,12 +9573,15 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Registry-inferred H2H/H2D/D2H/D2D for local host buffers and owned device allocations, offset/range checks, zero bytes, stale/foreign rejection; native device addresses never cross wire",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Probe and implement this functional family",
+      "rpc_operations": [
+        "MEMCPY"
+      ]
     },
     {
       "name": "cnMemcpy2D",
@@ -14075,8 +14211,8 @@
       "library": "CNDrv",
       "family": "memory",
       "priority": 1,
-      "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnZmalloc(CNaddr *pmluAddr, cn_uint64_t bytes);",
       "parameters": [
@@ -14084,9 +14220,9 @@
           "name": "pmluAddr",
           "c_type": "CNaddr *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "allocation_id + checked byte offset"
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
         },
         {
           "name": "bytes",
@@ -14097,20 +14233,32 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnZmalloc",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
     },
     {
       "name": "cnZmallocNode",
       "library": "CNDrv",
       "family": "memory",
       "priority": 1,
-      "depends_on": "context/allocation",
-      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
       "return_type": "CNresult",
       "signature": "CNresult cnZmallocNode(CNaddr *pmluAddr, cn_uint64_t bytes, int node);",
       "parameters": [
@@ -14118,9 +14266,9 @@
           "name": "pmluAddr",
           "c_type": "CNaddr *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "allocation_id + checked byte offset"
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
         },
         {
           "name": "bytes",
@@ -14139,12 +14287,24 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnZmallocNode",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
     }
   ],
   "typed_rpc": [
@@ -14979,8 +15139,23 @@
       "name": "driver_error_text",
       "operation": "API_DRIVER_ERROR_TEXT",
       "opcode": 72,
-      "request": [{"name": "error", "type": "u32"}, {"name": "kind", "type": "u32"}],
-      "response": [{"name": "text", "type": "cstring", "count": 256}],
+      "request": [
+        {
+          "name": "error",
+          "type": "u32"
+        },
+        {
+          "name": "kind",
+          "type": "u32"
+        }
+      ],
+      "response": [
+        {
+          "name": "text",
+          "type": "cstring",
+          "count": 256
+        }
+      ],
       "backend_binding": [
         "const char *text=NULL; int st=in->kind ? cnGetErrorString((CNresult)in->error,&text) : cnGetErrorName((CNresult)in->error,&text);",
         "if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;",
@@ -15413,6 +15588,50 @@
       "response": [],
       "backend_binding": [
         "return backend_queue_attribute_copy(s,in,out);"
+      ]
+    },
+    {
+      "name": "kernel_memory_usage",
+      "operation": "API_KERNEL_MEMORY_USAGE",
+      "opcode": 73,
+      "request": [],
+      "response": [
+        {
+          "name": "bytes",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "size_t bytes=0; int st=cnrtDeviceQueryKernelMemoryUsage(&bytes);",
+        "if(!st) out->bytes=bytes; return st;"
+      ]
+    },
+    {
+      "name": "allocation_kind",
+      "operation": "API_ALLOCATION_KIND",
+      "opcode": 74,
+      "request": [
+        {
+          "name": "bytes",
+          "type": "u64"
+        },
+        {
+          "name": "kind",
+          "type": "u32"
+        },
+        {
+          "name": "node",
+          "type": "i32"
+        }
+      ],
+      "response": [
+        {
+          "name": "allocation",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "return backend_alloc_kind(s,in->bytes,in->kind,in->node,&out->allocation);"
       ]
     }
   ],

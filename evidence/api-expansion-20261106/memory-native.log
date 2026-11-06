@@ -1,0 +1,10 @@
+PASS allocation kind=1 zero-output/offset/owner/range/data
+PASS allocation kind=2 zero-output/offset/owner/range/data/zero-fill
+PASS allocation kind=3 zero-output/offset/owner/range/data/zero-fill
+PASS allocation kind=4 zero-output/offset/owner/range/data
+PASS allocation kind=5 zero-output/offset/owner/range/data
+PASS allocation kind=6 zero-output/offset/owner/range/data
+PASS allocation kind=7 zero-output/offset/owner/range/data
+invalid node kind=1 status=100006
+invalid node kind=3 status=100006
+PASS memory allocation family: 7 simultaneous kinds; stale invalidation

@@ -76,7 +76,8 @@ int main(int argc,char **argv) {
     }
     OK(cnDestroyNotifier(a)); OK(cnDestroyNotifier(b)); OK(cnDestroyQueue(q)); OK(cnDestroyQueue(q2)); OK(cnFree(d)); OK(cnCtxDestroy(context));
   } else {
-    OK(cnrtSetDevice(0)); int major,minor,patch;
+    OK(cnrtSetDevice(0)); int major,minor,patch; size_t kernel_memory=0;
+    OK(cnrtDeviceQueryKernelMemoryUsage(&kernel_memory)); printf("runtime kernel memory usage %zu\n",kernel_memory);
     OK(cnrtGetLibVersion(&major,&minor,&patch)); printf("runtime version %d.%d.%d\n",major,minor,patch);
     OK(cnrtDriverGetVersion(&major,&minor,&patch)); printf("runtime driver version %d.%d.%d\n",major,minor,patch);
     cnrtDeviceProp_t prop; memset(&prop,0,sizeof(prop)); OK(cnrtGetDeviceProperties(&prop,0));

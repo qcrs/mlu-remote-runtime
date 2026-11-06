@@ -1,0 +1,93 @@
+{
+  "baseline_commit": "e152bb2ec920cea25cdc5cc2a19868e2298a0489",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnrtDeviceQueryKernelMemoryUsage",
+      "library": "CNRT",
+      "family": "module_kernel",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnMallocConstant",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnMallocFrameBuffer",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnMallocNode",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnMallocNodeConstant",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnMallocSecurity",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnMemcpy",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnZmalloc",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnZmallocNode",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    }
+  ],
+  "new_status_counts": {
+    "PARTIAL_IMPLEMENTED": 9
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 183,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 78,
+    "UNSUPPORTED": 4
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 174,
+    "IMPLEMENTED": 45,
+    "PARTIAL_IMPLEMENTED": 87,
+    "UNSUPPORTED": 4
+  },
+  "generated_before": {
+    "typed_rpc": 40,
+    "public_wrappers": 46
+  },
+  "generated_after": {
+    "typed_rpc": 42,
+    "public_wrappers": 47
+  }
+}

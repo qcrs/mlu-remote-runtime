@@ -1202,8 +1202,8 @@
     "family": "memcpy",
     "priority": 1,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 14,
-      "NOT_IMPLEMENTED": 5,
+      "PARTIAL_IMPLEMENTED": 15,
+      "NOT_IMPLEMENTED": 4,
       "UNSUPPORTED": 1
     },
     "remaining": [
@@ -1266,8 +1266,8 @@
       {
         "api": "cnMemcpy",
         "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
+        "depends_on": "owned allocation registry and synchronous memcpy",
+        "blocker": "Foreign native/unregistered device mappings and multiple physical devices excluded",
         "next_step": "Probe and implement this functional family"
       },
       {
@@ -1355,8 +1355,8 @@
     "counts": {
       "IMPLEMENTED": 9,
       "UNSUPPORTED": 1,
-      "PARTIAL_IMPLEMENTED": 11,
-      "NOT_IMPLEMENTED": 21
+      "PARTIAL_IMPLEMENTED": 18,
+      "NOT_IMPLEMENTED": 14
     },
     "remaining": [
       {
@@ -1418,37 +1418,37 @@
       {
         "api": "cnMallocConstant",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "depends_on": "session allocation registry / owned fake VA",
+        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+        "next_step": "Extend node/codec/security consumer probes when hardware is available"
       },
       {
         "api": "cnMallocFrameBuffer",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "depends_on": "session allocation registry / owned fake VA",
+        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+        "next_step": "Extend node/codec/security consumer probes when hardware is available"
       },
       {
         "api": "cnMallocNode",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "depends_on": "session allocation registry / owned fake VA",
+        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+        "next_step": "Extend node/codec/security consumer probes when hardware is available"
       },
       {
         "api": "cnMallocNodeConstant",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "depends_on": "session allocation registry / owned fake VA",
+        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+        "next_step": "Extend node/codec/security consumer probes when hardware is available"
       },
       {
         "api": "cnMallocSecurity",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "depends_on": "session allocation registry / owned fake VA",
+        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+        "next_step": "Extend node/codec/security consumer probes when hardware is available"
       },
       {
         "api": "cnMemAddressFree",
@@ -1579,16 +1579,16 @@
       {
         "api": "cnZmalloc",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "depends_on": "session allocation registry / owned fake VA",
+        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+        "next_step": "Extend node/codec/security consumer probes when hardware is available"
       },
       {
         "api": "cnZmallocNode",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "depends_on": "session allocation registry / owned fake VA",
+        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+        "next_step": "Extend node/codec/security consumer probes when hardware is available"
       }
     ]
   },
@@ -1596,17 +1596,17 @@
     "family": "module_kernel",
     "priority": 2,
     "counts": {
-      "NOT_IMPLEMENTED": 6,
-      "PARTIAL_IMPLEMENTED": 6,
+      "PARTIAL_IMPLEMENTED": 7,
+      "NOT_IMPLEMENTED": 5,
       "IMPLEMENTED": 1
     },
     "remaining": [
       {
         "api": "cnrtDeviceQueryKernelMemoryUsage",
         "priority": 2,
-        "depends_on": "module image metadata",
-        "blocker": "Native memory usage query and descriptor review pending",
-        "next_step": "Probe and implement this functional family"
+        "depends_on": "native context",
+        "blocker": "Loaded module accounting needs additional native comparison",
+        "next_step": "Retain family probe across SDK revisions"
       },
       {
         "api": "cnrtGetSymbolAddress",

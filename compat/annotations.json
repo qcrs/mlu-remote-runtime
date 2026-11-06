@@ -34,6 +34,13 @@
     "remote_test": "api-expansion-20261102/runtime-remote.log",
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
   },
+  "cnrtDeviceQueryKernelMemoryUsage": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Native query over typed u64 reply; empty-context Native/Remote value tested. Loaded module/process-wide attribution not yet certified.",
+    "native_test": "api-expansion-20261104/runtime-native.log",
+    "remote_test": "api-expansion-20261104/runtime-remote.log",
+    "next_step": "Retain family probe across SDK revisions"
+  },
   "cnrtDeviceReset": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Session context reset and registration reload; full native reset effects not compared",
@@ -629,6 +636,41 @@
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
   },
+  "cnMallocConstant": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "native_test": "api-expansion-20261106/memory-native.log",
+    "remote_test": "api-expansion-20261106/memory-replacement.log",
+    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+  },
+  "cnMallocFrameBuffer": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "native_test": "api-expansion-20261106/memory-native.log",
+    "remote_test": "api-expansion-20261106/memory-replacement.log",
+    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+  },
+  "cnMallocNode": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "native_test": "api-expansion-20261106/memory-native.log",
+    "remote_test": "api-expansion-20261106/memory-replacement.log",
+    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+  },
+  "cnMallocNodeConstant": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "native_test": "api-expansion-20261106/memory-native.log",
+    "remote_test": "api-expansion-20261106/memory-replacement.log",
+    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+  },
+  "cnMallocSecurity": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "native_test": "api-expansion-20261106/memory-native.log",
+    "remote_test": "api-expansion-20261106/memory-replacement.log",
+    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+  },
   "cnMemGetAddressRange": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnMalloc ranges only; host/VMM/registered allocations pending",
@@ -649,6 +691,13 @@
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
     "next_step": "Retain Native/Remote boundary regression"
+  },
+  "cnMemcpy": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Registry-inferred H2H/H2D/D2H/D2D for local host buffers and owned device allocations, offset/range checks, zero bytes, stale/foreign rejection; native device addresses never cross wire",
+    "native_test": "api-expansion-20261106/memory-native.log",
+    "remote_test": "api-expansion-20261106/memory-replacement.log",
+    "next_step": "Probe and implement this functional family"
   },
   "cnMemcpy2D": {
     "status": "PARTIAL_IMPLEMENTED",
@@ -887,5 +936,19 @@
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+  },
+  "cnZmalloc": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "native_test": "api-expansion-20261106/memory-native.log",
+    "remote_test": "api-expansion-20261106/memory-replacement.log",
+    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+  },
+  "cnZmallocNode": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "native_test": "api-expansion-20261106/memory-native.log",
+    "remote_test": "api-expansion-20261106/memory-replacement.log",
+    "next_step": "Extend node/codec/security consumer probes when hardware is available"
   }
 }
