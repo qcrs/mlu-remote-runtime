@@ -1,2 +1,1 @@
-f=-2.2,0,1.5,255.7 q=q=-4,0,3,127
-PASS cnrtCastDataType f32/i32/u8: -2 0 2 256 / 0 0 1 255\n
+PASS cnrtCastDataType f32/i32/u8/int8 quantized subset

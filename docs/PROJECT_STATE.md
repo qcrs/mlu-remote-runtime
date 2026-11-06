@@ -88,7 +88,7 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 ## 2026-11-12 Parameterized INT8 cast
 
-`cnrtCastDataType` 增加已观测的 FLOAT32↔INT8 scalar quantization 子集：`scale / 2^pos`、signed nearest rounding、INT8 clamp；Native/Remote shim 对照通过。offset 当前 SDK 路径未观察到作用，V2/half/int4/fix/by-channel cast 仍为 PARTIAL。见 [parameterized cast evidence](../evidence/api-expansion-20261112/README.md)。
+`cnrtCastDataType` 增加已观测的 FLOAT32↔INT8 scalar quantization 子集：`scale / 2^pos`、signed nearest rounding、INT8 clamp；Native/Remote shim 对照通过。offset 当前 SDK 路径未观察到作用，V2/half/int4/fix/by-channel cast 和更广反量化语义仍为 PARTIAL。见 [parameterized cast evidence](../evidence/api-expansion-20261112/README.md)。
 
 ## Application Workloads
 

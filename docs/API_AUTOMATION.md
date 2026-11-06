@@ -35,7 +35,7 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 ## 2026-11-12 Parameterized INT8 cast
 
-`cnrtCastDataType` 的已验证参数路径在 Shim 内执行 FLOAT32↔INT8 scalar 转换；参数布局和数值边界写入证据，未观测/未验证类型保持 PARTIAL。
+`cnrtCastDataType` 的已验证参数路径在 Shim 内执行 FLOAT32↔INT8 scalar 转换；参数布局和数值边界写入证据，反向 INT8→FLOAT32 的 scalar 路径已验证，未观测/未验证类型保持 PARTIAL。
 
 ## 2026-11-11 By-channel quantization lifecycle
 

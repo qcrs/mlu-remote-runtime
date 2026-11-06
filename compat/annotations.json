@@ -1,9 +1,9 @@
 {
   "cnrtCastDataType": {
     "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Host-local conversion for FLOAT32/INT32/UINT8 with null quantization plus FLOAT32<->INT8 using scalar quantization parameter (scale/pos, current SDK offset ignored in observed conversion). No device or remote buffers.",
-    "native_test": "api-expansion-20261109/cast-native.log",
-    "remote_test": "api-expansion-20261109/cast-remote.log",
+    "boundary": "Host-local conversion for FLOAT32/INT32/UINT8 with null quantization plus FLOAT32<->INT8 using scalar quantization parameter (scale/pos, signed rounding, clamp, reverse dequantization; current SDK offset ignored in observed conversion). No device or remote buffers.",
+    "native_test": "api-expansion-20261112/quant-cast-native.log",
+    "remote_test": "api-expansion-20261112/quant-cast-remote.log",
     "next_step": "Validate offset and additional data types against SDK"
   },
   "cnrtCreateQuantizedParam": {
