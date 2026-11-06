@@ -33,6 +33,10 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；本批当前为 40/46，最新行数及哈希见[本批制品清单](../evidence/api-expansion-20261103/artifact-manifest.json)，另有协议头、导出 map 和测试模板。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
+## 2026-11-11 By-channel quantization lifecycle
+
+`cnrtCreateQuantizedParamByChannel` 在 Shim 内校验 channel 维度并复制参数数组，销毁时释放副本；量化计算仍保留 PARTIAL。
+
 ## 2026-11-10 Quantization parameter lifecycle
 
 `cnrtQuantizedParam_t` 的基础 create/destroy 在 Shim 内管理 opaque 参数和 magic 校验；量化参数实际参与 cast、by-channel 配置和完整类型矩阵仍保留 PARTIAL。

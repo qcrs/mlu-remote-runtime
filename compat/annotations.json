@@ -13,6 +13,13 @@
     "remote_test": "api-expansion-20261110/quant-remote.log",
     "next_step": "Validate parameterized quantized cast against SDK"
   },
+  "cnrtCreateQuantizedParamByChannel": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Host-local copies poses/scales/offsets for positive channel dimension and validates shape; no quantified conversion semantics.",
+    "native_test": "api-expansion-20261111/quant-native.log",
+    "remote_test": "api-expansion-20261111/quant-remote.log",
+    "next_step": "Validate by-channel cast against SDK"
+  },
   "cnrtDestroyQuantizedParam": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Host-local create/destroy for opaque scalar quantization metadata. Cast with non-null param and by-channel creation remain unsupported.",

@@ -1037,8 +1037,8 @@
     "family": "host_utilities",
     "priority": 3,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 3,
-      "NOT_IMPLEMENTED": 6
+      "PARTIAL_IMPLEMENTED": 4,
+      "NOT_IMPLEMENTED": 5
     },
     "remaining": [
       {
@@ -1066,8 +1066,8 @@
         "api": "cnrtCreateQuantizedParamByChannel",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Lifecycle and array-copy only; by-channel quantized cast semantics not validated",
+        "next_step": "Validate by-channel cast against SDK"
       },
       {
         "api": "cnrtDestroyQuantizedParam",

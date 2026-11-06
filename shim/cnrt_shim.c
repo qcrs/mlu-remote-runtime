@@ -314,17 +314,25 @@ void __bangRegisterVar(void **handle,char *host,char *address,const char *name,i
   }
   pthread_mutex_unlock(&lock);
 }
-struct cnrtQuantizedParam { int pos; float scale; int offset; unsigned magic; };
+struct cnrtQuantizedParam { int pos; float scale; int offset; unsigned magic; int by_channel; int count; int *poses; float *scales; float *offsets; };
 #define CNRT_QUANT_MAGIC 0x514e5451u
 cnrtRet_t cnrtCreateQuantizedParam(cnrtQuantizedParam_t *out,int pos,float scale,int offset) {
   if(!out) return cnrtErrorArgsInvalid;
   struct cnrtQuantizedParam *p=calloc(1,sizeof(*p)); if(!p) return cnrtErrorSysNoMem;
   p->pos=pos; p->scale=scale; p->offset=offset; p->magic=CNRT_QUANT_MAGIC; *out=p; return cnrtSuccess;
 }
+cnrtRet_t cnrtCreateQuantizedParamByChannel(cnrtQuantizedParam_t *out,int *poses,float *scales,float *offsets,int dimNum,int *dimValues,int channelDim) {
+  if(!out || !poses || !scales || !offsets || !dimValues || dimNum<=0 || channelDim<0 || channelDim>=dimNum || dimValues[channelDim]<=0) return cnrtErrorArgsInvalid;
+  int count=dimValues[channelDim]; struct cnrtQuantizedParam *p=calloc(1,sizeof(*p)); if(!p) return cnrtErrorSysNoMem;
+  p->poses=malloc((size_t)count*sizeof(*p->poses)); p->scales=malloc((size_t)count*sizeof(*p->scales)); p->offsets=malloc((size_t)count*sizeof(*p->offsets));
+  if(!p->poses||!p->scales||!p->offsets) { free(p->poses);free(p->scales);free(p->offsets);free(p);return cnrtErrorSysNoMem; }
+  memcpy(p->poses,poses,(size_t)count*sizeof(*p->poses)); memcpy(p->scales,scales,(size_t)count*sizeof(*p->scales)); memcpy(p->offsets,offsets,(size_t)count*sizeof(*p->offsets));
+  p->by_channel=1;p->count=count;p->magic=CNRT_QUANT_MAGIC;*out=p;return cnrtSuccess;
+}
 cnrtRet_t cnrtDestroyQuantizedParam(cnrtQuantizedParam_t param) {
   if(!param) return cnrtSuccess;
   if(param->magic!=CNRT_QUANT_MAGIC) return cnrtErrorArgsInvalid;
-  param->magic=0; free(param); return cnrtSuccess;
+  param->magic=0; free(param->poses);free(param->scales);free(param->offsets);free(param); return cnrtSuccess;
 }
 static int cast_size(cnrtDataType_t type) {
   if(type==CNRT_FLOAT32 || type==CNRT_INT32) return 4;

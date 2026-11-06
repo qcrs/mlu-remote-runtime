@@ -593,7 +593,7 @@
       "family": "host_utilities",
       "priority": 3,
       "depends_on": "typed buffers/structs",
-      "blocker": "Host numerical/quantization implementation needs independent comparison",
+      "blocker": "Lifecycle and array-copy only; by-channel quantized cast semantics not validated",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtCreateQuantizedParamByChannel(cnrtQuantizedParam_t *param, int *poses, float *scales, float *offsets, int dimNum, int *dimValues, int channelDim);",
       "parameters": [
@@ -654,12 +654,12 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Host-local copies poses/scales/offsets for positive channel dimension and validates shape; no quantified conversion semantics.",
+      "native_test": "api-expansion-20261111/quant-native.log",
+      "remote_test": "api-expansion-20261111/quant-remote.log",
+      "next_step": "Validate by-channel cast against SDK"
     },
     {
       "name": "cnrtDestroyQuantizedParam",
