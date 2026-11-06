@@ -1,0 +1,2 @@
+v2=-2,0,2 u=0,0,0
+PASS cnrtCastDataType f32/i32/u8/int8/V2 subset

@@ -362,6 +362,27 @@ cnrtRet_t cnrtCastDataType(void *src,cnrtDataType_t srcType,void *dst,cnrtDataTy
   }
   return cnrtSuccess;
 }
+static int cast_v2_size(cnrtDataType_V2_t type) { if(type==cnrtFloat || type==cnrtInt) return 4; if(type==cnrtUchar) return 1; return 0; }
+static int cast_round(float x,cnrtRoundingMode_t mode) {
+  int y=(int)x;
+  if(mode==cnrtRounding_rz) return y;
+  if(mode==cnrtRounding_rd) return x<0.0f && x!=(float)y ? y-1 : y;
+  if(mode==cnrtRounding_ru) return x>0.0f && x!=(float)y ? y+1 : y;
+  return (int)(x>=0.0f?x+0.5f:x-0.5f);
+}
+cnrtRet_t cnrtCastDataType_V2(const void *src,cnrtDataType_V2_t srcType,void *dst,cnrtDataType_V2_t dstType,int count,cnrtQuantizedParam_t param,cnrtRoundingMode_t mode) {
+  if(!src || !dst || count<0 || param || mode>=cnrtRounding_max) return cnrtErrorArgsInvalid;
+  int ss=cast_v2_size(srcType),ds=cast_v2_size(dstType); if(!ss||!ds) return cnrtErrorNotSupport;
+  if(srcType==dstType) { memmove(dst,src,(size_t)count*(size_t)ss); return cnrtSuccess; }
+  for(int i=0;i<count;++i) {
+    if(srcType==cnrtFloat && dstType==cnrtInt) ((int *)dst)[i]=cast_round(((const float *)src)[i],mode);
+    else if(srcType==cnrtFloat && dstType==cnrtUchar) { int v=cast_round(((const float *)src)[i],mode); if(v<0)v=0;if(v>255)v=255;((unsigned char *)dst)[i]=(unsigned char)v; }
+    else if(srcType==cnrtInt && dstType==cnrtFloat) ((float *)dst)[i]=(float)((const int *)src)[i];
+    else if(srcType==cnrtUchar && dstType==cnrtFloat) ((float *)dst)[i]=(float)((const unsigned char *)src)[i];
+    else return cnrtErrorNotSupport;
+  }
+  return cnrtSuccess;
+}
 cnrtRet_t cnrtGetSymbolSize(size_t *size,const void *symbol) {
   ENTER(); if(!size || !symbol) RETURN(cnrtErrorArgsInvalid);
   for(registration *r=registrations;r;r=r->next) for(variable *v=r->variables;v;v=v->next)

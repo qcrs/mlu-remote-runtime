@@ -6,6 +6,13 @@
     "remote_test": "api-expansion-20261112/quant-cast-remote.log",
     "next_step": "Validate offset and additional data types against SDK"
   },
+  "cnrtCastDataType_V2": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Host-local V2 FLOAT/INT/UCHAR conversion with rn/rz/rd/ru and null quantization. No remote buffers.",
+    "native_test": "api-expansion-20261113/v2-cast-native.log",
+    "remote_test": "api-expansion-20261113/v2-cast-remote.log",
+    "next_step": "Extend V2 type matrix after Native/Remote numeric comparison"
+  },
   "cnrtCreateQuantizedParam": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Host-local create/destroy for opaque scalar quantization metadata. Cast with non-null param and by-channel creation remain unsupported.",

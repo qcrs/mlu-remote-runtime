@@ -15,5 +15,6 @@ int main(){
   OK(cnrtCreateQuantizedParam(&param,0,2.0f,3)); signed char q[4]={0};
   OK(cnrtCastDataType(f,CNRT_FLOAT32,q,CNRT_INT8,4,param)); CHECK(q[0]==-4&&q[1]==0&&q[2]==3&&q[3]==127);
   float deq[4]={0}; OK(cnrtCastDataType(q,CNRT_INT8,deq,CNRT_FLOAT32,4,param)); CHECK(deq[0]==-2.0f&&deq[2]==1.5f); OK(cnrtDestroyQuantizedParam(param));
-  printf("PASS cnrtCastDataType f32/i32/u8/int8 quantized subset\n"); return 0;
+  int v2i[3]={0}; unsigned char v2u[3]={0}; OK(cnrtCastDataType_V2(f,cnrtFloat,v2i,cnrtInt,3,NULL,cnrtRounding_rn)); printf("v2=%d,%d,%d u=%u,%u,%u\n",v2i[0],v2i[1],v2i[2],v2u[0],v2u[1],v2u[2]); CHECK(v2i[0]==-2&&v2i[1]==0&&v2i[2]==2); OK(cnrtCastDataType_V2(f,cnrtFloat,v2u,cnrtUchar,3,NULL,cnrtRounding_rz)); CHECK(v2u[0]==0&&v2u[1]==0&&v2u[2]==1);
+  printf("PASS cnrtCastDataType f32/i32/u8/int8/V2 subset\n"); return 0;
 }

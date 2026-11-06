@@ -1037,8 +1037,8 @@
     "family": "host_utilities",
     "priority": 3,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 4,
-      "NOT_IMPLEMENTED": 5
+      "PARTIAL_IMPLEMENTED": 5,
+      "NOT_IMPLEMENTED": 4
     },
     "remaining": [
       {
@@ -1052,8 +1052,8 @@
         "api": "cnrtCastDataType_V2",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "V2 float/int/u8 and rounding modes 0..3 only; half/bfloat/64-bit/quantized/ro/rm semantics not validated",
+        "next_step": "Extend V2 type matrix after Native/Remote numeric comparison"
       },
       {
         "api": "cnrtCreateQuantizedParam",

@@ -33,6 +33,10 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；本批当前为 40/46，最新行数及哈希见[本批制品清单](../evidence/api-expansion-20261103/artifact-manifest.json)，另有协议头、导出 map 和测试模板。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
+## 2026-11-13 V2 conversion
+
+`cnrtCastDataType_V2` 的 FLOAT/INT/UCHAR host-local 子集复用 checked conversion helper，显式处理四种 rounding mode；未验证类型继续保留 PARTIAL。
+
 ## 2026-11-12 Parameterized INT8 cast
 
 `cnrtCastDataType` 的已验证参数路径在 Shim 内执行 FLOAT32↔INT8 scalar 转换；参数布局和数值边界写入证据，反向 INT8→FLOAT32 的 scalar 路径已验证，未观测/未验证类型保持 PARTIAL。

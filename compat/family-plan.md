@@ -8,7 +8,7 @@
 | error | 6 | 2 | 4 | 0 | 0 | P0 |
 | graph | 102 | 0 | 0 | 0 | 102 | P5 |
 | host_memory | 14 | 0 | 0 | 2 | 12 | P2 |
-| host_utilities | 9 | 0 | 4 | 0 | 5 | P3 |
+| host_utilities | 9 | 0 | 5 | 0 | 4 | P3 |
 | ipc | 12 | 0 | 0 | 0 | 12 | P5 |
 | memcpy | 20 | 0 | 15 | 1 | 4 | P1 |
 | memory | 42 | 9 | 18 | 1 | 14 | P1 |

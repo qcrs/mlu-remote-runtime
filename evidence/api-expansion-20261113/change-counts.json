@@ -1,0 +1,37 @@
+{
+  "baseline_commit": "6f21759b2f16447357c5c643ffb66d74a659ab9c",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnrtCastDataType_V2",
+      "library": "CNRT",
+      "family": "host_utilities",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    }
+  ],
+  "new_status_counts": {
+    "PARTIAL_IMPLEMENTED": 1
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 167,
+    "PARTIAL_IMPLEMENTED": 94,
+    "IMPLEMENTED": 45,
+    "UNSUPPORTED": 4
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 166,
+    "PARTIAL_IMPLEMENTED": 95,
+    "IMPLEMENTED": 45,
+    "UNSUPPORTED": 4
+  },
+  "generated_before": {
+    "typed_rpc": 43,
+    "public_wrappers": 47
+  },
+  "generated_after": {
+    "typed_rpc": 43,
+    "public_wrappers": 47
+  }
+}
