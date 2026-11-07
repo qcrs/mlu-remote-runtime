@@ -1,0 +1,3 @@
+2026-11-07 09:10:42.592430: [cnrtError] [200925] [Card: 0] Error occurred during calling 'cnQueueWaitNotifier' in CNDrv interface.
+2026-11-07 09:10:42.592479: [cnrtError] [200925] [Card: 0] Return value is 100363, CN_ERROR_QUEUE_CAPTURE_MERGED.
+2026-11-07 09:10:42.592485: [cnrtError] [200925] [Card: 0] QueueWaitNotifier: Query queue failed.

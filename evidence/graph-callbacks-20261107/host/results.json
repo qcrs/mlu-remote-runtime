@@ -1,0 +1,142 @@
+[
+  {
+    "name": "runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-lease",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime",
+      "lease"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-reset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime",
+      "reset"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-abrupt",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime",
+      "abrupt"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-lease",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver",
+      "lease"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-reset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver",
+      "reset"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-abrupt",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver",
+      "abrupt"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "protocol",
+    "command": [
+      "python3",
+      "tests/graph_host_protocol.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "after-cleanup",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "backend-resource-rollback",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/backend-resources-test",
+      "/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "quota",
+    "command": [
+      "python3",
+      "tests/graph_host_protocol.py",
+      "--quota"
+    ],
+    "returncode": 0
+  }
+]

@@ -22,8 +22,8 @@ python3 scripts/verify-closure-audit.py
 
 `native_test` / `remote_test` 中不带目录的 `.log` 相对 `evidence/transparent-20261102/`；带批次前缀（例如 `shared-module-20261102/suite/`）则相对 `evidence/`。`not_run` 明确表示尚无对应证据，尤其不能把拒绝函数计为已实现。CNNL 和第二台主机的阻塞记录在总体能力矩阵中，二者不属于这两个头文件的 API 分母。
 
-RPC 重复封装由 Schema 生成：原有 10 对对象包装/分派，加上当前 45 个 typed RPC 的请求/响应、编解码、成功形状、分派与 backend binding，以及 44 个公共 RPC ABI wrapper 和 4 个本地 error API、导出 map、清单和测试 plan。对象归属、异步 staging、模块存活、查询 owner 路由和参数重定位仍有手写部分。旧六算子 registry/manifests 继续由原生成器维护。详见 [自动化设计](../docs/API_AUTOMATION.md)、[查询边界设计](../docs/QUERY_BOUNDARIES.md) 和 [Host completion 证据](../evidence/host-async-20261107/README.md)。
+RPC 重复封装由 Schema 生成：原有 10 对对象包装/分派，加上当前 57 个 typed RPC 的请求/响应、编解码、成功形状、分派与 backend binding，以及 146 个公共 RPC ABI wrapper 和 4 个本地 error API、导出 map、清单和测试 plan。对象归属、异步 staging、模块存活、查询 owner 路由和参数重定位仍有手写部分。旧六算子 registry/manifests 继续由原生成器维护。详见 [自动化设计](../docs/API_AUTOMATION.md)、[查询边界设计](../docs/QUERY_BOUNDARIES.md) 和 [Host completion 证据](../evidence/host-async-20261107/README.md)。
 
 当前收口以 MLU370-S4、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64→AArch64、单设备为范围。[closure audit](../docs/API_COMPATIBILITY_CLOSURE.md) 冻结原有 97 个 PARTIAL 并保存逐 API 决策；状态不由测试数量或导出符号自动推导。后续修复须附 Native/Remote resolution 证据。
 
-当前为 145 IMPLEMENTED、0 PARTIAL、11 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、151 NOT_IMPLEMENTED。[Graph/IPC 分批设计](../docs/GRAPH_IPC.md) 来自 [Native 契约](../evidence/graph-ipc-contracts-20261107/README.md)，`contract_stage` 和 `implementation_stages` 只表达后续实现依赖及验收，不生成实际 RPC 或客户端能力。4 个 notifier IPC API 的 Native 证据只证明创建前提缺失；普通 memory/Host/VMM IPC 的 Native 成功不等于 Remote 实现。
+当前为 247 IMPLEMENTED、0 PARTIAL、11 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、49 NOT_IMPLEMENTED。Graph G1～G4 102/102 在声明边界内完成，[G4 证据](../evidence/graph-callbacks-20261107/README.md) 保留独立客户端回调与生命周期验证。[Graph/IPC 分批设计](../docs/GRAPH_IPC.md) 来自 [Native 契约](../evidence/graph-ipc-contracts-20261107/README.md)，`contract_stage` 和 `implementation_stages` 表达阶段依赖及验收，实际 RPC/wrapper 由对应 binding 生成；完成状态仍须证据支持。4 个 notifier IPC API 的 Native 证据只证明创建前提缺失；普通 memory/Host/VMM IPC 的 Native 成功不等于 Remote 实现。

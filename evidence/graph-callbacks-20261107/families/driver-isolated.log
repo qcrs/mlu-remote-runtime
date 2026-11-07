@@ -1,0 +1,90 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542190]
+mnt mnt:[4026542191]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50273
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_api_families
+driver version 2.5.2
+driver legacy version 5.10.35
+driver lib version 2.5.2
+ctx config 0 value 63
+ctx config 1 value 6
+ctx config 2 value 16
+ctx union limit after set 3
+driver error CN_SUCCESS: "no error"
+driver attr 0 0 0
+driver attr 1 0 3
+driver attr 2 0 0
+driver attr 3 0 0
+driver attr 4 0 1
+driver attr 5 0 1
+driver attr 6 0 1
+driver attr 7 0 1
+driver attr 8 0 0
+driver attr 9 0 0
+driver attr 257 0 4080
+driver attr 258 0 24000
+driver attr 259 0 1
+driver attr 260 0 0
+driver attr 261 0 1
+driver attr 262 0 1
+driver attr 263 0 1
+driver attr 264 0 0
+driver attr 265 0 0
+driver attr 266 0 0
+driver attr 513 0 65535
+driver attr 514 0 65535
+driver attr 515 0 65535
+driver attr 516 0 16
+driver attr 517 0 6
+driver attr 518 0 4
+driver attr 519 0 2
+driver attr 520 0 2
+driver attr 521 0 4
+driver attr 522 0 372
+driver attr 523 0 1
+driver attr 524 0 4096
+driver attr 769 0 2097152
+driver attr 770 0 786432
+driver attr 771 0 1048576
+driver attr 772 0 24576
+driver attr 773 0 511
+driver attr 774 0 4194304
+driver attr 775 0 1
+driver attr 776 0 0
+driver attr 777 0 0
+driver attr 778 0 0
+driver attr 779 0 1
+driver attr 780 0 1
+driver attr 781 0 0
+driver attr 782 0 0
+driver attr 783 0 0
+driver attr 784 0 0
+driver attr 785 0 1073741824
+driver attr 786 0 23365
+driver attr 1025 0 0
+driver attr 1026 0 1000000
+driver attr 1027 0 3200000
+driver attr 1028 0 384
+driver attr 1029 0 24576
+driver attr 1030 0 132
+driver attr 1031 0 0
+driver attr 1032 0 0
+driver attr 1033 0 256
+driver attr 1034 100006 -1
+driver memory info valid
+driver priority range 7 0
+driver priority low 7
+driver priority clamped 0
+driver fill widths/offsets/async; cross queue wait; timing PASS
+driver flags 2 timing 100080
+driver flags 4 timing 100080
+PASS pitched 2D/3D: differing pitches; offsets; xyz; depth; untouched padding; aliases
+driver module memory usage path=110592 fatbin=110592
+kernel attribute 0 0
+kernel attribute 1 0
+kernel attribute 2 0
+kernel attribute 3 0
+kernel attribute 4 205
+PASS API families

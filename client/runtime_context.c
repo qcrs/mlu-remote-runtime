@@ -34,6 +34,7 @@ typedef struct pending_writeback {
 } pending_writeback;
 struct mlu_remote_context {
   int fd;
+  struct mlu_client_callbacks *callbacks;
   uint64_t next_request;
   pthread_mutex_t lock;
   uint32_t capabilities, kernel_abi;
@@ -65,9 +66,12 @@ static void set_local_error(mlu_remote_context *ctx, uint32_t code, const char *
 /* A failed exchange leaves execution/completion uncertain. Never reuse or
  * transparently replay that session, even if the peer sends more bytes. */
 static void capture_client_cleanup(mlu_remote_context *ctx);
+static void callback_client_abort(mlu_remote_context *ctx);
+static void callback_client_cleanup(mlu_remote_context *ctx);
 static int break_connection(mlu_remote_context *ctx, uint32_t code,
                             const char *name, const char *message) {
   set_local_error(ctx, code, name, message);
+  callback_client_abort(ctx);
   if (ctx->fd >= 0) { close(ctx->fd); ctx->fd = -1; }
   capture_client_cleanup(ctx);
   return (int)code;
@@ -152,6 +156,8 @@ static void writeback_free(pending_writeback *w) {
   for(size_t i=0;i<w->target_count;i++) mlu_host_release(w->targets[i].lease);
   free(w->targets);free(w);
 }
+#include "graph_callback_client.inc"
+
 static int writeback_overlap(pending_writeback *a,pending_writeback *b) {
   for(size_t i=0;i<(a->target_count ? a->target_count : 1);i++) {
     uintptr_t x=(uintptr_t)(a->target_count ? a->targets[i].dst : a->dst);
@@ -231,7 +237,7 @@ static int rpc_with_completion_locked(mlu_remote_context *ctx, uint16_t opcode, 
     }
   }
   if(!r) r=rpc_locked(ctx,opcode,payload,payload_len,extra,extra_len);
-  if(!r && (opcode==MLU_OP_SESSION_RESET || opcode==MLU_OP_SESSION_CLOSE)) capture_client_cleanup(ctx);
+  if(!r && (opcode==MLU_OP_SESSION_RESET || opcode==MLU_OP_SESSION_CLOSE)) {capture_client_cleanup(ctx);callback_client_cleanup(ctx);}
   if(!r && ctx->pending && completion_frontier(opcode)) {
     mlu_remote_error saved=ctx->error;
     r=complete_writebacks(ctx);
@@ -240,6 +246,7 @@ static int rpc_with_completion_locked(mlu_remote_context *ctx, uint16_t opcode, 
   return r;
 }
 static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+  if(mlu_remote_in_callback())return MLU_REMOTE_UNSUPPORTED;
   pthread_mutex_lock(&ctx->lock);
   int r=rpc_with_completion_locked(ctx,opcode,payload,payload_len,extra,extra_len);
   pthread_mutex_unlock(&ctx->lock);return r;
@@ -357,6 +364,7 @@ int mlu_remote_module_query_fatbinary_memory(mlu_remote_context *ctx,const void 
 }
 void mlu_remote_disconnect(mlu_remote_context *ctx) {
   if (!ctx) return;
+  callback_client_cleanup(ctx);
   if (ctx->fd >= 0) close(ctx->fd);
   /* No writes after a poisoned exchange/EOF. Server owns its separate pages. */
   while(ctx->pending) { pending_writeback *w=ctx->pending; ctx->pending=w->next; writeback_free(w); }

@@ -1,0 +1,872 @@
+[
+  {
+    "name": "runtime-deps-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "deps",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-deps-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "deps",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-thread-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-thread-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-thread-1-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "thread",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-thread-1-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "thread",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-thread-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "thread",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-thread-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "thread",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-sync-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "sync",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-sync-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "sync",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-query-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "query",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-query-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "query",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-contextsync-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "contextsync",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-contextsync-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "contextsync",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-contextsync-1-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "contextsync",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-contextsync-1-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "contextsync",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-contextsync-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "contextsync",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-contextsync-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "contextsync",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-fork-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "fork",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-fork-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "fork",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unjoined-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unjoined",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unjoined-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unjoined",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-wrong_root-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "wrong_root",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-wrong_root-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "wrong_root",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-merge-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "merge",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-merge-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "merge",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe-1-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe-1-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe_thread-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe_thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe_thread-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe_thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-isolation-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "isolation",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-isolation-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "isolation",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-numeric-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_runtime",
+      "normal"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-numeric-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_runtime",
+      "normal"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-numeric-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_runtime",
+      "normal"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-numeric-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_runtime",
+      "normal"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-reset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_runtime",
+      "reset"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-abrupt",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_runtime",
+      "abrupt"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-thread-0-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-fork-2-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "fork",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-unsafe_thread-0-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-runtime",
+      "unsafe_thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-deps-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "deps",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-deps-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "deps",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-thread-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-thread-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-thread-1-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "thread",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-thread-1-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "thread",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-thread-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "thread",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-thread-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "thread",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-sync-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "sync",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-sync-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "sync",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-query-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "query",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-query-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "query",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contextsync-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contextsync",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contextsync-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contextsync",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contextsync-1-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contextsync",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contextsync-1-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contextsync",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contextsync-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contextsync",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contextsync-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contextsync",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-fork-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "fork",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-fork-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "fork",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unjoined-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unjoined",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unjoined-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unjoined",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-wrong_root-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "wrong_root",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-wrong_root-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "wrong_root",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-merge-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "merge",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-merge-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "merge",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe-1-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe-1-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe",
+      "1"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe_thread-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe_thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe_thread-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe_thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-isolation-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "isolation",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-isolation-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "isolation",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contexts-0-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contexts",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contexts-0-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contexts",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contexts-2-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contexts",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-contexts-2-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "contexts",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-numeric-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_driver",
+      "normal",
+      "/home/lvtong/mlu-remote-runtime/build/graph-capture-driver/native_graph_capture-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-numeric-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_driver",
+      "normal",
+      "/home/lvtong/mlu-remote-runtime/build/graph-capture-driver/native_graph_capture-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-numeric-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_driver",
+      "normal",
+      "/home/lvtong/mlu-remote-runtime/build/graph-capture-driver/native_graph_capture-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-numeric-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_driver",
+      "normal",
+      "/home/lvtong/mlu-remote-runtime/build/graph-capture-driver/native_graph_capture-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-reset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_driver",
+      "reset",
+      "/home/lvtong/mlu-remote-runtime/build/graph-capture-driver/native_graph_capture-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-abrupt",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_capture_driver",
+      "abrupt",
+      "/home/lvtong/mlu-remote-runtime/build/graph-capture-driver/native_graph_capture-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-thread-0-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-fork-2-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "fork",
+      "2"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-unsafe_thread-0-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-capture-driver",
+      "unsafe_thread",
+      "0"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "protocol",
+    "command": [
+      "python3",
+      "tests/graph_capture_protocol.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "quota-1024",
+    "command": [
+      "python3",
+      "tests/graph_capture_protocol.py",
+      "--begin-quota"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "quota-40000",
+    "command": [
+      "python3",
+      "tests/graph_capture_protocol.py",
+      "--quota"
+    ],
+    "returncode": 0
+  }
+]

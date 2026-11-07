@@ -645,4 +645,24 @@ typedef struct {
   unsigned char *data;
 } mlu_api_graph_capture_response;
 int mlu_remote_api_graph_capture(mlu_remote_context *, const mlu_api_graph_capture_request *, mlu_api_graph_capture_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t graph;
+  uint64_t node;
+  uint64_t entity;
+  uint64_t token;
+  uint64_t value;
+  uint32_t flags;
+  uint64_t input_bytes;
+  uint64_t capacity;
+  const unsigned char *data;
+} mlu_api_graph_control_request;
+typedef struct {
+  uint64_t id;
+  uint64_t token;
+  uint64_t value;
+  uint64_t bytes;
+  unsigned char *data;
+} mlu_api_graph_control_response;
+int mlu_remote_api_graph_control(mlu_remote_context *, const mlu_api_graph_control_request *, mlu_api_graph_control_response *);
 #endif

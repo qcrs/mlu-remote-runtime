@@ -1,0 +1,4 @@
+PASS captured H2D/kernel/D2H, aggregate relocations, identity/snapshot and current-input replay
+PASS EntityInvoke during capture executes normally and adds no captured node
+PASS notifier fork/join accepts branch ancestors after the root frontier advances
+PASS reset/close drains pending publication and discards active capture

@@ -85,7 +85,7 @@ static int graph_view_duplicate(mlu_graph_view *src,CNtaskTopo graph,int borrowe
 }
 static int graph_view_copy(mlu_graph_view *src,mlu_graph_view **out) {return graph_view_duplicate(src,NULL,0,out);}
 static int graph_view_has_host(mlu_graph_view *v) {
-  if(v) for(size_t i=0;i<v->count;i++) if((v->entries[i].payload && v->entries[i].payload->host_kind) || graph_view_has_host(v->entries[i].child)) return 1;
+  if(v) for(size_t i=0;i<v->count;i++) if((v->entries[i].payload && (v->entries[i].payload->host_kind || v->entries[i].payload->callback_token)) || graph_view_has_host(v->entries[i].child)) return 1;
   return 0;
 }
 /* Accept only uniquely distinguished structural roles after EntityUpdate.

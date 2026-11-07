@@ -1,12 +1,16 @@
+#include "graph_callback_invoke.inc"
 /* One lock covers describe + current-input capture + execute + publication
  * registration. No callback or server pointer is dereferenced on the client. */
 int mlu_remote_graph_invoke(mlu_remote_context *ctx,uint64_t entity,uint64_t queue) {
   if(!ctx) return MLU_REMOTE_BAD_LENGTH;
+  if(mlu_remote_in_callback())return MLU_REMOTE_UNSUPPORTED;
   unsigned char req[36],*reply=NULL,*plan=NULL,*request=NULL;uint32_t n=0;
   pending_writeback *w=NULL;mlu_host_allocation **leases=NULL;size_t count=0,inputs=0,outputs=0;
   pthread_mutex_lock(&ctx->lock);
+  int handled=0;int st=graph_callbacks_invoke_locked(ctx,entity,queue,&handled);
+  if(st || handled)goto done;
   put32(req,1);put64(req+4,entity);put64(req+12,queue);put64(req+20,0);put64(req+28,0);
-  int st=rpc_locked(ctx,MLU_OP_API_GRAPH_HOST,req,sizeof(req),&reply,&n);
+  st=rpc_locked(ctx,MLU_OP_API_GRAPH_HOST,req,sizeof(req),&reply,&n);
   if(st) goto done;
   count=(size_t)get64(reply+8);inputs=(size_t)get64(reply+16);outputs=(size_t)get64(reply+24);
   if(count>MLU_GRAPH_MAX_NODES || inputs>MLU_GRAPH_MAX_HOST_BYTES || outputs>MLU_GRAPH_MAX_HOST_BYTES-inputs) {st=MLU_REMOTE_BAD_LENGTH;goto done;}

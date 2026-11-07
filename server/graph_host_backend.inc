@@ -1,6 +1,8 @@
+static int graph_view_has_callback(mlu_graph_view *);
 typedef struct mlu_graph_host_endpoint {
   mlu_graph_payload *payload;
   CNtaskTopoNode node;
+  mlu_graph_view *view;
   size_t offset;
 } mlu_graph_host_endpoint;
 /* Replace only inside the private clone. A zero-edge graph must not call
@@ -31,6 +33,7 @@ static int graph_host_revision(mlu_backend_session *s,mlu_graph_entity *e,mlu_gr
     size_t j=(size_t)e->host_slots[i];mlu_graph_payload *p=e->overrides[i];
     if(p->child_view) st=graph_host_replace_child(v,j,p->child_view);
     else if(p->kernel) st=cnTaskTopoKernelNodeSetParams(v->entries[j].node,&p->kernel->params);
+    else if(p->callback_token) {CN_HOST_NODE_PARAMS params={graph_callback_placeholder,NULL};st=cnTaskTopoHostNodeSetParams(v->entries[j].node,&params);}
     else if(p->memset.elementSize) st=cnTaskTopoMemsetNodeSetParams(v->entries[j].node,&p->memset);
     else st=cnTaskTopoMemcpyNodeSetParams(v->entries[j].node,&p->memcpy);
     if(st) return st;
@@ -45,7 +48,7 @@ static int graph_host_endpoints(mlu_graph_view *v,mlu_graph_invocation *run,size
       if(run->host_count==MLU_GRAPH_MAX_NODES) return MLU_REMOTE_RESOURCE_LIMIT;
       size_t bytes=p->memcpy.extent.width;
       if(bytes>MLU_GRAPH_MAX_HOST_BYTES-run->host_bytes) return MLU_REMOTE_RESOURCE_LIMIT;
-      run->endpoints[run->host_count++]=(mlu_graph_host_endpoint){p,v->entries[i].node,run->host_bytes};
+      run->endpoints[run->host_count++]=(mlu_graph_host_endpoint){p,v->entries[i].node,v,run->host_bytes};
       run->host_bytes+=bytes;
       if(p->host_kind==1) *input+=bytes;else *output+=bytes;
     }
@@ -93,6 +96,9 @@ static int graph_host(mlu_backend_session *s,const mlu_api_graph_host_request *i
   mlu_graph_entity *e=graph_find_entity(s,in->entity);if(!e || !e->handle) return CN_ERROR_INVALID_HANDLE;
   mlu_backend_queue *q=in->queue ? find_queue(s,in->queue) : NULL;
   if(in->queue && !q) return CN_ERROR_INVALID_HANDLE;
+  /* Callback graphs require per-copy exchanges and a run whitelist. */
+  if(graph_view_has_callback(e->revision)) return MLU_REMOTE_UNSUPPORTED;
+  for(size_t i=0;i<e->count;i++) if(e->overrides[i] && (e->overrides[i]->callback_token || graph_view_has_callback(e->overrides[i]->child_view))) return MLU_REMOTE_UNSUPPORTED;
   /* Keep the mature non-Host path, including its native setter semantics. */
   int has_host=graph_view_has_host(e->revision);
   for(size_t i=0;i<e->count;i++) if(e->overrides[i] && (e->overrides[i]->host_kind || graph_view_has_host(e->overrides[i]->child_view))) has_host=1;

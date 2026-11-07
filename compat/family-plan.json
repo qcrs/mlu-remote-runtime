@@ -66,211 +66,9 @@
     "family": "graph",
     "priority": 5,
     "counts": {
-      "IMPLEMENTED": 82,
-      "NOT_IMPLEMENTED": 20
+      "IMPLEMENTED": 102
     },
-    "remaining": [
-      {
-        "api": "cnrtTaskTopoAcquireUserObject",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoAddHostNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoDebugDotPrint",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoEntityHostNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoHostNodeGetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoHostNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoReleaseUserObject",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtUserObjectAcquire",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtUserObjectCreate",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtUserObjectRelease",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoAcquireUserObject",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoAddHostNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoDebugDotPrint",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoEntityHostNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoHostNodeGetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoHostNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoReleaseUserObject",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnUserObjectAcquire",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnUserObjectCreate",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      },
-      {
-        "api": "cnUserObjectRelease",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2; G3",
-        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
-        "closure": {},
-        "contract_stage": "G4"
-      }
-    ],
+    "remaining": [],
     "implementation_stages": [
       {
         "id": "G1",
@@ -302,7 +100,7 @@
           "G1",
           "G2"
         ],
-        "missing": "No remaining G3 gap within the declared 1D memset/H2D/D2H/D2D and generic-kernel boundary. Session-owned capture DAGs track logical client threads, all three SDK modes, notifier fork/join and ADD/SET frontiers; captured Host copies reuse G2 per-invocation replay/publication. Host callback nodes remain G4; 2D/3D capture is explicitly rejected.",
+        "missing": "No remaining G3 gap within the declared 1D memset/H2D/D2H/D2D and generic-kernel boundary. Session-owned capture DAGs track logical client threads, all three SDK modes, notifier fork/join and ADD/SET frontiers; captured Host copies reuse G2 per-invocation replay/publication. Explicit Host callback nodes are implemented in G4; 2D/3D capture is explicitly rejected.",
         "acceptance": "Both libraries: Native contract differentials across modes/threads/contexts, captured operations execute nothing before invoke, inaccessible H2D input during capture, current-input numerical kernel replay, deferred D2H publication, notifier fork/join, ADD/SET dependencies, borrowed handles, raw dispatch guards, quota/reset/EOF and clean drain; replacement/preload/driverless clients.",
         "status": "IMPLEMENTED",
         "evidence": "graph-capture-20261107/README.md"
@@ -316,8 +114,10 @@
           "G2",
           "G3"
         ],
-        "missing": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
-        "acceptance": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path."
+        "missing": "No remaining G4 gap within the declared boundary: paired client executor, immutable Host callback identity/snapshots, per-copy Host order, native user-object refs through clone/entity/in-flight completion, client-local DOT, reentry guards and channel teardown. Runtime reentry is intentionally rejected; callbacks must return within deadline.",
+        "acceptance": "Both libraries: Native/replacement/preload/isolated client PID and numeric callback->H2D->D2H ordering, clone/setter/nested child, no-wait progress, unique user destructor and in-flight refs, local DOT flags/errors; Remote reentry/reset/EOF/Host retirement, protocol ownership/plan whitelist, staging rollback and submit disconnect; clean drain.",
+        "status": "IMPLEMENTED",
+        "evidence": "graph-callbacks-20261107/README.md"
       }
     ]
   },

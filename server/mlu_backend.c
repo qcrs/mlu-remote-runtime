@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "mlu_backend.h"
 #include "remote_protocol.h"
 #include "operator_registry.h"
@@ -380,6 +381,7 @@ int mlu_backend_session_reset(mlu_backend_session *s) {
 }
 
 static int graph_cleanup(mlu_backend_session *s);
+static int graph_users_cleanup(mlu_backend_session *s);
 int mlu_backend_session_cleanup(mlu_backend_session *s) {
   if (!s) return 0;
   int first = 0, synchronized = 1;
@@ -406,6 +408,7 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     fprintf(stderr,"[server] CLEANUP_QUARANTINED owner=%llu Graph release failed\n",(unsigned long long)s->owner_token);
     return s->cleanup_failed;
   }
+  int user_status=graph_users_cleanup(s);if(user_status && !first) first=user_status;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->modules[i].live && !s->modules[i].graph_refs && !cleanup_result(&first, "cnModuleUnload", s->modules[i].module_id,
                                              cnModuleUnload(s->modules[i].module))) {
@@ -448,6 +451,7 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     if (s->modules[i].live) free(s->modules[i].image);
   for (unsigned kind = 0; kind < MLU_RESOURCE_KINDS; ++kind)
     mlu_resource_release(&s->usage, (enum mlu_resource_kind)kind, s->usage.bytes[kind]);
+  (void)mlu_callback_finish(s->callbacks);s->callbacks=NULL;
   mlu_object_registry_clear(&s->objects);
   memset(s, 0, sizeof(*s));
   s->cleanup_failed = first;

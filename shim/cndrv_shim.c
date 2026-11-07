@@ -56,7 +56,7 @@ static mlu_remote_context *control;
 static uint64_t next_token=0x10000000;
 static _Thread_local uint64_t current;
 enum { QUEUE=1, NOTIFIER, MODULE, KERNEL };
-#define ENTER() pthread_mutex_lock(&lock)
+#define ENTER() do { if(mlu_remote_in_callback()) return CN_OPS_ERROR_NOT_SUPPORTED; pthread_mutex_lock(&lock); } while(0)
 static CNresult leave(CNresult status) { pthread_mutex_unlock(&lock); return status; }
 #define RETURN(s) return leave((CNresult)(s))
 #define INIT() do { if (!control) RETURN(CN_ERROR_NOT_INITIALIZED); } while(0)
@@ -454,7 +454,8 @@ CNresult cnInvokeKernel(CNkernel handle,unsigned x,unsigned y,unsigned z,KernelC
   RETURN(result(release(c,st,transfer)));
 }
 __attribute__((destructor)) static void finish(void) {
-  ENTER(); for(context *c=contexts;c;c=c->next) if(c->remote) { graph_kernel_cache_drop(c->remote,0); mlu_remote_disconnect(c->remote); }
+  if(mlu_remote_in_callback()) return;
+  pthread_mutex_lock(&lock); for(context *c=contexts;c;c=c->next) if(c->remote) { graph_kernel_cache_drop(c->remote,0); mlu_remote_disconnect(c->remote); }
   if(control) mlu_remote_disconnect(control);
   pthread_mutex_unlock(&lock);
 }

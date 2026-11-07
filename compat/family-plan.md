@@ -6,7 +6,7 @@
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | device_context | 45 | 40 | 0 | 0 | 0 | 0 | 5 | P0 |
 | error | 6 | 6 | 0 | 0 | 0 | 0 | 0 | P0 |
-| graph | 102 | 82 | 0 | 0 | 0 | 0 | 20 | P5 |
+| graph | 102 | 102 | 0 | 0 | 0 | 0 | 0 | P5 |
 | host_memory | 14 | 4 | 0 | 0 | 0 | 0 | 10 | P2 |
 | host_utilities | 9 | 5 | 0 | 0 | 0 | 0 | 4 | P3 |
 | ipc | 12 | 0 | 0 | 4 | 0 | 0 | 8 | P5 |
@@ -27,7 +27,7 @@ P0：设备/context/版本基础查询；P1：owned memory、stride copy、queue
 | G1 | Owned DAG and node identities | 28 | 28 | 无 |
 | G2 | Typed nodes and executable snapshots | 44 | 44 | G1 |
 | G3 | Capture and replay | 10 | 10 | G1, G2 |
-| G4 | Client callbacks user objects and output files | 20 | 0 | G1, G2, G3 |
+| G4 | Client callbacks user objects and output files | 20 | 20 | G1, G2, G3 |
 | I1 | Process-wide memory sharing broker | 6 | 0 | 无 |
 | I2 | VMM backing reservation and OS-handle transport | 2 | 0 | I1 |
 | I3 | IPC notifier native prerequisite | 4 | 0 | 无 |

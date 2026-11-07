@@ -26,12 +26,14 @@ static void graph_kernel_release(mlu_graph_kernel *k) {
  * share records, each of which holds its endpoint allocation leases. */
 struct mlu_graph_view;
 static void graph_view_release(struct mlu_graph_view *);
+static void graph_callback_placeholder(void *p) {(void)p;}
 typedef struct mlu_graph_payload {
   unsigned refs;
   mlu_backend_session *host_session;
   void *host_placeholder;
   uint64_t host_token;
   unsigned host_kind;
+  uint64_t callback_token;
   struct mlu_graph_view *child_view;
   mlu_graph_kernel *kernel;
   mlu_backend_allocation *attribute_allocation;
@@ -58,10 +60,15 @@ static void graph_payload_release(mlu_graph_payload *p) {
   free(p->children);
   free(p);
 }
+struct mlu_graph_callback_arg;
 typedef struct mlu_graph_invocation {
   struct mlu_graph_invocation *next;
   size_t count;
   mlu_backend_session *session;
+  mlu_callback_service *callback_service;
+  uint64_t callback_cookie;
+  size_t callback_count,callback_cost;
+  struct mlu_graph_callback_arg *callback_args;
   CNtaskTopoEntity private_entity;
   struct mlu_graph_view *view;
   void *host;
@@ -97,6 +104,8 @@ static int graph_invocation_release(mlu_graph_invocation *run) {
   }
   graph_view_release(run->view);
   for(size_t i=0;i<run->count;i++) graph_payload_release(run->payloads[i]);
+  if(run->callback_cost)run->session->graph_snapshot_nodes-=(unsigned)run->callback_cost;
+  mlu_callback_release(run->callback_service);free(run->callback_args);
   free(run->endpoints); free(run); return 0;
 }
 static void graph_run_discard(mlu_backend_session *s,mlu_graph_invocation *run) {
@@ -647,6 +656,7 @@ static int graph_entity(mlu_backend_session *s,const mlu_api_graph_entity_reques
 }
 
 #include "graph_host_backend.inc"
+#include "graph_callback_backend.inc"
 
 static int graph_kernel_address(mlu_backend_session *s,mlu_graph_kernel *k,uint64_t id,uint64_t off,uint64_t *value) {
   if(!id) { if(off) return CN_ERROR_INVALID_VALUE; *value=0;return 0; }
@@ -785,3 +795,5 @@ static int graph_kernel_attr(mlu_backend_session *s,const mlu_api_graph_kernel_a
   if(st) graph_payload_release(p);else {s->graph_nodes[n].payload=p;graph_payload_release(old);}
   (void)graph_views_reap(s); (void)graph_reap_allocations(s);return st;
 }
+
+#include "graph_control_backend.inc"

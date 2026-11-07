@@ -1,0 +1,4 @@
+2026-11-07 09:10:42.383240: [cnrtError] [200845] [Card: 0] Error occurred during calling 'cnQueueEndCapture' in CNDrv interface.
+2026-11-07 09:10:42.383307: [cnrtError] [200845] [Card: 0] Return value is 100362, CN_ERROR_QUEUE_CAPTURE_WRONG_THREAD.
+2026-11-07 09:10:42.383360: [cnrtError] [200842] [Card: 0] Error occurred during calling 'cnQueueEndCapture' in CNDrv interface.
+2026-11-07 09:10:42.383379: [cnrtError] [200842] [Card: 0] Return value is 100015, CN_ERROR_ILLEGAL_STATE.

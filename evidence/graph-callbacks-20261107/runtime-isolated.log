@@ -1,0 +1,25 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50267
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime
+PASS callback -> H2D -> D2H -> callback -> H2D observes current client Host bytes
+PASS callback identity, clone, setters, instantiate snapshot and nested child
+PASS callback progresses without sync; pending entity/graph destruction retains invocation
+PASS user caller/acquire/MOVE/graph release/clone/entity/invocation references and one destructor
+PASS unassociated user object destructor progresses without API synchronization
+dot flags=0 status=0
+dot flags=1 status=0
+dot flags=2 status=0
+dot flags=4 status=0
+dot flags=64 status=0
+dot flags=255 status=0
+dot flags=256 status=0
+dot missing-parent=632015
+PASS DOT flags, real local output and missing-parent error
+PASS repeated invocations complete without synchronization driving callbacks
+PASS entity child replacement routes callback snapshots
+PASS entity update replaces callback snapshot and retains original setter identity
+PASS in-flight callback invocation retains user object until completion

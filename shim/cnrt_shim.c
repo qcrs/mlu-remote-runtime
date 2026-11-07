@@ -27,7 +27,7 @@ static int device;
  * uses SPIN (0) after cnrtSetDevice. */
 static uint32_t device_flags = cnrtDeviceScheduleAuto;
 static __thread cnrtRet_t last_error;
-#define ENTER() pthread_mutex_lock(&lock)
+#define ENTER() do { if(mlu_remote_in_callback()) return cnrtErrorNotSupport; pthread_mutex_lock(&lock); } while(0)
 static cnrtRet_t leave(cnrtRet_t r) {
   if (r) last_error=r;
   pthread_mutex_unlock(&lock); return r;
@@ -295,7 +295,8 @@ cnrtRet_t __bangPopCallConfiguration(cnrtDim3_t *dim,cnrtFunctionType_t *type,cn
   return cnrtSuccess;
 }
 void **__bangRegisterFatBinary(void *wrapper) {
-  ENTER(); unsigned char *w=wrapper; void *image=NULL;
+  if(mlu_remote_in_callback()) return NULL;
+  pthread_mutex_lock(&lock); unsigned char *w=wrapper; void *image=NULL;
   if(readable_span(w)<24) { pthread_mutex_unlock(&lock); return NULL; }
   uint32_t magic,version; memcpy(&magic,w,4); memcpy(&version,w+4,4); memcpy(&image,w+8,8);
   size_t size=0,available=readable_span(image);
@@ -308,7 +309,8 @@ void **__bangRegisterFatBinary(void *wrapper) {
 }
 void __bangRegisterFunction(void **handle,const char *host,char *symbol,const char *unused,int limit,void *tid,void *bid,cnrtDim3_t *bdim,cnrtDim3_t *gdim,int *wsize) {
   (void)unused; (void)limit; (void)tid; (void)bid; (void)bdim; (void)gdim; (void)wsize;
-  ENTER(); registration *r=get_registration(handle);
+  if(mlu_remote_in_callback()) return;
+  pthread_mutex_lock(&lock); registration *r=get_registration(handle);
   if(r && host && symbol && strlen(symbol)<256) {
     kernel *k=calloc(1,sizeof(*k));
     if(k) {
@@ -324,7 +326,8 @@ void __bangRegisterFunction(void **handle,const char *host,char *symbol,const ch
   pthread_mutex_unlock(&lock);
 }
 void __bangRegisterVar(void **handle,char *host,char *address,const char *name,int ext,int size,int constant,int global) {
-  ENTER(); registration *r=get_registration(handle);
+  if(mlu_remote_in_callback()) return;
+  pthread_mutex_lock(&lock); registration *r=get_registration(handle);
   /* Native probe: ext/constant/global are zero for initialized, const and
    * uninitialized __mlu_device__ objects. Native module loading owns storage and
    * relocations. Host symbol-copy/address APIs remain outside this subset. */
@@ -369,7 +372,8 @@ static int resolve_kernel_pointer(void *owner,uint64_t ptr,uint64_t *id,uint64_t
   *id=a->id; return 0;
 }
 void __bangUnregisterFatBinary(void **handle) {
-  ENTER(); registration *r=get_registration(handle);
+  if(mlu_remote_in_callback()) return;
+  pthread_mutex_lock(&lock); registration *r=get_registration(handle);
   if(r) {
     if(r->mid && ctx) {
       int st=mlu_remote_module_unload_preset(ctx,r->mid);
@@ -435,7 +439,8 @@ static allocation *allocation_by_id(uint64_t id) {
 #include "graph_kernel.inc"
 #include "cnrt_api.inc"
 __attribute__((destructor)) static void shutdown_remote(void) {
-  ENTER(); if(ctx) { graph_kernel_cache_drop(ctx,0); mlu_remote_disconnect(ctx); ctx=NULL; }
+  if(mlu_remote_in_callback())return;
+  pthread_mutex_lock(&lock); if(ctx) { graph_kernel_cache_drop(ctx,0); mlu_remote_disconnect(ctx); ctx=NULL; }
   while(allocations) { allocation *a=allocations; allocations=a->next; munmap(a->base,a->mapped); free(a); }
   while(kernels) { kernel *k=kernels; kernels=k->next; free(k->name); free(k); }
   while(registrations) { registration *r=registrations; registrations=r->next; free(r->image); free(r); }

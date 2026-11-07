@@ -53,6 +53,10 @@ int mlu_remote_context_sync(mlu_remote_context *ctx);
 int mlu_remote_capture(mlu_remote_context *,unsigned action,uint64_t queue,unsigned mode,
     const uint64_t *deps,size_t count,unsigned *state,uint64_t *id,uint64_t *graph,
     const uint64_t **frontier,size_t *frontier_count);
+int mlu_remote_in_callback(void);
+int mlu_remote_graph_host_node(mlu_remote_context *,unsigned,uint64_t,uint64_t,uint64_t,const uint64_t *,size_t,void (**)(void *),void **,uint64_t *);
+int mlu_remote_graph_user(mlu_remote_context *,unsigned,uint64_t,uint64_t,void (*)(void *),void *,unsigned,unsigned,uint64_t *);
+int mlu_remote_graph_dot(mlu_remote_context *,uint64_t,const char *,unsigned);
 int mlu_remote_graph_invoke(mlu_remote_context *ctx, uint64_t entity, uint64_t queue);
 int mlu_remote_memcpy_d2h_async(mlu_remote_context *ctx, void *dst,
     uint64_t src, uint64_t offset, uint64_t bytes, uint64_t queue, uint64_t *transfer);

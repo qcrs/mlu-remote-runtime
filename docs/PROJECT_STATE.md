@@ -6,9 +6,9 @@
 
 | 层 | IMPLEMENTED | PARTIAL | BLOCKED | OUT_OF_SCOPE | UNSUPPORTED | NOT_IMPLEMENTED | 合计 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| CNRT | 100 | 0 | 5 | 0 | 1 | 24 | 130 |
-| CNDrv | 127 | 0 | 6 | 2 | 0 | 45 | 180 |
-| 合计 | 227 | 0 | 11 | 2 | 1 | 69 | 310 |
+| CNRT | 110 | 0 | 5 | 0 | 1 | 14 | 130 |
+| CNDrv | 137 | 0 | 6 | 2 | 0 | 35 | 180 |
+| 合计 | 247 | 0 | 11 | 2 | 1 | 49 | 310 |
 
 已完成 [closure audit](API_COMPATIBILITY_CLOSURE.md)：冻结原 97 个 PARTIAL，77 项以已有实现与证据收口、18 项保留、2 项范围外；另纠正 CNRT queue destroy 的虚高状态。每个剩余 PARTIAL 都有具体 gap/fix/acceptance；台账不会因导出存在而自动提升。最新机器可读数据见 [summary](../compat/summary.json)、[ledger](../compat/api-ledger.csv)、[family plan](../compat/family-plan.json)。6 个私有 `__bang*` hooks 独立统计，legacy `cnrtInit` 不在公共分母内。
 
@@ -20,8 +20,9 @@
 - 两库共享进程级 Host registry，支持跨 Context 分配/查询/free；CNRT 分配及属性查询初始化前、离线可用，CNDrv 分配/free 只需 init、属性仍需当前 Context。异步 D2H 原生入队至 Server pinned buffer，以 TransferID fetch 在成功完成 API 边界写回；Host lease 保护在途目标，Server 独立计量和清理。没有后台写回，pageable 目标须由调用者保持到完成。
 - 当前 CNCC CNFBv2/ELF64 LE、共享 module→多个 kernel、DSO reload、pending unload/reset；metadata v2 支持 C/enum/template/zero args，以及自然 LP64 nested struct/array 按值参数内的 pointer 字段。两库共享字段重定位；Driver 从 image 读取编译器 metadata，保留 v1 和 primitive fallback。
 - CNRT kernel memory usage 按客户端存活 registration 计量，首 launch 前已计入、reset 保留、最终 unregister 扣除；独立 CNDrv load 不计入。普通未初始化、初始化和 const device globals 的 size 与 kernel 数值已对照。
-- Schema 覆盖 310 个声明，生成 10 对对象 RPC、56 个 typed RPC、126 个公共 RPC wrapper 和 4 个本地 error API。生成器支持有界 borrowed request buffer 与 caller-owned response buffer、逐元素网络序 u64 arrays/size_from、连接前本地处理及精确成功形状；复杂 owner/routing/relocation 仍有手写 adapter。
+- Schema 覆盖 310 个声明，生成 10 对对象 RPC、57 个 typed RPC、146 个公共 RPC wrapper 和 4 个本地 error API。生成器支持有界 borrowed request buffer 与 caller-owned response buffer、逐元素网络序 u64 arrays/size_from、连接前本地处理及精确成功形状；复杂 owner/routing/relocation 仍有手写 adapter。
 - G1 的 28 个 Graph 入口共享 native DAG adapter、GraphID/NodeID registry、父图校验、clone remap 和有界查询。Graph destroy/reset/EOF 撤销所属 node identities；失败 native graph 清理保留 session/context ownership。G2 双库各 22 个 memset/D2D memcpy/kernel/child/entity 入口已按边界实现，含递归 child ownership、独立 snapshot/update、逐次 invocation allocation/module leases 与 pending destroy。Kernel 参数复用编译器类型与嵌套 pointer relocation，getter 在客户端恢复 node-owned 快照；参数存储计入 staging，公开 module unload 后延迟回收。Host graph memcpy 已实现逐次输入、独立 pinned staging、alias、完成边界批量写回与 Host leases；G3 另以同一 payload/replay 引擎支持逻辑线程 capture、三种 mode、跨 Context Global invalidation、Notifier fork/join 和 ADD/SET frontier；captured H2D 不读取源数据，Host 输出在成功完成边界写回。
+- G4 配对 callback channel 在客户端执行函数与 destructor，私有 native DAG 的每个 Host copy 边界维护 callback 可见的当前输入/输出顺序；clone/child/update/entity setter、native user refs 与在途保活、客户端 DOT 输出共用一个生成 RPC。DONE 先释放 Host leases 再 ACK，reset/EOF/断线统一回收，Runtime 重入在 shim 锁前拒绝。普通 Host async 的 deferred publication 语义保持；callback 图的逐节点 publication 是专用路径。
 - 两个 Host cast 共用类型/量化/half/bfloat/rounding 引擎；scalar 与 full-shape by-channel、owned 参数和实际 SDK 数值 quirks 已差分，不依赖远端或本地设备。
 - Reviewed error catalogue 生成四个本地查询，覆盖 139 个枚举值并集及未知值回退，初始化前/离线可用；返回文本有进程级稳定生命周期。
 - 会话资源配额、失败回滚/隔离、EOF/关闭清理、server worker drain 及 parser bounds 已有回归证据。
@@ -32,11 +33,13 @@
 
 11 个 BLOCKED 为 7 个 Peer（缺第二物理设备）和 4 个 IPC notifier get/open（Native 支持属性 0，合法 interprocess notifier 创建返回 NotSupported）。后者的 native_test 仅证明前提缺失，未运行成功的 get/open。security/framebuffer 专用消费者范围外。Runtime MallocConstant 仍明确拒绝。CNNL 无对应库，不能把明确拒绝用例称为 CNNL native 成功。
 
-Graph 102 项中 G1 的 28 项、G2 的 44 项和 G3 的 10 项已 IMPLEMENTED，合计 82/102；G4 尚余 20 项，普通 memory/VMM IPC 8 项仍 NOT_IMPLEMENTED。G2 的 44/44 是逐 API 声明边界内完成，已含 1D Host graph memcpy 重放；更新后结构角色不唯一时，影响 Host 重放的 entity setter 明确拒绝。[设计](GRAPH_IPC.md) 与 Schema / family plan 记录逐 API 依赖和验收；EntityID/CaptureID 与 allocation/module/Host invocation leases 已落地；callback/user-object refs、broker 和 VMM refs 尚待实现。Native 图与跨进程 memory/Host/VMM IPC 已有正例，这些实现缺口不能标成硬件 BLOCKED。
+Graph 102/102 已按逐 API 声明边界 IMPLEMENTED：G1 28、G2 44、G3 10、G4 20；普通 memory/VMM IPC 8 项仍 NOT_IMPLEMENTED。G2 已含 1D Host graph memcpy 重放，G4 另保证 callback 与每个 Host copy 的依赖顺序。EntityUpdate 后结构角色不唯一时，影响 Host/callback 重放的 entity setter 明确拒绝。[设计](GRAPH_IPC.md) 与 Schema/family plan 记录限制；callback 每 session 串行且须在 deadline 内返回，Runtime API 重入拒绝。单 copy <=1 MiB，Host endpoints 总和 <=16 MiB，pageable 地址由调用者保活。
 
-下一批 G4 接客户端 callback/user refs/DOT。I1 需先解决当前同进程多 session Server 无法直接 native IPC open 的 Context/执行模型，以及同 client-host 域 CPU 共享；I2 还需 VMM memory family 前提和真实客户端 OS handle transport。完整剩余工作与升级条件见 [分批计划](../compat/family-plan.md)。
+下一阶段为 I1 跨 session backing broker、compatible Context 执行和同 client-host 域 CPU 共享；当前 SDK 同进程跨 Context 的 native IPC open 返回 100102。I2 还需 11 个 VMM memory family 前提入口及真实客户端 OS descriptor transport。普通 Host/device/VMM IPC 的 Native 已成功，这些架构实现缺口继续列 NOT_IMPLEMENTED。其余未实现项见 [分批计划](../compat/family-plan.md)，不声称全项目 310 项完成。
 
 ## 验证与证据
+
+最新 [G4 callbacks/user objects/DOT](../evidence/graph-callbacks-20261107/README.md) 新增 20 项 API，专项 20/20：两库 Native/replacement/preload/隐藏 SDK 与设备客户端，callback PID/数值顺序、clone/child/update/setter、无 wait 推进、用户引用/唯一析构和 DOT flags/本地路径错误。Remote 另验证重入拒绝、reset/Context close/EOF、pinned Host retirement、paired channel/plan/owner、192-byte staging 配额回滚及提交断线 API error。Capture 97/97、Host 18/18、kernel 18/18、execution 16/16、G1 14/14、功能族 15/15、Host async 15/15、核心 76/76，连同 G4 合计 289/289；Server 资源与 workers 清零，codegen/台账/API contracts/closure audit 通过。源码、二进制与 SDK 头文件哈希在该目录。
 
 最新 [G3 Capture](../evidence/graph-capture-20261107/README.md) 新增 10 项 API，专项 97/97：三种 mode、异线程 End、跨 Context Global invalidation、不可读 Host 源、两次当前输入 kernel 回放、identity/snapshot、Host publication、EntityInvoke Native 特例、Notifier fork/join、ADD/SET frontier、raw dispatch guard、配额与 reset/EOF。两库 Native/replacement/preload/隐藏 SDK 与设备客户端均通过；ContextSync 三种 mode 均保留 ACTIVE，EntityInvoke 正常执行且不加入捕获图。受影响回归 Host 18/18、kernel 18/18、execution 16/16、G1 14/14、功能族 15/15、Host async 15/15、完整核心 76/76 均通过，合计 269/269；codegen、台账、API contracts 与 closure audit 通过，记录与源码/二进制哈希保存在该目录。
 

@@ -87,3 +87,11 @@ Schema 的 `graph_ipc_plan` 定义 GraphID/NodeID/EntityID/CaptureID 与 export/
 两库各 14 个 Graph API 已按 G1 boundary 升级：173 IMPLEMENTED、0 PARTIAL、11 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、123 NOT_IMPLEMENTED。Graph 余 74 项、普通 memory/VMM IPC 余 8 项；原 97 项 closure audit 与历史 resolution 不变。
 
 新增共享有界 u64 arrays codegen、三个 Graph RPC 和全部 28 个生成式 wrapper；native DAG adapter 管理 GraphID/NodeID、父图校验、clone remap、查询和 reset/EOF 回收。14/14 专项及本批核心复跑见 [G1 证据](../evidence/graph-g1-20261107/README.md)。两库实际查询方向与名字相反，由 native 权威返回；stale 拒绝属于 Remote 安全边界。下一阶段为 G2 typed payload/entity snapshot/leases，G3/G4 和 IPC broker/VMM 仍待实现。
+
+## 2026-11-07 G2～G4 Graph 收口
+
+G2 的 44 个 typed payload/entity 入口、G3 的 10 个 capture 入口和 G4 的 20 个 callback/user-object/DOT 入口已按逐 API boundary 升级，Graph 合计 102/102。当前为 247 IMPLEMENTED、0 PARTIAL、11 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、49 NOT_IMPLEMENTED；历史审计与各批次计数保持原样。
+
+共享能力包括 recursive child ownership、immutable kernel/Host/callback snapshots、allocation/module/invocation leases、逻辑线程 capture/frontier，以及客户端执行的 callback/destructor。callback 图在每个 Host copy 边界采样或写回再放行后继；native user refs 保活至最后引用并触发唯一析构。DOT 在客户端路径写入。callback 每 session 串行、须在 RPC deadline 内返回，Runtime/Driver 重入拒绝；歧义 entity setter、Host size 和 pageable lifetime 等边界见 [Graph/IPC](GRAPH_IPC.md)。
+
+[G4 专项](../evidence/graph-callbacks-20261107/README.md) 20/20 与既有 269/269 回归通过，包含两库 Native/replacement/preload/隐藏 SDK 和设备的客户端、顺序/数值/PID、clone/update/child、无 wait 推进、refs/在途销毁、reset/EOF、配额回滚及提交断线。Server resources/workers/cleanup errors 清零，codegen、ledger、API contracts 和 closure audit 通过。普通 memory/Host/VMM IPC 仍属 NOT_IMPLEMENTED，需完成跨 session backing/Context 执行、同 client-host 域 CPU 共享和真实客户端 descriptor transport；11 个 BLOCKED 原因不变。

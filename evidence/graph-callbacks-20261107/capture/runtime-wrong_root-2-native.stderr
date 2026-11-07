@@ -1,0 +1,7 @@
+2026-11-07 09:10:42.572677: [cnrtError] [200918] [Card: 0] Error occurred during calling 'cnQueueEndCapture' in CNDrv interface.
+2026-11-07 09:10:42.572730: [cnrtError] [200918] [Card: 0] Return value is 100366, CN_ERROR_QUEUE_CAPTURE_UNMATCHED.
+2026-11-07 09:10:42.572742: [cnrtError] [200918] [Card: 0] Error occurred during calling 'cnMemsetD8Async' in CNDrv interface.
+2026-11-07 09:10:42.572746: [cnrtError] [200918] [Card: 0] Return value is 100361, CN_ERROR_QUEUE_CAPTURE_INVALIDATED.
+2026-11-07 09:10:42.572750: [cnrtError] [200918] [Card: 0] cnrtMemsetAsync: Initialize device memory Async failed.
+2026-11-07 09:10:42.572757: [cnrtError] [200918] [Card: 0] Error occurred during calling 'cnQueueEndCapture' in CNDrv interface.
+2026-11-07 09:10:42.572761: [cnrtError] [200918] [Card: 0] Return value is 100361, CN_ERROR_QUEUE_CAPTURE_INVALIDATED.

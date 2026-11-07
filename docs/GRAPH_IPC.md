@@ -1,6 +1,6 @@
 # Graph / IPC 原生契约与实现计划
 
-更新：2026-11-07。范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64 LP64。G1 的 28 个、G2 的 44 个和 G3 的 10 个 Graph API 已按声明边界实现，合计 82/102；G4 的 20 个 Graph API、8 个普通 memory/VMM IPC API 仍为 NOT_IMPLEMENTED，4 个 IPC notifier API 因本机原生前提缺失为 BLOCKED。G3 已接入逻辑线程 capture、依赖前沿和 G2 的逐次 Host 重放/完成写回；callback/user objects 与 IPC 仍按后续状态机计划实现。
+更新：2026-11-07。范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64 LP64。G1 的 28 个、G2 的 44 个、G3 的 10 个和 G4 的 20 个 Graph API 已按声明边界实现，合计 102/102。8 个普通 memory/VMM IPC API 仍为 NOT_IMPLEMENTED，4 个 IPC notifier API 因本机原生前提缺失为 BLOCKED。G4 已接入客户端 callback executor、逐节点 Host 数据顺序、user-object refs 和客户端 DOT 输出。
 
 分批归属、依赖和验收以 [Schema 的 graph_ipc_plan](../schema/mlu_api_schema.json) 为准，生成到 [family plan](../compat/family-plan.md)。原始运行和复现方式见 [本批证据](../evidence/graph-ipc-contracts-20261107/README.md)。
 
@@ -19,7 +19,7 @@
 | IPC notifier 前提 | IPCNOTIFIER_SUPPORTED（0x10a）为 0；两库合法 interprocess \| disable_timing_all（12）创建返回 100050 / NotSupported。未生成有效 notifier IPC handle，未运行四个 get/open 入口的成功路径。 |
 | VMM POSIX FD | VMM/FD 支持属性均为 1，granularity 为 33,554,432 bytes；create/reserve/map/access/export → SCM_RIGHTS → 独立 importer/import/map/access/write → unmap/release 成功。 |
 
-初始探针覆盖数值 DAG、relaxed capture 与正常 close-before-free 的共享路径。G2 后续另补 child、kernel、entity update 与 pending entity destroy 的两库 Native 数值基线。G3 后续补齐三种 capture 模式、线程/Context 交互和依赖前沿；Host callback nodes、user objects、重复 importer 和源进程提前退出尚无完整认证。
+初始探针覆盖数值 DAG、relaxed capture 与正常 close-before-free 的共享路径。G2 后续另补 child、kernel、entity update 与 pending entity destroy 的两库 Native 数值基线。G3 后续补齐三种 capture 模式、线程/Context 交互和依赖前沿；G4 后续补齐 Host callback nodes、user objects 和 DOT。重复 importer 和源进程提前退出仍属 IPC 后续工作。
 
 ## G1 已实现：owned DAG 与节点身份
 
@@ -107,11 +107,25 @@ Frontier 返回存储由客户端 capture session 持有，至 End/reset/disconn
 
 [G3 证据](../evidence/graph-capture-20261107/README.md) 专项 97/97，含双库 Native/replacement/preload/隐藏 SDK 与设备的客户端、不可读 H2D 源页、两次当前输入 kernel 回放、参数 identity/snapshot、Notifier fork/join 与 ADD/SET、模式/线程/Context、raw dispatch owner/type、两档配额及 reset/EOF。G1/G2、Host async、功能族与完整核心回归记录保存在同目录。
 
-## Callback、user object 与文件路径
+## G4 已实现：客户端 callback、user object 与文件路径
 
-Host node callback、userdata、user-object destructor 是客户端进程中的代码/地址。不得把函数指针发给 Server 后在 Server 调用。G4 需要客户端 callback executor、回调 identity、顺序通知与完成 ACK；Server DAG 在相应位置等待所需的客户端完成。成功/失败/连接断开路径的引用释放和重入限制须以专门 Native 基线确定。Callback 不能只在整个图结束后集中执行，因为后续 device nodes 可能依赖其结果。
+双库各 10 个 Host node Add/Get/Set/EntitySet、user object Create/Acquire/Release、graph Acquire/Release 和 DOT wrapper 由 Schema 生成，共享 `graph_control` RPC（opcode 92、capability `MLU_CAP_GRAPH_CALLBACKS=0x20000`）。Host 函数及 userData 始终留在客户端 immutable identity 表；Server native 源图只保存不可执行的占位 Host node。getter 恢复原函数/userData，clone、instantiate、child、EntityUpdate 和 entity setter 复用 G2 snapshot/override。更新后的 setter 仍需唯一结构角色映射。
 
-User-object refs 应分别记录调用者、graph、entity revision 与在途 invocation 的持有，满足最终 release 时 destructor 恰好一次；不能仅数公开 GraphID。DOT 输出同样属于客户端：Server 返回有界内容，由客户端写入调用者的路径。远端同名路径不等价。
+主 session 建立 callback service 后返回 128-bit 随机配对 secret。客户端连接同一 peer，以首帧 `CALLBACK_ATTACH=91` 绑定独立 callback channel；重复绑定拒绝，副通道不创建 native Context。事件序号从 2 递增，32-byte 网络序头保存 kind/run-cookie/token/bytes；仅 D2H 事件带输出 bytes，仅 H2D ACK 带输入 bytes。CALL、H2D、D2H、DONE、DESTROY、CLOSE 分别为 1～6。副通道占一个普通 worker/连接额度，无事件时允许长期空闲，事件及 ACK 受 session RPC deadline 约束；随机 secret 仅用于 session 配对，未增加生产认证或加密。
+
+回放先 describe 返回有序 24-byte token/bytes/kind 计划，客户端登记 callback/Host endpoint whitelist、run cookie 和 pinned Host registry leases，再完整回显计划提交。Server 逐项核对，在私有 native clone 中用 thunk 替换 callback，并给每个 Host copy 插入 native Host 边界。H2D 在原前驱完成后请求当前客户端 bytes，再执行 copy；D2H 完成后立即在客户端 scatter、ACK，然后才允许原后继执行。图内 D2H→callback→H2D 因此能观察回调修改的数据，无须等待整个图结束。各 endpoint 独立 pinned staging，不沿用无 callback 图的区间 alias 合并；顺序由 DAG 和逐 copy ACK 保持。
+
+顶层 DONE 依赖所有顶层节点（含 child 和辅助 Host nodes）。客户端先移除 run、释放 Host leases，再 ACK DONE，避免 QueueSync 成功时仍占有已完成 lease。Server Transfer 绑定 native completion，客户端立即请求 release，真正完成前仍保留私有图/entity、callback args、allocation/module refs 和 pinned bytes。describe/执行共用 snapshot 配额；helper nodes 也计入 4096 node 上限，pinned staging 计入 STAGING。单 copy <=1 MiB，Host endpoint 总和 <=16 MiB；客户端最多 4096 个 immutable identity、1024 个在途 run，Server 最多 8192 个 pending events。pageable 地址由调用者保活；pinned 提前 free 的延后退页属于 Remote 安全策略。
+
+每个 session 的客户端 reader 串行执行回调。回调必须返回，且一次事件须在 RPC deadline 内完成；不能强制取消用户代码。Host callback 和 user destructor 中调用 Runtime/Driver API 在 shim 锁前返回 NotSupported，避免主 RPC 等待 callback ACK 时发生重入死锁。没有 callback 的图直接继续原 Host/non-Host 路径；旧 raw entity 和 Host replay 路径拒绝含 callback 的图及 child override，不能误执行占位节点。callback 图提交前先完成已有普通 deferred D2H，保证回调侧读取能看到之前的输出。
+
+UserObjectID 使用独立 session/type registry；Native `cnUserObject*` 管理 caller、graph、clone、entity revision 和在途引用。支持非零 count <= INT_MAX、创建 flag 1、graph acquire flags 0/MOVE；MOVE 相应扣减 caller refs。native 最终 destructor 仅异步入队一次 DESTROY，不阻塞 native 析构线程；service ref 独立于 session，客户端在专用线程调用原始 destructor，移除一次性 identity。不关联图的最后 release 同样自行推进，后续无 API 调用也会执行。cleanup 释放图和 caller refs 后，等待 native destructor 与排队事件完成，再握手 CLOSE。
+
+channel EOF、坏事件/ACK 或 deadline 失败使主 session 失效，不能假报完成或自动重放。提交发生断线时本地 run/leases 保留至 executor join；不读取空 RPC response。Server 提交后 completion 建立失败且 QueueSync 也失败时先 poison channel，保留 orphan 到确认 Context 完成。reset/close 正常 drain，EOF 仅做安全回收；源 graph/entity 在 callback 阻塞期间销毁，invocation 仍持有对应 user object 和 backing。
+
+DOT 使用 Server 临时文件取得 native 内容，有界读回至客户端，再写入调用者本地路径，最大 1 MiB。flags 由 Native 解释；实测 0/1/2/4/64/255/256 成功，缺失目录为 Driver 100007 / Runtime 632015。没有把同名 Server 路径视为客户端路径。
+
+[G4 证据](../evidence/graph-callbacks-20261107/README.md) 专项 20/20：两库 Native/replacement/preload/隔离客户端、数值顺序/PID、clone/setter/update/nested child、无 wait 推进、在途销毁/user refs、DOT、重入/reset/EOF/Host retirement、raw plan/owner/type、staging 配额回滚和提交断线。既有 Capture、G1/G2、Host async、功能族和核心回归记录保存在同目录。
 
 ## 计划中的 memory IPC broker
 
@@ -152,9 +166,9 @@ SCM_RIGHTS 只在本机 Unix socket 中传递 descriptor；本批 Python runner 
 | G1 | 28 | 已完成；owned DAG、node identities、父图校验、clone remap、有界 node/edge arrays；两库 Native/Remote 查询、编辑、reset/EOF 和隔离客户端 |
 | G2 | 44 | 边界内 44/44：memset/D2D/H2D/D2H memcpy/kernel/child/entity snapshot/update、allocation/module/Host invocation leases 与完成写回 |
 | G3 | 10 | 已完成；逻辑线程/三种 mode、跨 Context Global invalidation、Notifier fork/join、ADD/SET frontier、当前 Host 输入与完成写回 |
-| G4 | 20 | 客户端 callback/destructor、user refs、客户端 DOT 路径；顺序与恰好一次析构 |
+| G4 | 20 | 已完成；客户端 executor、逐 copy Host 顺序、callback snapshots、native user refs/唯一析构、客户端 DOT、reset/EOF 与失败回滚 |
 | I1 | 6 | 跨 session backing broker、兼容 Context 执行、imported identities、同 client-host 域共享；独立双客户端与多 importer、close/EOF/reset、计量 |
 | I2 | 2 | VMM backing/VA/handle/FD refs 及客户端 OS transport；依赖的 memory family API 另计，不包含在本行的 2 项中 |
 | I3 | 4 | 当前 BLOCKED；先换至 IPCNOTIFIER_SUPPORTED=1 且合法创建成功的设备/SDK，再做跨进程 record/wait 基线和 Remote refs |
 
-G1→G2→G3→G4；I1→I2。I3 的 native 前提独立检查。每批均需相关 Native 语义、独立 Remote Server/Client、replacement/preload、无本地 SDK/设备客户端与必要 ownership/资源回收证据，才按逐 API boundary 升级；当前 G1/G2/G3 的 typed graph 执行与声明边界内 capture 已验证，客户端 callback/user objects 与 IPC 仍未实现。7 个 Peer API 仍单独因缺第二设备 BLOCKED。
+G1→G2→G3→G4；I1→I2。I3 的 native 前提独立检查。每批均需相关 Native 语义、独立 Remote Server/Client、replacement/preload、无本地 SDK/设备客户端与必要 ownership/资源回收证据，才按逐 API boundary 升级；当前 G1～G4 的 typed graph、声明边界内 capture、客户端 callback/user objects/DOT 已验证；IPC broker/Context/domain/VMM 仍未实现。7 个 Peer API 仍单独因缺第二设备 BLOCKED。

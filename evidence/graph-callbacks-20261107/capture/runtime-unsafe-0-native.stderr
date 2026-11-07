@@ -1,0 +1,11 @@
+2026-11-07 09:10:42.611670: [cnrtError] [200932] [Card: 0] Error occurred during calling 'cnMalloc' in CNDrv interface.
+2026-11-07 09:10:42.611725: [cnrtError] [200932] [Card: 0] Return value is 100360, CN_ERROR_QUEUE_CAPTURE_UNSUPPORTED.
+2026-11-07 09:10:42.611730: [cnrtError] [200932] [Card: 0] cnrtMalloc: Malloc MLU device memory failed.
+2026-11-07 09:10:42.611738: [cnrtError] [200932] [Card: 0] Error occurred during calling 'cnQueueSync' in CNDrv interface.
+2026-11-07 09:10:42.611742: [cnrtError] [200932] [Card: 0] Return value is 100360, CN_ERROR_QUEUE_CAPTURE_UNSUPPORTED.
+2026-11-07 09:10:42.611745: [cnrtError] [200932] [Card: 0] cnrtQueueSync: MLU queue sync failed.
+2026-11-07 09:10:42.611850: [cnrtError] [200932] [Card: 0] Error occurred during calling 'cnQueueSync' in CNDrv interface.
+2026-11-07 09:10:42.611856: [cnrtError] [200932] [Card: 0] Return value is 100360, CN_ERROR_QUEUE_CAPTURE_UNSUPPORTED.
+2026-11-07 09:10:42.611859: [cnrtError] [200932] [Card: 0] cnrtQueueSync: MLU queue sync failed.
+2026-11-07 09:10:42.611869: [cnrtError] [200932] [Card: 0] Error occurred during calling 'cnQueueEndCapture' in CNDrv interface.
+2026-11-07 09:10:42.611872: [cnrtError] [200932] [Card: 0] Return value is 100361, CN_ERROR_QUEUE_CAPTURE_INVALIDATED.

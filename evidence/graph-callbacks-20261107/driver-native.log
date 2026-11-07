@@ -1,0 +1,18 @@
+PASS callback -> H2D -> D2H -> callback -> H2D observes current client Host bytes
+PASS callback identity, clone, setters, instantiate snapshot and nested child
+PASS callback progresses without sync; pending entity/graph destruction retains invocation
+PASS user caller/acquire/MOVE/graph release/clone/entity/invocation references and one destructor
+PASS unassociated user object destructor progresses without API synchronization
+dot flags=0 status=0
+dot flags=1 status=0
+dot flags=2 status=0
+dot flags=4 status=0
+dot flags=64 status=0
+dot flags=255 status=0
+dot flags=256 status=0
+dot missing-parent=100007
+PASS DOT flags, real local output and missing-parent error
+PASS repeated invocations complete without synchronization driving callbacks
+PASS entity child replacement routes callback snapshots
+PASS entity update replaces callback snapshot and retains original setter identity
+PASS in-flight callback invocation retains user object until completion

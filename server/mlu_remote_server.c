@@ -106,7 +106,7 @@ static int parse_hello(int fd, const struct mlu_remote_wire_header *h, const uns
   unsigned char out[16]; put32(out, MLU_REMOTE_VERSION); put32(out + 4, (uint32_t)count);
   /* Capability bits: device, allocation, copies, queue, notifier, preset
    * module, generic operators, and TransferID completion. */
-  put32(out + 8, 0xffu | MLU_CAP_GRAPH_CAPTURE | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API | MLU_CAP_DEFERRED_D2H | MLU_CAP_ARGUMENT_RELOCATIONS);
+  put32(out + 8, 0xffu | MLU_CAP_GRAPH_CALLBACKS | MLU_CAP_GRAPH_CAPTURE | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API | MLU_CAP_DEFERRED_D2H | MLU_CAP_ARGUMENT_RELOCATIONS);
   put32(out + 12, MLU_REMOTE_KERNEL_ABI);
   int sent = send_response(fd, MLU_OP_HELLO, ntohll_u(h->request_id), (uint32_t)st, out, sizeof(out));
   return st ? -1 : sent;
@@ -334,10 +334,10 @@ static void *session_worker(void *arg) {
     if (!request_id || request_id <= last_request) { send_response(fd, ntohs(h.opcode), request_id, MLU_REMOTE_PROTOCOL_ERROR, NULL, 0); break; }
     last_request = request_id;
     uint16_t op = ntohs(h.opcode);
-    if ((!ready && op != MLU_OP_HELLO) || (ready && op == MLU_OP_HELLO)) {
+    if ((!ready && op != MLU_OP_HELLO && op != MLU_OP_CALLBACK_ATTACH) || (ready && op == MLU_OP_HELLO)) {
       send_response(fd, op, request_id, MLU_REMOTE_PROTOCOL_ERROR, NULL, 0); break;
     }
-    if (!ready && n != 8 && n != 12 && n != 16) {
+    if (!ready && op==MLU_OP_HELLO && n != 8 && n != 12 && n != 16) {
       send_response(fd, op, request_id, MLU_REMOTE_BAD_LENGTH, NULL, 0); break;
     }
     unsigned char *p = n ? (unsigned char *)malloc(n) : NULL; if (n && !p) break;
@@ -347,13 +347,19 @@ static void *session_worker(void *arg) {
       free(p); break;
     }
     if (stop_server) { free(p); break; }
+    if(!ready && op==MLU_OP_CALLBACK_ATTACH) {
+      (void)mlu_callback_attach(fd,p,n,request_id,io_timeout_ms);free(p);break;
+    }
+    session->transport_fd=fd;session->transport_timeout_ms=io_timeout_ms;
     int handled = ready ? handle_request(fd, session, &h, p, n) : parse_hello(fd, &h, p, n, session);
     free(p);
     if (handled < 0 || session->cleanup_failed || !session->context) break;
+    session->transport_fd=fd;session->transport_timeout_ms=io_timeout_ms;
     ready = 1;
   }
   if (session->context || session->cleanup_failed) {
     fprintf(stderr, "[server] session fd=%d disconnected; cleaning native resources\n", fd);
+    mlu_callback_abort(session->callbacks,0);
     int st = session->cleanup_failed ? session->cleanup_failed : mlu_backend_session_cleanup(session);
     fprintf(stderr, "[server] %s fd=%d status=%d\n", st ? "SESSION_CLEANUP_FAILED" : "SESSION_CLEANUP_EMPTY", fd, st);
     if (st) {

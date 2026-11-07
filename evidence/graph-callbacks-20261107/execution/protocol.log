@@ -1,0 +1,2 @@
+PASS typed graph payload bounds, entity/allocation/queue ownership, borrowed child ownership and reset retirement
+PASS memcpy exact wire lengths, both endpoint ranges/ownership, dependency parents, node/entity types, stale IDs and tombstone getters

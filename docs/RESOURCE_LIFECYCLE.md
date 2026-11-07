@@ -1,6 +1,6 @@
 # 资源配额与服务端关闭
 
-范围：2026-11-02，2026-11-07 补充 Queue retirement、Host/deferred D2H 与 Graph kernel leases；AArch64 / Neuware 3.5.2 / MLU370-S4。保留原有 TCP、对象所有权和 native backend；新增配额不会把原生资源错误改成成功。实现位于 `server/resource_limits.c`、`server/mlu_backend.c`、`server/graph_backend.inc` 和 `server/mlu_remote_server.c`。
+范围：2026-11-02，2026-11-07 补充 Queue retirement、Host/deferred D2H、Graph leases 与客户端 callback；AArch64 / Neuware 3.5.2 / MLU370-S4。保留原有 TCP、对象所有权和 native backend；新增配额不会把原生资源错误改成成功。实现位于 `server/resource_limits.c`、`server/mlu_backend.c`、`server/graph_backend.inc`、`server/callback_bridge.c` 和 `server/mlu_remote_server.c`。
 
 ## 配置与计量口径
 
@@ -37,9 +37,13 @@ Graph kernel record 在 native Add/Set/EntitySet 前预留 STAGING，持有 cano
 
 异步 D2H 提交前预留额度，以 `cnMallocHost` 分配独立 pinned buffer，并先登记 staging ownership，再调用 native `cnMemcpyDtoHAsync` 和记录完成 Notifier。成功后 ownership 移交 Transfer；submit/Notifier 失败时尝试同步，若同步也失败则保留 staging 和额度至后续成功同步或 Context 销毁。fetch 必须匹配 owner、TransferID 和精确长度，且 Notifier 已完成。`cnFreeHost` 失败保留指针和额度，可在后续回收时重试；Context 已销毁后仍不能丢失释放失败的 pinned buffer，最终进入 quarantine。旧同步 D2H 请求继续先等待显式 Queue，再同步复制到回复缓冲。
 
-Client 两库共享进程级 Host registry；分配使用可读写 mmap、guard 和 mlock，free 立即失效公开登记，pending D2H lease 则延后退页，最终保留不可访问的 VA tombstone。Host 内存跨 Context，reset/Context destroy 不销毁用户 Host 分配；普通 pageable 目标不被 registry 保活，调用者必须保持其有效至完成。客户端真实 Host 地址不出现在 wire 中，Server EOF 清理也不需要访问它。
+Client 两库共享进程级 Host registry；分配使用可读写 mmap、guard 和 mlock，free 立即失效公开登记，pending D2H lease 则延后退页，最终保留不可访问的 VA tombstone。Host 内存跨 Context，reset/Context destroy 不销毁用户 Host 分配；普通 pageable 目标不被 registry 保活，调用者必须保持其有效至完成。普通 Transfer copy 的客户端 Host 地址留在本地；Graph Host endpoint 的地址值作为 opaque token 上传，Server 不解引用它，EOF 清理也不访问客户端地址。
 
-Client 在成功 Queue/Notifier/Transfer wait/query、Context sync、free、module unload 后查询已提交 Transfer，fetch 后写回；query 遇 NotReady 不阻塞。较晚的同 Queue 或地址重叠写回必须等较早写回发布，独立目标可继续；同步 D2H 的新回复写入前先发布旧的已完成结果。reset/close 在 Server ID 失效前同步并写回；连接失败/断开时只释放本地 lease，不向应用目标写入或重放。没有后台写回，未调用这些完成边界时数据可以保持未发布。Native pending destroy/reset/unload 的取消观察和数值基线预等待差异见 [Host 证据](../evidence/host-async-20261107/README.md)。
+Client 在成功 Queue/Notifier/Transfer wait/query、Context sync、free、module unload 后查询已提交 Transfer，fetch 后写回；query 遇 NotReady 不阻塞。较晚的同 Queue 或地址重叠写回必须等较早写回发布，独立目标可继续；同步 D2H 的新回复写入前先发布旧的已完成结果。reset/close 在 Server ID 失效前同步并写回；连接失败/断开时只释放本地 lease，不向应用目标写入或重放。普通 Host async 没有后台写回，未调用这些完成边界时数据可以保持未发布。Native pending destroy/reset/unload 的取消观察和数值基线预等待差异见 [Host 证据](../evidence/host-async-20261107/README.md)。
+
+G4 callback 图使用独立配对通道和客户端 executor：每个 H2D 节点在原前驱完成后取当前输入，D2H 完成后立即写回并 ACK，后继 callback 因而能观察结果。此路径无须应用调用 wait/query，且提交前先发布已有普通 deferred D2H。每次 invocation 持有自己的 Host leases、私有 native 图/entity、allocation/module refs 与 pinned staging；DONE 先释放客户端 run/Host leases 再 ACK，Server 仍等 native completion 才回收 Transfer。source graph/entity 在途销毁不影响已提交回放。snapshot/helper 计入图配额，endpoint pinned bytes 计入 STAGING，准入失败退回新 refs/bytes 而不改源图。
+
+UserObjectID 的 caller、graph、clone、entity 和在途 refs 由 native user-object 引用维护；最终 native destructor 只向 service 入队一次，原始 destructor 在客户端执行。service refs 独立于 session，正常 reset/close 等待销毁事件及 CLOSE；EOF/坏 ACK/deadline 使主 session 失效，不重放。callback/destructor 重入 Runtime/Driver 在 shim 锁前返回 NotSupported。用户 callback 必须在 RPC deadline 内返回；不能强制取消用户代码。提交回复断线时客户端 run 保留至 executor join，Server 无法确认 completion 时保留 orphan 至 Context 完成。详见 [G4 证据](../evidence/graph-callbacks-20261107/README.md)。
 
 EOF/reset/关闭时逐项记录 native cleanup 错误，包括操作名、对象 ID 和原生状态；不再无条件打印清理成功。queue sync 失败时，H2D snapshot 与 D2H pinned buffer 保持存活，直到成功销毁 native context。若 context 销毁也失败，或销毁后 pinned buffer 仍释放失败，保留尚未确认可释放的 Host 内存和额度，报告 `CLEANUP_QUARANTINED`，停止接受新连接并 drain 其他 worker，最终非零退出。不能通过重复断开连接无限逃逸配额。进程退出是这种异常的隔离边界；没有实现 native context 修复。
 

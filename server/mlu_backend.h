@@ -9,6 +9,7 @@
 #include "bang_image.h"
 #include "resource_limits.h"
 #include "remote_cnrt.h"
+#include "callback_bridge.h"
 
 #define MLU_BACKEND_MAX_OBJECTS 1024
 
@@ -131,6 +132,10 @@ typedef struct {
 } mlu_backend_transfer;
 
 typedef struct mlu_backend_session {
+  int transport_fd;
+  uint32_t transport_timeout_ms;
+  mlu_callback_service *callbacks;
+  struct mlu_graph_user *graph_users;
   CNcontext context;
   CNdev device;
   int device_ordinal;

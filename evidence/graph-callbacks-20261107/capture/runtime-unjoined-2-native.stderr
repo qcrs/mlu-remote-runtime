@@ -1,0 +1,2 @@
+2026-11-07 09:10:42.553100: [cnrtError] [200911] [Card: 0] Error occurred during calling 'cnQueueEndCapture' in CNDrv interface.
+2026-11-07 09:10:42.553154: [cnrtError] [200911] [Card: 0] Return value is 100364, CN_ERROR_QUEUE_CAPTURE_UNJOINED.
