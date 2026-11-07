@@ -4,1021 +4,1318 @@
     "boundary": "Host-local conversion for FLOAT32/INT32/UINT8 with null quantization plus FLOAT32<->INT8 using scalar quantization parameter (scale/pos, signed rounding, clamp, reverse dequantization; current SDK offset ignored in observed conversion). No device or remote buffers.",
     "native_test": "api-expansion-20261112/quant-cast-native.log",
     "remote_test": "api-expansion-20261112/quant-cast-remote.log",
-    "next_step": "Validate offset and additional data types against SDK"
+    "next_step": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
+    "blocker": "",
+    "closure": {
+      "gap": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
+      "fix": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
+      "acceptance": "One Native/host-shim numerical family comparison covers supported source/destination types, scalar and by-channel parameters, saturation and rounding."
+    }
   },
   "cnrtCastDataType_V2": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Host-local V2 FLOAT/INT/UCHAR/HALF/BFLOAT/INT64/UINT64 conversion with six rounding modes and null quantization. No remote buffers.",
     "native_test": "api-expansion-20261113/v2-cast-native.log",
     "remote_test": "api-expansion-20261113/v2-cast-remote.log",
-    "next_step": "Validate V2 quantized parameter path against SDK"
+    "next_step": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
+    "blocker": "",
+    "closure": {
+      "gap": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
+      "fix": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
+      "acceptance": "One Native/host-shim numerical family comparison covers supported source/destination types, scalar and by-channel parameters, saturation and rounding."
+    }
   },
   "cnrtCreateQuantizedParam": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Host-local create/destroy for opaque scalar quantization metadata. Cast with non-null param and by-channel creation remain unsupported.",
+    "status": "IMPLEMENTED",
+    "boundary": "Copies scalar pos/scale/offset into owned Host quantization metadata; actual cast coverage is tracked separately.",
     "native_test": "api-expansion-20261110/quant-native.log",
     "remote_test": "api-expansion-20261110/quant-remote.log",
-    "next_step": "Validate parameterized quantized cast against SDK"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtCreateQuantizedParamByChannel": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Host-local copies poses/scales/offsets for positive channel dimension and validates shape; no quantified conversion semantics.",
+    "status": "IMPLEMENTED",
+    "boundary": "Copies channel shape and pos/scale/offset arrays into owned Host metadata; actual cast coverage is tracked separately.",
     "native_test": "api-expansion-20261111/quant-native.log",
     "remote_test": "api-expansion-20261111/quant-remote.log",
-    "next_step": "Validate by-channel cast against SDK"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtDestroyQuantizedParam": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Host-local create/destroy for opaque scalar quantization metadata. Cast with non-null param and by-channel creation remain unsupported.",
+    "status": "IMPLEMENTED",
+    "boundary": "Frees owned scalar or channel quantization metadata; rejects unknown or already destroyed handles.",
     "native_test": "api-expansion-20261110/quant-native.log",
     "remote_test": "api-expansion-20261110/quant-remote.log",
-    "next_step": "Validate parameterized quantized cast against SDK"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtDeviceGetAttribute": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnrtDeviceGetByPCIBusId": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; bounded PCI input <=63 bytes including accepted native short forms",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnrtDeviceGetConfig": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+    "status": "IMPLEMENTED",
+    "boundary": "Native device configuration in the owned remote Runtime session; single-device values and setter errors compared.",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtDeviceGetPCIBusId": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+    "status": "IMPLEMENTED",
+    "boundary": "Native device PCI bus ID, client capacity at least 13 bytes; native len=12 overrun intentionally rejected.",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtDeviceGetQueuePriorityRange": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnrtDeviceQueryKernelMemoryUsage": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Native query over typed u64 reply; empty-context Native/Remote value tested. Loaded module/process-wide attribution not yet certified.",
     "native_test": "api-expansion-20261104/runtime-native.log",
     "remote_test": "api-expansion-20261104/runtime-remote.log",
-    "next_step": "Retain family probe across SDK revisions"
+    "next_step": "Measure Native CNRT and CNDrv module attribution, then query or track memory for the owning session and module lifecycle.",
+    "blocker": "",
+    "closure": {
+      "gap": "The backend calls CNRT accounting while modules are loaded through CNDrv; only an empty-context value has been validated.",
+      "fix": "Measure Native CNRT and CNDrv module attribution, then query or track memory for the owning session and module lifecycle.",
+      "acceptance": "Load and launch an ordinary BANG module with device globals; compare usage before load, after launch, after unload and reset against Native."
+    }
   },
   "cnrtDeviceReset": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Session context reset and registration reload; full native reset effects not compared",
-    "native_test": "not_run",
-    "remote_test": "native_bang_abi-replacement.log; session-reset-test.log",
-    "next_step": "Probe and implement this functional family"
+    "status": "IMPLEMENTED",
+    "boundary": "Resets the owned remote context, invalidates allocations/queues/notifiers, and reloads still-registered BANG modules on next use.",
+    "native_test": "shared-module-20261102/suite/native_bang_module-native.log",
+    "remote_test": "shared-module-20261102/suite/native_bang_module-replacement.log",
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtDeviceResetPersistingL2Cache": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Resets owned remote context; shared-context interop pending",
+    "status": "IMPLEMENTED",
+    "boundary": "Native persisting-L2 reset in the owned remote Runtime context on MLU370-S4.",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtDeviceSetConfig": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+    "status": "IMPLEMENTED",
+    "boundary": "Native device configuration in the owned remote Runtime session; single-device values and setter errors compared.",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtDriverGetVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnrtFree": {
     "status": "IMPLEMENTED",
     "boundary": "Synchronizes session queues; NULL succeeds; stale and interior pointers rejected; VA tombstones retained until exit",
     "native_test": "api-semantics-native.log",
     "remote_test": "native_bang_abi-replacement.log; api-semantics-remote.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtFreeHost": {
     "status": "UNSUPPORTED",
     "boundary": "Explicit NotSupport; pinned host memory ownership not implemented",
     "native_test": "not_run",
     "remote_test": "not_run",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending"
   },
   "cnrtGetDevice": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Process selected device; native per-thread device semantics pending",
-    "native_test": "not_run",
-    "remote_test": "not_run",
-    "next_step": "Probe and implement this functional family"
+    "status": "IMPLEMENTED",
+    "boundary": "Process remote session selects device 0; same-device selection with live resources preserves them. Other physical devices excluded.",
+    "native_test": "workloads-20261107/queue_notifier-native.log",
+    "remote_test": "workloads-20261107/queue_notifier-replacement.log",
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtGetDeviceCount": {
     "status": "IMPLEMENTED",
     "boundary": "Remote visible device count",
     "native_test": "api-semantics-native.log",
     "remote_test": "api-semantics-remote.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtGetDeviceFlag": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Client export; validates output pointer and returns native SPIN/AUTO state; valid setters preserve native reported SPIN and active resources reject changes",
+    "status": "IMPLEMENTED",
+    "boundary": "Before resource activation, accepts current SDK flags and reports measured effective SPIN/AUTO; active-resource changes reject.",
     "native_test": "query-boundaries-next-20261102/runtime-native.log",
     "remote_test": "query-boundaries-next-20261102/runtime-remote.log",
-    "next_step": "Extend native/remote matrix when multi-device or shared context is available"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtGetDeviceProperties_V2": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnrtGetErrorName": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Only common error names mapped; full enum table not generated",
     "native_test": "not_run",
     "remote_test": "not_run",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
+    "blocker": "",
+    "closure": {
+      "gap": "Only seven names are mapped and descriptive strings incorrectly return the name.",
+      "fix": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
+      "acceptance": "Same binary compares every declared CNRT status and one unknown code against Native, replacement and preload without a local Driver."
+    }
   },
   "cnrtGetErrorStr": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Returns mapped name instead of native descriptive text",
     "native_test": "not_run",
     "remote_test": "not_run",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
+    "blocker": "",
+    "closure": {
+      "gap": "Only seven names are mapped and descriptive strings incorrectly return the name.",
+      "fix": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
+      "acceptance": "Same binary compares every declared CNRT status and one unknown code against Native, replacement and preload without a local Driver."
+    }
   },
   "cnrtGetLastError": {
     "status": "IMPLEMENTED",
     "boundary": "Sticky thread-local API error, cleared on read; asynchronous error harvesting is sync/query driven",
     "native_test": "api-semantics-native.log",
     "remote_test": "native_bang_abi-replacement.log; api-semantics-remote.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtGetLibVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
+  },
+  "cnrtGetPeerAccessibility": {
+    "status": "BLOCKED",
+    "boundary": "No client export; cross-device Peer is blocked by the second-device prerequisite. Self-device behavior does not prove Peer support.",
+    "native_test": "not_run",
+    "remote_test": "not_run",
+    "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+    "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
   },
   "cnrtGetSymbolSize": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Returns registered uninitialized device variable byte size from host registration metadata; unknown symbol and null output reject. No device address or data copy.",
     "native_test": "api-expansion-20261108/symbol-size-native.log",
     "remote_test": "api-expansion-20261108/symbol-size-remote.log",
-    "next_step": "Add symbol address/copy after module symbol mapping is available"
+    "next_step": "Extend shared image/variable registration metadata and symbol ownership to initialized/constant variables before publishing sizes.",
+    "blocker": "",
+    "closure": {
+      "gap": "Only uninitialized __mlu_device__ variables pass registration; initialized/constant globals in ordinary current-toolchain programs are rejected.",
+      "fix": "Extend shared image/variable registration metadata and symbol ownership to initialized/constant variables before publishing sizes.",
+      "acceptance": "An ordinary CNCC program with uninitialized, initialized and constant globals reports identical symbol sizes and kernel values in Native and Remote."
+    }
   },
   "cnrtHostMalloc": {
     "status": "UNSUPPORTED",
     "boundary": "Explicit NotSupport; pinned host memory ownership not implemented",
     "native_test": "not_run",
     "remote_test": "not_run",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending"
   },
   "cnrtInvokeKernel": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Compiler metadata: exact image fingerprint + symbol + device ELF layout; C/enum/template/zero args, scalar/direct pointers and pointer-free natural-layout byval structs, nested structs and fixed arrays numerically tested. Legacy primitive demangler retained; embedded pointers, pointer graphs, packed/opaque aggregates, multi-arch images and unknown ABI not certified",
     "native_test": "aggregate-20261103/metadata-native.log; native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log",
     "remote_test": "aggregate-20261103/metadata-remote.log; native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log",
-    "next_step": "Extend compiler metadata to embedded pointer relocation, initialized globals and Driver module descriptors with native ground truth"
+    "next_step": "Extend compiler metadata with nested pointer field offsets, encode AllocationID plus offset per field and rebuild arguments on the server; do not guess pointers from scalar values.",
+    "blocker": "",
+    "closure": {
+      "gap": "Embedded pointers in by-value aggregates are rejected; the compiler metadata path has no field relocation list.",
+      "fix": "Extend compiler metadata with nested pointer field offsets, encode AllocationID plus offset per field and rebuild arguments on the server; do not guess pointers from scalar values.",
+      "acceptance": "Same ordinary BANG binary with nested aggregate pointers, NULL and allocation offsets has matching Native/Remote values and unload/reset ownership."
+    }
   },
   "cnrtMalloc": {
     "status": "IMPLEMENTED",
     "boundary": "Owned allocation and PROT_NONE fake VA; zero bytes returns NULL; 1024 live server allocations",
     "native_test": "api-semantics-native.log; native_bang_abi-native.log",
     "remote_test": "api-semantics-remote.log; native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtMallocConstant": {
     "status": "UNSUPPORTED",
     "boundary": "Explicit NotSupport; constant memory and symbol registration not implemented",
     "native_test": "not_run",
     "remote_test": "not_run",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": "VMM, pools and special allocations require separate ownership policies"
   },
   "cnrtMemGetInfo": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnrtMemcpy": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "H2D/D2H/D2D; bounded one-frame payload; host-to-host/error corner cases not fully compared",
     "native_test": "api-semantics-native.log",
     "remote_test": "client-test.log; native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Share endpoint classification for H2H/H2D/D2H/D2D, retaining fake-VA tombstones to reject stale device addresses.",
+    "blocker": "",
+    "closure": {
+      "gap": "cnrtMemcpyNoDirection is declared for normal copies but the shim does not infer local-host versus owned-device endpoints.",
+      "fix": "Share endpoint classification for H2H/H2D/D2H/D2D, retaining fake-VA tombstones to reject stale device addresses.",
+      "acceptance": "Native/Remote same-binary copies in all four inferred directions, with nonzero offsets and stale/foreign rejection."
+    }
   },
   "cnrtMemcpy2D": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+    "status": "IMPLEMENTED",
+    "boundary": "Owned D2D CE copy with explicit nonzero source/destination pitches, extents and padding; allocation IDs plus offsets cross the wire.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtMemcpy3D": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+    "status": "IMPLEMENTED",
+    "boundary": "Owned D2D CE copy with explicit nonzero pitches, ysize, width/height/depth and padding; no foreign/VMM mappings.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtMemcpyAsync": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Explicit async bit preserves native NULL/default Queue ordering; explicit queues retain staging; D2H response remains blocking until Host completion work",
     "native_test": "query-boundaries-next-20261102/runtime-native.log; native_bang_abi-native.log",
     "remote_test": "query-boundaries-next-20261102/runtime-remote.log; native_bang_abi-replacement.log",
-    "next_step": "Implement pinned Host ownership and deferred D2H writeback before promotion"
+    "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers; share endpoint classification.",
+    "blocker": "",
+    "closure": {
+      "gap": "D2H blocks before returning bytes, and NoDirection endpoint inference is missing.",
+      "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers; share endpoint classification.",
+      "acceptance": "Pinned Host D2H returns while a finite queued kernel is pending; queue, notifier and context waits/queries publish matching bytes, including cross-queue waits and release/reset."
+    }
+  },
+  "cnrtMemcpyPeer": {
+    "status": "BLOCKED",
+    "boundary": "No client export; cross-device Peer is blocked by the second-device prerequisite. Self-device behavior does not prove Peer support.",
+    "native_test": "not_run",
+    "remote_test": "not_run",
+    "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+    "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
+  },
+  "cnrtMemcpyPeerAsync": {
+    "status": "BLOCKED",
+    "boundary": "No client export; cross-device Peer is blocked by the second-device prerequisite. Self-device behavior does not prove Peer support.",
+    "native_test": "not_run",
+    "remote_test": "not_run",
+    "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+    "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
   },
   "cnrtMemset": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnrtMemsetAsync": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Queued byte fill on owned allocations/offsets with explicit or native NULL queue; completion follows queue/context operations.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtNotifierCreate": {
     "status": "IMPLEMENTED",
     "boundary": "Default flags; up to 256 live client notifiers",
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtNotifierCreateWithFlags": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Creates owned native notifier with SDK flags, including timing enable/disable behavior; same-session queues only.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtNotifierDestroy": {
     "status": "IMPLEMENTED",
     "boundary": "Owned notifier; stale handle rejected",
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtNotifierDuration": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native execution-duration timing for recorded owned notifiers; compares validity/status and nonnegative finite durations.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtNotifierElapsedTime": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native elapsed timing for recorded owned notifiers; compares validity/status and nonnegative finite durations.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtPeekAtLastError": {
     "status": "IMPLEMENTED",
     "boundary": "Read thread-local sticky error without clearing",
     "native_test": "api-semantics-native.log",
     "remote_test": "native_bang_abi-replacement.log; api-semantics-remote.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtPlaceNotifier": {
     "status": "IMPLEMENTED",
     "boundary": "Record notifier on owned queue",
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtPointerGetAttributes": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+    "blocker": "",
+    "closure": {
+      "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
+      "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+      "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
+    }
   },
   "cnrtQueryNotifier": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native query delegation; transparent pending-notifier differential probe still needed",
-    "native_test": "build/probes/probe_queue",
-    "remote_test": "client-test.log (CNDrv seam)",
-    "next_step": "Probe and implement this functional family"
+    "status": "IMPLEMENTED",
+    "boundary": "Queries actual native notifier completion; unrecorded, pending and completed observations retain native statuses.",
+    "native_test": "workloads-20261107/queue_notifier-native.log",
+    "remote_test": "workloads-20261107/queue_notifier-replacement.log",
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtQueueCopyAttributes": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "status": "IMPLEMENTED",
+    "boundary": "Copies native queue attributes between owned explicit queues; access-policy allocation fields relocate in both directions.",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtQueueCreate": {
     "status": "IMPLEMENTED",
     "boundary": "Default flags; up to 256 live client queues",
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtQueueCreateWithPriority": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Creates owned native queue with flags/priority, retaining native priority range and clamping.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtQueueDestroy": {
-    "status": "IMPLEMENTED",
-    "boundary": "Synchronizes queue; monotonic stale-handle rejection",
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "MLU370-S4, Neuware 3.5.2/CNRT 6.5.2/CNDrv 2.5.2, AArch64 -> AArch64, one device; Queue identity invalidates correctly; pending native work is currently synchronized before destruction.",
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
+    "blocker": "",
+    "closure": {
+      "gap": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
+      "fix": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
+      "acceptance": "Finite pending kernel plus async copies: destroy returns while work remains, stale handle is rejected, completion via notifier/context preserves data and no resources leak."
+    }
   },
   "cnrtQueueGetAttribute": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "status": "IMPLEMENTED",
+    "boundary": "Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected.",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtQueueGetPriority": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Returns native priority for an owned queue, including priorities clamped at creation.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtQueueQuery": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native queue readiness; default-queue policy pending",
+    "status": "IMPLEMENTED",
+    "boundary": "Queries native readiness of owned explicit or native NULL queue, including pending finite work.",
     "native_test": "api-semantics-native.log",
     "remote_test": "api-semantics-remote.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtQueueSetAttribute": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "status": "IMPLEMENTED",
+    "boundary": "Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected.",
     "native_test": "query-boundaries-20261102/runtime-native.log",
     "remote_test": "query-boundaries-20261102/runtime-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtQueueSync": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Explicit queues verified; NULL maps to one session queue; full native default-queue ordering pending",
+    "status": "IMPLEMENTED",
+    "boundary": "Synchronizes owned explicit or native NULL queue and collects completed transfer staging.",
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtQueueWaitNotifier": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Enqueues native wait on an owned notifier, including cross-queue dependency within the same remote session.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtSetDevice": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "One session/device per process; switching with live resources rejected; one physical device tested",
+    "status": "IMPLEMENTED",
+    "boundary": "Process remote session selects device 0; same-device selection with live resources preserves them. Other physical devices excluded.",
     "native_test": "native_bang_abi-native.log; api-semantics-native.log",
     "remote_test": "native_bang_abi-replacement.log; device-select-test.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtSetDeviceFlag": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Valid flags accepted before allocations/queues; invalid flags and active-resource changes return native errors; current device setting is process scoped",
+    "status": "IMPLEMENTED",
+    "boundary": "Before resource activation, accepts current SDK flags and reports measured effective SPIN/AUTO; active-resource changes reject.",
     "native_test": "query-boundaries-next-20261102/runtime-native.log",
     "remote_test": "query-boundaries-next-20261102/runtime-remote.log",
-    "next_step": "Extend native/remote matrix when multi-device or shared context is available"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnrtSyncDevice": {
     "status": "IMPLEMENTED",
     "boundary": "All live queues in this process session; blocks until completion",
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnrtWaitNotifier": {
     "status": "IMPLEMENTED",
     "boundary": "Host waits on owned notifier",
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Probe and implement this functional family",
+    "blocker": ""
   },
   "cnCreateNotifier": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Creates owned native notifier with SDK flags, including timing enable/disable behavior; same-session queues only.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnCreateQueue": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Creates owned native queue with SDK flags; handle token and native queue lifetime belong to the current Driver context.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnCreateQueueWithPriority": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Creates owned native queue with flags/priority, retaining native priority range and clamping.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnCtxCreate": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Independent native remote context with flags 0..3; create binds caller TLS; acknowledged close drains resources; transport error invalidates children without replay; one MLU tested, runtime attach/configuration APIs absent",
+    "status": "IMPLEMENTED",
+    "boundary": "Creates an independent native remote context with flags 0..3 and binds caller TLS; children are owned by that context.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnCtxDestroy": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Independent native remote context with flags 0..3; create binds caller TLS; acknowledged close drains resources; transport error invalidates children without replay; one MLU tested, runtime attach/configuration APIs absent",
+    "status": "IMPLEMENTED",
+    "boundary": "Drains and closes the owned context, invalidates its child handles and fake addresses; transport failure invalidates without replay.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnCtxGetApiVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnCtxGetConfig": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnCtxGetCurrent": {
     "status": "IMPLEMENTED",
     "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
+    "blocker": ""
   },
   "cnCtxGetDevice": {
     "status": "IMPLEMENTED",
     "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
+    "blocker": ""
   },
   "cnCtxGetFlags": {
     "status": "IMPLEMENTED",
     "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
+    "blocker": ""
   },
   "cnCtxGetQueuePriorityRange": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnCtxResetPersistingL2Cache": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnCtxSetConfig": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnCtxSetCurrent": {
     "status": "IMPLEMENTED",
     "boundary": "TLS current-context binding, unbind, stale-context rejection, native create flags 0..3; one remote session per context; process-wide RPC lock serializes threads",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
+    "blocker": ""
   },
   "cnCtxSync": {
     "status": "IMPLEMENTED",
     "boundary": "Actual native cnCtxSync for the selected context, releases completed H2D staging; no native execution timeout or cancellation",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
+    "blocker": ""
   },
   "cnDestroyNotifier": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "status": "IMPLEMENTED",
+    "boundary": "Destroys an owned native notifier and invalidates its public token; native queues retain already submitted dependencies.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnDestroyQueue": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Flags=0 explicit queue; owned/stale handles; destroy conservatively synchronizes before release, whereas native may return before pending work completes",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
+    "blocker": "",
+    "closure": {
+      "gap": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
+      "fix": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
+      "acceptance": "Finite pending kernel plus async copies: destroy returns while work remains, stale handle is rejected, completion via notifier/context preserves data and no resources leak."
+    }
+  },
+  "cnDeviceCanPeerAble": {
+    "status": "BLOCKED",
+    "boundary": "No client export; cross-device Peer is blocked by the second-device prerequisite. Self-device behavior does not prove Peer support.",
+    "native_test": "not_run",
+    "remote_test": "not_run",
+    "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+    "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
   },
   "cnDeviceGet": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+    "status": "IMPLEMENTED",
+    "boundary": "Native ordinal lookup; measured CNdev low-32-bit ordinal representation, device 0 on the single physical MLU.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnDeviceGetAttribute": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnDeviceGetByPCIBusId": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; bounded PCI input <=63 bytes including accepted native short forms",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnDeviceGetCount": {
     "status": "IMPLEMENTED",
     "boundary": "Remote visible device count; control connection requires a reachable server with at least one MLU",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
+    "blocker": ""
   },
   "cnDeviceGetName": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+    "status": "IMPLEMENTED",
+    "boundary": "Native device-name query with bounded client output copy for device 0.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnDeviceGetPCIBusId": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+    "status": "IMPLEMENTED",
+    "boundary": "Native device PCI bus ID, client capacity at least 13 bytes; native len=12 overrun intentionally rejected.",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnDeviceTotalMem": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+    "status": "IMPLEMENTED",
+    "boundary": "Native device total-memory query for the single MLU370-S4; resource quota is separate.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnDriverGetVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnFree": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Owned allocation and offset, zero malloc preserves output, NULL free succeeds; PROT_NONE VA tombstones until exit; free conservatively waits session queues including used native NULL queue; resource quota differs from native physical memory",
+    "status": "IMPLEMENTED",
+    "boundary": "Frees owned base allocation, drains session work including used native NULL queue, and preserves PROT_NONE VA tombstones until exit; NULL succeeds.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnGetCtxConfigParam_pt": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Typed context-scoped value round trip. Get visible cluster/number/union limit; set union limit validated on current device; other setter types preserve native error.",
+    "status": "IMPLEMENTED",
+    "boundary": "Typed current-context query for visible clusters, cluster count and union limit; native result/status preserved.",
     "native_test": "api-expansion-20261107/context-config-native.log",
     "remote_test": "api-expansion-20261107/context-config-remote.log",
-    "next_step": "Extend setter matrix with multi-device/TLS hardware"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnGetCtxMaxParallelUnionTasks": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnGetDriverVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnGetErrorName": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
     "native_test": "api-expansion-20261103/driver-native.log",
     "remote_test": "api-expansion-20261103/driver-remote.log",
-    "next_step": "Expand error catalogue and test additional SDK revisions"
+    "next_step": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
+    "blocker": "",
+    "closure": {
+      "gap": "Known error text is delegated, but only CN_SUCCESS has differential evidence; unknown-code output publication is not yet checked.",
+      "fix": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
+      "acceptance": "Full declared error catalogue has identical return status, string contents and untouched-on-error outputs in Native and Remote."
+    }
   },
   "cnGetErrorString": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
     "native_test": "api-expansion-20261103/driver-native.log",
     "remote_test": "api-expansion-20261103/driver-remote.log",
-    "next_step": "Expand error catalogue and test additional SDK revisions"
+    "next_step": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
+    "blocker": "",
+    "closure": {
+      "gap": "Known error text is delegated, but only CN_SUCCESS has differential evidence; unknown-code output publication is not yet checked.",
+      "fix": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
+      "acceptance": "Full declared error catalogue has identical return status, string contents and untouched-on-error outputs in Native and Remote."
+    }
   },
   "cnGetLibVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnGetMemAttribute": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+    "blocker": "",
+    "closure": {
+      "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
+      "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+      "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
+    }
   },
   "cnGetMemAttributes": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Owned device pointers; SDK attempts all entries and returns final entry status; earlier and later successful outputs are published; bound current context required even when querying another owner",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Host/VMM ownership and bulk protocol batching"
+    "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+    "blocker": "",
+    "closure": {
+      "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
+      "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+      "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
+    }
   },
   "cnInit": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Reserved flags accepted; creates extra device-0 control session without binding a current context; control session occupies one admission slot; endpoint failures are not native initialization errors",
+    "status": "IMPLEMENTED",
+    "boundary": "Initializes device-0 control session without binding caller current context; one server admission slot is used, endpoint errors follow transport mapping.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnInvokeKernel": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Generic user image with primitive scalars/single pointers, offsets/NULL, xyz, explicit/native NULL queue and native transfer notifier; reserved=0 and extra=NULL; Block verified, Union forwarded but not verified; no complex ABI",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
+    "blocker": "",
+    "closure": {
+      "gap": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
+      "fix": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
+      "acceptance": "Native/Remote Driver binary loads extern-C and aggregate kernels, launches with identical results and rejects stale parent modules."
+    }
   },
   "cnKernelGetAttribute": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnMalloc": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Owned allocation and offset, zero malloc preserves output, NULL free succeeds; PROT_NONE VA tombstones until exit; free conservatively waits session queues including used native NULL queue; resource quota differs from native physical memory",
+    "status": "IMPLEMENTED",
+    "boundary": "Native allocation in current context with guarded client fake VA; zero-byte output unchanged, owned range/free and offset semantics.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMallocConstant": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "status": "IMPLEMENTED",
+    "boundary": "Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses.",
     "native_test": "api-expansion-20261106/memory-native.log",
     "remote_test": "api-expansion-20261106/memory-replacement.log",
-    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMallocFrameBuffer": {
-    "status": "PARTIAL_IMPLEMENTED",
+    "status": "OUT_OF_SCOPE",
     "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
     "native_test": "api-expansion-20261106/memory-native.log",
     "remote_test": "api-expansion-20261106/memory-replacement.log",
-    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+    "next_step": "Reopen only with an explicit security/codec workload and its Native consumer baseline.",
+    "blocker": "Security/codec-framebuffer consumers are outside the ordinary BANG compute target; allocation and ordinary copies were tested, dedicated consumer semantics are not claimed."
   },
   "cnMallocNode": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "status": "IMPLEMENTED",
+    "boundary": "Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses.",
     "native_test": "api-expansion-20261106/memory-native.log",
     "remote_test": "api-expansion-20261106/memory-replacement.log",
-    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMallocNodeConstant": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "status": "IMPLEMENTED",
+    "boundary": "Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses.",
     "native_test": "api-expansion-20261106/memory-native.log",
     "remote_test": "api-expansion-20261106/memory-replacement.log",
-    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnMallocPeerAble": {
+    "status": "BLOCKED",
+    "boundary": "No client export; cross-device Peer is blocked by the second-device prerequisite. Self-device behavior does not prove Peer support.",
+    "native_test": "not_run",
+    "remote_test": "not_run",
+    "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+    "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
   },
   "cnMallocSecurity": {
-    "status": "PARTIAL_IMPLEMENTED",
+    "status": "OUT_OF_SCOPE",
     "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
     "native_test": "api-expansion-20261106/memory-native.log",
     "remote_test": "api-expansion-20261106/memory-replacement.log",
-    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+    "next_step": "Reopen only with an explicit security/codec workload and its Native consumer baseline.",
+    "blocker": "Security/codec-framebuffer consumers are outside the ordinary BANG compute target; allocation and ordinary copies were tested, dedicated consumer semantics are not claimed."
   },
   "cnMemGetAddressRange": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnMalloc ranges only; host/VMM/registered allocations pending",
+    "status": "IMPLEMENTED",
+    "boundary": "Returns owned device allocation base and size for interior addresses using fake-VA relocation; Host/VMM query paths are separate capabilities.",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemGetInfo": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnMemGetNodeInfo": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnMemcpy": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Registry-inferred H2H/H2D/D2H/D2D for local host buffers and owned device allocations, offset/range checks, zero bytes, stale/foreign rejection; native device addresses never cross wire",
+    "status": "IMPLEMENTED",
+    "boundary": "Registry-inferred synchronous H2H/H2D/D2H/D2D with offsets, checked ranges and stale/foreign rejection; native addresses never cross the wire.",
     "native_test": "api-expansion-20261106/memory-native.log",
     "remote_test": "api-expansion-20261106/memory-replacement.log",
-    "next_step": "Probe and implement this functional family"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpy2D": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+    "status": "IMPLEMENTED",
+    "boundary": "Driver descriptor lowered to owned D2D CE copy with checked extents/pitches; Host and other memory classes are outside this MLU370 CE subset.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpy3D": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+    "status": "IMPLEMENTED",
+    "boundary": "Driver descriptor lowered to owned D2D CE copy with checked extents/pitches; Host and other memory classes are outside this MLU370 CE subset.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpyAsync": {
     "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Generic device-to-device async copy supports explicit and native NULL queues with checked owned allocation offsets; multi-context and completion matrix remains partial",
+    "boundary": "Owned device-to-device asynchronous copies on explicit and native NULL queues only.",
     "native_test": "query-boundaries-next-20261102/driver-native.log",
     "remote_test": "query-boundaries-next-20261102/driver-remote.log",
-    "next_step": "Extend cross-context and completion ordering cases"
+    "next_step": "Share registry endpoint classification with synchronous copy, enqueue H2D through existing staging, and add Host completion/fetch/writeback for D2H.",
+    "blocker": "",
+    "closure": {
+      "gap": "Unified asynchronous copy is implemented as D2D only; Host endpoint inference and deferred D2H writeback are missing.",
+      "fix": "Share registry endpoint classification with synchronous copy, enqueue H2D through existing staging, and add Host completion/fetch/writeback for D2H.",
+      "acceptance": "Native/Remote unified async H2D/D2D/D2H with queue and context completion returns matching bytes; D2H submit returns while finite queued work remains."
+    }
   },
   "cnMemcpyDtoD": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native synchronous owned D2D copy with offset/range checks, including used native NULL queue ordering.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpyDtoD2D": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+    "status": "IMPLEMENTED",
+    "boundary": "Owned D2D CE copy with explicit nonzero source/destination pitches, extents and padding; allocation IDs plus offsets cross the wire.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpyDtoD3D": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+    "status": "IMPLEMENTED",
+    "boundary": "Owned D2D CE copy with explicit nonzero pitches, ysize, width/height/depth and padding; no foreign/VMM mappings.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpyDtoDAsync": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Explicit and native NULL queues enqueue native D2D work; transfer completion is tracked by server notifier; cross-context ordering remains partial",
+    "status": "IMPLEMENTED",
+    "boundary": "Native queued owned D2D copy with offsets on explicit/native NULL queues; server notifier tracks completion.",
     "native_test": "query-boundaries-next-20261102/driver-native.log",
     "remote_test": "query-boundaries-next-20261102/driver-remote.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpyDtoH": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native synchronous D2H into client-local buffer with owned source offset/range checks; bounded one-frame payload.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpyDtoHAsync": {
     "status": "UNSUPPORTED",
     "boundary": "Explicit NOT_SUPPORTED; true async host completion/writeback and pinned host lifetime not implemented",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
+    "blocker": "3D/2D native platform capability; asynchronous completion"
   },
   "cnMemcpyHtoD": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native synchronous H2D from client-local snapshot with owned destination offset/range checks; bounded one-frame payload.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemcpyHtoDAsync": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Explicit and native NULL queues enqueue native H2D work; server staging is retained through notifier completion; pinned Host ownership remains outside this API",
+    "status": "IMPLEMENTED",
+    "boundary": "Native queued H2D from server-owned staging snapshot on explicit/native NULL queues; staging retained until completion.",
     "native_test": "query-boundaries-next-20261102/driver-native.log",
     "remote_test": "query-boundaries-next-20261102/driver-remote.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnMemcpyPeer": {
+    "status": "BLOCKED",
+    "boundary": "No client export; cross-device Peer is blocked by the second-device prerequisite. Self-device behavior does not prove Peer support.",
+    "native_test": "not_run",
+    "remote_test": "not_run",
+    "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+    "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
+  },
+  "cnMemcpyPeerAsync": {
+    "status": "BLOCKED",
+    "boundary": "No client export; cross-device Peer is blocked by the second-device prerequisite. Self-device behavior does not prove Peer support.",
+    "native_test": "not_run",
+    "remote_test": "not_run",
+    "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+    "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
   },
   "cnMemsetD16": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnMemsetD16Async": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native queued fill at API element width on owned allocations/offsets, with explicit/native NULL queues and completion collection.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemsetD32": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnMemsetD32Async": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native queued fill at API element width on owned allocations/offsets, with explicit/native NULL queues and completion collection.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnMemsetD8": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnMemsetD8Async": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native queued fill at API element width on owned allocations/offsets, with explicit/native NULL queues and completion collection.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnModuleGetKernel": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Native lookup first; missing symbol clears output as measured; shared parent module/multiple kernels; LP64 primitive/single pointer signatures only, aggregate/extern-C lookup explicitly unsupported",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
+    "blocker": "",
+    "closure": {
+      "gap": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
+      "fix": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
+      "acceptance": "Native/Remote Driver binary loads extern-C and aggregate kernels, launches with identical results and rejects stale parent modules."
+    }
   },
   "cnModuleLoad": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Client-side file or readable mapping uploaded immediately; bounded ELF64 LE/CNFBv2 single image with parameter sections; image retained server-side through unload; other formats/native error equivalence not supported",
+    "status": "IMPLEMENTED",
+    "boundary": "Client reads bounded current-toolchain CNFBv2/ELF64 LE image and uploads immediately; native load in owner session, no server-side client path access.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnModuleLoadFatBinary": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Client-side file or readable mapping uploaded immediately; bounded ELF64 LE/CNFBv2 single image with parameter sections; image retained server-side through unload; other formats/native error equivalence not supported",
+    "status": "IMPLEMENTED",
+    "boundary": "Uploads bounded readable current-toolchain CNFBv2/ELF64 LE image immediately; server retains image through native module lifetime.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnModuleQueryFatBinaryMemoryUsage": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Client readable CNFB image is uploaded to the session and queried by native cnModuleQueryFatBinaryMemoryUsage; single ELF64 LE/CNFBv2 image and size_t result are supported, broader image formats and native error matrix remain unverified",
+    "status": "IMPLEMENTED",
+    "boundary": "Uploads bounded current-toolchain CNFBv2 image and returns native memory usage in owner context; no alternate SDK/architecture formats claimed.",
     "native_test": "api-expansion-20261107/module-memory-family/driver-native.log",
     "remote_test": "api-expansion-20261107/module-memory-family/driver-remote.log",
-    "next_step": "Extend image-format and malformed-input differential cases"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnModuleQueryMemoryUsage": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Client-side path is opened, read, validated as one CNFB image, and uploaded before native memory query; file-not-found and bounded read errors are preserved, non-CNFB formats and full native path matrix remain unverified",
+    "status": "IMPLEMENTED",
+    "boundary": "Client reads and validates current-toolchain CNFBv2 file, then shares image query RPC; missing paths and malformed images reject.",
     "native_test": "api-expansion-20261107/module-memory-family/driver-native.log",
     "remote_test": "api-expansion-20261107/module-memory-family/driver-remote.log",
-    "next_step": "Extend path/error and image-format differential cases"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnModuleUnload": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Owned module; drains explicit/used NULL queues then native unload, invalidates child kernels; conservative synchronization may exceed native module dependency scope",
+    "status": "IMPLEMENTED",
+    "boundary": "Drains owned session queues before native unload, then invalidates child kernels; synchronization is conservatively broader than module dependencies.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnNotifierElapsedExecTime": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native execution-duration timing for recorded owned notifiers; compares validity/status and nonnegative finite durations.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnNotifierElapsedTime": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Native elapsed timing for recorded owned notifiers; compares validity/status and nonnegative finite durations.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnPlaceNotifier": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "status": "IMPLEMENTED",
+    "boundary": "Records owned native notifier on explicit/native NULL queue, preserving the native completion frontier.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnQueryNotifier": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "status": "IMPLEMENTED",
+    "boundary": "Queries actual native notifier completion; unrecorded, pending and completed observations retain native statuses.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnQueryQueue": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Explicit owned queues and actual native NULL queue delegation, including pending finite kernel; full implicit cross-queue ordering and error cases not yet compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Queries native readiness of owned explicit or native NULL queue, including pending finite work.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnQueueCopyAttributes": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "status": "IMPLEMENTED",
+    "boundary": "Copies native queue attributes between owned explicit queues; access-policy allocation fields relocate in both directions.",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnQueueGetAttribute": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "status": "IMPLEMENTED",
+    "boundary": "Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected.",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnQueueGetContext": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote boundary regression"
+    "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
   },
   "cnQueueGetPriority": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Retain Native/Remote family regression when extending SDK/device scope"
+    "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
+    "blocker": ""
   },
   "cnQueueSetAttribute": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+    "status": "IMPLEMENTED",
+    "boundary": "Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected.",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
-    "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnQueueSync": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Explicit owned queues and actual native NULL queue delegation, including pending finite kernel; full implicit cross-queue ordering and error cases not yet compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Synchronizes owned explicit or native NULL queue and collects completed transfer staging.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnQueueWaitNotifier": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+    "status": "IMPLEMENTED",
+    "boundary": "Enqueues native wait on an owned notifier, including cross-queue dependency within the same remote session.",
     "native_test": "api-expansion-20261102/driver-native.log",
     "remote_test": "api-expansion-20261102/driver-remote.log",
-    "next_step": "Extend family edge-case matrix before promoting support status"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnSetCtxConfigParam_pt": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Typed context-scoped value round trip. Get visible cluster/number/union limit; set union limit validated on current device; other setter types preserve native error.",
+    "status": "IMPLEMENTED",
+    "boundary": "Typed current-context setter; union limit round trip and native errors for unsupported setters preserved.",
     "native_test": "api-expansion-20261107/context-config-native.log",
     "remote_test": "api-expansion-20261107/context-config-remote.log",
-    "next_step": "Extend setter matrix with multi-device/TLS hardware"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnWaitNotifier": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+    "status": "IMPLEMENTED",
+    "boundary": "Waits for owned native notifier and collects completed session staging; cross-queue execution stays in the native context.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-    "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnZmalloc": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "status": "IMPLEMENTED",
+    "boundary": "Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses.",
     "native_test": "api-expansion-20261106/memory-native.log",
     "remote_test": "api-expansion-20261106/memory-replacement.log",
-    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   },
   "cnZmallocNode": {
-    "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+    "status": "IMPLEMENTED",
+    "boundary": "Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses.",
     "native_test": "api-expansion-20261106/memory-native.log",
     "remote_test": "api-expansion-20261106/memory-replacement.log",
-    "next_step": "Extend node/codec/security consumer probes when hardware is available"
+    "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
   }
 }

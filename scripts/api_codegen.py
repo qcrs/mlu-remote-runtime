@@ -59,7 +59,13 @@ def validate(schema):
     for api in schema['apis']:
         if api['name'] in names: raise ValueError('duplicate API')
         names.add(api['name'])
-        if api['status'] not in ('IMPLEMENTED','PARTIAL_IMPLEMENTED','UNSUPPORTED','NOT_IMPLEMENTED'): raise ValueError('invalid status')
+        if api['status'] not in ('IMPLEMENTED','PARTIAL_IMPLEMENTED','UNSUPPORTED','NOT_IMPLEMENTED','BLOCKED','OUT_OF_SCOPE'): raise ValueError('invalid status')
+        if api['status']=='PARTIAL_IMPLEMENTED':
+            review=api.get('closure', {})
+            if not all(review.get(k) for k in ('gap','fix','acceptance')):
+                raise ValueError('PARTIAL requires a concrete gap, fix and acceptance: '+api['name'])
+        if api['status'] in ('BLOCKED','OUT_OF_SCOPE') and not api.get('blocker'):
+            raise ValueError('terminal scope status requires a reason: '+api['name'])
         for p in api['parameters']:
             if p['kind'] not in schema['types'] or p['direction'] not in ('in','out','inout','unknown'): raise ValueError('invalid parameter')
         if api.get('wrapper'):

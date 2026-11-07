@@ -47,26 +47,30 @@ for family, header, prefix, return_type in [('CNRT','cnrt.h','cnrt','cnrtRet_t')
             backend_used=str(bool(re.search(r'\b'+name+r'\s*\(',backend+'\n'+(ROOT/'build/generated/typed_backend.inc').read_text()))).lower(),
             native_test=note.get('native_test','not_run'),remote_test=note.get('remote_test','not_run'),
             boundary=note.get('boundary','No client export; loader may reject this API'),
+            blocker=note.get('blocker',''),
+            gap=note.get('closure',{}).get('gap',''),
+            fix=note.get('closure',{}).get('fix',''),
+            acceptance=note.get('closure',{}).get('acceptance',''),
             next_step=schema_apis.get(name,{}).get('next_step',note.get('next_step','M3: typed driver shim and native/remote family probe' if family=='CNDrv' else 'M3: semantic review before schema/API expansion')),
             declaration=declaration))
 if {r['api'] for r in rows} != schema_apis.keys(): raise SystemExit('schema contains non-public declarations')
 buf = io.StringIO(); writer = csv.DictWriter(buf,fieldnames=list(rows[0]),lineterminator='\n'); writer.writeheader(); writer.writerows(rows)
-summary = dict(headers_sha256=hashes,scope='installed preprocessed public headers; deprecated transitive declarations included; private BANG hooks counted separately',
+summary = dict(headers_sha256=hashes,scope='MLU370-S4, single device, Neuware 3.5.2, CNRT 6.5.2, CNDrv 2.5.2, AArch64 -> AArch64; installed public headers including deprecated declarations; private BANG hooks separate',
     counts={f:dict(collections.Counter(r['status'] for r in rows if r['family']==f)) for f in ('CNRT','CNDrv')},
     totals={f:sum(r['family']==f for r in rows) for f in ('CNRT','CNDrv')},
     private_bang_hooks=sorted(x for x in exports['CNRT'] if x.startswith('__bang')),
     legacy_exports_outside_headers=sorted(x for x in exports['CNRT'] if x.startswith('cnrt') and x not in {r['api'] for r in rows}),
     generated_object_rpc_count=len(schema['simple_rpc']),generated_typed_rpc_count=len(schema['typed_rpc']),generated_public_wrapper_count=sum(bool(a.get('wrapper')) for a in schema['apis']))
-annotations={a['name']:{k:a[k] for k in ('status','boundary','native_test','remote_test','next_step')} for a in schema['apis'] if a['implementation']!='none'}
+annotations={a['name']:{k:a[k] for k in ('status','boundary','native_test','remote_test','next_step','blocker')} | ({'closure':a['closure']} if a.get('closure') else {}) for a in schema['apis'] if a['implementation']!='none' or a['status'] in ('BLOCKED','OUT_OF_SCOPE')}
 families=[]
 for family in sorted({a['family'] for a in schema['apis']}):
     apis=[a for a in schema['apis'] if a['family']==family]
     families.append(dict(family=family,priority=min(a['priority'] for a in apis),counts=dict(collections.Counter(a['status'] for a in apis)),
-        remaining=[dict(api=a['name'],priority=a['priority'],depends_on=a['depends_on'],blocker=a['blocker'],next_step=a['next_step']) for a in apis if a['status']!='IMPLEMENTED']))
-plan=['# API Census / 功能族计划','','由 `scripts/generate_compat.py` 从当前 SDK 声明及 Schema 生成。完整、部分、拒绝、未实现是不同状态；剩余项的逐 API 依赖、阻塞和下一步见 `family-plan.json`。',
-      '','| 功能族 | 公共声明 | 完整 | 部分 | 拒绝 | 未实现 | 优先级 |','|---|---:|---:|---:|---:|---:|---:|']
+        remaining=[dict(api=a['name'],status=a['status'],priority=a['priority'],depends_on=a['depends_on'],blocker=a['blocker'],next_step=a['next_step'],closure=a.get('closure',{})) for a in apis if a['status']!='IMPLEMENTED']))
+plan=['# API Census / 功能族计划','','由 `scripts/generate_compat.py` 从当前 SDK 声明及 Schema 生成。完整、部分、阻塞、范围外、拒绝、未实现是不同状态；剩余项的逐 API 依赖、阻塞和下一步见 `family-plan.json`。',
+      '','| 功能族 | 公共声明 | 完整 | 部分 | 阻塞 | 范围外 | 拒绝 | 未实现 | 优先级 |','|---|---:|---:|---:|---:|---:|---:|---:|---:|']
 for f in families:
-    c=f['counts']; plan.append('| '+f['family']+' | '+str(sum(c.values()))+' | '+' | '.join(str(c.get(k,0)) for k in ('IMPLEMENTED','PARTIAL_IMPLEMENTED','UNSUPPORTED','NOT_IMPLEMENTED'))+' | P'+str(f['priority'])+' |')
+    c=f['counts']; plan.append('| '+f['family']+' | '+str(sum(c.values()))+' | '+' | '.join(str(c.get(k,0)) for k in ('IMPLEMENTED','PARTIAL_IMPLEMENTED','BLOCKED','OUT_OF_SCOPE','UNSUPPORTED','NOT_IMPLEMENTED'))+' | P'+str(f['priority'])+' |')
 plan+=['','P0：设备/context/版本基础查询；P1：owned memory、stride copy、queue/notifier；P2：Host completion 与 kernel/module ABI；P3：Host 数值工具；P4：多设备 Peer；P5：Graph/IPC。具体 API 可在同一功能族中按依赖再排序。','']
 for relative, text in [('compat/api-ledger.csv',buf.getvalue()),('compat/summary.json',json.dumps(summary,indent=2,ensure_ascii=False)+'\n'),
                        ('compat/annotations.json',json.dumps(annotations,indent=2,ensure_ascii=False)+'\n'),('compat/family-plan.json',json.dumps(families,indent=2,ensure_ascii=False)+'\n'),('compat/family-plan.md','\n'.join(plan))]:

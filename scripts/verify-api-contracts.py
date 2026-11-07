@@ -37,4 +37,5 @@ for rpc in s['typed_rpc']:
     check(any(rpc['operation'] in a.get('rpc_operations',[]) for a in s['apis']),'unused typed RPC: '+rpc['name'])
     for file,pattern in [('typed_rpc_client.inc','mlu_remote_api_'+rpc['name']),('typed_rpc_server.inc','MLU_OP_'+rpc['operation']),('typed_backend.inc','mlu_backend_api_'+rpc['name'])]:
         check(pattern in (ROOT/'build/generated'/file).read_text(),'missing plumbing: '+pattern)
+subprocess.run([sys.executable,str(ROOT/'scripts/verify-closure-audit.py')],check=True)
 print(f'PASS API contracts: {len(s["apis"])} declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence')

@@ -3,164 +3,54 @@
     "family": "device_context",
     "priority": 0,
     "counts": {
-      "IMPLEMENTED": 23,
-      "PARTIAL_IMPLEMENTED": 17,
+      "IMPLEMENTED": 40,
       "NOT_IMPLEMENTED": 5
     },
     "remaining": [
       {
-        "api": "cnrtDeviceGetConfig",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnrtDeviceGetPCIBusId",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnrtDeviceReset",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnrtDeviceResetPersistingL2Cache",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Resets owned remote context; shared-context interop pending",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnrtDeviceSetConfig",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnrtGetDevice",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnrtGetDeviceFlag",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "CNRT reports device flags as process/device state; multi-device and shared-context TLS remain unverified",
-        "next_step": "Extend native/remote matrix when multi-device or shared context is available"
-      },
-      {
-        "api": "cnrtSetDevice",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnrtSetDeviceFlag",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "CNRT reports device flags as process/device state; multi-device and shared-context TLS remain unverified",
-        "next_step": "Extend native/remote matrix when multi-device or shared context is available"
-      },
-      {
-        "api": "cnCtxCreate",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnCtxDestroy",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnDeviceGet",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnDeviceGetName",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnDeviceGetPCIBusId",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnGetCtxConfigParam_pt",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Visible cluster/union limit get/set only; shared TLS and multi-device semantics not validated",
-        "next_step": "Extend setter matrix with multi-device/TLS hardware"
-      },
-      {
-        "api": "cnInit",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnSetCtxConfigParam_pt",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Visible cluster/union limit get/set only; shared TLS and multi-device semantics not validated",
-        "next_step": "Extend setter matrix with multi-device/TLS hardware"
-      },
-      {
         "api": "cnSharedContextAcquire",
+        "status": "NOT_IMPLEMENTED",
         "priority": 0,
         "depends_on": "native context",
         "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnSharedContextGetState",
+        "status": "NOT_IMPLEMENTED",
         "priority": 0,
         "depends_on": "native context",
         "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnSharedContextRelease",
+        "status": "NOT_IMPLEMENTED",
         "priority": 0,
         "depends_on": "native context",
         "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnSharedContextReset",
+        "status": "NOT_IMPLEMENTED",
         "priority": 0,
         "depends_on": "native context",
         "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnSharedContextSetFlags",
+        "status": "NOT_IMPLEMENTED",
         "priority": 0,
         "depends_on": "native context",
         "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       }
     ]
   },
@@ -174,31 +64,55 @@
     "remaining": [
       {
         "api": "cnrtGetErrorName",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 0,
         "depends_on": "status mapping",
-        "blocker": "Full native string/error catalogue pending",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "",
+        "next_step": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
+        "closure": {
+          "gap": "Only seven names are mapped and descriptive strings incorrectly return the name.",
+          "fix": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
+          "acceptance": "Same binary compares every declared CNRT status and one unknown code against Native, replacement and preload without a local Driver."
+        }
       },
       {
         "api": "cnrtGetErrorStr",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 0,
         "depends_on": "status mapping",
-        "blocker": "Full native string/error catalogue pending",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "",
+        "next_step": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
+        "closure": {
+          "gap": "Only seven names are mapped and descriptive strings incorrectly return the name.",
+          "fix": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
+          "acceptance": "Same binary compares every declared CNRT status and one unknown code against Native, replacement and preload without a local Driver."
+        }
       },
       {
         "api": "cnGetErrorName",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 0,
         "depends_on": "status mapping",
-        "blocker": "Full native string/error catalogue pending",
-        "next_step": "Expand error catalogue and test additional SDK revisions"
+        "blocker": "",
+        "next_step": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
+        "closure": {
+          "gap": "Known error text is delegated, but only CN_SUCCESS has differential evidence; unknown-code output publication is not yet checked.",
+          "fix": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
+          "acceptance": "Full declared error catalogue has identical return status, string contents and untouched-on-error outputs in Native and Remote."
+        }
       },
       {
         "api": "cnGetErrorString",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 0,
         "depends_on": "status mapping",
-        "blocker": "Full native string/error catalogue pending",
-        "next_step": "Expand error catalogue and test additional SDK revisions"
+        "blocker": "",
+        "next_step": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
+        "closure": {
+          "gap": "Known error text is delegated, but only CN_SUCCESS has differential evidence; unknown-code output publication is not yet checked.",
+          "fix": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
+          "acceptance": "Full declared error catalogue has identical return status, string contents and untouched-on-error outputs in Native and Remote."
+        }
       }
     ]
   },
@@ -211,717 +125,921 @@
     "remaining": [
       {
         "api": "cnrtQueueBeginCapture",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtQueueEndCapture",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtQueueGetCaptureInfo",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtQueueIsCapturing",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/capture DAG",
         "blocker": "Capture DAG execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtQueueUpdateCaptureDependencies",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoAcquireUserObject",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoAddChildTopoNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoAddDependencies",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoAddEmptyNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoAddHostNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoAddKernelNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoAddMemcpyNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoAddMemsetNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoChildTopoNodeGetTopo",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoClone",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoCreate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoDebugDotPrint",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoDestroy",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoDestroyNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoEntityChildTopoNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoEntityDestroy",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoEntityHostNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoEntityInvoke",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoEntityKernelNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoEntityMemcpyNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoEntityMemsetNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoEntityUpdate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoGetEdges",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoGetNodes",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoGetRootNodes",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoHostNodeGetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoHostNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoInstantiate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoKernelNodeCopyAttributes",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoKernelNodeGetAttribute",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoKernelNodeGetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoKernelNodeSetAttribute",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoKernelNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoMemcpyNodeGetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoMemcpyNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoMemsetNodeGetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoMemsetNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoNodeFindInClone",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoNodeGetDependencies",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoNodeGetDependentNodes",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoNodeGetType",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoReleaseUserObject",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtTaskTopoRemoveDependencies",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtUserObjectAcquire",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtUserObjectCreate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtUserObjectRelease",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnQueueBeginCapture",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnQueueEndCapture",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnQueueGetCaptureInfo",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnQueueIsCapturing",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/capture DAG",
         "blocker": "Capture DAG execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnQueueUpdateCaptureDependencies",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoAcquireUserObject",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoAddChildTopoNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoAddDependencies",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoAddEmptyNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoAddHostNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoAddKernelNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoAddMemcpyNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoAddMemsetNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoChildTopoNodeGetTopo",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoClone",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoCreate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoDebugDotPrint",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoDestroy",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoDestroyNode",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoEntityChildTopoNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoEntityDestroy",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoEntityHostNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoEntityInvoke",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoEntityKernelNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoEntityMemcpyNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoEntityMemsetNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoEntityUpdate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoGetEdges",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoGetNodes",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoGetRootNodes",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoHostNodeGetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoHostNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoInstantiate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoKernelNodeCopyAttributes",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoKernelNodeGetAttribute",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoKernelNodeGetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoKernelNodeSetAttribute",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoKernelNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoMemcpyNodeGetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoMemcpyNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoMemsetNodeGetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoMemsetNodeSetParams",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoNodeFindInClone",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoNodeGetDependencies",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoNodeGetDependentNodes",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoNodeGetType",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoReleaseUserObject",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnTaskTopoRemoveDependencies",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnUserObjectAcquire",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnUserObjectCreate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnUserObjectRelease",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "queue/module/host callback lifecycle",
         "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       }
     ]
   },
@@ -935,101 +1053,129 @@
     "remaining": [
       {
         "api": "cnrtFreeHost",
+        "status": "UNSUPPORTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtHostMalloc",
+        "status": "UNSUPPORTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtInvokeHostFunc",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtMcacheOperation",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtMmap",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtMmapCached",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtMunmap",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnCacheOperation",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnFreeHost",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnInvokeHostFunc",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMallocHost",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMmap",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMmapCached",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMunmap",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
         "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       }
     ]
   },
@@ -1037,72 +1183,72 @@
     "family": "host_utilities",
     "priority": 3,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 5,
+      "PARTIAL_IMPLEMENTED": 2,
+      "IMPLEMENTED": 3,
       "NOT_IMPLEMENTED": 4
     },
     "remaining": [
       {
         "api": "cnrtCastDataType",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "V2/half/int4/fix/quantized variants and offset/dequantization semantics not fully validated",
-        "next_step": "Validate offset and additional data types against SDK"
+        "blocker": "",
+        "next_step": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
+        "closure": {
+          "gap": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
+          "fix": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
+          "acceptance": "One Native/host-shim numerical family comparison covers supported source/destination types, scalar and by-channel parameters, saturation and rounding."
+        }
       },
       {
         "api": "cnrtCastDataType_V2",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "V2 quantized parameter semantics not validated",
-        "next_step": "Validate V2 quantized parameter path against SDK"
-      },
-      {
-        "api": "cnrtCreateQuantizedParam",
-        "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "Basic opaque parameter lifecycle only; quantized cast and by-channel parameter semantics not validated",
-        "next_step": "Validate parameterized quantized cast against SDK"
-      },
-      {
-        "api": "cnrtCreateQuantizedParamByChannel",
-        "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "Lifecycle and array-copy only; by-channel quantized cast semantics not validated",
-        "next_step": "Validate by-channel cast against SDK"
-      },
-      {
-        "api": "cnrtDestroyQuantizedParam",
-        "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "Basic opaque parameter lifecycle only; quantized cast and by-channel parameter semantics not validated",
-        "next_step": "Validate parameterized quantized cast against SDK"
+        "blocker": "",
+        "next_step": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
+        "closure": {
+          "gap": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
+          "fix": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
+          "acceptance": "One Native/host-shim numerical family comparison covers supported source/destination types, scalar and by-channel parameters, saturation and rounding."
+        }
       },
       {
         "api": "cnrtFilterReshape",
+        "status": "NOT_IMPLEMENTED",
         "priority": 3,
         "depends_on": "typed buffers/structs",
         "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnAtomicOperation",
+        "status": "NOT_IMPLEMENTED",
         "priority": 3,
         "depends_on": "typed buffers/structs",
         "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnAtomicReadOps",
+        "status": "NOT_IMPLEMENTED",
         "priority": 3,
         "depends_on": "typed buffers/structs",
         "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnGetExportFunction",
+        "status": "NOT_IMPLEMENTED",
         "priority": 3,
         "depends_on": "typed buffers/structs",
         "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       }
     ]
   },
@@ -1115,87 +1261,111 @@
     "remaining": [
       {
         "api": "cnrtAcquireMemHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtIpcGetNotifierHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtIpcOpenNotifierHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtMapMemHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtUnMapMemHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnIpcCloseMemHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnIpcGetMemHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnIpcGetNotifierHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnIpcOpenMemHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnIpcOpenNotifierHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemExportToShareableHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemImportFromShareableHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "cross-process lifetime",
         "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       }
     ]
   },
@@ -1203,150 +1373,95 @@
     "family": "memcpy",
     "priority": 1,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 15,
+      "PARTIAL_IMPLEMENTED": 3,
+      "IMPLEMENTED": 12,
       "NOT_IMPLEMENTED": 4,
       "UNSUPPORTED": 1
     },
     "remaining": [
       {
         "api": "cnrtMemcpy",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnrtMemcpy2D",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnrtMemcpy3D",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
-        "next_step": "Extend family edge-case matrix before promoting support status"
+        "blocker": "",
+        "next_step": "Share endpoint classification for H2H/H2D/D2H/D2D, retaining fake-VA tombstones to reject stale device addresses.",
+        "closure": {
+          "gap": "cnrtMemcpyNoDirection is declared for normal copies but the shim does not infer local-host versus owned-device endpoints.",
+          "fix": "Share endpoint classification for H2H/H2D/D2H/D2D, retaining fake-VA tombstones to reject stale device addresses.",
+          "acceptance": "Native/Remote same-binary copies in all four inferred directions, with nonzero offsets and stale/foreign rejection."
+        }
       },
       {
         "api": "cnrtMemcpyAsync",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Implement pinned Host ownership and deferred D2H writeback before promotion"
+        "blocker": "",
+        "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers; share endpoint classification.",
+        "closure": {
+          "gap": "D2H blocks before returning bytes, and NoDirection endpoint inference is missing.",
+          "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers; share endpoint classification.",
+          "acceptance": "Pinned Host D2H returns while a finite queued kernel is pending; queue, notifier and context waits/queries publish matching bytes, including cross-queue waits and release/reset."
+        }
       },
       {
         "api": "cnrtMemcpyFromSymbol",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtMemcpyFromSymbolAsync",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtMemcpyToSymbol",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtMemcpyToSymbolAsync",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnMemcpy",
-        "priority": 1,
-        "depends_on": "owned allocation registry and synchronous memcpy",
-        "blocker": "Foreign native/unregistered device mappings and multiple physical devices excluded",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnMemcpy2D",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnMemcpy3D",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
-        "next_step": "Extend family edge-case matrix before promoting support status"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemcpyAsync",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Extend cross-context and completion ordering cases"
-      },
-      {
-        "api": "cnMemcpyDtoD",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnMemcpyDtoD2D",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnMemcpyDtoD3D",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnMemcpyDtoDAsync",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnMemcpyDtoH",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "blocker": "",
+        "next_step": "Share registry endpoint classification with synchronous copy, enqueue H2D through existing staging, and add Host completion/fetch/writeback for D2H.",
+        "closure": {
+          "gap": "Unified asynchronous copy is implemented as D2D only; Host endpoint inference and deferred D2H writeback are missing.",
+          "fix": "Share registry endpoint classification with synchronous copy, enqueue H2D through existing staging, and add Host completion/fetch/writeback for D2H.",
+          "acceptance": "Native/Remote unified async H2D/D2D/D2H with queue and context completion returns matching bytes; D2H submit returns while finite queued work remains."
+        }
       },
       {
         "api": "cnMemcpyDtoHAsync",
+        "status": "UNSUPPORTED",
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnMemcpyHtoD",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnMemcpyHtoDAsync",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
+        "closure": {}
       }
     ]
   },
@@ -1354,242 +1469,204 @@
     "family": "memory",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 9,
+      "IMPLEMENTED": 22,
       "UNSUPPORTED": 1,
-      "PARTIAL_IMPLEMENTED": 18,
+      "PARTIAL_IMPLEMENTED": 3,
+      "OUT_OF_SCOPE": 2,
       "NOT_IMPLEMENTED": 14
     },
     "remaining": [
       {
         "api": "cnrtMallocConstant",
+        "status": "UNSUPPORTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnrtMemsetAsync",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtPointerGetAttributes",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "fake VA registry and host memory policy",
-        "blocker": "Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnDeviceTotalMem",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnFree",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "blocker": "",
+        "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+        "closure": {
+          "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
+          "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+          "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
+        }
       },
       {
         "api": "cnGetMemAttribute",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
-        "blocker": "Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+        "blocker": "",
+        "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+        "closure": {
+          "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
+          "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+          "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
+        }
       },
       {
         "api": "cnGetMemAttributes",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
-        "blocker": "Owned device pointers only; host/VMM pending",
-        "next_step": "Host/VMM ownership and bulk protocol batching"
-      },
-      {
-        "api": "cnMalloc",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnMallocConstant",
-        "priority": 1,
-        "depends_on": "session allocation registry / owned fake VA",
-        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
-        "next_step": "Extend node/codec/security consumer probes when hardware is available"
+        "blocker": "",
+        "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+        "closure": {
+          "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
+          "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+          "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
+        }
       },
       {
         "api": "cnMallocFrameBuffer",
+        "status": "OUT_OF_SCOPE",
         "priority": 1,
         "depends_on": "session allocation registry / owned fake VA",
-        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
-        "next_step": "Extend node/codec/security consumer probes when hardware is available"
-      },
-      {
-        "api": "cnMallocNode",
-        "priority": 1,
-        "depends_on": "session allocation registry / owned fake VA",
-        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
-        "next_step": "Extend node/codec/security consumer probes when hardware is available"
-      },
-      {
-        "api": "cnMallocNodeConstant",
-        "priority": 1,
-        "depends_on": "session allocation registry / owned fake VA",
-        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
-        "next_step": "Extend node/codec/security consumer probes when hardware is available"
+        "blocker": "Security/codec-framebuffer consumers are outside the ordinary BANG compute target; allocation and ordinary copies were tested, dedicated consumer semantics are not claimed.",
+        "next_step": "Reopen only with an explicit security/codec workload and its Native consumer baseline.",
+        "closure": {}
       },
       {
         "api": "cnMallocSecurity",
+        "status": "OUT_OF_SCOPE",
         "priority": 1,
         "depends_on": "session allocation registry / owned fake VA",
-        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
-        "next_step": "Extend node/codec/security consumer probes when hardware is available"
+        "blocker": "Security/codec-framebuffer consumers are outside the ordinary BANG compute target; allocation and ordinary copies were tested, dedicated consumer semantics are not claimed.",
+        "next_step": "Reopen only with an explicit security/codec workload and its Native consumer baseline.",
+        "closure": {}
       },
       {
         "api": "cnMemAddressFree",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemAddressReserve",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemCreate",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemGetAccess",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnMemGetAddressRange",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "Owned cnMalloc ranges only; host/VMM/registered allocations pending",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemGetAllocationGranularity",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemGetAllocationPropertiesFromHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemMap",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemMerge",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemRelease",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemRetainAllocationHandle",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemSetAccess",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnMemUnmap",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnMemsetD16Async",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnMemsetD32Async",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnMemsetD8Async",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnSetMemAttribute",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnSetMemRangeAttribute",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/allocation",
         "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnZmalloc",
-        "priority": 1,
-        "depends_on": "session allocation registry / owned fake VA",
-        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
-        "next_step": "Extend node/codec/security consumer probes when hardware is available"
-      },
-      {
-        "api": "cnZmallocNode",
-        "priority": 1,
-        "depends_on": "session allocation registry / owned fake VA",
-        "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
-        "next_step": "Extend node/codec/security consumer probes when hardware is available"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       }
     ]
   },
@@ -1597,94 +1674,93 @@
     "family": "module_kernel",
     "priority": 2,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 10,
+      "PARTIAL_IMPLEMENTED": 5,
       "NOT_IMPLEMENTED": 2,
-      "IMPLEMENTED": 1
+      "IMPLEMENTED": 6
     },
     "remaining": [
       {
         "api": "cnrtDeviceQueryKernelMemoryUsage",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 2,
         "depends_on": "native context",
-        "blocker": "Loaded module accounting needs additional native comparison",
-        "next_step": "Retain family probe across SDK revisions"
+        "blocker": "",
+        "next_step": "Measure Native CNRT and CNDrv module attribution, then query or track memory for the owning session and module lifecycle.",
+        "closure": {
+          "gap": "The backend calls CNRT accounting while modules are loaded through CNDrv; only an empty-context value has been validated.",
+          "fix": "Measure Native CNRT and CNDrv module attribution, then query or track memory for the owning session and module lifecycle.",
+          "acceptance": "Load and launch an ordinary BANG module with device globals; compare usage before load, after launch, after unload and reset against Native."
+        }
       },
       {
         "api": "cnrtGetSymbolAddress",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "image/typed arguments",
         "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnrtGetSymbolSize",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 2,
         "depends_on": "image/typed arguments",
-        "blocker": "Only uninitialized __mlu_device__ variables registered by current CNCC hook; address/copy and initialized/constant/external globals remain unsupported",
-        "next_step": "Add symbol address/copy after module symbol mapping is available"
+        "blocker": "",
+        "next_step": "Extend shared image/variable registration metadata and symbol ownership to initialized/constant variables before publishing sizes.",
+        "closure": {
+          "gap": "Only uninitialized __mlu_device__ variables pass registration; initialized/constant globals in ordinary current-toolchain programs are rejected.",
+          "fix": "Extend shared image/variable registration metadata and symbol ownership to initialized/constant variables before publishing sizes.",
+          "acceptance": "An ordinary CNCC program with uninitialized, initialized and constant globals reports identical symbol sizes and kernel values in Native and Remote."
+        }
       },
       {
         "api": "cnrtInvokeKernel",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 2,
         "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "Extend compiler metadata to embedded pointer relocation, initialized globals and Driver module descriptors with native ground truth"
+        "blocker": "",
+        "next_step": "Extend compiler metadata with nested pointer field offsets, encode AllocationID plus offset per field and rebuild arguments on the server; do not guess pointers from scalar values.",
+        "closure": {
+          "gap": "Embedded pointers in by-value aggregates are rejected; the compiler metadata path has no field relocation list.",
+          "fix": "Extend compiler metadata with nested pointer field offsets, encode AllocationID plus offset per field and rebuild arguments on the server; do not guess pointers from scalar values.",
+          "acceptance": "Same ordinary BANG binary with nested aggregate pointers, NULL and allocation offsets has matching Native/Remote values and unload/reset ownership."
+        }
       },
       {
         "api": "cnInvokeKernel",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 2,
         "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "blocker": "",
+        "next_step": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
+        "closure": {
+          "gap": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
+          "fix": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
+          "acceptance": "Native/Remote Driver binary loads extern-C and aggregate kernels, launches with identical results and rejects stale parent modules."
+        }
       },
       {
         "api": "cnModuleGetKernel",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 2,
         "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "blocker": "",
+        "next_step": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
+        "closure": {
+          "gap": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
+          "fix": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
+          "acceptance": "Native/Remote Driver binary loads extern-C and aggregate kernels, launches with identical results and rejects stale parent modules."
+        }
       },
       {
         "api": "cnModuleGetSymbol",
+        "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "image/typed arguments",
         "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnModuleLoad",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnModuleLoadFatBinary",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnModuleQueryFatBinaryMemoryUsage",
-        "priority": 2,
-        "depends_on": "module image metadata",
-        "blocker": "Bounded CNFB image upload and native query are supported; malformed/other image formats retain native/backend limits",
-        "next_step": "Extend image-format and malformed-input differential cases"
-      },
-      {
-        "api": "cnModuleQueryMemoryUsage",
-        "priority": 2,
-        "depends_on": "module image metadata",
-        "blocker": "Client path is read and converted to the same bounded CNFB image query; remote server does not access client filesystem directly",
-        "next_step": "Extend path/error and image-format differential cases"
-      },
-      {
-        "api": "cnModuleUnload",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       }
     ]
   },
@@ -1692,57 +1768,71 @@
     "family": "peer",
     "priority": 4,
     "counts": {
-      "NOT_IMPLEMENTED": 7
+      "BLOCKED": 7
     },
     "remaining": [
       {
         "api": "cnrtGetPeerAccessibility",
+        "status": "BLOCKED",
         "priority": 4,
         "depends_on": "multiple devices",
-        "blocker": "Only one physical MLU available",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted.",
+        "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+        "closure": {}
       },
       {
         "api": "cnrtMemcpyPeer",
+        "status": "BLOCKED",
         "priority": 4,
         "depends_on": "multiple devices",
-        "blocker": "Only one physical MLU available",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted.",
+        "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+        "closure": {}
       },
       {
         "api": "cnrtMemcpyPeerAsync",
+        "status": "BLOCKED",
         "priority": 4,
         "depends_on": "multiple devices",
-        "blocker": "Only one physical MLU available",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted.",
+        "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+        "closure": {}
       },
       {
         "api": "cnDeviceCanPeerAble",
+        "status": "BLOCKED",
         "priority": 4,
         "depends_on": "multiple devices",
-        "blocker": "Only one physical MLU available",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted.",
+        "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+        "closure": {}
       },
       {
         "api": "cnMallocPeerAble",
+        "status": "BLOCKED",
         "priority": 4,
         "depends_on": "multiple devices",
-        "blocker": "Only one physical MLU available",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted.",
+        "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+        "closure": {}
       },
       {
         "api": "cnMemcpyPeer",
+        "status": "BLOCKED",
         "priority": 4,
         "depends_on": "multiple devices",
-        "blocker": "Only one physical MLU available",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted.",
+        "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+        "closure": {}
       },
       {
         "api": "cnMemcpyPeerAsync",
+        "status": "BLOCKED",
         "priority": 4,
         "depends_on": "multiple devices",
-        "blocker": "Only one physical MLU available",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted.",
+        "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
+        "closure": {}
       }
     ]
   },
@@ -1750,220 +1840,54 @@
     "family": "queue_notifier",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 10,
-      "PARTIAL_IMPLEMENTED": 28,
+      "IMPLEMENTED": 36,
+      "PARTIAL_IMPLEMENTED": 2,
       "NOT_IMPLEMENTED": 2
     },
     "remaining": [
       {
-        "api": "cnrtNotifierCreateWithFlags",
+        "api": "cnrtQueueDestroy",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnrtNotifierDuration",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnrtNotifierElapsedTime",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnrtQueryNotifier",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnrtQueueCopyAttributes",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnrtQueueCreateWithPriority",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnrtQueueGetAttribute",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnrtQueueGetPriority",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnrtQueueQuery",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnrtQueueSetAttribute",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnrtQueueSync",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnrtQueueWaitNotifier",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnCreateNotifier",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnCreateQueue",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnCreateQueueWithPriority",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnDestroyNotifier",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "blocker": "",
+        "next_step": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
+        "closure": {
+          "gap": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
+          "fix": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
+          "acceptance": "Finite pending kernel plus async copies: destroy returns while work remains, stale handle is rejected, completion via notifier/context preserves data and no resources leak."
+        }
       },
       {
         "api": "cnDestroyQueue",
+        "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnNotifierElapsedExecTime",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnNotifierElapsedTime",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnPlaceNotifier",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnQueryNotifier",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnQueryQueue",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "blocker": "",
+        "next_step": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
+        "closure": {
+          "gap": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
+          "fix": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
+          "acceptance": "Finite pending kernel plus async copies: destroy returns while work remains, stale handle is rejected, completion via notifier/context preserves data and no resources leak."
+        }
       },
       {
         "api": "cnQueueAddCallback",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/object registry",
         "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       },
       {
         "api": "cnQueueAtomicOperation",
+        "status": "NOT_IMPLEMENTED",
         "priority": 1,
         "depends_on": "context/object registry",
         "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family"
-      },
-      {
-        "api": "cnQueueCopyAttributes",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnQueueGetAttribute",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnQueueSetAttribute",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
-        "next_step": "Extend ownership/default-queue/hardware matrix before promotion"
-      },
-      {
-        "api": "cnQueueSync",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
-      },
-      {
-        "api": "cnQueueWaitNotifier",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
-        "next_step": "Extend family edge-case matrix before promoting support status"
-      },
-      {
-        "api": "cnWaitNotifier",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+        "next_step": "Probe and implement this functional family",
+        "closure": {}
       }
     ]
   }

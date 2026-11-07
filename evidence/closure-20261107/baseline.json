@@ -1,0 +1,4777 @@
+{
+  "base_head": "dbf958a302d80fdc3319353f26459ceb6f8d51bb",
+  "scope": {
+    "device": "MLU370-S4",
+    "device_count": 1,
+    "neuware": "3.5.2",
+    "cnrt": "6.5.2",
+    "cndrv": "2.5.2",
+    "cpu": "AArch64 -> AArch64"
+  },
+  "partial_apis": [
+    {
+      "name": "cnrtCastDataType",
+      "library": "CNRT",
+      "family": "host_utilities",
+      "priority": 3,
+      "depends_on": "typed buffers/structs",
+      "blocker": "V2/half/int4/fix/quantized variants and offset/dequantization semantics not fully validated",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtCastDataType(void *src, cnrtDataType_t srcDataType, void *dst, cnrtDataType_t dstDataType, int count, cnrtQuantizedParam_t param);",
+      "parameters": [
+        {
+          "name": "src",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "srcDataType",
+          "c_type": "cnrtDataType_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dst",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "dstDataType",
+          "c_type": "cnrtDataType_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "count",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "param",
+          "c_type": "cnrtQuantizedParam_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Host-local conversion for FLOAT32/INT32/UINT8 with null quantization plus FLOAT32<->INT8 using scalar quantization parameter (scale/pos, signed rounding, clamp, reverse dequantization; current SDK offset ignored in observed conversion). No device or remote buffers.",
+      "native_test": "api-expansion-20261112/quant-cast-native.log",
+      "remote_test": "api-expansion-20261112/quant-cast-remote.log",
+      "next_step": "Validate offset and additional data types against SDK"
+    },
+    {
+      "name": "cnrtCastDataType_V2",
+      "library": "CNRT",
+      "family": "host_utilities",
+      "priority": 3,
+      "depends_on": "typed buffers/structs",
+      "blocker": "V2 quantized parameter semantics not validated",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtCastDataType_V2(const void *src, cnrtDataType_V2_t srcDataType, void *dst, cnrtDataType_V2_t dstDataType, int count, cnrtQuantizedParam_t param, cnrtRoundingMode_t roundingMode);",
+      "parameters": [
+        {
+          "name": "src",
+          "c_type": "const void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "srcDataType",
+          "c_type": "cnrtDataType_V2_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dst",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "dstDataType",
+          "c_type": "cnrtDataType_V2_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "count",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "param",
+          "c_type": "cnrtQuantizedParam_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "roundingMode",
+          "c_type": "cnrtRoundingMode_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Host-local V2 FLOAT/INT/UCHAR/HALF/BFLOAT/INT64/UINT64 conversion with six rounding modes and null quantization. No remote buffers.",
+      "native_test": "api-expansion-20261113/v2-cast-native.log",
+      "remote_test": "api-expansion-20261113/v2-cast-remote.log",
+      "next_step": "Validate V2 quantized parameter path against SDK"
+    },
+    {
+      "name": "cnrtCreateQuantizedParam",
+      "library": "CNRT",
+      "family": "host_utilities",
+      "priority": 3,
+      "depends_on": "typed buffers/structs",
+      "blocker": "Basic opaque parameter lifecycle only; quantized cast and by-channel parameter semantics not validated",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtCreateQuantizedParam(cnrtQuantizedParam_t *param, int pos, float scale, int offset);",
+      "parameters": [
+        {
+          "name": "param",
+          "c_type": "cnrtQuantizedParam_t *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "pos",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "scale",
+          "c_type": "float",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "offset",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Host-local create/destroy for opaque scalar quantization metadata. Cast with non-null param and by-channel creation remain unsupported.",
+      "native_test": "api-expansion-20261110/quant-native.log",
+      "remote_test": "api-expansion-20261110/quant-remote.log",
+      "next_step": "Validate parameterized quantized cast against SDK"
+    },
+    {
+      "name": "cnrtCreateQuantizedParamByChannel",
+      "library": "CNRT",
+      "family": "host_utilities",
+      "priority": 3,
+      "depends_on": "typed buffers/structs",
+      "blocker": "Lifecycle and array-copy only; by-channel quantized cast semantics not validated",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtCreateQuantizedParamByChannel(cnrtQuantizedParam_t *param, int *poses, float *scales, float *offsets, int dimNum, int *dimValues, int channelDim);",
+      "parameters": [
+        {
+          "name": "param",
+          "c_type": "cnrtQuantizedParam_t *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "poses",
+          "c_type": "int *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "scales",
+          "c_type": "float *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "offsets",
+          "c_type": "float *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "dimNum",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dimValues",
+          "c_type": "int *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "channelDim",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Host-local copies poses/scales/offsets for positive channel dimension and validates shape; no quantified conversion semantics.",
+      "native_test": "api-expansion-20261111/quant-native.log",
+      "remote_test": "api-expansion-20261111/quant-remote.log",
+      "next_step": "Validate by-channel cast against SDK"
+    },
+    {
+      "name": "cnrtDestroyQuantizedParam",
+      "library": "CNRT",
+      "family": "host_utilities",
+      "priority": 3,
+      "depends_on": "typed buffers/structs",
+      "blocker": "Basic opaque parameter lifecycle only; quantized cast and by-channel parameter semantics not validated",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtDestroyQuantizedParam(cnrtQuantizedParam_t param);",
+      "parameters": [
+        {
+          "name": "param",
+          "c_type": "cnrtQuantizedParam_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Host-local create/destroy for opaque scalar quantization metadata. Cast with non-null param and by-channel creation remain unsupported.",
+      "native_test": "api-expansion-20261110/quant-native.log",
+      "remote_test": "api-expansion-20261110/quant-remote.log",
+      "next_step": "Validate parameterized quantized cast against SDK"
+    },
+    {
+      "name": "cnrtDeviceGetConfig",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtDeviceGetConfig(int64_t *pValue, cnrtDeviceConfig_t type);",
+      "parameters": [
+        {
+          "name": "pValue",
+          "c_type": "int64_t *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
+        },
+        {
+          "name": "type",
+          "c_type": "cnrtDeviceConfig_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "runtime_config_get",
+      "wrapper": {
+        "rpc": "runtime_config_get",
+        "inputs": {
+          "type": "type"
+        },
+        "outputs": [
+          "*pValue=out.value;"
+        ],
+        "prepare": [],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_RUNTIME_CONFIG_GET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceGetConfig",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_runtime_config_get_request",
+        "response": "mlu_api_runtime_config_get_response",
+        "server_handler": "mlu_backend_api_runtime_config_get",
+        "backend_binding": "typed_rpc.runtime_config_get.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtDeviceGetPCIBusId",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtDeviceGetPCIBusId(char *pciBusId, int len, int device);",
+      "parameters": [
+        {
+          "name": "pciBusId",
+          "c_type": "char *",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "len",
+          "mapping": "bounded NUL string; native buffer never exposed"
+        },
+        {
+          "name": "len",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "device",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "runtime_pci_id",
+      "wrapper": {
+        "rpc": "runtime_pci_id",
+        "inputs": {
+          "device": "device",
+          "length": "len"
+        },
+        "outputs": [
+          "if(len<=0 || strlen(out.text)>=(size_t)len) RETURN(cnrtErrorArgsInvalid);",
+          "memcpy(pciBusId,out.text,strlen(out.text)+1);"
+        ],
+        "prepare": [],
+        "current": false,
+        "required": [
+          "pciBusId"
+        ]
+      },
+      "rpc_operations": [
+        "API_RUNTIME_PCI_ID"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceGetPCIBusId",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_runtime_pci_id_request",
+        "response": "mlu_api_runtime_pci_id_response",
+        "server_handler": "mlu_backend_api_runtime_pci_id",
+        "backend_binding": "typed_rpc.runtime_pci_id.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtDeviceQueryKernelMemoryUsage",
+      "library": "CNRT",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "native context",
+      "blocker": "Loaded module accounting needs additional native comparison",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtDeviceQueryKernelMemoryUsage(size_t *pBytes);",
+      "parameters": [
+        {
+          "name": "pBytes",
+          "c_type": "size_t *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native query over typed u64 reply; empty-context Native/Remote value tested. Loaded module/process-wide attribution not yet certified.",
+      "native_test": "api-expansion-20261104/runtime-native.log",
+      "remote_test": "api-expansion-20261104/runtime-remote.log",
+      "next_step": "Retain family probe across SDK revisions",
+      "rpc": "kernel_memory_usage",
+      "wrapper": {
+        "rpc": "kernel_memory_usage",
+        "inputs": {},
+        "outputs": [
+          "*pBytes=(size_t)out.bytes;"
+        ],
+        "prepare": [],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_KERNEL_MEMORY_USAGE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceQueryKernelMemoryUsage",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_kernel_memory_usage_request",
+        "response": "mlu_api_kernel_memory_usage_response",
+        "server_handler": "mlu_backend_api_kernel_memory_usage",
+        "backend_binding": "typed_rpc.kernel_memory_usage.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtDeviceReset",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtDeviceReset(void);",
+      "parameters": [],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Session context reset and registration reload; full native reset effects not compared",
+      "native_test": "not_run",
+      "remote_test": "native_bang_abi-replacement.log; session-reset-test.log",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtDeviceResetPersistingL2Cache",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Resets owned remote context; shared-context interop pending",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtDeviceResetPersistingL2Cache(void);",
+      "parameters": [],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Resets owned remote context; shared-context interop pending",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "cache_reset",
+      "wrapper": {
+        "rpc": "cache_reset",
+        "inputs": {},
+        "outputs": [],
+        "prepare": [],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_CACHE_RESET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceResetPersistingL2Cache",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_cache_reset_request",
+        "response": "mlu_api_cache_reset_response",
+        "server_handler": "mlu_backend_api_cache_reset",
+        "backend_binding": "typed_rpc.cache_reset.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtDeviceSetConfig",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtDeviceSetConfig(cnrtDeviceConfig_t type, int64_t value);",
+      "parameters": [
+        {
+          "name": "type",
+          "c_type": "cnrtDeviceConfig_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "value",
+          "c_type": "int64_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Runtime shared-context configuration is scoped to its owned remote session; multi-thread shared/driver context interop pending",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "runtime_config_set",
+      "wrapper": {
+        "rpc": "runtime_config_set",
+        "inputs": {
+          "type": "type",
+          "value": "value"
+        },
+        "outputs": [],
+        "prepare": [],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_RUNTIME_CONFIG_SET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtDeviceSetConfig",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_runtime_config_set_request",
+        "response": "mlu_api_runtime_config_set_response",
+        "server_handler": "mlu_backend_api_runtime_config_set",
+        "backend_binding": "typed_rpc.runtime_config_set.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtGetDevice",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtGetDevice(int *pOrdinal);",
+      "parameters": [
+        {
+          "name": "pOrdinal",
+          "c_type": "int *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Process selected device; native per-thread device semantics pending",
+      "native_test": "not_run",
+      "remote_test": "not_run",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtGetDeviceFlag",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "CNRT reports device flags as process/device state; multi-device and shared-context TLS remain unverified",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtGetDeviceFlag(uint32_t *pFlags);",
+      "parameters": [
+        {
+          "name": "pFlags",
+          "c_type": "uint32_t *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Client export; validates output pointer and returns native SPIN/AUTO state; valid setters preserve native reported SPIN and active resources reject changes",
+      "native_test": "query-boundaries-next-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-next-20261102/runtime-remote.log",
+      "next_step": "Extend native/remote matrix when multi-device or shared context is available"
+    },
+    {
+      "name": "cnrtGetErrorName",
+      "library": "CNRT",
+      "family": "error",
+      "priority": 0,
+      "depends_on": "status mapping",
+      "blocker": "Full native string/error catalogue pending",
+      "return_type": "cnrtRet_t",
+      "signature": "const char * cnrtGetErrorName(cnrtRet_t error);",
+      "parameters": [
+        {
+          "name": "error",
+          "c_type": "cnrtRet_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Only common error names mapped; full enum table not generated",
+      "native_test": "not_run",
+      "remote_test": "not_run",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtGetErrorStr",
+      "library": "CNRT",
+      "family": "error",
+      "priority": 0,
+      "depends_on": "status mapping",
+      "blocker": "Full native string/error catalogue pending",
+      "return_type": "cnrtRet_t",
+      "signature": "const char * cnrtGetErrorStr(cnrtRet_t error);",
+      "parameters": [
+        {
+          "name": "error",
+          "c_type": "cnrtRet_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Returns mapped name instead of native descriptive text",
+      "native_test": "not_run",
+      "remote_test": "not_run",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtGetSymbolSize",
+      "library": "CNRT",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "image/typed arguments",
+      "blocker": "Only uninitialized __mlu_device__ variables registered by current CNCC hook; address/copy and initialized/constant/external globals remain unsupported",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtGetSymbolSize(size_t *size, const void *symbol);",
+      "parameters": [
+        {
+          "name": "size",
+          "c_type": "size_t *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "symbol",
+          "c_type": "const void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Returns registered uninitialized device variable byte size from host registration metadata; unknown symbol and null output reject. No device address or data copy.",
+      "native_test": "api-expansion-20261108/symbol-size-native.log",
+      "remote_test": "api-expansion-20261108/symbol-size-remote.log",
+      "next_step": "Add symbol address/copy after module symbol mapping is available",
+      "rpc_operations": []
+    },
+    {
+      "name": "cnrtInvokeKernel",
+      "library": "CNRT",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "image/typed arguments",
+      "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtInvokeKernel(const void *kernel, cnrtDim3_t dim, cnrtFunctionType_t ktype, void **args, size_t reserved, cnrtQueue_t queue);",
+      "parameters": [
+        {
+          "name": "kernel",
+          "c_type": "const void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "dim",
+          "c_type": "cnrtDim3_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "ktype",
+          "c_type": "cnrtFunctionType_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "args",
+          "c_type": "void **",
+          "kind": "buffer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "reserved",
+          "c_type": "size_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Compiler metadata: exact image fingerprint + symbol + device ELF layout; C/enum/template/zero args, scalar/direct pointers and pointer-free natural-layout byval structs, nested structs and fixed arrays numerically tested. Legacy primitive demangler retained; embedded pointers, pointer graphs, packed/opaque aggregates, multi-arch images and unknown ABI not certified",
+      "native_test": "aggregate-20261103/metadata-native.log; native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log",
+      "remote_test": "aggregate-20261103/metadata-remote.log; native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log",
+      "next_step": "Extend compiler metadata to embedded pointer relocation, initialized globals and Driver module descriptors with native ground truth"
+    },
+    {
+      "name": "cnrtMemcpy",
+      "library": "CNRT",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtMemcpy(void *dst, void *src, size_t bytes, cnrtMemTransDir_t dir);",
+      "parameters": [
+        {
+          "name": "dst",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "inout",
+          "length": "bytes",
+          "mapping": "allocation_id + byte_offset or host staging by direction"
+        },
+        {
+          "name": "src",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "bytes",
+          "mapping": "allocation_id + byte_offset or host staging by direction"
+        },
+        {
+          "name": "bytes",
+          "c_type": "size_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dir",
+          "c_type": "cnrtMemTransDir_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "H2D/D2H/D2D; bounded one-frame payload; host-to-host/error corner cases not fully compared",
+      "native_test": "api-semantics-native.log",
+      "remote_test": "client-test.log; native_bang_abi-replacement.log",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtMemcpy2D",
+      "library": "CNRT",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtMemcpy2D(void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, cnrtMemTransDir_t direction);",
+      "parameters": [
+        {
+          "name": "dst",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "(height - 1) * pitch + width",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "dpitch",
+          "c_type": "size_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "src",
+          "c_type": "const void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "(height - 1) * pitch + width",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "spitch",
+          "c_type": "size_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "width",
+          "c_type": "size_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "height",
+          "c_type": "size_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "direction",
+          "c_type": "cnrtMemTransDir_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_COPY2D"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtMemcpy2D",
+        "client_source": "shim/cnrt_shim.c",
+        "request": "mlu_api_copy2d_request",
+        "response": "mlu_api_copy2d_response",
+        "server_handler": "mlu_backend_api_copy2d",
+        "backend_binding": "typed_rpc.copy2d.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtMemcpy3D",
+      "library": "CNRT",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtMemcpy3D(const cnrtMemcpy3dParam_t *p);",
+      "parameters": [
+        {
+          "name": "p",
+          "c_type": "const cnrtMemcpy3dParam_t *",
+          "kind": "struct",
+          "direction": "in",
+          "length": "1",
+          "mapping": "copy3d named fields; embedded pointers -> allocation_id + offset"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_COPY3D"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtMemcpy3D",
+        "client_source": "shim/cnrt_shim.c",
+        "request": "mlu_api_copy3d_request",
+        "response": "mlu_api_copy3d_response",
+        "server_handler": "mlu_backend_api_copy3d",
+        "backend_binding": "typed_rpc.copy3d.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtMemcpyAsync",
+      "library": "CNRT",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtMemcpyAsync(void *dst, void *src, size_t bytes, cnrtQueue_t queue, cnrtMemTransDir_t dir);",
+      "parameters": [
+        {
+          "name": "dst",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "inout",
+          "length": "bytes",
+          "mapping": "allocation_id + byte_offset or host staging by direction"
+        },
+        {
+          "name": "src",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "bytes",
+          "mapping": "allocation_id + byte_offset or host staging by direction"
+        },
+        {
+          "name": "bytes",
+          "c_type": "size_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        },
+        {
+          "name": "dir",
+          "c_type": "cnrtMemTransDir_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Explicit async bit preserves native NULL/default Queue ordering; explicit queues retain staging; D2H response remains blocking until Host completion work",
+      "native_test": "query-boundaries-next-20261102/runtime-native.log; native_bang_abi-native.log",
+      "remote_test": "query-boundaries-next-20261102/runtime-remote.log; native_bang_abi-replacement.log",
+      "next_step": "Implement pinned Host ownership and deferred D2H writeback before promotion"
+    },
+    {
+      "name": "cnrtMemsetAsync",
+      "library": "CNRT",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtMemsetAsync(void *ptr, int value, size_t bytes, cnrtQueue_t queue);",
+      "parameters": [
+        {
+          "name": "ptr",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "bytes",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "value",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "bytes",
+          "c_type": "size_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_MEMSET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtMemsetAsync",
+        "client_source": "shim/cnrt_shim.c",
+        "request": "mlu_api_memset_request",
+        "response": "mlu_api_memset_response",
+        "server_handler": "mlu_backend_api_memset",
+        "backend_binding": "typed_rpc.memset.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtNotifierCreateWithFlags",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtNotifierCreateWithFlags(cnrtNotifier_t *pNotifier, unsigned int flags);",
+      "parameters": [
+        {
+          "name": "pNotifier",
+          "c_type": "cnrtNotifier_t *",
+          "kind": "object_handle",
+          "direction": "out",
+          "length": "1",
+          "mapping": "new session_object_id"
+        },
+        {
+          "name": "flags",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_NOTIFIER_CREATE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtNotifierCreateWithFlags",
+        "client_source": "shim/cnrt_shim.c",
+        "request": "mlu_api_notifier_create_request",
+        "response": "mlu_api_notifier_create_response",
+        "server_handler": "mlu_backend_api_notifier_create",
+        "backend_binding": "typed_rpc.notifier_create.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtNotifierDuration",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtNotifierDuration(cnrtNotifier_t start, cnrtNotifier_t end, float *us);",
+      "parameters": [
+        {
+          "name": "start",
+          "c_type": "cnrtNotifier_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "end",
+          "c_type": "cnrtNotifier_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "us",
+          "c_type": "float *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": "notifier_exec",
+      "wrapper": {
+        "rpc": "notifier_exec",
+        "inputs": {
+          "start": "a",
+          "end": "b"
+        },
+        "outputs": [
+          "*us=out.milliseconds*1000.0f;"
+        ],
+        "prepare": [
+          "uint64_t a,b; if(api_notifier(start,&a) || api_notifier(end,&b)) RETURN(cnrtErrorInvalidResourceHandle);"
+        ],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_NOTIFIER_EXEC"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtNotifierDuration",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_notifier_exec_request",
+        "response": "mlu_api_notifier_exec_response",
+        "server_handler": "mlu_backend_api_notifier_exec",
+        "backend_binding": "typed_rpc.notifier_exec.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtNotifierElapsedTime",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtNotifierElapsedTime(cnrtNotifier_t start, cnrtNotifier_t end, float *ms);",
+      "parameters": [
+        {
+          "name": "start",
+          "c_type": "cnrtNotifier_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "end",
+          "c_type": "cnrtNotifier_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "ms",
+          "c_type": "float *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": "notifier_elapsed",
+      "wrapper": {
+        "rpc": "notifier_elapsed",
+        "inputs": {
+          "start": "a",
+          "end": "b"
+        },
+        "outputs": [
+          "*ms=out.milliseconds;"
+        ],
+        "prepare": [
+          "uint64_t a,b; if(api_notifier(start,&a) || api_notifier(end,&b)) RETURN(cnrtErrorInvalidResourceHandle);"
+        ],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_NOTIFIER_ELAPSED"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtNotifierElapsedTime",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_notifier_elapsed_request",
+        "response": "mlu_api_notifier_elapsed_response",
+        "server_handler": "mlu_backend_api_notifier_elapsed",
+        "backend_binding": "typed_rpc.notifier_elapsed.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtPointerGetAttributes",
+      "library": "CNRT",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "fake VA registry and host memory policy",
+      "blocker": "Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtPointerGetAttributes(cnrtPointerAttributes_t *attr, const void *ptr);",
+      "parameters": [
+        {
+          "name": "attr",
+          "c_type": "cnrtPointerAttributes_t *",
+          "kind": "struct",
+          "direction": "out",
+          "length": "1",
+          "mapping": "named fields; device pointers relocated"
+        },
+        {
+          "name": "ptr",
+          "c_type": "const void *",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "owned allocation -> AllocationID + checked offset"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "pointer_attributes",
+      "wrapper": {
+        "rpc": "pointer_attributes",
+        "inputs": {
+          "allocation": "a->id",
+          "offset": "off"
+        },
+        "outputs": [
+          "cnrtPointerAttributes_t v={.type=out.type,.device=out.device,.size=out.bytes,.devicePointer=(void *)ptr,.hostPointer=NULL,.cacheMode=out.cache,.deviceBasePointer=a->base}; *attr=v;"
+        ],
+        "prepare": [
+          "uint64_t off; allocation *a=lookup(ptr,&off); if(!a || off==a->bytes) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "current": false,
+        "required": [
+          "attr"
+        ]
+      },
+      "rpc_operations": [
+        "API_POINTER_ATTRIBUTES"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtPointerGetAttributes",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_pointer_attributes_request",
+        "response": "mlu_api_pointer_attributes_response",
+        "server_handler": "mlu_backend_api_pointer_attributes",
+        "backend_binding": "typed_rpc.pointer_attributes.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtQueryNotifier",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueryNotifier(cnrtNotifier_t notifier);",
+      "parameters": [
+        {
+          "name": "notifier",
+          "c_type": "cnrtNotifier_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native query delegation; transparent pending-notifier differential probe still needed",
+      "native_test": "build/probes/probe_queue",
+      "remote_test": "client-test.log (CNDrv seam)",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtQueueCopyAttributes",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueueCopyAttributes(cnrtQueue_t dst, cnrtQueue_t src);",
+      "parameters": [
+        {
+          "name": "dst",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "src",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_copy",
+      "wrapper": {
+        "rpc": "queue_attribute_copy",
+        "inputs": {
+          "queue": "qid",
+          "src": "sid"
+        },
+        "outputs": [],
+        "prepare": [
+          "uint64_t qid,sid;",
+          "if(!dst || !src) RETURN(cnrtErrorNotSupport);",
+          "cnrtRet_t qs=api_queue(dst,&qid); if(qs) RETURN(qs); qs=api_queue(src,&sid); if(qs) RETURN(qs);"
+        ],
+        "current": false,
+        "required": []
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_COPY"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueCopyAttributes",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_queue_attribute_copy_request",
+        "response": "mlu_api_queue_attribute_copy_response",
+        "server_handler": "mlu_backend_api_queue_attribute_copy",
+        "backend_binding": "typed_rpc.queue_attribute_copy.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtQueueCreateWithPriority",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueueCreateWithPriority(cnrtQueue_t *pQueue, unsigned int flags, int priority);",
+      "parameters": [
+        {
+          "name": "pQueue",
+          "c_type": "cnrtQueue_t *",
+          "kind": "object_handle",
+          "direction": "out",
+          "length": "1",
+          "mapping": "new session_object_id"
+        },
+        {
+          "name": "flags",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "priority",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_QUEUE_CREATE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueCreateWithPriority",
+        "client_source": "shim/cnrt_shim.c",
+        "request": "mlu_api_queue_create_request",
+        "response": "mlu_api_queue_create_response",
+        "server_handler": "mlu_backend_api_queue_create",
+        "backend_binding": "typed_rpc.queue_create.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtQueueGetAttribute",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueueGetAttribute(cnrtQueue_t queue, cnrtQueueAttrID_t attr_id, cnrtQueueAttrValue_t *value_out);",
+      "parameters": [
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "attr_id",
+          "c_type": "cnrtQueueAttrID_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "value_out",
+          "c_type": "cnrtQueueAttrValue_t *",
+          "kind": "struct",
+          "direction": "out",
+          "length": "1",
+          "mapping": "tagged accessPolicyWindow fields; baseAddr -> AllocationID + offset"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_get",
+      "wrapper": {
+        "rpc": "queue_attribute_get",
+        "inputs": {
+          "queue": "qid",
+          "attr": "attr_id"
+        },
+        "outputs": [
+          "void *base=NULL; if(out.allocation) { allocation *a=allocation_by_id(out.allocation); if(!a || out.offset>=a->bytes) RETURN(cnrtErrorArgsInvalid); base=(char *)a->base+out.offset; }",
+          "cnrtQueueAttrValue_t v={0};",
+          "v.accessPolicyWindow.baseAddr=(void *)(uintptr_t)base; v.accessPolicyWindow.numBytes=out.bytes;",
+          "v.accessPolicyWindow.hitRatio=out.ratio; v.accessPolicyWindow.hitProp=out.hit; v.accessPolicyWindow.missProp=out.miss;",
+          "*value_out=v;"
+        ],
+        "prepare": [
+          "if(!queue) RETURN(cnrtErrorNotSupport);",
+          "uint64_t qid;",
+          "cnrtRet_t qs=api_queue(queue,&qid); if(qs) RETURN(qs);"
+        ],
+        "current": false,
+        "required": [
+          "value_out"
+        ]
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_GET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueGetAttribute",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_queue_attribute_get_request",
+        "response": "mlu_api_queue_attribute_get_response",
+        "server_handler": "mlu_backend_api_queue_attribute_get",
+        "backend_binding": "typed_rpc.queue_attribute_get.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtQueueGetPriority",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueueGetPriority(cnrtQueue_t queue, int *priority);",
+      "parameters": [
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "priority",
+          "c_type": "int *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": "queue_priority",
+      "wrapper": {
+        "rpc": "queue_priority",
+        "inputs": {
+          "queue": "qid"
+        },
+        "outputs": [
+          "*priority=out.priority;"
+        ],
+        "prepare": [
+          "uint64_t qid; if(api_queue(queue,&qid)) RETURN(cnrtErrorInvalidResourceHandle);"
+        ],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_QUEUE_PRIORITY"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueGetPriority",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_queue_priority_request",
+        "response": "mlu_api_queue_priority_response",
+        "server_handler": "mlu_backend_api_queue_priority",
+        "backend_binding": "typed_rpc.queue_priority.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtQueueQuery",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueueQuery(cnrtQueue_t queue);",
+      "parameters": [
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native queue readiness; default-queue policy pending",
+      "native_test": "api-semantics-native.log",
+      "remote_test": "api-semantics-remote.log",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtQueueSetAttribute",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueueSetAttribute(cnrtQueue_t queue, cnrtQueueAttrID_t attr_id, const cnrtQueueAttrValue_t *value);",
+      "parameters": [
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "attr_id",
+          "c_type": "cnrtQueueAttrID_t",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "value",
+          "c_type": "const cnrtQueueAttrValue_t *",
+          "kind": "struct",
+          "direction": "in",
+          "length": "1",
+          "mapping": "tagged accessPolicyWindow fields; baseAddr -> AllocationID + offset"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_set",
+      "wrapper": {
+        "rpc": "queue_attribute_set",
+        "inputs": {
+          "queue": "qid",
+          "attr": "attr_id",
+          "allocation": "aid",
+          "offset": "off",
+          "bytes": "value->accessPolicyWindow.numBytes",
+          "ratio": "value->accessPolicyWindow.hitRatio",
+          "hit": "value->accessPolicyWindow.hitProp",
+          "miss": "value->accessPolicyWindow.missProp"
+        },
+        "outputs": [],
+        "prepare": [
+          "if(!queue) RETURN(cnrtErrorNotSupport);",
+          "uint64_t qid;",
+          "cnrtRet_t qs=api_queue(queue,&qid); if(qs) RETURN(qs);",
+          "uint64_t aid=0,off=0;",
+          "if(value->accessPolicyWindow.baseAddr) {",
+          "  allocation *a=lookup(value->accessPolicyWindow.baseAddr,&off);",
+          "  if(!a || off>=a->bytes || value->accessPolicyWindow.numBytes>a->bytes-off) RETURN(cnrtErrorArgsInvalid); aid=a->id;",
+          "} else if(value->accessPolicyWindow.numBytes) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "current": false,
+        "required": [
+          "value"
+        ]
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_SET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueSetAttribute",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_queue_attribute_set_request",
+        "response": "mlu_api_queue_attribute_set_response",
+        "server_handler": "mlu_backend_api_queue_attribute_set",
+        "backend_binding": "typed_rpc.queue_attribute_set.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtQueueSync",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueueSync(cnrtQueue_t queue);",
+      "parameters": [
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Explicit queues verified; NULL maps to one session queue; full native default-queue ordering pending",
+      "native_test": "native_bang_abi-native.log",
+      "remote_test": "native_bang_abi-replacement.log",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtQueueWaitNotifier",
+      "library": "CNRT",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtQueueWaitNotifier(cnrtNotifier_t notifier, cnrtQueue_t queue, unsigned int flag);",
+      "parameters": [
+        {
+          "name": "notifier",
+          "c_type": "cnrtNotifier_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "queue",
+          "c_type": "cnrtQueue_t",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "flag",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/runtime-native.log",
+      "remote_test": "api-expansion-20261102/runtime-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": "queue_wait",
+      "wrapper": {
+        "rpc": "queue_wait",
+        "inputs": {
+          "queue": "qid",
+          "notifier": "nid"
+        },
+        "outputs": [],
+        "prepare": [
+          "if(flag) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t qid,nid; if(api_queue(queue,&qid) || api_notifier(notifier,&nid)) RETURN(cnrtErrorInvalidResourceHandle);"
+        ],
+        "current": false
+      },
+      "rpc_operations": [
+        "API_QUEUE_WAIT"
+      ],
+      "bindings": {
+        "client_wrapper": "cnrtQueueWaitNotifier",
+        "client_source": "build/generated/cnrt_api.inc",
+        "request": "mlu_api_queue_wait_request",
+        "response": "mlu_api_queue_wait_response",
+        "server_handler": "mlu_backend_api_queue_wait",
+        "backend_binding": "typed_rpc.queue_wait.backend_binding"
+      }
+    },
+    {
+      "name": "cnrtSetDevice",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtSetDevice(int ordinal);",
+      "parameters": [
+        {
+          "name": "ordinal",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "One session/device per process; switching with live resources rejected; one physical device tested",
+      "native_test": "native_bang_abi-native.log; api-semantics-native.log",
+      "remote_test": "native_bang_abi-replacement.log; device-select-test.log",
+      "next_step": "Probe and implement this functional family"
+    },
+    {
+      "name": "cnrtSetDeviceFlag",
+      "library": "CNRT",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "CNRT reports device flags as process/device state; multi-device and shared-context TLS remain unverified",
+      "return_type": "cnrtRet_t",
+      "signature": "cnrtRet_t cnrtSetDeviceFlag(uint32_t flags);",
+      "parameters": [
+        {
+          "name": "flags",
+          "c_type": "uint32_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Valid flags accepted before allocations/queues; invalid flags and active-resource changes return native errors; current device setting is process scoped",
+      "native_test": "query-boundaries-next-20261102/runtime-native.log",
+      "remote_test": "query-boundaries-next-20261102/runtime-remote.log",
+      "next_step": "Extend native/remote matrix when multi-device or shared context is available"
+    },
+    {
+      "name": "cnCreateNotifier",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnCreateNotifier(CNnotifier *phnotifier, unsigned int flags);",
+      "parameters": [
+        {
+          "name": "phnotifier",
+          "c_type": "CNnotifier *",
+          "kind": "object_handle",
+          "direction": "out",
+          "length": "1",
+          "mapping": "new session_object_id"
+        },
+        {
+          "name": "flags",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_NOTIFIER_CREATE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnCreateNotifier",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_notifier_create_request",
+        "response": "mlu_api_notifier_create_response",
+        "server_handler": "mlu_backend_api_notifier_create",
+        "backend_binding": "typed_rpc.notifier_create.backend_binding"
+      }
+    },
+    {
+      "name": "cnCreateQueue",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnCreateQueue(CNqueue *phqueue, unsigned int flags);",
+      "parameters": [
+        {
+          "name": "phqueue",
+          "c_type": "CNqueue *",
+          "kind": "object_handle",
+          "direction": "out",
+          "length": "1",
+          "mapping": "new session_object_id"
+        },
+        {
+          "name": "flags",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_QUEUE_CREATE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnCreateQueue",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_queue_create_request",
+        "response": "mlu_api_queue_create_response",
+        "server_handler": "mlu_backend_api_queue_create",
+        "backend_binding": "typed_rpc.queue_create.backend_binding"
+      }
+    },
+    {
+      "name": "cnCreateQueueWithPriority",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnCreateQueueWithPriority(CNqueue *phqueue, unsigned int flags, int priority);",
+      "parameters": [
+        {
+          "name": "phqueue",
+          "c_type": "CNqueue *",
+          "kind": "object_handle",
+          "direction": "out",
+          "length": "1",
+          "mapping": "new session_object_id"
+        },
+        {
+          "name": "flags",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "priority",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_QUEUE_CREATE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnCreateQueueWithPriority",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_queue_create_request",
+        "response": "mlu_api_queue_create_response",
+        "server_handler": "mlu_backend_api_queue_create",
+        "backend_binding": "typed_rpc.queue_create.backend_binding"
+      }
+    },
+    {
+      "name": "cnCtxCreate",
+      "library": "CNDrv",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "return_type": "CNresult",
+      "signature": "CNresult cnCtxCreate(CNcontext *pcontext, unsigned int flags, CNdev dev);",
+      "parameters": [
+        {
+          "name": "pcontext",
+          "c_type": "CNcontext *",
+          "kind": "object_handle",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "flags",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dev",
+          "c_type": "CNdev",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Independent native remote context with flags 0..3; create binds caller TLS; acknowledged close drains resources; transport error invalidates children without replay; one MLU tested, runtime attach/configuration APIs absent",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnCtxDestroy",
+      "library": "CNDrv",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "return_type": "CNresult",
+      "signature": "CNresult cnCtxDestroy(CNcontext context);",
+      "parameters": [
+        {
+          "name": "context",
+          "c_type": "CNcontext",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Independent native remote context with flags 0..3; create binds caller TLS; acknowledged close drains resources; transport error invalidates children without replay; one MLU tested, runtime attach/configuration APIs absent",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnDestroyNotifier",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "CNresult",
+      "signature": "CNresult cnDestroyNotifier(CNnotifier hnotifier);",
+      "parameters": [
+        {
+          "name": "hnotifier",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnDestroyQueue",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "CNresult",
+      "signature": "CNresult cnDestroyQueue(CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Flags=0 explicit queue; owned/stale handles; destroy conservatively synchronizes before release, whereas native may return before pending work completes",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnDeviceGet",
+      "library": "CNDrv",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "return_type": "CNresult",
+      "signature": "CNresult cnDeviceGet(CNdev *pdev, int ordinal);",
+      "parameters": [
+        {
+          "name": "pdev",
+          "c_type": "CNdev *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "ordinal",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnDeviceGetName",
+      "library": "CNDrv",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "return_type": "CNresult",
+      "signature": "CNresult cnDeviceGetName(char *name, unsigned int len, CNdev dev);",
+      "parameters": [
+        {
+          "name": "name",
+          "c_type": "char *",
+          "kind": "buffer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "len",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dev",
+          "c_type": "CNdev",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnDeviceGetPCIBusId",
+      "library": "CNDrv",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+      "return_type": "CNresult",
+      "signature": "CNresult cnDeviceGetPCIBusId(char *pciBusId, int len, CNdev dev);",
+      "parameters": [
+        {
+          "name": "pciBusId",
+          "c_type": "char *",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "len",
+          "mapping": "bounded NUL string; native buffer never exposed"
+        },
+        {
+          "name": "len",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dev",
+          "c_type": "CNdev",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Requires len >= 13; native len=12 writes 13 bytes, intentionally rejected",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "driver_pci_id",
+      "wrapper": {
+        "rpc": "driver_pci_id",
+        "inputs": {
+          "device": "dev",
+          "length": "len"
+        },
+        "outputs": [
+          "if(len<=0 || strlen(out.text)>=(size_t)len) RETURN(CN_ERROR_INVALID_VALUE);",
+          "memcpy(pciBusId,out.text,strlen(out.text)+1);"
+        ],
+        "prepare": [],
+        "current": false,
+        "required": [
+          "pciBusId"
+        ]
+      },
+      "rpc_operations": [
+        "API_DRIVER_PCI_ID"
+      ],
+      "bindings": {
+        "client_wrapper": "cnDeviceGetPCIBusId",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_driver_pci_id_request",
+        "response": "mlu_api_driver_pci_id_response",
+        "server_handler": "mlu_backend_api_driver_pci_id",
+        "backend_binding": "typed_rpc.driver_pci_id.backend_binding"
+      }
+    },
+    {
+      "name": "cnDeviceTotalMem",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "return_type": "CNresult",
+      "signature": "CNresult cnDeviceTotalMem(cn_uint64_t *pbytes, CNdev dev);",
+      "parameters": [
+        {
+          "name": "pbytes",
+          "c_type": "cn_uint64_t *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "dev",
+          "c_type": "CNdev",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native device query, bounded name copy and memory; measured CNdev low-32-bit ordinal semantics; only one physical device verified",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnFree",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "return_type": "CNresult",
+      "signature": "CNresult cnFree(CNaddr mluAddr);",
+      "parameters": [
+        {
+          "name": "mluAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Owned allocation and offset, zero malloc preserves output, NULL free succeeds; PROT_NONE VA tombstones until exit; free conservatively waits session queues including used native NULL queue; resource quota differs from native physical memory",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnGetCtxConfigParam_pt",
+      "library": "CNDrv",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Visible cluster/union limit get/set only; shared TLS and multi-device semantics not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnGetCtxConfigParam_pt(CNcontext context, CNctxConfigParamType type, CNctxConfigParam *param);",
+      "parameters": [
+        {
+          "name": "context",
+          "c_type": "CNcontext",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "context_handle"
+        },
+        {
+          "name": "type",
+          "c_type": "CNctxConfigParamType",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "param",
+          "c_type": "CNctxConfigParam *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "union_u64"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Typed context-scoped value round trip. Get visible cluster/number/union limit; set union limit validated on current device; other setter types preserve native error.",
+      "native_test": "api-expansion-20261107/context-config-native.log",
+      "remote_test": "api-expansion-20261107/context-config-remote.log",
+      "next_step": "Extend setter matrix with multi-device/TLS hardware",
+      "rpc": "ctx_config",
+      "rpc_operations": [
+        "API_CTX_CONFIG"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetCtxConfigParam_pt",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_ctx_config_request",
+        "response": "mlu_api_ctx_config_response",
+        "server_handler": "mlu_backend_api_ctx_config",
+        "backend_binding": "typed_rpc.ctx_config.backend_binding"
+      }
+    },
+    {
+      "name": "cnGetErrorName",
+      "library": "CNDrv",
+      "family": "error",
+      "priority": 0,
+      "depends_on": "status mapping",
+      "blocker": "Full native string/error catalogue pending",
+      "return_type": "CNresult",
+      "signature": "CNresult cnGetErrorName(CNresult error, const char **pStr);",
+      "parameters": [
+        {
+          "name": "error",
+          "c_type": "CNresult",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "pStr",
+          "c_type": "const char **",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "thread-local copied string",
+          "mapping": "nullable not supported; bounded response"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
+      "native_test": "api-expansion-20261103/driver-native.log",
+      "remote_test": "api-expansion-20261103/driver-remote.log",
+      "next_step": "Expand error catalogue and test additional SDK revisions",
+      "rpc": "driver_error_text",
+      "wrapper": {
+        "rpc": "driver_error_text",
+        "inputs": {
+          "error": "error",
+          "kind": "0"
+        },
+        "outputs": [
+          "memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"
+        ],
+        "prepare": [
+          "static _Thread_local char error_buffer[256];"
+        ],
+        "current": false,
+        "required": [
+          "pStr"
+        ]
+      },
+      "rpc_operations": [
+        "API_DRIVER_ERROR_TEXT"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetErrorName",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_driver_error_text_request",
+        "response": "mlu_api_driver_error_text_response",
+        "server_handler": "mlu_backend_api_driver_error_text",
+        "backend_binding": "typed_rpc.driver_error_text.backend_binding"
+      }
+    },
+    {
+      "name": "cnGetErrorString",
+      "library": "CNDrv",
+      "family": "error",
+      "priority": 0,
+      "depends_on": "status mapping",
+      "blocker": "Full native string/error catalogue pending",
+      "return_type": "CNresult",
+      "signature": "CNresult cnGetErrorString(CNresult error, const char **pStr);",
+      "parameters": [
+        {
+          "name": "error",
+          "c_type": "CNresult",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "pStr",
+          "c_type": "const char **",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "thread-local copied string",
+          "mapping": "nullable not supported; bounded response"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Returns copied Driver error text for known status values; unknown/future errors may have no native string",
+      "native_test": "api-expansion-20261103/driver-native.log",
+      "remote_test": "api-expansion-20261103/driver-remote.log",
+      "next_step": "Expand error catalogue and test additional SDK revisions",
+      "rpc": "driver_error_text",
+      "wrapper": {
+        "rpc": "driver_error_text",
+        "inputs": {
+          "error": "error",
+          "kind": "1"
+        },
+        "outputs": [
+          "memcpy(error_buffer,out.text,strnlen(out.text,sizeof(out.text))+1); *pStr=error_buffer;"
+        ],
+        "prepare": [
+          "static _Thread_local char error_buffer[256];"
+        ],
+        "current": false,
+        "required": [
+          "pStr"
+        ]
+      },
+      "rpc_operations": [
+        "API_DRIVER_ERROR_TEXT"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetErrorString",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_driver_error_text_request",
+        "response": "mlu_api_driver_error_text_response",
+        "server_handler": "mlu_backend_api_driver_error_text",
+        "backend_binding": "typed_rpc.driver_error_text.backend_binding"
+      }
+    },
+    {
+      "name": "cnGetMemAttribute",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
+      "return_type": "CNresult",
+      "signature": "CNresult cnGetMemAttribute(void *pi, CNmem_attribute attr, CNaddr ptr);",
+      "parameters": [
+        {
+          "name": "pi",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "attribute dependent: 1, 4 or 8 bytes",
+          "mapping": "typed scalar or relocated allocation/context; never native pointer"
+        },
+        {
+          "name": "attr",
+          "c_type": "CNmem_attribute",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "ptr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "memory_attribute",
+      "wrapper": {
+        "rpc": "memory_attribute",
+        "inputs": {
+          "allocation": "a->id",
+          "offset": "off",
+          "attr": "attr"
+        },
+        "outputs": [
+          "if(publish_memory_attribute(pi,attr,ptr,a,&out)) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);"
+        ],
+        "prepare": [
+          "if(!find_context(current)) RETURN(CN_CONTEXT_ERROR_INVALID);",
+          "uint64_t off; allocation *a=query_allocation(ptr,&off);",
+          "if(!a || off==a->bytes) { invalid_memory_attribute(pi,attr); RETURN(CN_ERROR_INVALID_VALUE); }"
+        ],
+        "current": false,
+        "required": [
+          "pi"
+        ],
+        "session": "a->owner->remote"
+      },
+      "rpc_operations": [
+        "API_MEMORY_ATTRIBUTE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetMemAttribute",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_memory_attribute_request",
+        "response": "mlu_api_memory_attribute_response",
+        "server_handler": "mlu_backend_api_memory_attribute",
+        "backend_binding": "typed_rpc.memory_attribute.backend_binding"
+      }
+    },
+    {
+      "name": "cnGetMemAttributes",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "Owned device pointers only; host/VMM pending",
+      "return_type": "CNresult",
+      "signature": "CNresult cnGetMemAttributes(unsigned int numAttributes, CNmem_attribute *attributes, void **data, CNaddr ptr);",
+      "parameters": [
+        {
+          "name": "numAttributes",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "field_codec"
+        },
+        {
+          "name": "attributes",
+          "c_type": "CNmem_attribute *",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "numAttributes",
+          "mapping": "field_codec"
+        },
+        {
+          "name": "data",
+          "c_type": "void **",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "numAttributes",
+          "mapping": "array of typed output pointers; never serialized"
+        },
+        {
+          "name": "ptr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "owned allocation -> AllocationID + checked offset; owner session per entry"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Owned device pointers; SDK attempts all entries and returns final entry status; earlier and later successful outputs are published; bound current context required even when querying another owner",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Host/VMM ownership and bulk protocol batching",
+      "rpc_operations": [
+        "API_MEMORY_ATTRIBUTE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnGetMemAttributes",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_memory_attribute_request",
+        "response": "mlu_api_memory_attribute_response",
+        "server_handler": "mlu_backend_api_memory_attribute",
+        "backend_binding": "typed_rpc.memory_attribute.backend_binding"
+      }
+    },
+    {
+      "name": "cnInit",
+      "library": "CNDrv",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Setters and multi-device TLS require explicit state rules",
+      "return_type": "CNresult",
+      "signature": "CNresult cnInit(unsigned int flags);",
+      "parameters": [
+        {
+          "name": "flags",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Reserved flags accepted; creates extra device-0 control session without binding a current context; control session occupies one admission slot; endpoint failures are not native initialization errors",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnInvokeKernel",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "image/typed arguments",
+      "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
+      "return_type": "CNresult",
+      "signature": "CNresult cnInvokeKernel(CNkernel hkernel, unsigned int dimx, unsigned int dimy, unsigned int dimz, KernelClass c, unsigned int reserve, CNqueue hqueue, void **kernelParams, void **extra);",
+      "parameters": [
+        {
+          "name": "hkernel",
+          "c_type": "CNkernel",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        },
+        {
+          "name": "dimx",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dimy",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "dimz",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "c",
+          "c_type": "KernelClass",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "reserve",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        },
+        {
+          "name": "kernelParams",
+          "c_type": "void **",
+          "kind": "buffer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "extra",
+          "c_type": "void **",
+          "kind": "buffer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Generic user image with primitive scalars/single pointers, offsets/NULL, xyz, explicit/native NULL queue and native transfer notifier; reserved=0 and extra=NULL; Block verified, Union forwarded but not verified; no complex ABI",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnMalloc",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "VMM, pools and special allocations require separate ownership policies",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMalloc(CNaddr *pmluAddr, cn_uint64_t bytes);",
+      "parameters": [
+        {
+          "name": "pmluAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Owned allocation and offset, zero malloc preserves output, NULL free succeeds; PROT_NONE VA tombstones until exit; free conservatively waits session queues including used native NULL queue; resource quota differs from native physical memory",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnMallocConstant",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMallocConstant(CNaddr *pmluAddr, cn_uint64_t bytes);",
+      "parameters": [
+        {
+          "name": "pmluAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocConstant",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
+    },
+    {
+      "name": "cnMallocFrameBuffer",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMallocFrameBuffer(CNaddr *pmluAddr, cn_uint64_t bytes, int node);",
+      "parameters": [
+        {
+          "name": "pmluAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "node",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocFrameBuffer",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
+    },
+    {
+      "name": "cnMallocNode",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMallocNode(CNaddr *pmluAddr, cn_uint64_t bytes, int node);",
+      "parameters": [
+        {
+          "name": "pmluAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "node",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocNode",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
+    },
+    {
+      "name": "cnMallocNodeConstant",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMallocNodeConstant(CNaddr *pmluAddr, cn_uint64_t bytes, int node);",
+      "parameters": [
+        {
+          "name": "pmluAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "node",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocNodeConstant",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
+    },
+    {
+      "name": "cnMallocSecurity",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMallocSecurity(CNaddr *pmluAddr, cn_uint64_t bytes);",
+      "parameters": [
+        {
+          "name": "pmluAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMallocSecurity",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
+    },
+    {
+      "name": "cnMemGetAddressRange",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "Owned cnMalloc ranges only; host/VMM/registered allocations pending",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemGetAddressRange(CNaddr *pbaseAddr, cn_uint64_t *pbytes, const CNaddr mluAddr);",
+      "parameters": [
+        {
+          "name": "pbaseAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "pbytes",
+          "c_type": "cn_uint64_t *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
+        },
+        {
+          "name": "mluAddr",
+          "c_type": "const CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnMalloc ranges only; host/VMM/registered allocations pending",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "address_range",
+      "wrapper": {
+        "rpc": "address_range",
+        "inputs": {
+          "allocation": "a->id",
+          "offset": "off"
+        },
+        "outputs": [
+          "if(pbaseAddr) *pbaseAddr=(CNaddr)(uintptr_t)a->base; if(pbytes) *pbytes=out.bytes;"
+        ],
+        "prepare": [
+          "if(!find_context(current)) RETURN(CN_CONTEXT_ERROR_INVALID);",
+          "uint64_t off; allocation *a=query_allocation(mluAddr,&off); if(!a || off==a->bytes) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);"
+        ],
+        "current": false,
+        "required": [],
+        "session": "a->owner->remote"
+      },
+      "rpc_operations": [
+        "API_ADDRESS_RANGE"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemGetAddressRange",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_address_range_request",
+        "response": "mlu_api_address_range_response",
+        "server_handler": "mlu_backend_api_address_range",
+        "backend_binding": "typed_rpc.address_range.backend_binding"
+      }
+    },
+    {
+      "name": "cnMemcpy",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "owned allocation registry and synchronous memcpy",
+      "blocker": "Foreign native/unregistered device mappings and multiple physical devices excluded",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpy(CNaddr dstAddr, CNaddr srcAddr, cn_uint64_t bytes);",
+      "parameters": [
+        {
+          "name": "dstAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "srcAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Registry-inferred H2H/H2D/D2H/D2D for local host buffers and owned device allocations, offset/range checks, zero bytes, stale/foreign rejection; native device addresses never cross wire",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Probe and implement this functional family",
+      "rpc_operations": [
+        "MEMCPY"
+      ]
+    },
+    {
+      "name": "cnMemcpy2D",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpy2D(CNaddr dst_addr, cn_uint64_t dpitch, CNaddr src_addr, cn_uint64_t spitch, cn_uint64_t width, cn_uint64_t height);",
+      "parameters": [
+        {
+          "name": "dst_addr",
+          "c_type": "CNaddr",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "(height - 1) * pitch + width",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "dpitch",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "src_addr",
+          "c_type": "CNaddr",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "(height - 1) * pitch + width",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "spitch",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "width",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "height",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_COPY2D"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemcpy2D",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_copy2d_request",
+        "response": "mlu_api_copy2d_response",
+        "server_handler": "mlu_backend_api_copy2d",
+        "backend_binding": "typed_rpc.copy2d.backend_binding"
+      }
+    },
+    {
+      "name": "cnMemcpy3D",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpy3D(CNmemcpy3dParam *p);",
+      "parameters": [
+        {
+          "name": "p",
+          "c_type": "CNmemcpy3dParam *",
+          "kind": "struct",
+          "direction": "in",
+          "length": "1",
+          "mapping": "copy3d named fields; embedded pointers -> allocation_id + offset"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc_operations": [
+        "API_COPY3D"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemcpy3D",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_copy3d_request",
+        "response": "mlu_api_copy3d_response",
+        "server_handler": "mlu_backend_api_copy3d",
+        "backend_binding": "typed_rpc.copy3d.backend_binding"
+      }
+    },
+    {
+      "name": "cnMemcpyAsync",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpyAsync(CNaddr dstAddr, CNaddr srcAddr, cn_uint64_t bytes, CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "dstAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "srcAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Generic device-to-device async copy supports explicit and native NULL queues with checked owned allocation offsets; multi-context and completion matrix remains partial",
+      "native_test": "query-boundaries-next-20261102/driver-native.log",
+      "remote_test": "query-boundaries-next-20261102/driver-remote.log",
+      "next_step": "Extend cross-context and completion ordering cases"
+    },
+    {
+      "name": "cnMemcpyDtoD",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpyDtoD(CNaddr dstAddr, CNaddr srcAddr, cn_uint64_t bytes);",
+      "parameters": [
+        {
+          "name": "dstAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "srcAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnMemcpyDtoD2D",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpyDtoD2D(CNaddr dstAddr, cn_uint64_t dpitch, CNaddr srcAddr, cn_uint64_t spitch, cn_uint64_t width, cn_uint64_t height);",
+      "parameters": [
+        {
+          "name": "dstAddr",
+          "c_type": "CNaddr",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "(height - 1) * pitch + width",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "dpitch",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "srcAddr",
+          "c_type": "CNaddr",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "(height - 1) * pitch + width",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "spitch",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "width",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "height",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_COPY2D"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemcpyDtoD2D",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_copy2d_request",
+        "response": "mlu_api_copy2d_response",
+        "server_handler": "mlu_backend_api_copy2d",
+        "backend_binding": "typed_rpc.copy2d.backend_binding"
+      }
+    },
+    {
+      "name": "cnMemcpyDtoD3D",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpyDtoD3D(CNmemcpy3dParam *p);",
+      "parameters": [
+        {
+          "name": "p",
+          "c_type": "CNmemcpy3dParam *",
+          "kind": "struct",
+          "direction": "in",
+          "length": "1",
+          "mapping": "copy3d named fields; embedded pointers -> allocation_id + offset"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Explicit nonzero pitch/ysize; zero pitch and broader CE descriptor/alias edge semantics remain to compare",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc_operations": [
+        "API_COPY3D"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemcpyDtoD3D",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_copy3d_request",
+        "response": "mlu_api_copy3d_response",
+        "server_handler": "mlu_backend_api_copy3d",
+        "backend_binding": "typed_rpc.copy3d.backend_binding"
+      }
+    },
+    {
+      "name": "cnMemcpyDtoDAsync",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpyDtoDAsync(CNaddr dstAddr, CNaddr srcAddr, cn_uint64_t bytes, CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "dstAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "srcAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Explicit and native NULL queues enqueue native D2D work; transfer completion is tracked by server notifier; cross-context ordering remains partial",
+      "native_test": "query-boundaries-next-20261102/driver-native.log",
+      "remote_test": "query-boundaries-next-20261102/driver-remote.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnMemcpyDtoH",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpyDtoH(void *dstAddr, CNaddr srcAddr, cn_uint64_t bytes);",
+      "parameters": [
+        {
+          "name": "dstAddr",
+          "c_type": "void *",
+          "kind": "buffer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "srcAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnMemcpyHtoD",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpyHtoD(CNaddr dstAddr, const void *srcAddr, cn_uint64_t bytes);",
+      "parameters": [
+        {
+          "name": "dstAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "srcAddr",
+          "c_type": "const void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native synchronous H2D/D2H/D2D with owned address bounds; zero byte success, frame-limited payload; cross-queue ordering/error corner cases not exhaustively compared",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnMemcpyHtoDAsync",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "priority": 1,
+      "depends_on": "allocation/queue",
+      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemcpyHtoDAsync(CNaddr dstAddr, const void *srcAddr, cn_uint64_t bytes, CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "dstAddr",
+          "c_type": "CNaddr",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "srcAddr",
+          "c_type": "const void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Explicit and native NULL queues enqueue native H2D work; server staging is retained through notifier completion; pinned Host ownership remains outside this API",
+      "native_test": "query-boundaries-next-20261102/driver-native.log",
+      "remote_test": "query-boundaries-next-20261102/driver-remote.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnMemsetD16Async",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemsetD16Async(CNaddr mluAddr, unsigned short value, cn_uint64_t count, CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "mluAddr",
+          "c_type": "CNaddr",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "count * 2",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "value",
+          "c_type": "unsigned short",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "count",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_MEMSET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemsetD16Async",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_memset_request",
+        "response": "mlu_api_memset_response",
+        "server_handler": "mlu_backend_api_memset",
+        "backend_binding": "typed_rpc.memset.backend_binding"
+      }
+    },
+    {
+      "name": "cnMemsetD32Async",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemsetD32Async(CNaddr mluAddr, unsigned int value, cn_uint64_t count, CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "mluAddr",
+          "c_type": "CNaddr",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "count * 4",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "value",
+          "c_type": "unsigned int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "count",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_MEMSET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemsetD32Async",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_memset_request",
+        "response": "mlu_api_memset_response",
+        "server_handler": "mlu_backend_api_memset",
+        "backend_binding": "typed_rpc.memset.backend_binding"
+      }
+    },
+    {
+      "name": "cnMemsetD8Async",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "context/allocation",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnMemsetD8Async(CNaddr mluAddr, unsigned char value, cn_uint64_t count, CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "mluAddr",
+          "c_type": "CNaddr",
+          "kind": "buffer",
+          "direction": "out",
+          "length": "count * 1",
+          "mapping": "allocation_id + checked byte offset"
+        },
+        {
+          "name": "value",
+          "c_type": "unsigned char",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "count",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": null,
+      "rpc_operations": [
+        "API_MEMSET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnMemsetD8Async",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_memset_request",
+        "response": "mlu_api_memset_response",
+        "server_handler": "mlu_backend_api_memset",
+        "backend_binding": "typed_rpc.memset.backend_binding"
+      }
+    },
+    {
+      "name": "cnModuleGetKernel",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "image/typed arguments",
+      "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
+      "return_type": "CNresult",
+      "signature": "CNresult cnModuleGetKernel(CNmodule hmod, const char *name, CNkernel *phkernel);",
+      "parameters": [
+        {
+          "name": "hmod",
+          "c_type": "CNmodule",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        },
+        {
+          "name": "name",
+          "c_type": "const char *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "phkernel",
+          "c_type": "CNkernel *",
+          "kind": "object_handle",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native lookup first; missing symbol clears output as measured; shared parent module/multiple kernels; LP64 primitive/single pointer signatures only, aggregate/extern-C lookup explicitly unsupported",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnModuleLoad",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "image/typed arguments",
+      "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
+      "return_type": "CNresult",
+      "signature": "CNresult cnModuleLoad(const char *fname, CNmodule *phmod);",
+      "parameters": [
+        {
+          "name": "fname",
+          "c_type": "const char *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "phmod",
+          "c_type": "CNmodule *",
+          "kind": "object_handle",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Client-side file or readable mapping uploaded immediately; bounded ELF64 LE/CNFBv2 single image with parameter sections; image retained server-side through unload; other formats/native error equivalence not supported",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnModuleLoadFatBinary",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "image/typed arguments",
+      "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
+      "return_type": "CNresult",
+      "signature": "CNresult cnModuleLoadFatBinary(const void *fatBin, CNmodule *phmod);",
+      "parameters": [
+        {
+          "name": "fatBin",
+          "c_type": "const void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "phmod",
+          "c_type": "CNmodule *",
+          "kind": "object_handle",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Client-side file or readable mapping uploaded immediately; bounded ELF64 LE/CNFBv2 single image with parameter sections; image retained server-side through unload; other formats/native error equivalence not supported",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnModuleQueryFatBinaryMemoryUsage",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "module image metadata",
+      "blocker": "Bounded CNFB image upload and native query are supported; malformed/other image formats retain native/backend limits",
+      "return_type": "CNresult",
+      "signature": "CNresult cnModuleQueryFatBinaryMemoryUsage(const void *fatbin, size_t *pbytes);",
+      "parameters": [
+        {
+          "name": "fatbin",
+          "c_type": "const void *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "pbytes",
+          "c_type": "size_t *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Client readable CNFB image is uploaded to the session and queried by native cnModuleQueryFatBinaryMemoryUsage; single ELF64 LE/CNFBv2 image and size_t result are supported, broader image formats and native error matrix remain unverified",
+      "native_test": "api-expansion-20261107/module-memory-family/driver-native.log",
+      "remote_test": "api-expansion-20261107/module-memory-family/driver-remote.log",
+      "next_step": "Extend image-format and malformed-input differential cases",
+      "rpc_operations": [
+        "MODULE_QUERY_FATBINARY_MEMORY"
+      ]
+    },
+    {
+      "name": "cnModuleQueryMemoryUsage",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "module image metadata",
+      "blocker": "Client path is read and converted to the same bounded CNFB image query; remote server does not access client filesystem directly",
+      "return_type": "CNresult",
+      "signature": "CNresult cnModuleQueryMemoryUsage(const char *path, size_t *pbytes);",
+      "parameters": [
+        {
+          "name": "path",
+          "c_type": "const char *",
+          "kind": "buffer",
+          "direction": "in",
+          "length": "review_required",
+          "mapping": "review_required"
+        },
+        {
+          "name": "pbytes",
+          "c_type": "size_t *",
+          "kind": "pointer",
+          "direction": "unknown",
+          "length": "review_required",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Client-side path is opened, read, validated as one CNFB image, and uploaded before native memory query; file-not-found and bounded read errors are preserved, non-CNFB formats and full native path matrix remain unverified",
+      "native_test": "api-expansion-20261107/module-memory-family/driver-native.log",
+      "remote_test": "api-expansion-20261107/module-memory-family/driver-remote.log",
+      "next_step": "Extend path/error and image-format differential cases",
+      "rpc_operations": [
+        "MODULE_QUERY_FATBINARY_MEMORY"
+      ]
+    },
+    {
+      "name": "cnModuleUnload",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "priority": 2,
+      "depends_on": "image/typed arguments",
+      "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
+      "return_type": "CNresult",
+      "signature": "CNresult cnModuleUnload(CNmodule hmod);",
+      "parameters": [
+        {
+          "name": "hmod",
+          "c_type": "CNmodule",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Owned module; drains explicit/used NULL queues then native unload, invalidates child kernels; conservative synchronization may exceed native module dependency scope",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnNotifierElapsedExecTime",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnNotifierElapsedExecTime(float *pMilliseconds, CNnotifier hstart, CNnotifier hend);",
+      "parameters": [
+        {
+          "name": "pMilliseconds",
+          "c_type": "float *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
+        },
+        {
+          "name": "hstart",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "hend",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": "notifier_exec",
+      "wrapper": {
+        "rpc": "notifier_exec",
+        "inputs": {
+          "start": "a->id",
+          "end": "b->id"
+        },
+        "outputs": [
+          "*pMilliseconds=out.milliseconds;"
+        ],
+        "prepare": [
+          "object *a=find_object(c,NOTIFIER,(uintptr_t)hstart),*b=find_object(c,NOTIFIER,(uintptr_t)hend); if(!a || !b) RETURN(CN_NOTIFIER_ERROR_INVALID);"
+        ],
+        "current": true
+      },
+      "rpc_operations": [
+        "API_NOTIFIER_EXEC"
+      ],
+      "bindings": {
+        "client_wrapper": "cnNotifierElapsedExecTime",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_notifier_exec_request",
+        "response": "mlu_api_notifier_exec_response",
+        "server_handler": "mlu_backend_api_notifier_exec",
+        "backend_binding": "typed_rpc.notifier_exec.backend_binding"
+      }
+    },
+    {
+      "name": "cnNotifierElapsedTime",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnNotifierElapsedTime(float *pMilliseconds, CNnotifier hstart, CNnotifier hend);",
+      "parameters": [
+        {
+          "name": "pMilliseconds",
+          "c_type": "float *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "field_codec"
+        },
+        {
+          "name": "hstart",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "hend",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": "notifier_elapsed",
+      "wrapper": {
+        "rpc": "notifier_elapsed",
+        "inputs": {
+          "start": "a->id",
+          "end": "b->id"
+        },
+        "outputs": [
+          "*pMilliseconds=out.milliseconds;"
+        ],
+        "prepare": [
+          "object *a=find_object(c,NOTIFIER,(uintptr_t)hstart),*b=find_object(c,NOTIFIER,(uintptr_t)hend); if(!a || !b) RETURN(CN_NOTIFIER_ERROR_INVALID);"
+        ],
+        "current": true
+      },
+      "rpc_operations": [
+        "API_NOTIFIER_ELAPSED"
+      ],
+      "bindings": {
+        "client_wrapper": "cnNotifierElapsedTime",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_notifier_elapsed_request",
+        "response": "mlu_api_notifier_elapsed_response",
+        "server_handler": "mlu_backend_api_notifier_elapsed",
+        "backend_binding": "typed_rpc.notifier_elapsed.backend_binding"
+      }
+    },
+    {
+      "name": "cnPlaceNotifier",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "CNresult",
+      "signature": "CNresult cnPlaceNotifier(CNnotifier hnotifier, CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "hnotifier",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        },
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnQueryNotifier",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "CNresult",
+      "signature": "CNresult cnQueryNotifier(CNnotifier hnotifier);",
+      "parameters": [
+        {
+          "name": "hnotifier",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnQueryQueue",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "CNresult",
+      "signature": "CNresult cnQueryQueue(CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Explicit owned queues and actual native NULL queue delegation, including pending finite kernel; full implicit cross-queue ordering and error cases not yet compared",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnQueueCopyAttributes",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "return_type": "CNresult",
+      "signature": "CNresult cnQueueCopyAttributes(CNqueue dst, CNqueue src);",
+      "parameters": [
+        {
+          "name": "dst",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "src",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_copy",
+      "wrapper": {
+        "rpc": "queue_attribute_copy",
+        "inputs": {
+          "queue": "qid",
+          "src": "sid"
+        },
+        "outputs": [],
+        "prepare": [
+          "uint64_t qid,sid;",
+          "if(!dst || !src) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);",
+          "if(queue_id(c,dst,&qid) || queue_id(c,src,&sid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "current": true,
+        "required": []
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_COPY"
+      ],
+      "bindings": {
+        "client_wrapper": "cnQueueCopyAttributes",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_queue_attribute_copy_request",
+        "response": "mlu_api_queue_attribute_copy_response",
+        "server_handler": "mlu_backend_api_queue_attribute_copy",
+        "backend_binding": "typed_rpc.queue_attribute_copy.backend_binding"
+      }
+    },
+    {
+      "name": "cnQueueGetAttribute",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "return_type": "CNresult",
+      "signature": "CNresult cnQueueGetAttribute(CNqueue hqueue, CNqueueAttrID attr_id, CNqueueAttrValue *value_out);",
+      "parameters": [
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "attr_id",
+          "c_type": "CNqueueAttrID",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "value_out",
+          "c_type": "CNqueueAttrValue *",
+          "kind": "struct",
+          "direction": "out",
+          "length": "1",
+          "mapping": "tagged accessPolicyWindow fields; baseAddr -> AllocationID + offset"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_get",
+      "wrapper": {
+        "rpc": "queue_attribute_get",
+        "inputs": {
+          "queue": "qid",
+          "attr": "attr_id"
+        },
+        "outputs": [
+          "void *base=NULL; if(out.allocation) { allocation *a=allocation_by_id(c,out.allocation); if(!a || out.offset>=a->bytes) RETURN(CN_ERROR_INVALID_VALUE); base=(char *)a->base+out.offset; }",
+          "CNqueueAttrValue v={0};",
+          "v.accessPolicyWindow.baseAddr=(CNaddr)(uintptr_t)base; v.accessPolicyWindow.numBytes=out.bytes;",
+          "v.accessPolicyWindow.hitRatio=out.ratio; v.accessPolicyWindow.hitProp=out.hit; v.accessPolicyWindow.missProp=out.miss;",
+          "*value_out=v;"
+        ],
+        "prepare": [
+          "if(!hqueue) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);",
+          "uint64_t qid;",
+          "if(queue_id(c,hqueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "current": true,
+        "required": [
+          "value_out"
+        ]
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_GET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnQueueGetAttribute",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_queue_attribute_get_request",
+        "response": "mlu_api_queue_attribute_get_response",
+        "server_handler": "mlu_backend_api_queue_attribute_get",
+        "backend_binding": "typed_rpc.queue_attribute_get.backend_binding"
+      }
+    },
+    {
+      "name": "cnQueueSetAttribute",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "return_type": "CNresult",
+      "signature": "CNresult cnQueueSetAttribute(CNqueue hqueue, CNqueueAttrID attr_id, const CNqueueAttrValue *value);",
+      "parameters": [
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "attr_id",
+          "c_type": "CNqueueAttrID",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "value",
+          "c_type": "const CNqueueAttrValue *",
+          "kind": "struct",
+          "direction": "in",
+          "length": "1",
+          "mapping": "tagged accessPolicyWindow fields; baseAddr -> AllocationID + offset"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Explicit owned queues and live allocation windows; native NULL attribute call crashes and is rejected; nonzero persisting windows unavailable on MLU370-S4",
+      "native_test": "query-boundaries-20261102/driver-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log",
+      "next_step": "Extend ownership/default-queue/hardware matrix before promotion",
+      "rpc": "queue_attribute_set",
+      "wrapper": {
+        "rpc": "queue_attribute_set",
+        "inputs": {
+          "queue": "qid",
+          "attr": "attr_id",
+          "allocation": "aid",
+          "offset": "off",
+          "bytes": "value->accessPolicyWindow.numBytes",
+          "ratio": "value->accessPolicyWindow.hitRatio",
+          "hit": "value->accessPolicyWindow.hitProp",
+          "miss": "value->accessPolicyWindow.missProp"
+        },
+        "outputs": [],
+        "prepare": [
+          "if(!hqueue) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);",
+          "uint64_t qid;",
+          "if(queue_id(c,hqueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);",
+          "uint64_t aid=0,off=0;",
+          "if(value->accessPolicyWindow.baseAddr) {",
+          "  allocation *a=lookup(c,value->accessPolicyWindow.baseAddr,&off);",
+          "  if(!a || off>=a->bytes || value->accessPolicyWindow.numBytes>a->bytes-off) RETURN(CN_ERROR_INVALID_VALUE); aid=a->id;",
+          "} else if(value->accessPolicyWindow.numBytes) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "current": true,
+        "required": [
+          "value"
+        ]
+      },
+      "rpc_operations": [
+        "API_QUEUE_ATTRIBUTE_SET"
+      ],
+      "bindings": {
+        "client_wrapper": "cnQueueSetAttribute",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_queue_attribute_set_request",
+        "response": "mlu_api_queue_attribute_set_response",
+        "server_handler": "mlu_backend_api_queue_attribute_set",
+        "backend_binding": "typed_rpc.queue_attribute_set.backend_binding"
+      }
+    },
+    {
+      "name": "cnQueueSync",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "CNresult",
+      "signature": "CNresult cnQueueSync(CNqueue hqueue);",
+      "parameters": [
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Explicit owned queues and actual native NULL queue delegation, including pending finite kernel; full implicit cross-queue ordering and error cases not yet compared",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnQueueWaitNotifier",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "return_type": "CNresult",
+      "signature": "CNresult cnQueueWaitNotifier(CNqueue hqueue, CNnotifier hnotifier);",
+      "parameters": [
+        {
+          "name": "hqueue",
+          "c_type": "CNqueue",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        },
+        {
+          "name": "hnotifier",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "session_object_id"
+        }
+      ],
+      "implementation": "generated",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison; Native default-queue implicit ordering, additional flags and asynchronous edge semantics not fully compared",
+      "native_test": "api-expansion-20261102/driver-native.log",
+      "remote_test": "api-expansion-20261102/driver-remote.log",
+      "next_step": "Extend family edge-case matrix before promoting support status",
+      "rpc": "queue_wait",
+      "wrapper": {
+        "rpc": "queue_wait",
+        "inputs": {
+          "queue": "qid",
+          "notifier": "nid"
+        },
+        "outputs": [],
+        "prepare": [
+          "uint64_t qid; if(queue_id(c,hqueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);",
+          "object *n=find_object(c,NOTIFIER,(uintptr_t)hnotifier); if(!n) RETURN(CN_NOTIFIER_ERROR_INVALID); uint64_t nid=n->id;"
+        ],
+        "current": true
+      },
+      "rpc_operations": [
+        "API_QUEUE_WAIT"
+      ],
+      "bindings": {
+        "client_wrapper": "cnQueueWaitNotifier",
+        "client_source": "build/generated/cndrv_api.inc",
+        "request": "mlu_api_queue_wait_request",
+        "response": "mlu_api_queue_wait_response",
+        "server_handler": "mlu_backend_api_queue_wait",
+        "backend_binding": "typed_rpc.queue_wait.backend_binding"
+      }
+    },
+    {
+      "name": "cnSetCtxConfigParam_pt",
+      "library": "CNDrv",
+      "family": "device_context",
+      "priority": 0,
+      "depends_on": "native context",
+      "blocker": "Visible cluster/union limit get/set only; shared TLS and multi-device semantics not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnSetCtxConfigParam_pt(CNcontext context, CNctxConfigParamType type, CNctxConfigParam *param);",
+      "parameters": [
+        {
+          "name": "context",
+          "c_type": "CNcontext",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "context_handle"
+        },
+        {
+          "name": "type",
+          "c_type": "CNctxConfigParamType",
+          "kind": "enum",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "param",
+          "c_type": "CNctxConfigParam *",
+          "kind": "pointer",
+          "direction": "in",
+          "length": "1",
+          "mapping": "union_u64"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Typed context-scoped value round trip. Get visible cluster/number/union limit; set union limit validated on current device; other setter types preserve native error.",
+      "native_test": "api-expansion-20261107/context-config-native.log",
+      "remote_test": "api-expansion-20261107/context-config-remote.log",
+      "next_step": "Extend setter matrix with multi-device/TLS hardware",
+      "rpc": "ctx_config",
+      "rpc_operations": [
+        "API_CTX_CONFIG"
+      ],
+      "bindings": {
+        "client_wrapper": "cnSetCtxConfigParam_pt",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_ctx_config_request",
+        "response": "mlu_api_ctx_config_response",
+        "server_handler": "mlu_backend_api_ctx_config",
+        "backend_binding": "typed_rpc.ctx_config.backend_binding"
+      }
+    },
+    {
+      "name": "cnWaitNotifier",
+      "library": "CNDrv",
+      "family": "queue_notifier",
+      "priority": 1,
+      "depends_on": "context/object registry",
+      "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
+      "return_type": "CNresult",
+      "signature": "CNresult cnWaitNotifier(CNnotifier hnotifier);",
+      "parameters": [
+        {
+          "name": "hnotifier",
+          "c_type": "CNnotifier",
+          "kind": "object_handle",
+          "direction": "in",
+          "length": "1",
+          "mapping": "review_required"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Flags=0 native notifier, explicit/NULL queue placement and real completion queries/waits; other flags, timing and cross-queue waits absent",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
+      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+    },
+    {
+      "name": "cnZmalloc",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnZmalloc(CNaddr *pmluAddr, cn_uint64_t bytes);",
+      "parameters": [
+        {
+          "name": "pmluAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnZmalloc",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
+    },
+    {
+      "name": "cnZmallocNode",
+      "library": "CNDrv",
+      "family": "memory",
+      "priority": 1,
+      "depends_on": "session allocation registry / owned fake VA",
+      "blocker": "Only MLU370-S4 node 0/-1 validated; framebuffer codec and security consumer behavior not validated",
+      "return_type": "CNresult",
+      "signature": "CNresult cnZmallocNode(CNaddr *pmluAddr, cn_uint64_t bytes, int node);",
+      "parameters": [
+        {
+          "name": "pmluAddr",
+          "c_type": "CNaddr *",
+          "kind": "pointer",
+          "direction": "out",
+          "length": "1",
+          "mapping": "AllocationID_to_fake_VA"
+        },
+        {
+          "name": "bytes",
+          "c_type": "cn_uint64_t",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        },
+        {
+          "name": "node",
+          "c_type": "int",
+          "kind": "scalar",
+          "direction": "in",
+          "length": "1",
+          "mapping": "value"
+        }
+      ],
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Native allocation kind preserved; AllocationID+offset and guarded client fake VA; zero-byte output preservation, node validation, clean/offset copies and free lifecycle tested. Codec/security consumers outside current evidence.",
+      "native_test": "api-expansion-20261106/memory-native.log",
+      "remote_test": "api-expansion-20261106/memory-replacement.log",
+      "next_step": "Extend node/codec/security consumer probes when hardware is available",
+      "rpc": "allocation_kind",
+      "rpc_operations": [
+        "API_ALLOCATION_KIND"
+      ],
+      "bindings": {
+        "client_wrapper": "cnZmallocNode",
+        "client_source": "shim/cndrv_shim.c",
+        "request": "mlu_api_allocation_kind_request",
+        "response": "mlu_api_allocation_kind_response",
+        "server_handler": "mlu_backend_api_allocation_kind",
+        "backend_binding": "typed_rpc.allocation_kind.backend_binding"
+      }
+    }
+  ]
+}

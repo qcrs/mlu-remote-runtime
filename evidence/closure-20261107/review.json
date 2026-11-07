@@ -1,0 +1,584 @@
+[
+  {
+    "api": "cnrtCastDataType",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected."
+  },
+  {
+    "api": "cnrtCastDataType_V2",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected."
+  },
+  {
+    "api": "cnrtCreateQuantizedParam",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Copies scalar pos/scale/offset into owned Host quantization metadata; actual cast coverage is tracked separately."
+  },
+  {
+    "api": "cnrtCreateQuantizedParamByChannel",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Copies channel shape and pos/scale/offset arrays into owned Host metadata; actual cast coverage is tracked separately."
+  },
+  {
+    "api": "cnrtDestroyQuantizedParam",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Frees owned scalar or channel quantization metadata; rejects unknown or already destroyed handles."
+  },
+  {
+    "api": "cnrtDeviceGetConfig",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native device configuration in the owned remote Runtime session; single-device values and setter errors compared."
+  },
+  {
+    "api": "cnrtDeviceGetPCIBusId",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native device PCI bus ID, client capacity at least 13 bytes; native len=12 overrun intentionally rejected."
+  },
+  {
+    "api": "cnrtDeviceQueryKernelMemoryUsage",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "The backend calls CNRT accounting while modules are loaded through CNDrv; only an empty-context value has been validated."
+  },
+  {
+    "api": "cnrtDeviceReset",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Resets the owned remote context, invalidates allocations/queues/notifiers, and reloads still-registered BANG modules on next use."
+  },
+  {
+    "api": "cnrtDeviceResetPersistingL2Cache",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native persisting-L2 reset in the owned remote Runtime context on MLU370-S4."
+  },
+  {
+    "api": "cnrtDeviceSetConfig",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native device configuration in the owned remote Runtime session; single-device values and setter errors compared."
+  },
+  {
+    "api": "cnrtGetDevice",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Process remote session selects device 0; same-device selection with live resources preserves them. Other physical devices excluded."
+  },
+  {
+    "api": "cnrtGetDeviceFlag",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Before resource activation, accepts current SDK flags and reports measured effective SPIN/AUTO; active-resource changes reject."
+  },
+  {
+    "api": "cnrtGetErrorName",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Only seven names are mapped and descriptive strings incorrectly return the name."
+  },
+  {
+    "api": "cnrtGetErrorStr",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Only seven names are mapped and descriptive strings incorrectly return the name."
+  },
+  {
+    "api": "cnrtGetSymbolSize",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Only uninitialized __mlu_device__ variables pass registration; initialized/constant globals in ordinary current-toolchain programs are rejected."
+  },
+  {
+    "api": "cnrtInvokeKernel",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Embedded pointers in by-value aggregates are rejected; the compiler metadata path has no field relocation list."
+  },
+  {
+    "api": "cnrtMemcpy",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "cnrtMemcpyNoDirection is declared for normal copies but the shim does not infer local-host versus owned-device endpoints."
+  },
+  {
+    "api": "cnrtMemcpy2D",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Owned D2D CE copy with explicit nonzero source/destination pitches, extents and padding; allocation IDs plus offsets cross the wire."
+  },
+  {
+    "api": "cnrtMemcpy3D",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Owned D2D CE copy with explicit nonzero pitches, ysize, width/height/depth and padding; no foreign/VMM mappings."
+  },
+  {
+    "api": "cnrtMemcpyAsync",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "D2H blocks before returning bytes, and NoDirection endpoint inference is missing."
+  },
+  {
+    "api": "cnrtMemsetAsync",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Queued byte fill on owned allocations/offsets with explicit or native NULL queue; completion follows queue/context operations."
+  },
+  {
+    "api": "cnrtNotifierCreateWithFlags",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Creates owned native notifier with SDK flags, including timing enable/disable behavior; same-session queues only."
+  },
+  {
+    "api": "cnrtNotifierDuration",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native execution-duration timing for recorded owned notifiers; compares validity/status and nonnegative finite durations."
+  },
+  {
+    "api": "cnrtNotifierElapsedTime",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native elapsed timing for recorded owned notifiers; compares validity/status and nonnegative finite durations."
+  },
+  {
+    "api": "cnrtPointerGetAttributes",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation."
+  },
+  {
+    "api": "cnrtQueryNotifier",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Queries actual native notifier completion; unrecorded, pending and completed observations retain native statuses."
+  },
+  {
+    "api": "cnrtQueueCopyAttributes",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Copies native queue attributes between owned explicit queues; access-policy allocation fields relocate in both directions."
+  },
+  {
+    "api": "cnrtQueueCreateWithPriority",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Creates owned native queue with flags/priority, retaining native priority range and clamping."
+  },
+  {
+    "api": "cnrtQueueGetAttribute",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected."
+  },
+  {
+    "api": "cnrtQueueGetPriority",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Returns native priority for an owned queue, including priorities clamped at creation."
+  },
+  {
+    "api": "cnrtQueueQuery",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Queries native readiness of owned explicit or native NULL queue, including pending finite work."
+  },
+  {
+    "api": "cnrtQueueSetAttribute",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected."
+  },
+  {
+    "api": "cnrtQueueSync",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Synchronizes owned explicit or native NULL queue and collects completed transfer staging."
+  },
+  {
+    "api": "cnrtQueueWaitNotifier",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Enqueues native wait on an owned notifier, including cross-queue dependency within the same remote session."
+  },
+  {
+    "api": "cnrtSetDevice",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Process remote session selects device 0; same-device selection with live resources preserves them. Other physical devices excluded."
+  },
+  {
+    "api": "cnrtSetDeviceFlag",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Before resource activation, accepts current SDK flags and reports measured effective SPIN/AUTO; active-resource changes reject."
+  },
+  {
+    "api": "cnCreateNotifier",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Creates owned native notifier with SDK flags, including timing enable/disable behavior; same-session queues only."
+  },
+  {
+    "api": "cnCreateQueue",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Creates owned native queue with SDK flags; handle token and native queue lifetime belong to the current Driver context."
+  },
+  {
+    "api": "cnCreateQueueWithPriority",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Creates owned native queue with flags/priority, retaining native priority range and clamping."
+  },
+  {
+    "api": "cnCtxCreate",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Creates an independent native remote context with flags 0..3 and binds caller TLS; children are owned by that context."
+  },
+  {
+    "api": "cnCtxDestroy",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Drains and closes the owned context, invalidates its child handles and fake addresses; transport failure invalidates without replay."
+  },
+  {
+    "api": "cnDestroyNotifier",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Destroys an owned native notifier and invalidates its public token; native queues retain already submitted dependencies."
+  },
+  {
+    "api": "cnDestroyQueue",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work."
+  },
+  {
+    "api": "cnDeviceGet",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native ordinal lookup; measured CNdev low-32-bit ordinal representation, device 0 on the single physical MLU."
+  },
+  {
+    "api": "cnDeviceGetName",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native device-name query with bounded client output copy for device 0."
+  },
+  {
+    "api": "cnDeviceGetPCIBusId",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native device PCI bus ID, client capacity at least 13 bytes; native len=12 overrun intentionally rejected."
+  },
+  {
+    "api": "cnDeviceTotalMem",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native device total-memory query for the single MLU370-S4; resource quota is separate."
+  },
+  {
+    "api": "cnFree",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Frees owned base allocation, drains session work including used native NULL queue, and preserves PROT_NONE VA tombstones until exit; NULL succeeds."
+  },
+  {
+    "api": "cnGetCtxConfigParam_pt",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Typed current-context query for visible clusters, cluster count and union limit; native result/status preserved."
+  },
+  {
+    "api": "cnGetErrorName",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Known error text is delegated, but only CN_SUCCESS has differential evidence; unknown-code output publication is not yet checked."
+  },
+  {
+    "api": "cnGetErrorString",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Known error text is delegated, but only CN_SUCCESS has differential evidence; unknown-code output publication is not yet checked."
+  },
+  {
+    "api": "cnGetMemAttribute",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation."
+  },
+  {
+    "api": "cnGetMemAttributes",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation."
+  },
+  {
+    "api": "cnInit",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Initializes device-0 control session without binding caller current context; one server admission slot is used, endpoint errors follow transport mapping."
+  },
+  {
+    "api": "cnInvokeKernel",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types."
+  },
+  {
+    "api": "cnMalloc",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native allocation in current context with guarded client fake VA; zero-byte output unchanged, owned range/free and offset semantics."
+  },
+  {
+    "api": "cnMallocConstant",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses."
+  },
+  {
+    "api": "cnMallocFrameBuffer",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "OUT_OF_SCOPE",
+    "reason": "Security/codec-framebuffer consumers are outside the ordinary BANG compute target; allocation and ordinary copies were tested, dedicated consumer semantics are not claimed."
+  },
+  {
+    "api": "cnMallocNode",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses."
+  },
+  {
+    "api": "cnMallocNodeConstant",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses."
+  },
+  {
+    "api": "cnMallocSecurity",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "OUT_OF_SCOPE",
+    "reason": "Security/codec-framebuffer consumers are outside the ordinary BANG compute target; allocation and ordinary copies were tested, dedicated consumer semantics are not claimed."
+  },
+  {
+    "api": "cnMemGetAddressRange",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Returns owned device allocation base and size for interior addresses using fake-VA relocation; Host/VMM query paths are separate capabilities."
+  },
+  {
+    "api": "cnMemcpy",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Registry-inferred synchronous H2H/H2D/D2H/D2D with offsets, checked ranges and stale/foreign rejection; native addresses never cross the wire."
+  },
+  {
+    "api": "cnMemcpy2D",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Driver descriptor lowered to owned D2D CE copy with checked extents/pitches; Host and other memory classes are outside this MLU370 CE subset."
+  },
+  {
+    "api": "cnMemcpy3D",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Driver descriptor lowered to owned D2D CE copy with checked extents/pitches; Host and other memory classes are outside this MLU370 CE subset."
+  },
+  {
+    "api": "cnMemcpyAsync",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Unified asynchronous copy is implemented as D2D only; Host endpoint inference and deferred D2H writeback are missing."
+  },
+  {
+    "api": "cnMemcpyDtoD",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native synchronous owned D2D copy with offset/range checks, including used native NULL queue ordering."
+  },
+  {
+    "api": "cnMemcpyDtoD2D",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Owned D2D CE copy with explicit nonzero source/destination pitches, extents and padding; allocation IDs plus offsets cross the wire."
+  },
+  {
+    "api": "cnMemcpyDtoD3D",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Owned D2D CE copy with explicit nonzero pitches, ysize, width/height/depth and padding; no foreign/VMM mappings."
+  },
+  {
+    "api": "cnMemcpyDtoDAsync",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native queued owned D2D copy with offsets on explicit/native NULL queues; server notifier tracks completion."
+  },
+  {
+    "api": "cnMemcpyDtoH",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native synchronous D2H into client-local buffer with owned source offset/range checks; bounded one-frame payload."
+  },
+  {
+    "api": "cnMemcpyHtoD",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native synchronous H2D from client-local snapshot with owned destination offset/range checks; bounded one-frame payload."
+  },
+  {
+    "api": "cnMemcpyHtoDAsync",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native queued H2D from server-owned staging snapshot on explicit/native NULL queues; staging retained until completion."
+  },
+  {
+    "api": "cnMemsetD16Async",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native queued fill at API element width on owned allocations/offsets, with explicit/native NULL queues and completion collection."
+  },
+  {
+    "api": "cnMemsetD32Async",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native queued fill at API element width on owned allocations/offsets, with explicit/native NULL queues and completion collection."
+  },
+  {
+    "api": "cnMemsetD8Async",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native queued fill at API element width on owned allocations/offsets, with explicit/native NULL queues and completion collection."
+  },
+  {
+    "api": "cnModuleGetKernel",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "PARTIAL_IMPLEMENTED",
+    "reason": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types."
+  },
+  {
+    "api": "cnModuleLoad",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Client reads bounded current-toolchain CNFBv2/ELF64 LE image and uploads immediately; native load in owner session, no server-side client path access."
+  },
+  {
+    "api": "cnModuleLoadFatBinary",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Uploads bounded readable current-toolchain CNFBv2/ELF64 LE image immediately; server retains image through native module lifetime."
+  },
+  {
+    "api": "cnModuleQueryFatBinaryMemoryUsage",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Uploads bounded current-toolchain CNFBv2 image and returns native memory usage in owner context; no alternate SDK/architecture formats claimed."
+  },
+  {
+    "api": "cnModuleQueryMemoryUsage",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Client reads and validates current-toolchain CNFBv2 file, then shares image query RPC; missing paths and malformed images reject."
+  },
+  {
+    "api": "cnModuleUnload",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Drains owned session queues before native unload, then invalidates child kernels; synchronization is conservatively broader than module dependencies."
+  },
+  {
+    "api": "cnNotifierElapsedExecTime",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native execution-duration timing for recorded owned notifiers; compares validity/status and nonnegative finite durations."
+  },
+  {
+    "api": "cnNotifierElapsedTime",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Native elapsed timing for recorded owned notifiers; compares validity/status and nonnegative finite durations."
+  },
+  {
+    "api": "cnPlaceNotifier",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Records owned native notifier on explicit/native NULL queue, preserving the native completion frontier."
+  },
+  {
+    "api": "cnQueryNotifier",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Queries actual native notifier completion; unrecorded, pending and completed observations retain native statuses."
+  },
+  {
+    "api": "cnQueryQueue",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Queries native readiness of owned explicit or native NULL queue, including pending finite work."
+  },
+  {
+    "api": "cnQueueCopyAttributes",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Copies native queue attributes between owned explicit queues; access-policy allocation fields relocate in both directions."
+  },
+  {
+    "api": "cnQueueGetAttribute",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected."
+  },
+  {
+    "api": "cnQueueSetAttribute",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected."
+  },
+  {
+    "api": "cnQueueSync",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Synchronizes owned explicit or native NULL queue and collects completed transfer staging."
+  },
+  {
+    "api": "cnQueueWaitNotifier",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Enqueues native wait on an owned notifier, including cross-queue dependency within the same remote session."
+  },
+  {
+    "api": "cnSetCtxConfigParam_pt",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Typed current-context setter; union limit round trip and native errors for unsupported setters preserved."
+  },
+  {
+    "api": "cnWaitNotifier",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Waits for owned native notifier and collects completed session staging; cross-queue execution stays in the native context."
+  },
+  {
+    "api": "cnZmalloc",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses."
+  },
+  {
+    "api": "cnZmallocNode",
+    "from": "PARTIAL_IMPLEMENTED",
+    "to": "IMPLEMENTED",
+    "reason": "Existing Native/Remote implementation and evidence close this API in the declared scope. Preserves native allocation kind, node 0/-1 validation and zero-fill where requested; checked IDs/offsets and free lifecycle, no VMM or imported addresses."
+  }
+]

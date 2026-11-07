@@ -3,18 +3,21 @@
     "cnrt.h": "d29d66084ab522bd42a7a3515c95b8ee4eee89512ae45e74012d51aa86bbf614",
     "cn_api.h": "3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6"
   },
-  "scope": "installed preprocessed public headers; deprecated transitive declarations included; private BANG hooks counted separately",
+  "scope": "MLU370-S4, single device, Neuware 3.5.2, CNRT 6.5.2, CNDrv 2.5.2, AArch64 -> AArch64; installed public headers including deprecated declarations; private BANG hooks separate",
   "counts": {
     "CNRT": {
-      "NOT_IMPLEMENTED": 70,
-      "PARTIAL_IMPLEMENTED": 37,
-      "IMPLEMENTED": 20,
-      "UNSUPPORTED": 3
+      "NOT_IMPLEMENTED": 67,
+      "PARTIAL_IMPLEMENTED": 11,
+      "IMPLEMENTED": 46,
+      "UNSUPPORTED": 3,
+      "BLOCKED": 3
     },
     "CNDrv": {
-      "NOT_IMPLEMENTED": 94,
-      "PARTIAL_IMPLEMENTED": 60,
-      "IMPLEMENTED": 25,
+      "NOT_IMPLEMENTED": 90,
+      "IMPLEMENTED": 75,
+      "PARTIAL_IMPLEMENTED": 8,
+      "BLOCKED": 4,
+      "OUT_OF_SCOPE": 2,
       "UNSUPPORTED": 1
     }
   },
