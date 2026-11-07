@@ -1,0 +1,52 @@
+{"check":"known_mode","pass":true}
+{"pid":211562,"mode":"read","remote":false}
+{"call":"cnInit(0)","status":0}
+{"call":"cnCtxCreate(&owner, 0, 0)","status":0}
+{"call":"cnMalloc(&w.shared, BYTES)","status":0}
+{"call":"cnMemcpyHtoD(w.shared, values, BYTES)","status":0}
+{"call":"cnCtxCreate(&importer, 0, 0)","status":0}
+{"call":"cnMalloc(&local, BYTES)","status":0}
+{"call":"cnMalloc(&output, BYTES)","status":0}
+{"call":"cnMemcpyHtoD(local, input, BYTES)","status":0}
+{"call":"foreign_DtoH","status":0}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"check":"foreign_read_value","pass":true}
+{"access_supported":true,"operation_status":0}
+{"call":"cnFree(output)","status":0}
+{"call":"cnFree(local)","status":0}
+{"call":"cnCtxDestroy(importer)","status":0}
+{"call":"cnCtxSetCurrent(owner)","status":0}
+{"call":"cnMemcpyDtoH(values, w.shared, BYTES)","status":0}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"check":"owner_value_after_importer_destroy","pass":true}
+{"call":"cnFree(w.shared)","status":0}
+{"call":"cnCtxDestroy(owner)","status":0}
+{"complete":true}

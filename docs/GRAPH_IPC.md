@@ -129,7 +129,9 @@ DOT 使用 Server 临时文件取得 native 内容，有界读回至客户端，
 
 ## 计划中的 memory IPC broker
 
-Native 的独立进程共享成功，同一进程跨 Context 的 IPC open 失败。当前 Server 是一个进程中的多个 session workers，直接对 native handle 调 open 无法满足两个独立客户端的含义。I1 必须引入进程级 backing broker，并解决实际 native Context 中的访问/执行路由。
+Native 的独立进程共享成功，同一进程跨 Context 的 IPC open 失败。当前 Server 是一个进程中的多个 session workers，不能直接照搬 native handle open。后续 [Context 探针](../evidence/ipc-context-20261107/README.md) 7/7、202 个检查通过：另一 Context 可以直接用 owner allocation 地址进行显式 H2D/D2H/D2D、D32 memset，并在自己的 queue/module 中执行混用 owner/local 指针的 kernel；另线程新 Context 也成功。owner allocation/Context 全程存活，importer 销毁后 owner 数值仍正确。
+
+I1 因而优先采用进程级 device backing broker：导入会话在 Server 内引用同一 native backing，通过自己的 Context 执行实测路径，无须 native IPC open。该执行依据只覆盖本设备/SDK 的上述操作；尚未实现 broker、引用与计量，不能提升 API 状态。
 
 计划将以下身份分开：
 
@@ -141,7 +143,7 @@ Native 的独立进程共享成功，同一进程跨 Context 的 IPC open 失败
 
 source free/reset/EOF 后，计划撤销新 opens，同时由既有 importer 和在途操作 refs 延后 backing 及源 Context 的释放，最终一个 ref 释放后回收。Native 文档对 import 未关闭就 free 源内存的行为未定义；这里的保留是 Remote 内部安全回收策略，不能宣称已证明 Native 在源退出后仍可继续使用。正常兼容性验收仍使用 close-before-free，提前断连只验证资源安全与回收。
 
-Broker refs 本身不能让 native 地址跨 Context 合法。还需选择并验证执行方案：使用能在 importer Context 内建立的共享 backing 映射，或把涉及共享 allocation 的操作路由到兼容的 native 执行 Context；另一方案是隔离 Server worker 进程以使用原生 IPC。Kernel 同时引用本地与导入 allocation、跨 Queue/Context ordering、source worker 消失后的执行器存活均必须能解释，不能只实现 copy adapter 后提升整族状态。
+Native 探针已证明混合本地与共享指针的有限 kernel 可以在 importer Context 执行；没有证明所有 API、跨 Context Queue/Notifier handles 或 owner Context 销毁后的访问。broker 必须显式保留原 backing Context，source worker 消失不能触发普通 session cleanup 提前销毁它；需要将 backing/Context 释放与 session 公开身份退役分开。跨 Queue ordering 仍须遵守应用的同步边界，不能靠共享指针替代同步。若其他操作不接受跨 Context 地址，需单独 adapter/兼容执行路由；隔离 worker 进程仍是备用架构。
 
 并发 open/revoke/ref 更新应受 broker 锁或统一执行器保护，耗时 native 调用不得在全局锁内阻塞其他 session。device bytes 对 backing 只计一次；importer 单独计 mapping/object 配额，不重复计物理分配。失败导入、partial launch、close、EOF 和 reset 均需恰好释放本次取得的 refs，保持核心现有 quota 与 drain 可观测性。
 
@@ -167,7 +169,7 @@ SCM_RIGHTS 只在本机 Unix socket 中传递 descriptor；本批 Python runner 
 | G2 | 44 | 边界内 44/44：memset/D2D/H2D/D2H memcpy/kernel/child/entity snapshot/update、allocation/module/Host invocation leases 与完成写回 |
 | G3 | 10 | 已完成；逻辑线程/三种 mode、跨 Context Global invalidation、Notifier fork/join、ADD/SET frontier、当前 Host 输入与完成写回 |
 | G4 | 20 | 已完成；客户端 executor、逐 copy Host 顺序、callback snapshots、native user refs/唯一析构、客户端 DOT、reset/EOF 与失败回滚 |
-| I1 | 6 | 跨 session backing broker、兼容 Context 执行、imported identities、同 client-host 域共享；独立双客户端与多 importer、close/EOF/reset、计量 |
+| I1 | 6 | 未完成；Native 已验证跨 Context 显式 copy/memset/混合 kernel；仍需 backing/Context refs、imported identities、计量及同 client-host 域共享 |
 | I2 | 2 | VMM backing/VA/handle/FD refs 及客户端 OS transport；依赖的 memory family API 另计，不包含在本行的 2 项中 |
 | I3 | 4 | 当前 BLOCKED；先换至 IPCNOTIFIER_SUPPORTED=1 且合法创建成功的设备/SDK，再做跨进程 record/wait 基线和 Remote refs |
 

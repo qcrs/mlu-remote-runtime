@@ -1,0 +1,86 @@
+[
+  {
+    "mode": "same-kernel",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context",
+      "same-kernel",
+      "/home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin"
+    ],
+    "returncode": 0,
+    "complete": true,
+    "access_supported": true,
+    "checks": 34
+  },
+  {
+    "mode": "read",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context",
+      "read",
+      "/home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin"
+    ],
+    "returncode": 0,
+    "complete": true,
+    "access_supported": true,
+    "checks": 33
+  },
+  {
+    "mode": "write",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context",
+      "write",
+      "/home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin"
+    ],
+    "returncode": 0,
+    "complete": true,
+    "access_supported": true,
+    "checks": 17
+  },
+  {
+    "mode": "copy",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context",
+      "copy",
+      "/home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin"
+    ],
+    "returncode": 0,
+    "complete": true,
+    "access_supported": true,
+    "checks": 33
+  },
+  {
+    "mode": "memset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context",
+      "memset",
+      "/home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin"
+    ],
+    "returncode": 0,
+    "complete": true,
+    "access_supported": true,
+    "checks": 17
+  },
+  {
+    "mode": "kernel",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context",
+      "kernel",
+      "/home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin"
+    ],
+    "returncode": 0,
+    "complete": true,
+    "access_supported": true,
+    "checks": 33
+  },
+  {
+    "mode": "thread-kernel",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context",
+      "thread-kernel",
+      "/home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin"
+    ],
+    "returncode": 0,
+    "complete": true,
+    "access_supported": true,
+    "checks": 35
+  }
+]

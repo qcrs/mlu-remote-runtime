@@ -1,0 +1,39 @@
+{
+  "source_base_commit": "b78b825fa6b304828989783f9fb099001e83a3bc",
+  "remote": false,
+  "build_commands": [
+    [
+      "/usr/local/neuware/bin/cncc",
+      "--bang-fatbin-only",
+      "--bang-mlu-arch=mtp_372",
+      "/home/lvtong/mlu-remote-runtime/probes/probe_ipc_context_kernel.mlu",
+      "-o",
+      "/home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin"
+    ],
+    [
+      "gcc",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-I/usr/local/neuware/include",
+      "/home/lvtong/mlu-remote-runtime/probes/probe_ipc_context.c",
+      "-L/usr/local/neuware/lib64",
+      "-Wl,-rpath,/usr/local/neuware/lib64",
+      "-lcndrv",
+      "-pthread",
+      "-o",
+      "/home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context"
+    ]
+  ],
+  "sha256": {
+    "probes/probe_ipc_context.c": "4f535bfbecc804c2d4efa17ab4ee5198f4a6e7dcaa74888856350943292e514f",
+    "probes/probe_ipc_context_kernel.mlu": "c80dd9c1dcc77fc146083c410fbd719d96dd1796580ac1a3aac1ec7d50c0472a",
+    "scripts/probe-ipc-context.py": "9a7d8e0e81ded0ff3280b2f3fa212e43d58c3b266ddae62eb8066ab6ff6266a6",
+    "build/probes/probe-ipc-context": "488d7655b54d9e46b945bee62a05517bdbb0f6fdad94757e96a00c0f9c57beac",
+    "build/probes/ipc-context.fatbin": "841b6782e4ee1466566089ffd39d589a43dd5d315a547b4efbcfd981629eb5e3",
+    "/usr/local/neuware/include/cn_api.h": "3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6",
+    "/usr/local/neuware/lib64/libcndrv.so": "87716936c75d066a75c7ceba2c916f77f1ac9550ee2244d4c416710196083ac8"
+  }
+}

@@ -281,7 +281,7 @@
         "priority": 5,
         "depends_on": "Process-wide memory sharing broker",
         "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
         "closure": {},
         "contract_stage": "I1"
       },
@@ -311,7 +311,7 @@
         "priority": 5,
         "depends_on": "Process-wide memory sharing broker",
         "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
         "closure": {},
         "contract_stage": "I1"
       },
@@ -321,7 +321,7 @@
         "priority": 5,
         "depends_on": "Process-wide memory sharing broker",
         "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
         "closure": {},
         "contract_stage": "I1"
       },
@@ -331,7 +331,7 @@
         "priority": 5,
         "depends_on": "Process-wide memory sharing broker",
         "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
         "closure": {},
         "contract_stage": "I1"
       },
@@ -341,7 +341,7 @@
         "priority": 5,
         "depends_on": "Process-wide memory sharing broker",
         "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
         "closure": {},
         "contract_stage": "I1"
       },
@@ -361,7 +361,7 @@
         "priority": 5,
         "depends_on": "Process-wide memory sharing broker",
         "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
         "closure": {},
         "contract_stage": "I1"
       },
@@ -402,8 +402,9 @@
         "family": "ipc",
         "title": "Process-wide memory sharing broker",
         "depends_on": [],
-        "missing": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "acceptance": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload."
+        "missing": "Cross-session backing refs/imported AllocationIDs, retained owner Contexts, single-charge accounting and same-client-host CPU mapping domains are absent. Native same-process IPC open is rejected, but explicit copy/memset and mixed-pointer kernels from another Context/thread are now verified while owner backing/Context remain alive.",
+        "acceptance": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "native_context_evidence": "ipc-context-20261107/README.md"
       },
       {
         "id": "I2",

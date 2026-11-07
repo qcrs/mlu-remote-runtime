@@ -35,7 +35,7 @@
 
 Graph 102/102 已按逐 API 声明边界 IMPLEMENTED：G1 28、G2 44、G3 10、G4 20；普通 memory/VMM IPC 8 项仍 NOT_IMPLEMENTED。G2 已含 1D Host graph memcpy 重放，G4 另保证 callback 与每个 Host copy 的依赖顺序。EntityUpdate 后结构角色不唯一时，影响 Host/callback 重放的 entity setter 明确拒绝。[设计](GRAPH_IPC.md) 与 Schema/family plan 记录限制；callback 每 session 串行且须在 deadline 内返回，Runtime API 重入拒绝。单 copy <=1 MiB，Host endpoints 总和 <=16 MiB，pageable 地址由调用者保活。
 
-下一阶段为 I1 跨 session backing broker、compatible Context 执行和同 client-host 域 CPU 共享；当前 SDK 同进程跨 Context 的 native IPC open 返回 100102。I2 还需 11 个 VMM memory family 前提入口及真实客户端 OS descriptor transport。普通 Host/device/VMM IPC 的 Native 已成功，这些架构实现缺口继续列 NOT_IMPLEMENTED。其余未实现项见 [分批计划](../compat/family-plan.md)，不声称全项目 310 项完成。
+下一阶段为 I1 跨 session backing broker、backing/Context 保活和同 client-host 域 CPU 共享。当前 SDK 同进程跨 Context 的 native IPC open 返回 100102，但新增 [Native Context 探针](../evidence/ipc-context-20261107/README.md) 7/7、202 个检查证明，另一 Context/线程可以直接用存活 owner backing 进行显式 copy、memset 与混合本地/共享指针 kernel。device broker 可优先复用该进程内地址，仍须实现 token、导入引用、计量及源 Context 延迟释放。I2 还需 11 个 VMM memory family 前提入口及真实客户端 OS descriptor transport。这些实现缺口继续列 NOT_IMPLEMENTED；其余未实现项见 [分批计划](../compat/family-plan.md)，不声称全项目 310 项完成。
 
 ## 验证与证据
 

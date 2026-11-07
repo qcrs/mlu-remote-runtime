@@ -1,0 +1,2 @@
+$ /usr/local/neuware/bin/cncc --bang-fatbin-only --bang-mlu-arch=mtp_372 /home/lvtong/mlu-remote-runtime/probes/probe_ipc_context_kernel.mlu -o /home/lvtong/mlu-remote-runtime/build/probes/ipc-context.fatbin
+$ gcc -std=c11 -O2 -Wall -Wextra -Werror -I/usr/local/neuware/include /home/lvtong/mlu-remote-runtime/probes/probe_ipc_context.c -L/usr/local/neuware/lib64 -Wl,-rpath,/usr/local/neuware/lib64 -lcndrv -pthread -o /home/lvtong/mlu-remote-runtime/build/probes/probe-ipc-context
