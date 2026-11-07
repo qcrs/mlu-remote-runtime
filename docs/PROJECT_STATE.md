@@ -6,9 +6,9 @@
 
 | 层 | IMPLEMENTED | PARTIAL | BLOCKED | OUT_OF_SCOPE | UNSUPPORTED | NOT_IMPLEMENTED | 合计 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| CNRT | 59 | 0 | 3 | 0 | 1 | 67 | 130 |
-| CNDrv | 86 | 0 | 4 | 2 | 0 | 88 | 180 |
-| 合计 | 145 | 0 | 7 | 2 | 1 | 155 | 310 |
+| CNRT | 59 | 0 | 5 | 0 | 1 | 65 | 130 |
+| CNDrv | 86 | 0 | 6 | 2 | 0 | 86 | 180 |
+| 合计 | 145 | 0 | 11 | 2 | 1 | 151 | 310 |
 
 已完成 [closure audit](API_COMPATIBILITY_CLOSURE.md)：冻结原 97 个 PARTIAL，77 项以已有实现与证据收口、18 项保留、2 项范围外；另纠正 CNRT queue destroy 的虚高状态。每个剩余 PARTIAL 都有具体 gap/fix/acceptance；台账不会因导出存在而自动提升。最新机器可读数据见 [summary](../compat/summary.json)、[ledger](../compat/api-ledger.csv)、[family plan](../compat/family-plan.json)。6 个私有 `__bang*` hooks 独立统计，legacy `cnrtInit` 不在公共分母内。
 
@@ -29,11 +29,17 @@
 
 当前 PARTIAL 为 0；两个 cast 入口已按本机 SDK 支持矩阵收口，见 [Host cast](HOST_CAST.md)。INT4/fix8/quant8 等拒绝组合与 Native 一致。当前 image ABI 的 device pointer graph、packed/opaque aggregate 和未知地址空间不在认证范围，不能从字段重定位推导支持。
 
-7 个 Peer 入口因只有一个物理设备 BLOCKED。security/framebuffer 专用消费者范围外。Runtime MallocConstant 仍明确拒绝。CNNL 无对应库，不能把明确拒绝用例称为 CNNL native 成功。Graph/IPC 尚未实现；核心补齐后分别推进 capture/TaskTopo 状态机和跨进程导出/导入引用生命周期。
+11 个 BLOCKED 为 7 个 Peer（缺第二物理设备）和 4 个 IPC notifier get/open（Native 支持属性 0，合法 interprocess notifier 创建返回 NotSupported）。后者的 native_test 仅证明前提缺失，未运行成功的 get/open。security/framebuffer 专用消费者范围外。Runtime MallocConstant 仍明确拒绝。CNNL 无对应库，不能把明确拒绝用例称为 CNNL native 成功。
+
+Graph 102 项与普通 memory/VMM IPC 8 项仍 NOT_IMPLEMENTED。本批完成 [Native 契约与共享模型设计](GRAPH_IPC.md)，Schema / family plan 已分为 G1～G4、I1～I3，并记录逐 API 依赖与验收；尚未增加 GraphID/NodeID/EntityID/CaptureID、broker、VMM refs 的运行期实现。Native 图与跨进程 memory/Host/VMM IPC 已有正例，这些实现缺口不能标成硬件 BLOCKED。
+
+下一批 G1 建立 owned DAG、node identities、有界查询和 clone remap，再由 G2/G3 接入 typed payload、entity revision/leases、逻辑客户端线程 capture 与每次回放的 Host completion。I1 需先解决当前同进程多 session Server 无法直接 native IPC open 的 Context/执行模型，以及同 client-host 域 CPU 共享；I2 还需 VMM memory family 前提和真实客户端 OS handle transport。完整剩余工作与升级条件见 [分批计划](../compat/family-plan.md)。
 
 ## 验证与证据
 
-本批 [Host cast](../evidence/host-cast-20261107/README.md) 的 7,507 个观察在 Native/replacement/preload/隔离客户端逐字节一致，源/目标 guard、64-bit 大数、by-channel ownership 和 UBSan 均通过；功能族 15/15、完整核心回归 76/76。
+最新 [Graph/IPC 原生契约](../evidence/graph-ipc-contracts-20261107/README.md) 为 Native 13/13 场景、74 个检查：两库数值 DAG、clone/instantiate snapshot、源图销毁后回放、relaxed capture 当前 Host 输入、四种跨进程/跨库 device IPC、CNRT Host CPU 共享和 VMM POSIX FD。发现重复 export 被当前 SDK 拒绝、同进程跨 Context IPC open 返回 100102、VMM FD 输出写 8 bytes；这些是实现约束。未运行本批 Graph/IPC Remote 测试，未改变 runtime 源码。
+
+最近核心实现提交 `58b7e6c` 的 [Host cast](../evidence/host-cast-20261107/README.md) 有 7,507 个观察在 Native/replacement/preload/隔离客户端逐字节一致，源/目标 guard、64-bit 大数、by-channel ownership 和 UBSan 均通过；功能族 15/15、完整核心回归 76/76。本批仅变更 Native 探针、Schema 计划、台账和文档，不将既有核心结果计为 Graph/IPC Remote 认证。
 
 本批 [module accounting / globals / argument relocation](../evidence/module-accounting-20261107/README.md) 验证两库 Native、replacement、preload 和隐藏 SDK/设备的客户端。覆盖两 image 注册计量、DSO 引用/注销、reset/reload、三类 globals、嵌套 pointer/NULL/offset/scalar guards、跨 owner/stale 拒绝、畸形 wire/metadata、v1 兼容和 ASan/UBSan；五个 module/kernel PARTIAL 已按逐项 boundary 收口。
 

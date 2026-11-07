@@ -1,0 +1,80 @@
+[
+  {
+    "name": "cnrt-graph",
+    "returncode": 0,
+    "passed": true,
+    "checks": 12
+  },
+  {
+    "name": "cnrt-capture",
+    "returncode": 0,
+    "passed": true,
+    "checks": 7
+  },
+  {
+    "name": "cnrt-notifier",
+    "returncode": 0,
+    "passed": true,
+    "checks": 1
+  },
+  {
+    "name": "cndrv-graph",
+    "returncode": 0,
+    "passed": true,
+    "checks": 12
+  },
+  {
+    "name": "cndrv-capture",
+    "returncode": 0,
+    "passed": true,
+    "checks": 7
+  },
+  {
+    "name": "cndrv-notifier",
+    "returncode": 0,
+    "passed": true,
+    "checks": 2
+  },
+  {
+    "name": "cndrv-ipc-same-process",
+    "returncode": 0,
+    "passed": true,
+    "checks": 1
+  },
+  {
+    "name": "ipc-cnrt-to-cnrt-device",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "ipc-cndrv-to-cndrv-device",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "ipc-cnrt-to-cndrv-device",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "ipc-cndrv-to-cnrt-device",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "ipc-cnrt-to-cnrt-host",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "vmm-cndrv-posix-fd",
+    "returncode": 0,
+    "passed": true,
+    "checks": 7
+  }
+]

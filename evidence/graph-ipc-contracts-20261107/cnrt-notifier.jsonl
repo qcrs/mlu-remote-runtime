@@ -1,0 +1,7 @@
+{"library":"CNRT","pid":4161347,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnrtSetDevice(0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"6.5.2"}
+{"call":"cnrtNotifierCreateWithFlags(interprocess|disable_timing_all)","status":100050}
+{"check":"ipc_notifier_creation_not_supported","pass":true}
+{"call":"cnrtDeviceReset()","status":0}

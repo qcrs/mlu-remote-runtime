@@ -1,0 +1,3 @@
+2026-11-07 05:03:54.952963: [cnrtError] [4161347] [Card: 0] Error occurred during calling 'cnCreateNotifier' in CNDrv interface.
+2026-11-07 05:03:54.953047: [cnrtError] [4161347] [Card: 0] Return value is 100050, CN_OPS_ERROR_NOT_SUPPORTED.
+2026-11-07 05:03:54.953053: [cnrtError] [4161347] [Card: 0] cnrtNotifierCreateWithFlags: Create notifier failed.

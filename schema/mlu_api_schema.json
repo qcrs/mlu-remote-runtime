@@ -371,8 +371,8 @@
       "library": "CNRT",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "Process-wide memory sharing broker",
+      "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtAcquireMemHandle(cnrtIpcMemHandle *handle, void *ptr);",
       "parameters": [
@@ -395,10 +395,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/ipc-cnrt-to-cnrt-host-exporter.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+      "contract_stage": "I1"
     },
     {
       "name": "cnrtCastDataType",
@@ -2059,8 +2060,8 @@
       "library": "CNRT",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "IPC notifier native prerequisite",
+      "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtIpcGetNotifierHandle(cnrtIpcNotifierHandle *handle, cnrtNotifier_t notifier);",
       "parameters": [
@@ -2082,19 +2083,20 @@
         }
       ],
       "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "status": "BLOCKED",
+      "boundary": "No client export. Native prerequisite is unavailable on MLU370-S4 / current SDK; no successful IPC notifier handle was produced.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-notifier.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+      "contract_stage": "I3"
     },
     {
       "name": "cnrtIpcOpenNotifierHandle",
       "library": "CNRT",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "IPC notifier native prerequisite",
+      "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtIpcOpenNotifierHandle(cnrtNotifier_t *notifier, cnrtIpcNotifierHandle handle);",
       "parameters": [
@@ -2116,11 +2118,12 @@
         }
       ],
       "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "status": "BLOCKED",
+      "boundary": "No client export. Native prerequisite is unavailable on MLU370-S4 / current SDK; no successful IPC notifier handle was produced.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-notifier.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+      "contract_stage": "I3"
     },
     {
       "name": "cnrtMalloc",
@@ -2195,8 +2198,8 @@
       "library": "CNRT",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "Process-wide memory sharing broker",
+      "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtMapMemHandle(void **ptr, cnrtIpcMemHandle handle, int flags);",
       "parameters": [
@@ -2227,10 +2230,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/ipc-cnrt-to-cnrt-host-importer.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+      "contract_stage": "I1"
     },
     {
       "name": "cnrtMcacheOperation",
@@ -3636,8 +3640,8 @@
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueBeginCapture(cnrtQueue_t queue, enum cnrtQueueCaptureMode mode);",
       "parameters": [
@@ -3660,10 +3664,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-capture.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnrtQueueCopyAttributes",
@@ -3854,8 +3859,8 @@
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueEndCapture(cnrtQueue_t queue, cnrtTaskTopo_t *pTaskTopo);",
       "parameters": [
@@ -3878,10 +3883,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-capture.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnrtQueueGetAttribute",
@@ -3971,8 +3977,8 @@
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueGetCaptureInfo(cnrtQueue_t queue, enum cnrtQueueCaptureStatus *pStatus, uint64_t *idOut, cnrtTaskTopo_t *pTaskTopo, const cnrtTaskTopoNode_t **pDependenciesOut, size_t *pNumDependencies);",
       "parameters": [
@@ -4027,10 +4033,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnrtQueueGetPriority",
@@ -4102,8 +4109,8 @@
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/capture DAG",
-      "blocker": "Capture DAG execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueIsCapturing(cnrtQueue_t queue, enum cnrtQueueCaptureStatus *pStatus);",
       "parameters": [
@@ -4126,10 +4133,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-capture.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnrtQueueQuery",
@@ -4288,8 +4296,8 @@
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueUpdateCaptureDependencies(cnrtQueue_t queue, cnrtTaskTopoNode_t *dependencies, size_t numDependencies, unsigned int flags);",
       "parameters": [
@@ -4328,10 +4336,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnrtQueueWaitNotifier",
@@ -4492,8 +4501,8 @@
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAcquireUserObject(cnrtTaskTopo_t taskTopo, cnrtUserObject_t object, unsigned int count, unsigned int flags);",
       "parameters": [
@@ -4532,18 +4541,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtTaskTopoAddChildTopoNode",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddChildTopoNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies, cnrtTaskTopo_t hChildTopo);",
       "parameters": [
@@ -4590,18 +4600,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoAddDependencies",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddDependencies(cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *from, const cnrtTaskTopoNode_t *to, size_t numDependencies);",
       "parameters": [
@@ -4640,18 +4651,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoAddEmptyNode",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddEmptyNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies);",
       "parameters": [
@@ -4690,18 +4702,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoAddHostNode",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddHostNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies, const cnrtHostNodeParams_t *nodeParams);",
       "parameters": [
@@ -4748,18 +4761,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtTaskTopoAddKernelNode",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddKernelNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies, const cnrtKernelNodeParams_t *nodeParams);",
       "parameters": [
@@ -4806,18 +4820,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoAddMemcpyNode",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddMemcpyNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies, const cnrtMemcpy3dParam_t *copyParams);",
       "parameters": [
@@ -4864,18 +4879,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoAddMemsetNode",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddMemsetNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies, const cnrtMemsetParams_t *copyParams);",
       "parameters": [
@@ -4922,18 +4938,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoChildTopoNodeGetTopo",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoChildTopoNodeGetTopo(cnrtTaskTopoNode_t node, cnrtTaskTopo_t *pTaskTopo);",
       "parameters": [
@@ -4956,18 +4973,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoClone",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoClone(cnrtTaskTopo_t *pTaskTopoClone, cnrtTaskTopo_t originalTaskTopo);",
       "parameters": [
@@ -4990,18 +5008,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoCreate",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoCreate(cnrtTaskTopo_t *pTaskTopo, unsigned int flags);",
       "parameters": [
@@ -5024,18 +5043,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoDebugDotPrint",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoDebugDotPrint(cnrtTaskTopo_t taskTopo, const char *path, unsigned int flags);",
       "parameters": [
@@ -5066,18 +5086,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtTaskTopoDestroy",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoDestroy(cnrtTaskTopo_t taskTopo);",
       "parameters": [
@@ -5092,18 +5113,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoDestroyNode",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoDestroyNode(cnrtTaskTopoNode_t node);",
       "parameters": [
@@ -5118,18 +5140,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoEntityChildTopoNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityChildTopoNodeSetParams(cnrtTaskTopoEntity_t entity, cnrtTaskTopoNode_t node, cnrtTaskTopo_t childTopo);",
       "parameters": [
@@ -5160,18 +5183,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoEntityDestroy",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityDestroy(cnrtTaskTopoEntity_t entity);",
       "parameters": [
@@ -5186,18 +5210,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoEntityHostNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityHostNodeSetParams( cnrtTaskTopoEntity_t entity, cnrtTaskTopoNode_t node, const cnrtHostNodeParams_t *nodeParams);",
       "parameters": [
@@ -5228,18 +5253,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtTaskTopoEntityInvoke",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityInvoke(cnrtTaskTopoEntity_t entity, cnrtQueue_t queue);",
       "parameters": [
@@ -5262,18 +5288,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoEntityKernelNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityKernelNodeSetParams( cnrtTaskTopoEntity_t entity, cnrtTaskTopoNode_t node, const cnrtKernelNodeParams_t *nodeParams);",
       "parameters": [
@@ -5304,18 +5331,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoEntityMemcpyNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityMemcpyNodeSetParams( cnrtTaskTopoEntity_t entity, cnrtTaskTopoNode_t node, const cnrtMemcpy3dParam_t *nodeParams);",
       "parameters": [
@@ -5346,18 +5374,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoEntityMemsetNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityMemsetNodeSetParams( cnrtTaskTopoEntity_t entity, cnrtTaskTopoNode_t node, const cnrtMemsetParams_t *nodeParams);",
       "parameters": [
@@ -5388,18 +5417,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoEntityUpdate",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityUpdate( cnrtTaskTopoEntity_t entity, cnrtTaskTopo_t topo, cnrtTaskTopoNode_t *pErrorNode_out, cnrtTaskTopoEntityUpdateResult_t *updateResult_out);",
       "parameters": [
@@ -5438,18 +5468,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoGetEdges",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoGetEdges(cnrtTaskTopo_t taskTopo, cnrtTaskTopoNode_t *from, cnrtTaskTopoNode_t *to, size_t *numEdges);",
       "parameters": [
@@ -5488,18 +5519,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoGetNodes",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoGetNodes(cnrtTaskTopo_t taskTopo, cnrtTaskTopoNode_t *pNode, size_t *numNodes);",
       "parameters": [
@@ -5530,18 +5562,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoGetRootNodes",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoGetRootNodes(cnrtTaskTopo_t taskTopo, cnrtTaskTopoNode_t *pRootNode, size_t *numRootNodes);",
       "parameters": [
@@ -5572,18 +5605,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoHostNodeGetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoHostNodeGetParams(cnrtTaskTopoNode_t node, cnrtHostNodeParams_t *nodeParams);",
       "parameters": [
@@ -5606,18 +5640,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtTaskTopoHostNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoHostNodeSetParams(cnrtTaskTopoNode_t node, const cnrtHostNodeParams_t *nodeParams);",
       "parameters": [
@@ -5640,18 +5675,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtTaskTopoInstantiate",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoInstantiate(cnrtTaskTopoEntity_t *entity, cnrtTaskTopo_t taskTopo, cnrtTaskTopoNode_t *pErrorNode, char *logBuffer, size_t bufferSize);",
       "parameters": [
@@ -5698,18 +5734,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoKernelNodeCopyAttributes",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoKernelNodeCopyAttributes(cnrtTaskTopoNode_t dst, cnrtTaskTopoNode_t src);",
       "parameters": [
@@ -5732,18 +5769,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoKernelNodeGetAttribute",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoKernelNodeGetAttribute( cnrtTaskTopoNode_t node, cnrtKernelNodeAttr_t attrId, cnrtKernelNodeAttrValue_t *valueOut);",
       "parameters": [
@@ -5774,18 +5812,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoKernelNodeGetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoKernelNodeGetParams(cnrtTaskTopoNode_t node, cnrtKernelNodeParams_t *nodeParams);",
       "parameters": [
@@ -5808,18 +5847,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoKernelNodeSetAttribute",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoKernelNodeSetAttribute( cnrtTaskTopoNode_t node, cnrtKernelNodeAttr_t attrId, const cnrtKernelNodeAttrValue_t *value);",
       "parameters": [
@@ -5850,18 +5890,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoKernelNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoKernelNodeSetParams( cnrtTaskTopoNode_t node, const cnrtKernelNodeParams_t *nodeParams);",
       "parameters": [
@@ -5884,18 +5925,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoMemcpyNodeGetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoMemcpyNodeGetParams(cnrtTaskTopoNode_t node, cnrtMemcpy3dParam_t *nodeParams);",
       "parameters": [
@@ -5918,18 +5960,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoMemcpyNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoMemcpyNodeSetParams( cnrtTaskTopoNode_t node, const cnrtMemcpy3dParam_t *nodeParams);",
       "parameters": [
@@ -5952,18 +5995,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoMemsetNodeGetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoMemsetNodeGetParams(cnrtTaskTopoNode_t node, cnrtMemsetParams_t *nodeParams);",
       "parameters": [
@@ -5986,18 +6030,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoMemsetNodeSetParams",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoMemsetNodeSetParams(cnrtTaskTopoNode_t node, const cnrtMemsetParams_t *nodeParams);",
       "parameters": [
@@ -6020,18 +6065,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnrtTaskTopoNodeFindInClone",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoNodeFindInClone(cnrtTaskTopoNode_t *pNode, cnrtTaskTopoNode_t originalNode, cnrtTaskTopo_t clonedTaskTopo);",
       "parameters": [
@@ -6062,18 +6108,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoNodeGetDependencies",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoNodeGetDependencies(cnrtTaskTopoNode_t node, cnrtTaskTopoNode_t *pDependencies, size_t *numDependencies);",
       "parameters": [
@@ -6104,18 +6151,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoNodeGetDependentNodes",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoNodeGetDependentNodes(cnrtTaskTopoNode_t node, cnrtTaskTopoNode_t *pDependentNodes, size_t *numDependentNodes);",
       "parameters": [
@@ -6146,18 +6194,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoNodeGetType",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoNodeGetType(cnrtTaskTopoNode_t node, cnrtTaskTopoNodeType_t *pType);",
       "parameters": [
@@ -6180,18 +6229,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtTaskTopoReleaseUserObject",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoReleaseUserObject(cnrtTaskTopo_t taskTopo, cnrtUserObject_t object, unsigned int count);",
       "parameters": [
@@ -6222,18 +6272,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtTaskTopoRemoveDependencies",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoRemoveDependencies(cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *from, const cnrtTaskTopoNode_t *to, size_t numDependencies);",
       "parameters": [
@@ -6272,18 +6323,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnrtUnMapMemHandle",
       "library": "CNRT",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "Process-wide memory sharing broker",
+      "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtUnMapMemHandle(void *ptr);",
       "parameters": [
@@ -6298,18 +6350,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/ipc-cnrt-to-cnrt-host-importer.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+      "contract_stage": "I1"
     },
     {
       "name": "cnrtUserObjectAcquire",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtUserObjectAcquire(cnrtUserObject_t object, unsigned int count);",
       "parameters": [
@@ -6332,18 +6385,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtUserObjectCreate",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtUserObjectCreate(cnrtUserObject_t *object_out, void *ptr, cnrtHostFn_t destroy, unsigned int initialRefcount, unsigned int flags);",
       "parameters": [
@@ -6390,18 +6444,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtUserObjectRelease",
       "library": "CNRT",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtUserObjectRelease(cnrtUserObject_t object, unsigned int count);",
       "parameters": [
@@ -6424,10 +6479,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnrtWaitNotifier",
@@ -8574,8 +8630,8 @@
       "library": "CNDrv",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "Process-wide memory sharing broker",
+      "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
       "return_type": "CNresult",
       "signature": "CNresult cnIpcCloseMemHandle(CNaddr dptr);",
       "parameters": [
@@ -8590,18 +8646,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/ipc-cndrv-to-cndrv-device-importer.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+      "contract_stage": "I1"
     },
     {
       "name": "cnIpcGetMemHandle",
       "library": "CNDrv",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "Process-wide memory sharing broker",
+      "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
       "return_type": "CNresult",
       "signature": "CNresult cnIpcGetMemHandle(CNIpcMemHandle *pHandle, CNaddr addr);",
       "parameters": [
@@ -8624,18 +8681,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/ipc-cndrv-to-cndrv-device-exporter.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+      "contract_stage": "I1"
     },
     {
       "name": "cnIpcGetNotifierHandle",
       "library": "CNDrv",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "IPC notifier native prerequisite",
+      "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
       "return_type": "CNresult",
       "signature": "CNresult cnIpcGetNotifierHandle(CNIpcNotifierHandle *phandle, CNnotifier hnotifier);",
       "parameters": [
@@ -8657,19 +8715,20 @@
         }
       ],
       "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "status": "BLOCKED",
+      "boundary": "No client export. Native prerequisite is unavailable on MLU370-S4 / current SDK; no successful IPC notifier handle was produced.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-notifier.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+      "contract_stage": "I3"
     },
     {
       "name": "cnIpcOpenMemHandle",
       "library": "CNDrv",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "Process-wide memory sharing broker",
+      "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
       "return_type": "CNresult",
       "signature": "CNresult cnIpcOpenMemHandle(CNaddr *pdptr, CNIpcMemHandle handle, unsigned int flag);",
       "parameters": [
@@ -8700,18 +8759,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/ipc-cndrv-to-cndrv-device-importer.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+      "contract_stage": "I1"
     },
     {
       "name": "cnIpcOpenNotifierHandle",
       "library": "CNDrv",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "IPC notifier native prerequisite",
+      "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
       "return_type": "CNresult",
       "signature": "CNresult cnIpcOpenNotifierHandle(CNnotifier *phnotifier, CNIpcNotifierHandle handle);",
       "parameters": [
@@ -8733,11 +8793,12 @@
         }
       ],
       "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "status": "BLOCKED",
+      "boundary": "No client export. Native prerequisite is unavailable on MLU370-S4 / current SDK; no successful IPC notifier handle was produced.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-notifier.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+      "contract_stage": "I3"
     },
     {
       "name": "cnKernelGetAttribute",
@@ -9229,7 +9290,7 @@
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
       "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl;graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-importer.jsonl",
       "remote_test": "not_run",
       "next_step": "Probe and implement this functional family"
     },
@@ -9287,7 +9348,7 @@
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
       "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl;graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-importer.jsonl",
       "remote_test": "not_run",
       "next_step": "Probe and implement this functional family"
     },
@@ -9337,7 +9398,7 @@
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
       "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl",
       "remote_test": "not_run",
       "next_step": "Probe and implement this functional family"
     },
@@ -9346,8 +9407,8 @@
       "library": "CNDrv",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "I1",
+      "blocker": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
       "return_type": "CNresult",
       "signature": "CNresult cnMemExportToShareableHandle(void *shareableHandle, CNmemGenericAllocationHandle handle, CNmemAllocationHandleType handleType, cn_uint64_t flags);",
       "parameters": [
@@ -9386,10 +9447,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
+      "contract_stage": "I2"
     },
     {
       "name": "cnMemGetAccess",
@@ -9548,7 +9610,7 @@
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
       "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl",
       "remote_test": "not_run",
       "next_step": "Probe and implement this functional family"
     },
@@ -9713,8 +9775,8 @@
       "library": "CNDrv",
       "family": "ipc",
       "priority": 5,
-      "depends_on": "cross-process lifetime",
-      "blocker": "Remote shared-memory/address semantics not specified",
+      "depends_on": "I1",
+      "blocker": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
       "return_type": "CNresult",
       "signature": "CNresult cnMemImportFromShareableHandle(CNmemGenericAllocationHandle *handle, void *osHandle, CNmemAllocationHandleType shHandleType);",
       "parameters": [
@@ -9745,10 +9807,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-importer.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
+      "contract_stage": "I2"
     },
     {
       "name": "cnMemMap",
@@ -9804,7 +9867,7 @@
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
       "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl;graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-importer.jsonl",
       "remote_test": "not_run",
       "next_step": "Probe and implement this functional family"
     },
@@ -9872,7 +9935,7 @@
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
       "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl;graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-importer.jsonl",
       "remote_test": "not_run",
       "next_step": "Probe and implement this functional family"
     },
@@ -9956,7 +10019,7 @@
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
       "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl;graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-importer.jsonl",
       "remote_test": "not_run",
       "next_step": "Probe and implement this functional family"
     },
@@ -9990,7 +10053,7 @@
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
       "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "native_test": "graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-exporter.jsonl;graph-ipc-contracts-20261107/vmm-cndrv-posix-fd-importer.jsonl",
       "remote_test": "not_run",
       "next_step": "Probe and implement this functional family"
     },
@@ -11956,8 +12019,8 @@
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueBeginCapture(CNqueue hQueue, CNqueueCaptureMode mode);",
       "parameters": [
@@ -11980,10 +12043,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-capture.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnQueueCopyAttributes",
@@ -12057,8 +12121,8 @@
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueEndCapture(CNqueue hQueue, CNtaskTopo *pTaskTopo);",
       "parameters": [
@@ -12081,10 +12145,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-capture.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnQueueGetAttribute",
@@ -12174,8 +12239,8 @@
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueGetCaptureInfo(CNqueue hQueue, CNqueueCaptureStatus *pCaptureStatus, cn_uint64_t *idOut, CNtaskTopo *pTaskTopo, const CNtaskTopoNode **pDependenciesOut, size_t *pNumDependenciesOut);",
       "parameters": [
@@ -12230,10 +12295,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnQueueGetContext",
@@ -12364,8 +12430,8 @@
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/capture DAG",
-      "blocker": "Capture DAG execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueIsCapturing(CNqueue hQueue, CNqueueCaptureStatus *pCaptureStatus);",
       "parameters": [
@@ -12388,10 +12454,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-capture.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnQueueSetAttribute",
@@ -12518,8 +12585,8 @@
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2",
+      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueUpdateCaptureDependencies(CNqueue hQueue, CNtaskTopoNode *dependencies, size_t numDependencies, unsigned int flags);",
       "parameters": [
@@ -12558,10 +12625,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+      "contract_stage": "G3"
     },
     {
       "name": "cnQueueWaitNotifier",
@@ -12947,8 +13015,8 @@
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAcquireUserObject(CNtaskTopo hTopo, CNuserObject object, unsigned int count, unsigned int flags);",
       "parameters": [
@@ -12987,18 +13055,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnTaskTopoAddChildTopoNode",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddChildTopoNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies, CNtaskTopo hChildTopo);",
       "parameters": [
@@ -13045,18 +13114,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoAddDependencies",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddDependencies(CNtaskTopo hTopo, const CNtaskTopoNode *from, const CNtaskTopoNode *to, size_t numDependencies);",
       "parameters": [
@@ -13095,18 +13165,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoAddEmptyNode",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddEmptyNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies);",
       "parameters": [
@@ -13145,18 +13216,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoAddHostNode",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddHostNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies, const CN_HOST_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -13203,18 +13275,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnTaskTopoAddKernelNode",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddKernelNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies, const CN_KERNEL_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -13261,18 +13334,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoAddMemcpyNode",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddMemcpyNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies, const CNmemcpy3dParam *copyParams);",
       "parameters": [
@@ -13319,18 +13393,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoAddMemsetNode",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddMemsetNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies, const CN_MEMSET_NODE_PARAMS *copyParams);",
       "parameters": [
@@ -13377,18 +13452,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoChildTopoNodeGetTopo",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoChildTopoNodeGetTopo(CNtaskTopoNode hNode, CNtaskTopo *pTopo);",
       "parameters": [
@@ -13411,18 +13487,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoClone",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoClone(CNtaskTopo *pClonedTopo, CNtaskTopo hOriginTopo);",
       "parameters": [
@@ -13445,18 +13522,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoCreate",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoCreate(CNtaskTopo *pTopo, unsigned int flags);",
       "parameters": [
@@ -13479,18 +13557,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoDebugDotPrint",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoDebugDotPrint(CNtaskTopo hTopo, const char *path, unsigned int flags);",
       "parameters": [
@@ -13521,18 +13600,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnTaskTopoDestroy",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoDestroy(CNtaskTopo hTopo);",
       "parameters": [
@@ -13547,18 +13627,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoDestroyNode",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoDestroyNode(CNtaskTopoNode hNode);",
       "parameters": [
@@ -13573,18 +13654,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoEntityChildTopoNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityChildTopoNodeSetParams(CNtaskTopoEntity hEntity, CNtaskTopoNode hNode, CNtaskTopo childTopo);",
       "parameters": [
@@ -13615,18 +13697,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoEntityDestroy",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityDestroy(CNtaskTopoEntity hEntity);",
       "parameters": [
@@ -13641,18 +13724,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoEntityHostNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityHostNodeSetParams(CNtaskTopoEntity hEntity, CNtaskTopoNode hNode, const CN_HOST_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -13683,18 +13767,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnTaskTopoEntityInvoke",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityInvoke(CNtaskTopoEntity hEntity, CNqueue hqueue);",
       "parameters": [
@@ -13717,18 +13802,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoEntityKernelNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityKernelNodeSetParams(CNtaskTopoEntity hEntity, CNtaskTopoNode hNode, const CN_KERNEL_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -13759,18 +13845,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoEntityMemcpyNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityMemcpyNodeSetParams(CNtaskTopoEntity hEntity, CNtaskTopoNode hNode, const CNmemcpy3dParam *nodeParams);",
       "parameters": [
@@ -13801,18 +13888,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoEntityMemsetNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityMemsetNodeSetParams(CNtaskTopoEntity hEntity, CNtaskTopoNode hNode, const CN_MEMSET_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -13843,18 +13931,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoEntityUpdate",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityUpdate(CNtaskTopoEntity hEntity, CNtaskTopo hTopo, CNtaskTopoNode *hErrorNode_out, CNtaskTopoEntityUpdateResult *updateResult_out);",
       "parameters": [
@@ -13893,18 +13982,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoGetEdges",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoGetEdges(CNtaskTopo hTopo, CNtaskTopoNode *pNodesFrom, CNtaskTopoNode *pNodesTo, size_t *numEdges);",
       "parameters": [
@@ -13943,18 +14033,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoGetNodes",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoGetNodes(CNtaskTopo hTopo, CNtaskTopoNode *pNodes, size_t *numNodes);",
       "parameters": [
@@ -13985,18 +14076,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoGetRootNodes",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoGetRootNodes(CNtaskTopo hTopo, CNtaskTopoNode *pRootNodes, size_t *numRootNodes);",
       "parameters": [
@@ -14027,18 +14119,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoHostNodeGetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoHostNodeGetParams(CNtaskTopoNode hNode, CN_HOST_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -14061,18 +14154,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnTaskTopoHostNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoHostNodeSetParams(CNtaskTopoNode hNode, const CN_HOST_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -14095,18 +14189,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnTaskTopoInstantiate",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoInstantiate(CNtaskTopoEntity *entity, CNtaskTopo topo, CNtaskTopoNode *pErrorNode, char *logBuffer, size_t bufferSize);",
       "parameters": [
@@ -14153,18 +14248,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoKernelNodeCopyAttributes",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoKernelNodeCopyAttributes(CNtaskTopoNode dst, CNtaskTopoNode src);",
       "parameters": [
@@ -14187,18 +14283,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoKernelNodeGetAttribute",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoKernelNodeGetAttribute(CNtaskTopoNode hNode, CNkernelNodeAttrID attrId, CNkernelNodeAttrValue *valueOut);",
       "parameters": [
@@ -14229,18 +14326,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoKernelNodeGetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoKernelNodeGetParams(CNtaskTopoNode hNode, CN_KERNEL_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -14263,18 +14361,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoKernelNodeSetAttribute",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoKernelNodeSetAttribute(CNtaskTopoNode hNode, CNkernelNodeAttrID attrId, const CNkernelNodeAttrValue *value);",
       "parameters": [
@@ -14305,18 +14404,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoKernelNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoKernelNodeSetParams(CNtaskTopoNode hNode, const CN_KERNEL_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -14339,18 +14439,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoMemcpyNodeGetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoMemcpyNodeGetParams(CNtaskTopoNode hNode, CNmemcpy3dParam *nodeParams);",
       "parameters": [
@@ -14373,18 +14474,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoMemcpyNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoMemcpyNodeSetParams(CNtaskTopoNode hNode, const CNmemcpy3dParam *nodeParams);",
       "parameters": [
@@ -14407,18 +14509,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoMemsetNodeGetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoMemsetNodeGetParams(CNtaskTopoNode hNode, CN_MEMSET_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -14441,18 +14544,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoMemsetNodeSetParams",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1",
+      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoMemsetNodeSetParams(CNtaskTopoNode hNode, const CN_MEMSET_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -14475,18 +14579,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+      "contract_stage": "G2"
     },
     {
       "name": "cnTaskTopoNodeFindInClone",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoNodeFindInClone(CNtaskTopoNode *pClonedNode, CNtaskTopoNode hOriginNode, CNtaskTopo hClonedTopo);",
       "parameters": [
@@ -14517,18 +14622,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoNodeGetDependencies",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoNodeGetDependencies(CNtaskTopoNode hNode, CNtaskTopoNode *pDependencies, size_t *numDependencies);",
       "parameters": [
@@ -14559,18 +14665,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoNodeGetDependentNodes",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoNodeGetDependentNodes(CNtaskTopoNode hNode, CNtaskTopoNode *pDependentNodes, size_t *numDependentNodes);",
       "parameters": [
@@ -14601,18 +14708,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoNodeGetType",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoNodeGetType(CNtaskTopoNode hNode, CNtaskTopoNodeType *pType);",
       "parameters": [
@@ -14635,18 +14743,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnTaskTopoReleaseUserObject",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoReleaseUserObject(CNtaskTopo hTopo, CNuserObject object, unsigned int count);",
       "parameters": [
@@ -14677,18 +14786,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnTaskTopoRemoveDependencies",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "Owned DAG and node identities",
+      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoRemoveDependencies(CNtaskTopo hTopo, const CNtaskTopoNode *from, const CNtaskTopoNode *to, size_t numDependencies);",
       "parameters": [
@@ -14727,18 +14837,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
+      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+      "contract_stage": "G1"
     },
     {
       "name": "cnUserObjectAcquire",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnUserObjectAcquire(CNuserObject object, unsigned int count);",
       "parameters": [
@@ -14761,18 +14872,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnUserObjectCreate",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnUserObjectCreate(CNuserObject *object_out, void *ptr, CNhostFn destroy, unsigned int initialRefcount, unsigned int flags);",
       "parameters": [
@@ -14819,18 +14931,19 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnUserObjectRelease",
       "library": "CNDrv",
       "family": "graph",
       "priority": 5,
-      "depends_on": "queue/module/host callback lifecycle",
-      "blocker": "Graph DAG and capture execution model not implemented",
+      "depends_on": "G1; G2; G3",
+      "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
       "return_type": "CNresult",
       "signature": "CNresult cnUserObjectRelease(CNuserObject object, unsigned int count);",
       "parameters": [
@@ -14853,10 +14966,11 @@
       ],
       "implementation": "none",
       "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
+      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+      "contract_stage": "G4"
     },
     {
       "name": "cnWaitNotifier",
@@ -16450,5 +16564,136 @@
     "outputs_on_error": "Default success-only publication. native_status u32 envelope permits reviewed native error outputs (Driver invalid PCI writes dev=-1).",
     "strings": "PCI ID output requires len>=13; input fixed capacity64 including NUL.",
     "queue_union": "AccessPolicyWindow uses allocation,offset,bytes,f32 ratio,hit,miss. NULL attribute queue rejected. Freed window allocation cannot be reverse-relocated."
+  },
+  "graph_ipc_plan": {
+    "phase": "native_contracts_verified_remote_implementation_pending",
+    "evidence": "graph-ipc-contracts-20261107/README.md",
+    "design": "docs/GRAPH_IPC.md",
+    "object_models": [
+      {
+        "name": "GraphID",
+        "scope": "session generation",
+        "owns": "NodeIDs and mutable DAG payloads",
+        "retirement": "invalidate graph and node IDs; entity snapshots remain alive"
+      },
+      {
+        "name": "NodeID",
+        "scope": "parent GraphID and session generation",
+        "owns": "typed copied parameter records",
+        "retirement": "sever DAG edges; existing entity snapshots remain alive"
+      },
+      {
+        "name": "EntityID",
+        "scope": "session generation; independent of source GraphID lifetime",
+        "owns": "independent versioned node snapshots, allocation/module/Host payload leases and ordered invocation records",
+        "retirement": "public ID retires immediately; native entity and leases wait for submitted work"
+      },
+      {
+        "name": "CaptureID",
+        "scope": "session generation, queue and logical client thread",
+        "owns": "capturing DAG, frontier dependencies and mode",
+        "retirement": "end transfers DAG ownership; invalidated capture still requires end/cleanup"
+      },
+      {
+        "name": "IpcExportToken",
+        "scope": "server instance across sessions",
+        "owns": "reference to device or Host backing; never a native address",
+        "retirement": "source free/reset/EOF revokes new opens; existing imports and operations hold backing until final release"
+      },
+      {
+        "name": "ImportedAllocationID",
+        "scope": "importer session generation",
+        "owns": "local fake VA and broker backing lease",
+        "retirement": "close/reset/EOF drains own operations and drops mapping ref; never calls ordinary free on exporter storage"
+      },
+      {
+        "name": "VmmBackingID",
+        "scope": "broker-managed backing plus owning handle refs",
+        "owns": "generic allocation refs independent of VA reservations and exported descriptors",
+        "retirement": "reclaim only after generic handles, mappings and exported descriptor leases release"
+      }
+    ],
+    "stages": [
+      {
+        "id": "G1",
+        "family": "graph",
+        "title": "Owned DAG and node identities",
+        "depends_on": [],
+        "missing": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "acceptance": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree."
+      },
+      {
+        "id": "G2",
+        "family": "graph",
+        "title": "Typed nodes and executable snapshots",
+        "depends_on": [
+          "G1"
+        ],
+        "missing": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree."
+      },
+      {
+        "id": "G3",
+        "family": "graph",
+        "title": "Capture and replay",
+        "depends_on": [
+          "G1",
+          "G2"
+        ],
+        "missing": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "acceptance": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions."
+      },
+      {
+        "id": "G4",
+        "family": "graph",
+        "title": "Client callbacks user objects and output files",
+        "depends_on": [
+          "G1",
+          "G2",
+          "G3"
+        ],
+        "missing": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "acceptance": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path."
+      },
+      {
+        "id": "I1",
+        "family": "ipc",
+        "title": "Process-wide memory sharing broker",
+        "depends_on": [],
+        "missing": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
+        "acceptance": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload."
+      },
+      {
+        "id": "I2",
+        "family": "ipc",
+        "title": "VMM backing reservation and OS-handle transport",
+        "depends_on": [
+          "I1"
+        ],
+        "missing": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
+        "acceptance": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
+        "prerequisite_apis": [
+          "cnMemAddressFree",
+          "cnMemAddressReserve",
+          "cnMemCreate",
+          "cnMemGetAccess",
+          "cnMemGetAllocationGranularity",
+          "cnMemGetAllocationPropertiesFromHandle",
+          "cnMemMap",
+          "cnMemRelease",
+          "cnMemRetainAllocationHandle",
+          "cnMemSetAccess",
+          "cnMemUnmap"
+        ]
+      },
+      {
+        "id": "I3",
+        "family": "ipc",
+        "title": "IPC notifier native prerequisite",
+        "depends_on": [],
+        "missing": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
+        "acceptance": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs."
+      }
+    ]
   }
 }

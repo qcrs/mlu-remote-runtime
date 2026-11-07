@@ -1,0 +1,13 @@
+{"library":"CNDrv","pid":4161358,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnInit(0)","status":0}
+{"call":"cnCtxCreate(&context,0,0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"2.5.2"}
+{"call":"cnDeviceGetAttribute(&supported,CN_DEVICE_ATTRIBUTE_IPCNOTIFIER_SUPPORTED,0)","status":0}
+{"check":"ipc_notifier_attribute_zero","pass":true}
+{"call":"cnCreateNotifier(interprocess|disable_timing_all)","status":100050}
+{"check":"ipc_notifier_creation_not_supported","pass":true}
+{"call":"cnDeviceGetAttribute(&vmm,CN_DEVICE_ATTRIBUTE_VIRTUAL_ADDRESS_MANAGEMENT_SUPPORTED,0)","status":0}
+{"call":"cnDeviceGetAttribute(&fd,CN_DEVICE_ATTRIBUTE_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR_SUPPORTED,0)","status":0}
+{"vmm_supported":1,"posix_fd_supported":1}
+{"call":"cnCtxDestroy(context)","status":0}

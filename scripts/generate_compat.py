@@ -66,12 +66,22 @@ families=[]
 for family in sorted({a['family'] for a in schema['apis']}):
     apis=[a for a in schema['apis'] if a['family']==family]
     families.append(dict(family=family,priority=min(a['priority'] for a in apis),counts=dict(collections.Counter(a['status'] for a in apis)),
-        remaining=[dict(api=a['name'],status=a['status'],priority=a['priority'],depends_on=a['depends_on'],blocker=a['blocker'],next_step=a['next_step'],closure=a.get('closure',{})) for a in apis if a['status']!='IMPLEMENTED']))
+        remaining=[dict(api=a['name'],status=a['status'],priority=a['priority'],depends_on=a['depends_on'],blocker=a['blocker'],next_step=a['next_step'],closure=a.get('closure',{}),
+                        **({'contract_stage':a['contract_stage']} if a.get('contract_stage') else {})) for a in apis if a['status']!='IMPLEMENTED']))
+    stages=[stage for stage in schema.get('graph_ipc_plan',{}).get('stages',[]) if stage['family']==family]
+    if stages: families[-1]['implementation_stages']=stages
 plan=['# API Census / 功能族计划','','由 `scripts/generate_compat.py` 从当前 SDK 声明及 Schema 生成。完整、部分、阻塞、范围外、拒绝、未实现是不同状态；剩余项的逐 API 依赖、阻塞和下一步见 `family-plan.json`。',
       '','| 功能族 | 公共声明 | 完整 | 部分 | 阻塞 | 范围外 | 拒绝 | 未实现 | 优先级 |','|---|---:|---:|---:|---:|---:|---:|---:|---:|']
 for f in families:
     c=f['counts']; plan.append('| '+f['family']+' | '+str(sum(c.values()))+' | '+' | '.join(str(c.get(k,0)) for k in ('IMPLEMENTED','PARTIAL_IMPLEMENTED','BLOCKED','OUT_OF_SCOPE','UNSUPPORTED','NOT_IMPLEMENTED'))+' | P'+str(f['priority'])+' |')
 plan+=['','P0：设备/context/版本基础查询；P1：owned memory、stride copy、queue/notifier；P2：Host completion 与 kernel/module ABI；P3：Host 数值工具；P4：多设备 Peer；P5：Graph/IPC。具体 API 可在同一功能族中按依赖再排序。','']
+if schema.get('graph_ipc_plan'):
+    plan+=['## Graph / IPC 分批实现契约','','原生契约已验证，Remote 仍待实现；共享状态机、SDK 特例和验收见 [设计](../docs/GRAPH_IPC.md) 与 [证据](../evidence/'+schema['graph_ipc_plan']['evidence']+')。native_test 中的 Notifier 证据证明创建前提缺失，并非成功导出/导入。',
+           '','| 批次 | 能力 | API 数 | 依赖 |','|---|---|---:|---|']
+    for stage in schema['graph_ipc_plan']['stages']:
+        count=sum(a.get('contract_stage')==stage['id'] for a in schema['apis'])
+        plan.append('| '+stage['id']+' | '+stage['title']+' | '+str(count)+' | '+(', '.join(stage['depends_on']) or '无')+' |')
+    plan+=['','每批具体缺口及验收见 `family-plan.json` 的 `implementation_stages`；该计划不新增 wire opcode、客户端导出或 IMPLEMENTED 声明。','']
 for relative, text in [('compat/api-ledger.csv',buf.getvalue()),('compat/summary.json',json.dumps(summary,indent=2,ensure_ascii=False)+'\n'),
                        ('compat/annotations.json',json.dumps(annotations,indent=2,ensure_ascii=False)+'\n'),('compat/family-plan.json',json.dumps(families,indent=2,ensure_ascii=False)+'\n'),('compat/family-plan.md','\n'.join(plan))]:
     target=ROOT/relative

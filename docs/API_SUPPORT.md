@@ -1,13 +1,19 @@
 # API 与能力支持入口
 
-[兼容性台账 CSV](../compat/api-ledger.csv) 是逐 API 的当前记录；[Schema](../schema/mlu_api_schema.json) 保存人工审查，[annotations](../compat/annotations.json) 是生成视图，不能仅因出现导出就算已实现。[summary](../compat/summary.json) 提供头文件哈希及统计。
+更新：2026-11-07。当前认证范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64→AArch64。逐 API 状态、boundary 和 Native/Remote 证据见 [compatibility ledger](../compat/api-ledger.csv)；人工审查来源为 [Schema](../schema/mlu_api_schema.json)，统计和头文件哈希见 [summary](../compat/summary.json)。导出存在不等于语义实现。
 
-当前 SDK 的 130 个 CNRT 公共入口中：20 已实现、28 部分实现、3 明确 NotSupport、79 未提供导出。180 个 CNDrv 公共入口中：25 已实现、45 部分实现、1 明确 NotSupport、109 未提供导出；合计 45/73/4/188。服务端使用标记与客户端导出分别核对。6 个私有 BANG hooks 和 legacy cnrtInit 不计入公共 API 分母。新增 [查询功能族](QUERY_BOUNDARIES.md) 已接通 native backend。
+| 层 | IMPLEMENTED | PARTIAL | BLOCKED | OUT_OF_SCOPE | UNSUPPORTED | NOT_IMPLEMENTED | 合计 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CNRT | 59 | 0 | 5 | 0 | 1 | 65 | 130 |
+| CNDrv | 86 | 0 | 6 | 2 | 0 | 86 | 180 |
+| 总计 | 145 | 0 | 11 | 2 | 1 | 151 | 310 |
 
-台账的 IMPLEMENTED 限于行内的单设备会话、当前 SDK/CPU 等测试边界。未实现入口可能在 loader 阶段失败；部分实现不能视为原生所有语义完整兼容；明确拒绝也不能视为原生硬件不支持。
+6 个私有 BANG hooks 和 legacy `cnrtInit` 不计入公共分母。IMPLEMENTED 以行内范围为限；NOT_IMPLEMENTED 未提供客户端导出，应用可能在符号解析时失败；UNSUPPORTED 为 Shim 明确拒绝，不等于 Native 硬件不支持。原 97 个 PARTIAL 的审计及后续 resolution 见 [收口记录](API_COMPATIBILITY_CLOSURE.md)。
 
-真实 image upload 和通用 launch 已实现，支持当前实测 CNCC/CNFB/ELF 及 primitive 参数，不再受六 preset 限制。一个 registration 现在持有一个 module 和多个 KernelID，已验证未初始化 device globals 的 Kernel 内部共享、reset/reload 和 DSO 生命周期；详见 [共享模块证据](../evidence/shared-module-20261102/README.md)。Host symbol API、初始化/constant globals、复杂参数、真异步 D2H、默认 queue/多设备尚有缺口。
+当前核心支持普通 CNCC/BANG image/module 注册和通用 launch、Driver 独立 Context/TLS、AllocationID+offset、显式/default Queue、Notifier ordering/timing、统一四方向 copy、Host registry 与真异步 D2H deferred writeback。当前编译器 metadata 支持自然 LP64 nested struct/array 的 pointer 字段重定位、普通初始化/const globals 和 module/DSO/reset 生命周期；device pointer graph、packed/opaque aggregate 和未知 image ABI 不在该认证中。两套 Host cast 按本机 SDK 实测支持/拒绝矩阵收口。
 
-按工程能力统计的 20 项矩阵、证据、阻塞和不支持原因在 [PROJECT_STATE](PROJECT_STATE.md)；各 API 的 native_test/remote_test 见 CSV。CNNL 无 SDK、第二物理主机无连接配置属于能力阻塞，不能混进 CNRT/CNDrv API 分母。[M1～M4 路线](../design/MILESTONES.md) 给出每项依赖与验收标准。
+最近完整核心回归为 76/76，功能族 15/15，8 个普通 BANG workload 共 19 输入在 Native/replacement/preload 的 57 次运行通过。隔离客户端隐藏本地 SDK 和设备节点；尚未作为第二物理主机认证。实现范围、共享基础能力和证据入口见 [PROJECT_STATE](PROJECT_STATE.md)、[Host completion](../evidence/host-async-20261107/README.md)、[Host cast](HOST_CAST.md)。
 
-新增 [Driver Shim](DRIVER_SHIM.md) 已覆盖独立 native context/TLS、module 文件与内存上传、通用 launch、显式/NULL queue、基础 memory/notifier；context close 有 native cleanup ACK。异步 D2H、NULL queue 异步 copy、复杂 kernel 类型、其余 context/queue 模式仍有明确边界。不能据此声称 vendor CNRT 的全部内部 Driver 调用均可接管。
+Graph 102 项与普通 memory/VMM IPC 8 项仍待实现。[Graph/IPC 设计](GRAPH_IPC.md) 和 [family plan](../compat/family-plan.md) 已定义分批状态机；[本批 Native 13 场景 / 74 检查](../evidence/graph-ipc-contracts-20261107/README.md) 不代表 Remote 成功。11 个 BLOCKED 中，7 个 Peer 需要第二设备，4 个 notifier IPC 需要支持 IPC notifier 的设备/SDK；其余 Host/device IPC 与 VMM 已有 Native 正例，继续列为实现工作。
+
+`cnMallocSecurity`、`cnMallocFrameBuffer` 的专用消费者语义范围外；`cnrtMallocConstant` 明确拒绝。CNNL 库缺失属于独立工程限制，不在此 310 项分母。生产认证/TLS、异构 CPU 和其他 SDK/image ABI 未包含在当前完成声明中。

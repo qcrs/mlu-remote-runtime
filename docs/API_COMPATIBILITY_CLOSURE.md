@@ -71,3 +71,13 @@ MLUABI02 明确提供自然 LP64 聚合参数的 pointer 字段 offset；两库�
 共享 Host engine 覆盖 legacy plain/scalar 24/13 对、V2 plain/scalar 53/17 对，以及两版本 full-shape by-channel f32→i8/i16；参数持有自己的 shape/数组。7,507 个观察在 Native、replacement、preload、隐藏 SDK/设备客户端中逐字节一致，远端均不可达；支持/拒绝状态与源/目标 guards 一同校验。数值实现保留原生 rounding、offset 位解释、窄化和成功但不写目标的特例；未把 INT4/fix8/quant8 等 enum 声明当成 Native 支持。Native legacy i16 -32768→half 挂起缺陷不复制，有限数值认证边界见 [HOST_CAST](HOST_CAST.md)。
 
 专项、UBSan、功能族 15/15 和核心 76/76 证据见 [host-cast](../evidence/host-cast-20261107/README.md)。核心 PARTIAL 已清零；继续推进 Graph/IPC 的共享状态机与跨进程 lifetime，不能据此宣称整个项目完成。
+
+## 2026-11-07 Graph / IPC 原生契约阶段
+
+新增双库 Native conformance harness，13/13 场景、74 个检查通过。覆盖数值 DAG、dependency/clone、instantiate snapshot、源图销毁后回放、relaxed capture 当次 Host source，以及独立 exec 的四种 device IPC 组合、CNRT Host CPU 共享和 VMM POSIX FD import/map/write。具体日志和边界见 [本批证据](../evidence/graph-ipc-contracts-20261107/README.md)。这批没有 Graph/IPC Remote 数值测试，runtime 实现与客户端导出不变，既有核心 76/76 属于上一提交 `58b7e6c`。
+
+4 个 notifier IPC get/open API 由 NOT_IMPLEMENTED 改为 BLOCKED：本机 IPCNOTIFIER_SUPPORTED=0，两库合法 interprocess/disable_timing_all 创建返回 100050 / NotSupported，无法建立有效原生 handle。native_test 仅记录此创建前提，未把 get/open 拒绝或未运行算成成功实现。加上原有 7 个 Peer，当前为 145 IMPLEMENTED、0 PARTIAL、11 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、151 NOT_IMPLEMENTED；历史审计与 resolution 计数保持原样。
+
+普通 memory/Host/VMM IPC 已有 Native 正例，仍为 NOT_IMPLEMENTED。当前 SDK 重复 export 同 allocation 失败，同进程跨 Context 的 IPC open 也失败；多线程 Server 因此需要 broker 及兼容 Context 的共享执行模型，Host CPU 共享和客户端 FD 传递亦需额外架构。VMM 的 void* FD 输出实测写 8 bytes，后续 adapter 必须保留本机 ABI 行为。
+
+Schema 的 `graph_ipc_plan` 定义 GraphID/NodeID/EntityID/CaptureID 与 export/import/VMM refs 的计划模型，将两族逐 API 分为 G1～G4、I1～I3；生成器校验阶段唯一性、有序依赖和 family 归属，输出 [family plan](../compat/family-plan.md) 的分批缺口与验收。这些是待实现契约，不是已完成的共享 runtime 基础。下一阶段先建立 owned DAG 与 entity payload/lease，再接 capture replay、客户端 callback/user refs；IPC 先解决 process-wide backing/执行路由，再推进 VMM/OS handle。详见 [Graph/IPC 设计](GRAPH_IPC.md)。

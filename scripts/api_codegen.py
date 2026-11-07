@@ -42,6 +42,27 @@ def codec(fields, obj, wire, encode):
 def validate(schema):
     if schema.get('schema_version') != 2: raise ValueError('schema_version must be 2')
     if len(set(schema['operations'].values())) != len(schema['operations']): raise ValueError('duplicate opcode')
+    # Reviewed planning metadata is kept separate from generated RPC capability.
+    # Every Graph/IPC API must have exactly one stage with explicit prerequisites.
+    plan=schema.get('graph_ipc_plan')
+    if plan:
+        stages={}
+        api_names={api['name'] for api in schema['apis']}
+        for stage in plan['stages']:
+            sid=stage['id']
+            if (sid in stages or stage['family'] not in ('graph','ipc') or
+                not all(stage.get(k) for k in ('title','missing','acceptance')) or
+                any(dep not in stages for dep in stage['depends_on']) or
+                any(api not in api_names for api in stage.get('prerequisite_apis',[]))):
+                raise ValueError('invalid or unordered Graph/IPC stage: '+sid)
+            stages[sid]=stage
+        for api in schema['apis']:
+            sid=api.get('contract_stage')
+            if api['family'] in ('graph','ipc'):
+                if sid not in stages or stages[sid]['family']!=api['family']:
+                    raise ValueError('Graph/IPC API lacks matching contract stage: '+api['name'])
+            elif sid:
+                raise ValueError('unexpected Graph/IPC stage: '+api['name'])
     seen = set(); codes = set()
     for r in schema['typed_rpc']:
         if r['name'] in seen or r['opcode'] in codes: raise ValueError('duplicate typed RPC')

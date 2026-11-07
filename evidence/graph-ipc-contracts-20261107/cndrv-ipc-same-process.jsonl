@@ -1,0 +1,15 @@
+{"library":"CNDrv","pid":4161361,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnInit(0)","status":0}
+{"call":"cnCtxCreate(&context,0,0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"2.5.2"}
+{"call":"alloc(&a,N)","status":0}
+{"call":"fill(a,17,N)","status":0}
+{"call":"export_mem(&handle,a)","status":0}
+{"call":"cnCtxCreate(&importer,0,0)","status":0}
+{"call":"same_process_cross_context_open","status":100102}
+{"check":"sdk_rejects_same_process_ipc_open","pass":true}
+{"call":"cnCtxDestroy(importer)","status":0}
+{"call":"cnCtxSetCurrent(context)","status":0}
+{"call":"release(a)","status":0}
+{"call":"cnCtxDestroy(context)","status":0}

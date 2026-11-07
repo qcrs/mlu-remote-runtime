@@ -1,0 +1,25 @@
+$ python3 scripts/generate_rpc.py --check
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 45 RPC codecs/dispatch/bindings, 44 public wrappers
+exit=0
+
+$ python3 scripts/generate_compat.py --check
+{"CNRT": {"NOT_IMPLEMENTED": 65, "IMPLEMENTED": 59, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 86, "IMPLEMENTED": 86, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}
+exit=0
+
+$ python3 scripts/verify-api-contracts.py
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 45 RPC codecs/dispatch/bindings, 44 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 65, "IMPLEMENTED": 59, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 86, "IMPLEMENTED": 86, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 151, 'IMPLEMENTED': 145, 'BLOCKED': 11, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 2}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence
+exit=0
+
+$ python3 scripts/verify-closure-audit.py
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 151, 'IMPLEMENTED': 145, 'BLOCKED': 11, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 2}
+exit=0
+
+$ git diff --check
+exit=0

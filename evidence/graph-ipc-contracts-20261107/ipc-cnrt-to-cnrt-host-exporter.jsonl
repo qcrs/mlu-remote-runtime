@@ -1,0 +1,14 @@
+{"library":"CNRT","pid":4161396,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnrtSetDevice(0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"6.5.2"}
+{"call":"host_alloc(&h,N)","status":0}
+{"call":"export_mem(&handle,a)","status":0}
+{"call":"repeated_export","status":632015}
+{"check":"sdk_repeated_export_rejects","pass":true}
+{"check":"first_export_is_nonzero","pass":true}
+{"ready":true,"handle":"ffff80001dfdd000","host":true}
+{"check":"exporter_waited_for_importers","pass":true}
+{"check":"exporter_sees_imported_offset_write","pass":true}
+{"call":"host_free(h)","status":0}
+{"call":"cnrtDeviceReset()","status":0}

@@ -73,919 +73,1064 @@
         "api": "cnrtQueueBeginCapture",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnrtQueueEndCapture",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnrtQueueGetCaptureInfo",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnrtQueueIsCapturing",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/capture DAG",
-        "blocker": "Capture DAG execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnrtQueueUpdateCaptureDependencies",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnrtTaskTopoAcquireUserObject",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtTaskTopoAddChildTopoNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoAddDependencies",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoAddEmptyNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoAddHostNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtTaskTopoAddKernelNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoAddMemcpyNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoAddMemsetNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoChildTopoNodeGetTopo",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoClone",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoCreate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoDebugDotPrint",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtTaskTopoDestroy",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoDestroyNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoEntityChildTopoNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoEntityDestroy",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoEntityHostNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtTaskTopoEntityInvoke",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoEntityKernelNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoEntityMemcpyNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoEntityMemsetNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoEntityUpdate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoGetEdges",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoGetNodes",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoGetRootNodes",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoHostNodeGetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtTaskTopoHostNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtTaskTopoInstantiate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoKernelNodeCopyAttributes",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoKernelNodeGetAttribute",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoKernelNodeGetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoKernelNodeSetAttribute",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoKernelNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoMemcpyNodeGetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoMemcpyNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoMemsetNodeGetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoMemsetNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoNodeFindInClone",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoNodeGetDependencies",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoNodeGetDependentNodes",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoNodeGetType",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoReleaseUserObject",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtTaskTopoRemoveDependencies",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnrtUserObjectAcquire",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtUserObjectCreate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnrtUserObjectRelease",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnQueueBeginCapture",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnQueueEndCapture",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnQueueGetCaptureInfo",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnQueueIsCapturing",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/capture DAG",
-        "blocker": "Capture DAG execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnQueueUpdateCaptureDependencies",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2",
+        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
+        "closure": {},
+        "contract_stage": "G3"
       },
       {
         "api": "cnTaskTopoAcquireUserObject",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnTaskTopoAddChildTopoNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoAddDependencies",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoAddEmptyNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoAddHostNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnTaskTopoAddKernelNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoAddMemcpyNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoAddMemsetNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoChildTopoNodeGetTopo",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoClone",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoCreate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoDebugDotPrint",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnTaskTopoDestroy",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoDestroyNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoEntityChildTopoNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoEntityDestroy",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoEntityHostNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnTaskTopoEntityInvoke",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoEntityKernelNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoEntityMemcpyNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoEntityMemsetNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoEntityUpdate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoGetEdges",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoGetNodes",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoGetRootNodes",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoHostNodeGetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnTaskTopoHostNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnTaskTopoInstantiate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoKernelNodeCopyAttributes",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoKernelNodeGetAttribute",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoKernelNodeGetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoKernelNodeSetAttribute",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoKernelNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoMemcpyNodeGetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoMemcpyNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoMemsetNodeGetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoMemsetNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1",
+        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "closure": {},
+        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoNodeFindInClone",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoNodeGetDependencies",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoNodeGetDependentNodes",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoNodeGetType",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoReleaseUserObject",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnTaskTopoRemoveDependencies",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Owned DAG and node identities",
+        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "closure": {},
+        "contract_stage": "G1"
       },
       {
         "api": "cnUserObjectAcquire",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnUserObjectCreate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
       },
       {
         "api": "cnUserObjectRelease",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "queue/module/host callback lifecycle",
-        "blocker": "Graph DAG and capture execution model not implemented",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "G1; G2; G3",
+        "blocker": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
+        "closure": {},
+        "contract_stage": "G4"
+      }
+    ],
+    "implementation_stages": [
+      {
+        "id": "G1",
+        "family": "graph",
+        "title": "Owned DAG and node identities",
+        "depends_on": [],
+        "missing": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+        "acceptance": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree."
+      },
+      {
+        "id": "G2",
+        "family": "graph",
+        "title": "Typed nodes and executable snapshots",
+        "depends_on": [
+          "G1"
+        ],
+        "missing": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+        "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree."
+      },
+      {
+        "id": "G3",
+        "family": "graph",
+        "title": "Capture and replay",
+        "depends_on": [
+          "G1",
+          "G2"
+        ],
+        "missing": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "acceptance": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions."
+      },
+      {
+        "id": "G4",
+        "family": "graph",
+        "title": "Client callbacks user objects and output files",
+        "depends_on": [
+          "G1",
+          "G2",
+          "G3"
+        ],
+        "missing": "Client-side callback/destructor execution, callback ordering, user-object refs and client-local DOT output are absent.",
+        "acceptance": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path."
       }
     ]
   },
@@ -1139,116 +1284,170 @@
     "family": "ipc",
     "priority": 5,
     "counts": {
-      "NOT_IMPLEMENTED": 12
+      "NOT_IMPLEMENTED": 8,
+      "BLOCKED": 4
     },
     "remaining": [
       {
         "api": "cnrtAcquireMemHandle",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Process-wide memory sharing broker",
+        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
+        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "closure": {},
+        "contract_stage": "I1"
       },
       {
         "api": "cnrtIpcGetNotifierHandle",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "IPC notifier native prerequisite",
+        "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
+        "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+        "closure": {},
+        "contract_stage": "I3"
       },
       {
         "api": "cnrtIpcOpenNotifierHandle",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "IPC notifier native prerequisite",
+        "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
+        "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+        "closure": {},
+        "contract_stage": "I3"
       },
       {
         "api": "cnrtMapMemHandle",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Process-wide memory sharing broker",
+        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
+        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "closure": {},
+        "contract_stage": "I1"
       },
       {
         "api": "cnrtUnMapMemHandle",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Process-wide memory sharing broker",
+        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
+        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "closure": {},
+        "contract_stage": "I1"
       },
       {
         "api": "cnIpcCloseMemHandle",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Process-wide memory sharing broker",
+        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
+        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "closure": {},
+        "contract_stage": "I1"
       },
       {
         "api": "cnIpcGetMemHandle",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Process-wide memory sharing broker",
+        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
+        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "closure": {},
+        "contract_stage": "I1"
       },
       {
         "api": "cnIpcGetNotifierHandle",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "IPC notifier native prerequisite",
+        "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
+        "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+        "closure": {},
+        "contract_stage": "I3"
       },
       {
         "api": "cnIpcOpenMemHandle",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "Process-wide memory sharing broker",
+        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
+        "next_step": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
+        "closure": {},
+        "contract_stage": "I1"
       },
       {
         "api": "cnIpcOpenNotifierHandle",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "IPC notifier native prerequisite",
+        "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
+        "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+        "closure": {},
+        "contract_stage": "I3"
       },
       {
         "api": "cnMemExportToShareableHandle",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "I1",
+        "blocker": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
+        "next_step": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
+        "closure": {},
+        "contract_stage": "I2"
       },
       {
         "api": "cnMemImportFromShareableHandle",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
-        "depends_on": "cross-process lifetime",
-        "blocker": "Remote shared-memory/address semantics not specified",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
+        "depends_on": "I1",
+        "blocker": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
+        "next_step": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
+        "closure": {},
+        "contract_stage": "I2"
+      }
+    ],
+    "implementation_stages": [
+      {
+        "id": "I1",
+        "family": "ipc",
+        "title": "Process-wide memory sharing broker",
+        "depends_on": [],
+        "missing": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
+        "acceptance": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload."
+      },
+      {
+        "id": "I2",
+        "family": "ipc",
+        "title": "VMM backing reservation and OS-handle transport",
+        "depends_on": [
+          "I1"
+        ],
+        "missing": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
+        "acceptance": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
+        "prerequisite_apis": [
+          "cnMemAddressFree",
+          "cnMemAddressReserve",
+          "cnMemCreate",
+          "cnMemGetAccess",
+          "cnMemGetAllocationGranularity",
+          "cnMemGetAllocationPropertiesFromHandle",
+          "cnMemMap",
+          "cnMemRelease",
+          "cnMemRetainAllocationHandle",
+          "cnMemSetAccess",
+          "cnMemUnmap"
+        ]
+      },
+      {
+        "id": "I3",
+        "family": "ipc",
+        "title": "IPC notifier native prerequisite",
+        "depends_on": [],
+        "missing": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
+        "acceptance": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs."
       }
     ]
   },

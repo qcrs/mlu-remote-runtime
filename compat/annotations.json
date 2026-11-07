@@ -231,6 +231,22 @@
     "next_step": "",
     "blocker": ""
   },
+  "cnrtIpcGetNotifierHandle": {
+    "status": "BLOCKED",
+    "boundary": "No client export. Native prerequisite is unavailable on MLU370-S4 / current SDK; no successful IPC notifier handle was produced.",
+    "native_test": "graph-ipc-contracts-20261107/cnrt-notifier.jsonl",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+    "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK."
+  },
+  "cnrtIpcOpenNotifierHandle": {
+    "status": "BLOCKED",
+    "boundary": "No client export. Native prerequisite is unavailable on MLU370-S4 / current SDK; no successful IPC notifier handle was produced.",
+    "native_test": "graph-ipc-contracts-20261107/cnrt-notifier.jsonl",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+    "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK."
+  },
   "cnrtMalloc": {
     "status": "IMPLEMENTED",
     "boundary": "Owned allocation and PROT_NONE fake VA; zero bytes returns NULL; 1024 live server allocations",
@@ -806,6 +822,22 @@
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log; module-accounting-20261107/relocation-driver-remote.log; module-accounting-20261107/relocation-driver-preload.log; module-accounting-20261107/relocation-driver-isolated.log; module-accounting-20261107/relocation-protocol.log; module-accounting-20261107/metadata-validation.log",
     "next_step": "",
     "blocker": ""
+  },
+  "cnIpcGetNotifierHandle": {
+    "status": "BLOCKED",
+    "boundary": "No client export. Native prerequisite is unavailable on MLU370-S4 / current SDK; no successful IPC notifier handle was produced.",
+    "native_test": "graph-ipc-contracts-20261107/cndrv-notifier.jsonl",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+    "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK."
+  },
+  "cnIpcOpenNotifierHandle": {
+    "status": "BLOCKED",
+    "boundary": "No client export. Native prerequisite is unavailable on MLU370-S4 / current SDK; no successful IPC notifier handle was produced.",
+    "native_test": "graph-ipc-contracts-20261107/cndrv-notifier.jsonl",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+    "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK."
   },
   "cnKernelGetAttribute": {
     "status": "IMPLEMENTED",
