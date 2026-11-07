@@ -72,6 +72,26 @@ int main(int argc,char **argv) {
     pitched(1);
     ASSERT(cnDeviceGetAttribute(NULL,CN_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR,dev)!=0);
     if(argc>2) {
+      size_t path_usage=0, fat_usage=0;
+      OK(cnModuleQueryMemoryUsage(argv[2],&path_usage));
+      FILE *image_file=fopen(argv[2],"rb");
+      ASSERT(image_file!=NULL);
+      ASSERT(!fseek(image_file,0,SEEK_END));
+      long image_size=ftell(image_file);
+      ASSERT(image_size>0);
+      ASSERT(!fseek(image_file,0,SEEK_SET));
+      void *image=malloc((size_t)image_size);
+      ASSERT(image!=NULL);
+      ASSERT(fread(image,1,(size_t)image_size,image_file)==(size_t)image_size);
+      fclose(image_file);
+      OK(cnModuleQueryFatBinaryMemoryUsage(image,&fat_usage));
+      free(image);
+      ASSERT(path_usage>0 && path_usage==fat_usage);
+      size_t missing_usage=0;
+      ASSERT(cnModuleQueryMemoryUsage("/definitely/missing-mlu-module.cnfatbin",&missing_usage)!=CN_SUCCESS);
+      unsigned char malformed[8]={0};
+      ASSERT(cnModuleQueryFatBinaryMemoryUsage(malformed,&missing_usage)!=CN_SUCCESS);
+      printf("driver module memory usage path=%zu fatbin=%zu\n",path_usage,fat_usage);
       CNmodule m; CNkernel k; OK(cnModuleLoad(argv[2],&m)); OK(cnModuleGetKernel(m,"_Z10vector_addPfPKfS1_i",&k));
       for(int i=0;i<5;++i) { cn_int64_t v=-1; OK(cnKernelGetAttribute(&v,(CNkernel_attribute)i,k)); printf("kernel attribute %d %ld\n",i,(long)v); }
       OK(cnModuleUnload(m));

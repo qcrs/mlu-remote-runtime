@@ -16,8 +16,8 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 | 层 | 已实现 | 部分实现 | 明确不支持 | 未实现 | 合计 |
 |---|---:|---:|---:|---:|---:|
-| CNRT client ABI | 20 | 30 | 3 | 77 | 130 |
-| CNDrv client ABI | 25 | 48 | 1 | 106 | 180 |
+| CNRT client ABI | 20 | 37 | 3 | 70 | 130 |
+| CNDrv client ABI | 25 | 60 | 1 | 94 | 180 |
 
 另有 6 个私有 `__bang*` hooks；legacy `cnrtInit` 不在当前公共头文件分母内。CNDrv 的 backend_used 与 client_export 分别核对，只有人工审查与原生/远程证据支持的入口才提升状态。未实现入口可能 loader 失败；明确不支持入口返回 NotSupport。
 
@@ -97,3 +97,7 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 ## Application Workloads
 
 已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur），以及 `queue_notifier` 的异步 H2D、device pointer attributes、Notifier query/wait、跨 Queue 依赖和计时。应用均使用普通 BANG C Kernel、CNRT Memory 与 Queue，CPU reference 对照，Native/replacement/preload 运行同一 executable。运行方式和两个终端模拟本地/远程见 [workloads](../workloads/README.md)，最新数值结果见 [证据](../evidence/workloads-20261107/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。
+
+## 2026-11-07 Driver module memory query
+
+新增 `cnModuleQueryFatBinaryMemoryUsage` 与 `cnModuleQueryMemoryUsage` 的远程实现。客户端只上传经过 CNFB 边界校验的 image，服务端在当前 Driver context 调用 native 查询并返回使用量；路径查询在客户端读取文件后复用同一 image 语义，不要求服务端访问客户端文件系统。单设备 MLU370-S4 的 Native/Remote/Preload/isolated family 对照通过，缺失路径与 malformed image 负例通过。非 CNFB 格式、跨 SDK 错误码和多设备语义仍保持 PARTIAL。详见 [本批证据](../evidence/api-expansion-20261107/README.md)。

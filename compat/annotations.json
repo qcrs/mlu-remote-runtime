@@ -888,6 +888,20 @@
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
   },
+  "cnModuleQueryFatBinaryMemoryUsage": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Client readable CNFB image is uploaded to the session and queried by native cnModuleQueryFatBinaryMemoryUsage; single ELF64 LE/CNFBv2 image and size_t result are supported, broader image formats and native error matrix remain unverified",
+    "native_test": "api-expansion-20261107/module-memory-family/driver-native.log",
+    "remote_test": "api-expansion-20261107/module-memory-family/driver-remote.log",
+    "next_step": "Extend image-format and malformed-input differential cases"
+  },
+  "cnModuleQueryMemoryUsage": {
+    "status": "PARTIAL_IMPLEMENTED",
+    "boundary": "Client-side path is opened, read, validated as one CNFB image, and uploaded before native memory query; file-not-found and bounded read errors are preserved, non-CNFB formats and full native path matrix remain unverified",
+    "native_test": "api-expansion-20261107/module-memory-family/driver-native.log",
+    "remote_test": "api-expansion-20261107/module-memory-family/driver-remote.log",
+    "next_step": "Extend path/error and image-format differential cases"
+  },
   "cnModuleUnload": {
     "status": "PARTIAL_IMPLEMENTED",
     "boundary": "Owned module; drains explicit/used NULL queues then native unload, invalidates child kernels; conservative synchronization may exceed native module dependency scope",

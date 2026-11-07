@@ -50,7 +50,7 @@ LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/native_bang_generic
 
 ## API 自动化扩展（2026-11-02）
 
-首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；另修复 5 个原拒绝入口。后续查询边界批次新增 24 个 API，2026-11-03 增加 2 个部分实现的 Driver error string API。Schema 覆盖 310 个公共声明，当前生成 40 个 typed RPC、46 个公共 wrapper，并维护导出/台账/契约检查。当前为 45 完整、78 部分、4 拒绝、183 未实现。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)、[本批证据](evidence/api-expansion-20261103/README.md)。
+首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；后续查询边界、Driver error、allocation/context、quantization 和 V2 conversion 批次继续复用同一 Schema。当前 Schema 覆盖 310 个公共声明，生成 43 个 typed RPC、47 个公共 wrapper；状态为 45 完整、97 部分、4 拒绝、164 未实现。最近的 Driver module memory query 继续保留单 image/单设备边界，证据见 [API 扩展记录](evidence/api-expansion-20261107/README.md)。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)。
 
 ## Application Workloads
 

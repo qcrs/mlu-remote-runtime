@@ -113,6 +113,9 @@ int mlu_remote_module_get_kernel(mlu_remote_context *ctx, uint64_t module,
                                  const char *name, uint64_t *kernel);
 int mlu_remote_module_load_binary(mlu_remote_context *ctx, const void *image,
                                   size_t size, uint64_t *module);
+int mlu_remote_module_query_fatbinary_memory(mlu_remote_context *ctx,
+                                             const void *image, size_t size,
+                                             uint64_t *bytes);
 int mlu_remote_kernel_launch_generic(mlu_remote_context *ctx,
                                      mlu_remote_module_id module,
                                      mlu_remote_kernel_id kernel,

@@ -179,6 +179,9 @@ int mlu_backend_module_load_image(mlu_backend_session *s, const void *image,
                                   uint64_t *module_id, uint64_t *kernel_id);
 int mlu_backend_module_load_binary(mlu_backend_session *s, const void *image,
                                    uint64_t size, uint64_t *module_id);
+int mlu_backend_module_query_fatbinary_memory(mlu_backend_session *s,
+                                              const void *image, uint64_t image_size,
+                                              uint64_t *bytes);
 int mlu_backend_operator_create(mlu_backend_session *s, uint32_t operator_id,
                                 uint64_t *module_id, uint64_t *kernel_id);
 int mlu_backend_module_get_kernel(mlu_backend_session *s, uint64_t module_id,

@@ -90,7 +90,8 @@
     "API_DRIVER_ERROR_TEXT": 72,
     "API_KERNEL_MEMORY_USAGE": 73,
     "API_ALLOCATION_KIND": 74,
-    "API_CTX_CONFIG": 75
+    "API_CTX_CONFIG": 75,
+    "MODULE_QUERY_FATBINARY_MEMORY": 77
   },
   "hello": {
     "request": [
@@ -10875,7 +10876,7 @@
       "family": "module_kernel",
       "priority": 2,
       "depends_on": "module image metadata",
-      "blocker": "Native memory usage query and descriptor review pending",
+      "blocker": "Bounded CNFB image upload and native query are supported; malformed/other image formats retain native/backend limits",
       "return_type": "CNresult",
       "signature": "CNresult cnModuleQueryFatBinaryMemoryUsage(const void *fatbin, size_t *pbytes);",
       "parameters": [
@@ -10896,12 +10897,15 @@
           "mapping": "review_required"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Client readable CNFB image is uploaded to the session and queried by native cnModuleQueryFatBinaryMemoryUsage; single ELF64 LE/CNFBv2 image and size_t result are supported, broader image formats and native error matrix remain unverified",
+      "native_test": "api-expansion-20261107/module-memory-family/driver-native.log",
+      "remote_test": "api-expansion-20261107/module-memory-family/driver-remote.log",
+      "next_step": "Extend image-format and malformed-input differential cases",
+      "rpc_operations": [
+        "MODULE_QUERY_FATBINARY_MEMORY"
+      ]
     },
     {
       "name": "cnModuleQueryMemoryUsage",
@@ -10909,7 +10913,7 @@
       "family": "module_kernel",
       "priority": 2,
       "depends_on": "module image metadata",
-      "blocker": "Native memory usage query and descriptor review pending",
+      "blocker": "Client path is read and converted to the same bounded CNFB image query; remote server does not access client filesystem directly",
       "return_type": "CNresult",
       "signature": "CNresult cnModuleQueryMemoryUsage(const char *path, size_t *pbytes);",
       "parameters": [
@@ -10930,12 +10934,15 @@
           "mapping": "review_required"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "PARTIAL_IMPLEMENTED",
+      "boundary": "Client-side path is opened, read, validated as one CNFB image, and uploaded before native memory query; file-not-found and bounded read errors are preserved, non-CNFB formats and full native path matrix remain unverified",
+      "native_test": "api-expansion-20261107/module-memory-family/driver-native.log",
+      "remote_test": "api-expansion-20261107/module-memory-family/driver-remote.log",
+      "next_step": "Extend path/error and image-format differential cases",
+      "rpc_operations": [
+        "MODULE_QUERY_FATBINARY_MEMORY"
+      ]
     },
     {
       "name": "cnModuleUnload",

@@ -1,0 +1,44 @@
+{
+  "baseline_commit": "2c0381ab5f2a4f268e360eb000c52fa4c55fbbb4",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnModuleQueryFatBinaryMemoryUsage",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnModuleQueryMemoryUsage",
+      "library": "CNDrv",
+      "family": "module_kernel",
+      "status": "PARTIAL_IMPLEMENTED",
+      "implementation": "manual"
+    }
+  ],
+  "new_status_counts": {
+    "PARTIAL_IMPLEMENTED": 2
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 166,
+    "PARTIAL_IMPLEMENTED": 95,
+    "IMPLEMENTED": 45,
+    "UNSUPPORTED": 4
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 164,
+    "PARTIAL_IMPLEMENTED": 97,
+    "IMPLEMENTED": 45,
+    "UNSUPPORTED": 4
+  },
+  "generated_before": {
+    "typed_rpc": 43,
+    "public_wrappers": 47
+  },
+  "generated_after": {
+    "typed_rpc": 43,
+    "public_wrappers": 47
+  }
+}

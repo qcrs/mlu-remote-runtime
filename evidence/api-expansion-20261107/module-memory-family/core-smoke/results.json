@@ -1,0 +1,82 @@
+[
+  {
+    "name": "matrix_add-native",
+    "returncode": 0,
+    "sha256": "127bf551aa037c6289fad75e9483531ef317b1906861aba15eed0e6581c300c8"
+  },
+  {
+    "name": "matrix_add-replacement",
+    "returncode": 0,
+    "sha256": "127bf551aa037c6289fad75e9483531ef317b1906861aba15eed0e6581c300c8"
+  },
+  {
+    "name": "matrix_add-preload",
+    "returncode": 0,
+    "sha256": "127bf551aa037c6289fad75e9483531ef317b1906861aba15eed0e6581c300c8"
+  },
+  {
+    "name": "naive_gemm-native",
+    "returncode": 0,
+    "sha256": "0387d64fc44386f46dd210a49ee13b02218ceb817a06c45d826f748678fbec26"
+  },
+  {
+    "name": "naive_gemm-replacement",
+    "returncode": 0,
+    "sha256": "0387d64fc44386f46dd210a49ee13b02218ceb817a06c45d826f748678fbec26"
+  },
+  {
+    "name": "naive_gemm-preload",
+    "returncode": 0,
+    "sha256": "0387d64fc44386f46dd210a49ee13b02218ceb817a06c45d826f748678fbec26"
+  },
+  {
+    "name": "image_threshold-native",
+    "returncode": 0,
+    "sha256": "d5fa60b9f4a0c5ff6da41070c0aa0a1e4a678cb48b102257fa899379e049a58b"
+  },
+  {
+    "name": "image_threshold-replacement",
+    "returncode": 0,
+    "sha256": "d5fa60b9f4a0c5ff6da41070c0aa0a1e4a678cb48b102257fa899379e049a58b"
+  },
+  {
+    "name": "image_threshold-preload",
+    "returncode": 0,
+    "sha256": "d5fa60b9f4a0c5ff6da41070c0aa0a1e4a678cb48b102257fa899379e049a58b"
+  },
+  {
+    "name": "image_blur-native",
+    "returncode": 0,
+    "sha256": "1d415680f50392884bd2e40b7c52a232a95ab6962300b1c8a9fa1ffab3fe9130"
+  },
+  {
+    "name": "image_blur-replacement",
+    "returncode": 0,
+    "sha256": "1d415680f50392884bd2e40b7c52a232a95ab6962300b1c8a9fa1ffab3fe9130"
+  },
+  {
+    "name": "image_blur-preload",
+    "returncode": 0,
+    "sha256": "1d415680f50392884bd2e40b7c52a232a95ab6962300b1c8a9fa1ffab3fe9130"
+  },
+  {
+    "name": "queue_notifier-native",
+    "returncode": 0,
+    "sha256": "f8f1a342ae138d9a9d163a1e8d691e3ab4401e694d2f736bfbe3b9d554e5c021"
+  },
+  {
+    "name": "queue_notifier-replacement",
+    "returncode": 0,
+    "sha256": "f8f1a342ae138d9a9d163a1e8d691e3ab4401e694d2f736bfbe3b9d554e5c021"
+  },
+  {
+    "name": "queue_notifier-preload",
+    "returncode": 0,
+    "sha256": "f8f1a342ae138d9a9d163a1e8d691e3ab4401e694d2f736bfbe3b9d554e5c021"
+  },
+  {
+    "name": "core-smoke",
+    "returncode": 0,
+    "sha256": "7f185b475236d305d4251714eb0c44b545370961c9f687a391f3892e66524245"
+  }
+]

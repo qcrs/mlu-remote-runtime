@@ -1597,8 +1597,8 @@
     "family": "module_kernel",
     "priority": 2,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 8,
-      "NOT_IMPLEMENTED": 4,
+      "PARTIAL_IMPLEMENTED": 10,
+      "NOT_IMPLEMENTED": 2,
       "IMPLEMENTED": 1
     },
     "remaining": [
@@ -1669,15 +1669,15 @@
         "api": "cnModuleQueryFatBinaryMemoryUsage",
         "priority": 2,
         "depends_on": "module image metadata",
-        "blocker": "Native memory usage query and descriptor review pending",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Bounded CNFB image upload and native query are supported; malformed/other image formats retain native/backend limits",
+        "next_step": "Extend image-format and malformed-input differential cases"
       },
       {
         "api": "cnModuleQueryMemoryUsage",
         "priority": 2,
         "depends_on": "module image metadata",
-        "blocker": "Native memory usage query and descriptor review pending",
-        "next_step": "Probe and implement this functional family"
+        "blocker": "Client path is read and converted to the same bounded CNFB image query; remote server does not access client filesystem directly",
+        "next_step": "Extend path/error and image-format differential cases"
       },
       {
         "api": "cnModuleUnload",

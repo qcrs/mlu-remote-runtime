@@ -1,0 +1,39 @@
+{
+  "changed_paths": [
+    "README.md",
+    "client/runtime_context.c",
+    "compat/annotations.json",
+    "compat/api-ledger.csv",
+    "compat/family-plan.json",
+    "compat/family-plan.md",
+    "compat/summary.json",
+    "docs/API_AUTOMATION.md",
+    "docs/PROJECT_STATE.md",
+    "evidence/api-expansion-20261107/README.md",
+    "include/remote_cnrt.h",
+    "include/remote_protocol.h",
+    "schema/mlu_api_schema.json",
+    "server/mlu_backend.c",
+    "server/mlu_backend.h",
+    "server/mlu_remote_server.c",
+    "shim/cndrv_shim.c",
+    "tests/native_api_families.c"
+  ],
+  "levels": [
+    "L0",
+    "L1",
+    "L2",
+    "L3"
+  ],
+  "affected_families": [
+    "device_context",
+    "schema"
+  ],
+  "selected_suites": [
+    "build",
+    "schema_codegen_contracts",
+    "family_probe",
+    "core_remote_smoke",
+    "full_regression"
+  ]
+}

@@ -1,6 +1,6 @@
 # API 泛化与编译器元数据
 
-本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 40 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 46 个公共包装；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
+本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 43 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 47 个公共包装；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
 
 2026-11-03 新增 CNDrv `cnGetErrorName` 和 `cnGetErrorString`：共享 typed request 传错误码和查询类型，server 按真实 `CNresult(error, const char **)` ABI 查询后复制 bounded response，client 返回 thread-local 副本。Native/Remote 的 `CN_SUCCESS` name/string 一致；其他错误值和 SDK 变体尚未验收，因此状态为 PARTIAL。L0 build/schema/codegen/contracts 与 L1 family probe/L2 core smoke 通过；未触碰需要 Full Regression 的核心组件，未跑 L3。
 
@@ -31,11 +31,15 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 之前仅有 10 个 ObjectID RPC 能生成。普通 API 需要分别增加 header、client 编解码、server 长度检查/dispatch、backend、导出与台账；各处重复字段和 opcode。现在新增一个已审查的普通 API，主要填写 Schema 中的字段/映射/native binding，再补功能族语义断言；其余重复路径一次生成。
 
-首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；本批当前为 40/46，最新行数及哈希见[本批制品清单](../evidence/api-expansion-20261103/artifact-manifest.json)，另有协议头、导出 map 和测试模板。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 43/47，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
 ## 2026-11-13 V2 conversion
 
 `cnrtCastDataType_V2` 的 FLOAT/INT/UCHAR host-local 子集复用 checked conversion helper，显式处理六种 rounding mode；half/bfloat 已加入，未验证的 quantized 类型继续保留 PARTIAL。
+
+## 2026-11-07 Driver module memory query
+
+`cnModuleQueryFatBinaryMemoryUsage` 与 `cnModuleQueryMemoryUsage` 共用一个手写可变长度 image RPC。Driver shim 在客户端读取并验证 CNFB image，再上传给 server 当前 native context 调用 `cnModuleQueryFatBinaryMemoryUsage`；只返回 `size_t` 使用量，路径和 native address 不跨线。MLU370-S4 上 Native、Remote、Preload 和隔离客户端均返回 `path=110592 fatbin=110592`，缺失路径和 malformed image 保持错误。当前仍是单 ELF64 LE/CNFBv2 image 与单设备范围，其他格式和完整错误码矩阵保留 PARTIAL。详见 [批次记录](../evidence/api-expansion-20261107/README.md)。
 
 ## 2026-11-12 Parameterized INT8 cast
 

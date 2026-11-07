@@ -76,6 +76,8 @@ static int valid_success(uint16_t op, const unsigned char *request,
     case MLU_OP_MODULE_LOAD_PRESET: case MLU_OP_MODULE_LOAD_IMAGE:
     case MLU_OP_OPERATOR_CREATE:
       return n == 16;
+    case MLU_OP_MODULE_QUERY_FATBINARY_MEMORY:
+      return n == 8;
     case MLU_OP_MEMCPY:
       if (request_len < 56) return 0;
       if (get32(request) != MLU_MEMCPY_D2H) return n == 8;
@@ -223,6 +225,16 @@ int mlu_remote_module_load_binary(mlu_remote_context *ctx,const void *image,size
   put32(p,(uint32_t)size); memcpy(p+4,image,size);
   int st=rpc(ctx,MLU_OP_MODULE_LOAD_BINARY,p,(uint32_t)(size+4),&extra,&n);
   if (!st) *module=get64(extra);
+  free(p); free(extra); return st;
+}
+int mlu_remote_module_query_fatbinary_memory(mlu_remote_context *ctx,const void *image,size_t size,uint64_t *bytes) {
+  if (!ctx || !image || !size || !bytes || size>MLU_REMOTE_MAX_PAYLOAD-4) return MLU_REMOTE_BAD_LENGTH;
+  if (!(ctx->capabilities & MLU_CAP_DRIVER_CONTEXT)) return MLU_REMOTE_UNSUPPORTED;
+  unsigned char *p=malloc(size+4),*extra=NULL; uint32_t n=0;
+  if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  put32(p,(uint32_t)size); memcpy(p+4,image,size);
+  int st=rpc(ctx,MLU_OP_MODULE_QUERY_FATBINARY_MEMORY,p,(uint32_t)(size+4),&extra,&n);
+  if (!st) *bytes=get64(extra);
   free(p); free(extra); return st;
 }
 void mlu_remote_disconnect(mlu_remote_context *ctx) { if (!ctx) return; if (ctx->fd >= 0) close(ctx->fd); pthread_mutex_destroy(&ctx->lock); free(ctx); }

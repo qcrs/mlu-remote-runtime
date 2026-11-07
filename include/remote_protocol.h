@@ -43,6 +43,8 @@ enum mlu_remote_opcode {
   MLU_OP_MODULE_LOAD_BINARY = 30,
   MLU_OP_SESSION_CLOSE = 31,
   MLU_OP_CONTEXT_SYNC = 32,
+  /* Driver module memory queries carry the validated CNFB image bytes. */
+  MLU_OP_MODULE_QUERY_FATBINARY_MEMORY = 77,
 #include "generated/typed_opcodes.inc"
 };
 

@@ -695,6 +695,19 @@ int mlu_backend_module_load_binary(mlu_backend_session *s, const void *image,
   return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
 }
 
+int mlu_backend_module_query_fatbinary_memory(mlu_backend_session *s,
+                                              const void *image, uint64_t image_size,
+                                              uint64_t *bytes) {
+  if (!s || !image || !image_size || image_size > MLU_REMOTE_MAX_PAYLOAD || !bytes)
+    return (int)CN_ERROR_INVALID_VALUE;
+  size_t usage = 0;
+  CNresult current = s->context ? cnCtxSetCurrent(s->context) : CN_ERROR_NOT_INITIALIZED;
+  if (current != CN_SUCCESS) return (int)current;
+  CNresult r = cnModuleQueryFatBinaryMemoryUsage(image, &usage);
+  if (r == CN_SUCCESS) *bytes = (uint64_t)usage;
+  return (int)r;
+}
+
 int mlu_backend_module_load_image(mlu_backend_session *s, const void *image,
                                   uint64_t image_size, const char *kernel_name,
                                   uint64_t *module_id, uint64_t *kernel_id) {

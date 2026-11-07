@@ -12,8 +12,8 @@
       "UNSUPPORTED": 3
     },
     "CNDrv": {
-      "NOT_IMPLEMENTED": 96,
-      "PARTIAL_IMPLEMENTED": 58,
+      "NOT_IMPLEMENTED": 94,
+      "PARTIAL_IMPLEMENTED": 60,
       "IMPLEMENTED": 25,
       "UNSUPPORTED": 1
     }

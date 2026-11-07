@@ -348,6 +348,33 @@ static CNresult load(context *c,const void *image,size_t size,CNmodule *out) {
   if(st) { discard_object(o); return result(st); }
   o->live=1; *out=(CNmodule)(uintptr_t)o->token; return CN_SUCCESS;
 }
+static CNresult query_fatbinary_memory(context *c,const void *image,size_t size,size_t *out) {
+  size_t exact=0;
+  if(!image || !size || !out || bang_image_span(image,size,&exact) || exact!=size)
+    return CN_OPS_ERROR_NOT_SUPPORTED;
+  uint64_t usage=0;
+  int st=mlu_remote_module_query_fatbinary_memory(c->remote,image,size,&usage);
+  if(!st) *out=(size_t)usage;
+  return result(st);
+}
+CNresult cnModuleQueryFatBinaryMemoryUsage(const void *fatbin,size_t *pbytes) {
+  ENTER(); CURRENT(); if(!fatbin || !pbytes) RETURN(CN_ERROR_INVALID_VALUE);
+  size_t size=0,available=readable(fatbin);
+  if(bang_image_span(fatbin,available,&size)) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);
+  RETURN(query_fatbinary_memory(c,fatbin,size,pbytes));
+}
+CNresult cnModuleQueryMemoryUsage(const char *path,size_t *pbytes) {
+  ENTER(); CURRENT(); if(!path || !pbytes) RETURN(CN_ERROR_INVALID_VALUE);
+  FILE *f=fopen(path,"rb"); if(!f) RETURN(errno==ENOENT ? CN_ERROR_FILE_NOT_FOUND : CN_ERROR_OPERATING_SYSTEM);
+  if(fseek(f,0,SEEK_END)) { fclose(f); RETURN(CN_ERROR_OPERATING_SYSTEM); }
+  long length=ftell(f);
+  if(length<=0 || (unsigned long)length>MLU_REMOTE_MAX_PAYLOAD-4) { fclose(f); RETURN(CN_OPS_ERROR_NOT_SUPPORTED); }
+  rewind(f); void *image=malloc((size_t)length);
+  if(!image) { fclose(f); RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY); }
+  int ok=fread(image,1,(size_t)length,f)==(size_t)length; fclose(f);
+  CNresult st=ok ? query_fatbinary_memory(c,image,(size_t)length,pbytes) : CN_ERROR_OPERATING_SYSTEM;
+  free(image); RETURN(st);
+}
 CNresult cnModuleLoadFatBinary(const void *image,CNmodule *out) {
   ENTER(); CURRENT(); if(!image || !out) RETURN(CN_ERROR_INVALID_VALUE);
   size_t size=0,available=readable(image);

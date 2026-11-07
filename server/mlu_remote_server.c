@@ -127,6 +127,14 @@ static int handle_request(int fd, mlu_backend_session *s, const struct mlu_remot
       st=mlu_backend_module_load_binary(s,p+4,n-4,&mid); put64(out,mid);
       return send_response(fd,op,req,(uint32_t)st,st ? NULL : out,st ? 0 : 8);
     }
+    case MLU_OP_MODULE_QUERY_FATBINARY_MEMORY: {
+      if (n < 4 || !get32(p) || get32(p) != n - 4)
+        return send_response(fd, op, req, MLU_REMOTE_BAD_LENGTH, NULL, 0);
+      uint64_t bytes = 0;
+      st = mlu_backend_module_query_fatbinary_memory(s, p + 4, get32(p), &bytes);
+      put64(out, bytes);
+      return send_response(fd, op, req, (uint32_t)st, st ? NULL : out, st ? 0 : 8);
+    }
     case MLU_OP_CONTEXT_SYNC:
       if (n) return send_response(fd,op,req,MLU_REMOTE_BAD_LENGTH,NULL,0);
       st=mlu_backend_context_sync(s);
