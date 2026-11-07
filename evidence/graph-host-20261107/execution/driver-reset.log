@@ -1,0 +1,7 @@
+update_failure=100400 result=2 error_null=1
+PASS graph memset snapshots/update/pending destroy
+PASS child graph ownership/edit/clone/entity replacement
+PASS nested child snapshot leases
+PASS graph memcpy get/set/clone/snapshot/update/current bytes/pending destroy
+PASS child memcpy same-allocation endpoints
+PASS graph execution reset

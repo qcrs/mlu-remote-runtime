@@ -23,6 +23,7 @@ extern "C" __mlu_entry__ void graph_empty(void) {}
 #define Queue cnrtQueue_t
 #define Params cnrtKernelNodeParams_t
 #define Attr cnrtKernelNodeAttrValue_t
+#define CopyParams cnrtMemcpy3dParam_t
 typedef void *Address;
 #define ATTR cnrtKernelNodeAttributeAccessPolicyWindow
 #define SYNC(q) cnrtQueueSync(q)
@@ -32,6 +33,10 @@ typedef void *Address;
 #define FREE(p) cnrtFree(p)
 #define H2D(d,s) cnrtMemcpy(d,s,64,cnrtMemcpyHostToDev)
 #define D2H(d,s) cnrtMemcpy(d,s,64,cnrtMemcpyDevToHost)
+#define H2DA(d,s,q) cnrtMemcpyAsync(d,s,64,q,cnrtMemcpyHostToDev)
+#define D2HA(d,s,q) cnrtMemcpyAsync(d,s,64,q,cnrtMemcpyDevToHost)
+#define HALLOC(p) cnrtHostMalloc(p,256)
+#define HFREE(p) cnrtFreeHost(p)
 #else
 #define API(n) cn##n
 #define Graph CNtaskTopo
@@ -40,6 +45,7 @@ typedef void *Address;
 #define Queue CNqueue
 #define Params CN_KERNEL_NODE_PARAMS
 #define Attr CNkernelNodeAttrValue
+#define CopyParams CNmemcpy3dParam
 typedef CNaddr Address;
 #define ATTR CN_KERNEL_NODE_ATTRIBUTE_ACCESS_POLICY_WINDOW
 #define SYNC(q) cnQueueSync(q)
@@ -49,7 +55,43 @@ typedef CNaddr Address;
 #define FREE(p) cnFree(p)
 #define H2D(d,s) cnMemcpyHtoD(d,s,64)
 #define D2H(d,s) cnMemcpyDtoH(d,s,64)
+#define H2DA(d,s,q) cnMemcpyHtoDAsync(d,s,64,q)
+#define D2HA(d,s,q) cnMemcpyDtoHAsync(d,s,64,q)
+#define HALLOC(p) cnMallocHost(p,256)
+#define HFREE(p) cnFreeHost(p)
 #endif
+static CopyParams host_copy(void *dst,void *src,int direction) {
+  CopyParams p={};p.dst=p.dstPtr.ptr=dst;p.src=p.srcPtr.ptr=src;
+  p.dstPtr.pitch=p.srcPtr.pitch=p.dstPtr.xsize=p.srcPtr.xsize=64;
+  p.dstPtr.ysize=p.srcPtr.ysize=1;p.extent.width=64;p.extent.height=p.extent.depth=1;
+#ifdef TEST_CNRT
+  p.dir=(cnrtMemTransDir_t)direction;
+#else
+  p.dir=direction;
+#endif
+  return p;
+}
+static void host_mixed(Address input,Address output,Queue queue,Params params) {
+  int *host;OK(HALLOC((void **)&host));int *source=host,*result=host+16,*after=host+32,*baseline=host+48;
+  for(int i=0;i<16;i++) {source[i]=i==1 ? 11 : i==3 ? 18 : -77;result[i]=after[i]=-99;baseline[i]=100+i;}
+  Graph graph;Node nodes[3];Entity entity;OK(API(TaskTopoCreate)(&graph,0));
+  CopyParams p=host_copy((void *)(uintptr_t)input,source,2);OK(API(TaskTopoAddMemcpyNode)(&nodes[0],graph,NULL,0,&p));
+  OK(API(TaskTopoAddKernelNode)(&nodes[1],graph,nodes,1,&params));
+  p=host_copy(result,(void *)(uintptr_t)output,3);OK(API(TaskTopoAddMemcpyNode)(&nodes[2],graph,nodes+1,1,&p));
+  OK(API(TaskTopoInstantiate)(&entity,graph,NULL,NULL,0));
+  OK(H2DA(input,baseline,queue));OK(D2HA(result,input,queue));
+  OK(API(TaskTopoEntityInvoke)(entity,queue));OK(D2HA(after,output,queue));OK(SYNC(queue));
+  for(int i=0;i<16;i++) {
+    int expected=i==1 ? 11+2+*(int *)params.kernelParams[1] : i==2 ? 18+5 :
+      i==3 ? (int)(((GraphPayload *)params.kernelParams[0])->scalar&0xffff) : -77;
+    REQUIRE(result[i]==expected && after[i]==expected);
+  }
+  OK(API(TaskTopoEntityInvoke)(entity,queue));OK(H2DA(input,baseline,queue));OK(D2HA(result,input,queue));
+  OK(API(TaskTopoEntityDestroy)(entity));OK(API(TaskTopoDestroy)(graph));OK(SYNC(queue));
+  for(int i=0;i<16;i++) REQUIRE(result[i]==baseline[i]);
+  OK(H2D(input,source));OK(HFREE(host));
+  puts("PASS Host H2D/kernel/D2H graph mixed with ordinary async copies and overlapping publication");
+}
 static void check(Address output,GraphPayload p,int bias) {
   int values[16];OK(D2H(values,output));
   REQUIRE(values[0]==-77 && values[4]==-77 && values[15]==-77);
@@ -116,6 +158,7 @@ int main(int argc,char **argv) {
 #endif
   )&update));REQUIRE(update==0);
   OK(API(TaskTopoEntityInvoke)(entity,queue));OK(SYNC(queue));check(output,expected,10);
+  host_mixed(input,output,queue,params);
   Graph outer,borrowed;Node child;OK(API(TaskTopoCreate)(&outer,0));OK(API(TaskTopoAddChildTopoNode)(&child,outer,NULL,0,clone));
   OK(API(TaskTopoChildTopoNodeGetTopo)(child,&borrowed));Node children[2];size_t count=2;OK(API(TaskTopoGetNodes)(borrowed,children,&count));REQUIRE(count==2);
   for(size_t i=0;i<count;i++) {

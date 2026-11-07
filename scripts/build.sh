@@ -19,7 +19,7 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/client_abrupt.c" -o "$ROOT/build/mlu-remote-abrupt-client" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/protocol_errors.c" -o "$ROOT/build/mlu-remote-protocol-error-test" $LDFLAGS
 "$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/object_identity.c" "$ROOT/server/object_registry.c" -Wl,--wrap=getrandom -lpthread -o "$ROOT/build/object-identity-test"
-"$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/backend_resources.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/resource_limits.c" "$ROOT/server/object_registry.c" "$ROOT/common/bang_image.c" -Wl,--wrap=cnMalloc,--wrap=cnModuleLoadFatBinary,--wrap=cnMemcpyHtoDAsync,--wrap=cnQueueSync,--wrap=cnCtxDestroy,--wrap=cnDestroyQueue,--wrap=cnMallocHost,--wrap=cnFreeHost,--wrap=cnMemcpyDtoHAsync,--wrap=cnCreateNotifier,--wrap=cnTaskTopoDestroy,--wrap=cnTaskTopoNodeFindInClone,--wrap=cnTaskTopoDestroyNode,--wrap=cnTaskTopoAddMemcpyNode,--wrap=cnTaskTopoMemcpyNodeSetParams,--wrap=cnTaskTopoEntityMemcpyNodeSetParams,--wrap=cnTaskTopoAddKernelNode,--wrap=cnTaskTopoKernelNodeSetParams,--wrap=cnTaskTopoEntityKernelNodeSetParams,--wrap=cnModuleUnload $LDFLAGS -lcndrv -lcnrt -lpthread -ldl -o "$ROOT/build/backend-resources-test"
+"$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/backend_resources.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/resource_limits.c" "$ROOT/server/object_registry.c" "$ROOT/common/bang_image.c" -Wl,--wrap=cnMalloc,--wrap=cnModuleLoadFatBinary,--wrap=cnMemcpyHtoDAsync,--wrap=cnQueueSync,--wrap=cnCtxDestroy,--wrap=cnDestroyQueue,--wrap=cnMallocHost,--wrap=cnFreeHost,--wrap=cnMemcpyDtoHAsync,--wrap=cnCreateNotifier,--wrap=cnTaskTopoClone,--wrap=cnTaskTopoInstantiate,--wrap=cnTaskTopoEntityInvoke,--wrap=cnTaskTopoEntityDestroy,--wrap=cnTaskTopoDestroy,--wrap=cnTaskTopoNodeFindInClone,--wrap=cnTaskTopoDestroyNode,--wrap=cnTaskTopoAddMemcpyNode,--wrap=cnTaskTopoMemcpyNodeSetParams,--wrap=cnTaskTopoEntityMemcpyNodeSetParams,--wrap=cnTaskTopoAddKernelNode,--wrap=cnTaskTopoKernelNodeSetParams,--wrap=cnTaskTopoEntityKernelNodeSetParams,--wrap=cnModuleUnload $LDFLAGS -lcndrv -lcnrt -lpthread -ldl -o "$ROOT/build/backend-resources-test"
 "$CC" $CFLAGS -shared "$ROOT/tests/fault_cleanup.c" -o "$ROOT/build/libtest-fail-cleanup.so"
 "$CC" $CFLAGS "$ROOT/tests/client_isolation.c" -o "$ROOT/build/mlu-remote-session-isolation-test" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/client_device_select.c" -o "$ROOT/build/mlu-remote-device-select-test" $CLIENT_LIBS $LDFLAGS -lpthread
@@ -37,6 +37,8 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/native_cast.c" -o "$ROOT/build/native_cast" $LDFLAGS -lcnrt
 "$CC" $CFLAGS "$ROOT/tests/native_graph.c" -o "$ROOT/build/native_graph_driver" $LDFLAGS -lcndrv
 "$CC" $CFLAGS -DTEST_CNRT "$ROOT/tests/native_graph.c" -o "$ROOT/build/native_graph_runtime" $LDFLAGS -lcnrt
+"$CC" $CFLAGS "$ROOT/tests/native_graph_host.c" -o "$ROOT/build/native_graph_host_driver" $LDFLAGS -lcndrv
+"$CC" $CFLAGS -DTEST_CNRT "$ROOT/tests/native_graph_host.c" -o "$ROOT/build/native_graph_host_runtime" $LDFLAGS -lcnrt
 "$CC" $CFLAGS "$ROOT/tests/native_graph_execution.c" -o "$ROOT/build/native_graph_execution_driver" $LDFLAGS -lcndrv
 "$CC" $CFLAGS -DTEST_CNRT "$ROOT/tests/native_graph_execution.c" -o "$ROOT/build/native_graph_execution_runtime" $LDFLAGS -lcnrt
 "$CC" $CFLAGS "$ROOT/tests/native_query_boundaries.c" -o "$ROOT/build/native_query_boundaries" $LDFLAGS -lcnrt -lcndrv

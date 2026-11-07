@@ -34,7 +34,7 @@
     "cnrtInit"
   ],
   "generated_object_rpc_count": 10,
-  "generated_typed_rpc_count": 54,
+  "generated_typed_rpc_count": 55,
   "generated_public_wrapper_count": 116,
   "generated_local_api_count": 4
 }

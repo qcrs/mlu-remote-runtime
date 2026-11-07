@@ -102,7 +102,8 @@
     "API_GRAPH_CHILD": 85,
     "API_GRAPH_MEMCPY": 86,
     "API_GRAPH_KERNEL": 87,
-    "API_GRAPH_KERNEL_ATTR": 88
+    "API_GRAPH_KERNEL_ATTR": 88,
+    "API_GRAPH_HOST": 89
   },
   "hello": {
     "request": [
@@ -4610,10 +4611,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -4695,7 +4696,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -4775,7 +4776,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -4923,7 +4924,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/runtime-native.log",
       "remote_test": "graph-g2-kernel-20261107/runtime-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel",
@@ -5020,10 +5021,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies still need per-invocation staging and publication.",
+      "boundary": "Owned 1D D2D, H2D and D2H memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; device endpoints use AllocationID+offset, Host endpoints use opaque client tokens. Each invocation reads current H2D bytes, owns a private graph and pinned staging, and publishes grouped D2H at completion. Overlapping Host ranges share invocation staging. Summed Host endpoints <=16 MiB; snapshot/view nodes share the 4096-node quota. Native direction validation and retired VA getters retained. Peer, multidimensional copy and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D/H2D/D2H replay boundary; capture and peer copies remain separate work.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5114,10 +5115,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
       "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
       "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5185,10 +5186,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5246,7 +5247,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -5302,7 +5303,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -5393,7 +5394,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -5439,7 +5440,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -5498,10 +5499,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy. After EntityUpdate, Host replay setters require a uniquely proven structural correspondence for the original instantiate-time NodeID (at most 512 top-level nodes); ambiguous roles return Remote unsupported.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5544,10 +5545,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5641,33 +5642,25 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
         "required": [],
-        "rpc": "graph_entity",
-        "native_status": "status",
-        "inputs": {
-          "action": "MLU_GRAPH_ENTITY_INVOKE",
-          "entity": "(uintptr_t)entity",
-          "graph": "0",
-          "queue": "qid",
-          "log_size": "0"
-        },
+        "rpc": "graph_host",
         "prepare": [
           "object *q=get_queue(queue); if(!q) RETURN(cnrtErrorInvalidResourceHandle); uint64_t qid=q->id;"
         ],
-        "response_prepare": [],
-        "outputs": [
-          "if(!out.status) out.status=(uint32_t)mlu_remote_transfer_release(ctx,out.id);"
+        "call": [
+          "RETURN(status(mlu_remote_graph_invoke(ctx,(uintptr_t)entity,qid)));"
         ]
       },
       "rpc_operations": [
-        "API_GRAPH_ENTITY"
+        "API_GRAPH_ENTITY",
+        "API_GRAPH_HOST"
       ]
     },
     {
@@ -5706,10 +5699,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
+      "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy. After EntityUpdate, Host replay setters require a uniquely proven structural correspondence for the original instantiate-time NodeID (at most 512 top-level nodes); ambiguous roles return Remote unsupported.",
       "native_test": "graph-g2-kernel-20261107/runtime-native.log",
       "remote_test": "graph-g2-kernel-20261107/runtime-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel",
@@ -5787,10 +5780,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies still need per-invocation staging and publication.",
+      "boundary": "Owned 1D D2D, H2D and D2H memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; device endpoints use AllocationID+offset, Host endpoints use opaque client tokens. Each invocation reads current H2D bytes, owns a private graph and pinned staging, and publishes grouped D2H at completion. Overlapping Host ranges share invocation staging. Summed Host endpoints <=16 MiB; snapshot/view nodes share the 4096-node quota. Native direction validation and retired VA getters retained. Peer, multidimensional copy and capture remain outside this boundary. After EntityUpdate, Host replay setters require a uniquely proven structural correspondence for the original instantiate-time NodeID (at most 512 top-level nodes); ambiguous roles return Remote unsupported.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D/H2D/D2H replay boundary; capture and peer copies remain separate work.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5859,10 +5852,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096. After EntityUpdate, Host replay setters require a uniquely proven structural correspondence for the original instantiate-time NodeID (at most 512 top-level nodes); ambiguous roles return Remote unsupported.",
       "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
       "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5939,10 +5932,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing. Host-affecting entity setters after update require a uniquely proven structural map (<=512 top-level nodes); ambiguous roles conservatively return unsupported while replay remains available.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -6022,7 +6015,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -6105,7 +6098,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -6186,7 +6179,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -6348,10 +6341,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -6413,7 +6406,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/runtime-native.log",
       "remote_test": "graph-g2-kernel-20261107/runtime-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel_attr",
@@ -6479,7 +6472,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/runtime-native.log",
       "remote_test": "graph-g2-kernel-20261107/runtime-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel_attr",
@@ -6541,7 +6534,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/runtime-native.log",
       "remote_test": "graph-g2-kernel-20261107/runtime-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel",
@@ -6623,7 +6616,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/runtime-native.log",
       "remote_test": "graph-g2-kernel-20261107/runtime-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel_attr",
@@ -6687,7 +6680,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/runtime-native.log",
       "remote_test": "graph-g2-kernel-20261107/runtime-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel",
@@ -6759,10 +6752,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies still need per-invocation staging and publication.",
+      "boundary": "Owned 1D D2D, H2D and D2H memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; device endpoints use AllocationID+offset, Host endpoints use opaque client tokens. Each invocation reads current H2D bytes, owns a private graph and pinned staging, and publishes grouped D2H at completion. Overlapping Host ranges share invocation staging. Summed Host endpoints <=16 MiB; snapshot/view nodes share the 4096-node quota. Native direction validation and retired VA getters retained. Peer, multidimensional copy and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D/H2D/D2H replay boundary; capture and peer copies remain separate work.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -6824,10 +6817,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
-      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies still need per-invocation staging and publication.",
+      "boundary": "Owned 1D D2D, H2D and D2H memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; device endpoints use AllocationID+offset, Host endpoints use opaque client tokens. Each invocation reads current H2D bytes, owns a private graph and pinned staging, and publishes grouped D2H at completion. Overlapping Host ranges share invocation staging. Summed Host endpoints <=16 MiB; snapshot/view nodes share the 4096-node quota. Native direction validation and retired VA getters retained. Peer, multidimensional copy and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log;graph-host-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log;graph-host-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D/H2D/D2H replay boundary; capture and peer copies remain separate work.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -6888,10 +6881,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
       "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
       "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -6954,10 +6947,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
       "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
       "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -7030,7 +7023,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -7096,7 +7089,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -7177,7 +7170,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -7248,7 +7241,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -7367,7 +7360,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/runtime-native.log",
       "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -14182,10 +14175,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14267,7 +14260,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -14347,7 +14340,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -14495,7 +14488,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/driver-native.log",
       "remote_test": "graph-g2-kernel-20261107/driver-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel",
@@ -14592,10 +14585,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies still need per-invocation staging and publication.",
+      "boundary": "Owned 1D D2D, H2D and D2H memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; device endpoints use AllocationID+offset, Host endpoints use opaque client tokens. Each invocation reads current H2D bytes, owns a private graph and pinned staging, and publishes grouped D2H at completion. Overlapping Host ranges share invocation staging. Summed Host endpoints <=16 MiB; snapshot/view nodes share the 4096-node quota. Native direction validation and retired VA getters retained. Peer, multidimensional copy and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D/H2D/D2H replay boundary; capture and peer copies remain separate work.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14686,10 +14679,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
       "native_test": "graph-g2-memcpy-20261107/driver-native.log",
       "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14757,10 +14750,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14818,7 +14811,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -14874,7 +14867,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -14965,7 +14958,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -15011,7 +15004,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -15070,10 +15063,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy. After EntityUpdate, Host replay setters require a uniquely proven structural correspondence for the original instantiate-time NodeID (at most 512 top-level nodes); ambiguous roles return Remote unsupported.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15116,10 +15109,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15213,33 +15206,25 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
         "required": [],
-        "rpc": "graph_entity",
-        "native_status": "status",
-        "inputs": {
-          "action": "MLU_GRAPH_ENTITY_INVOKE",
-          "entity": "(uintptr_t)hEntity",
-          "graph": "0",
-          "queue": "qid",
-          "log_size": "0"
-        },
+        "rpc": "graph_host",
         "prepare": [
           "uint64_t qid=0; if(queue_id(c,hqueue,&qid)) RETURN(CN_ERROR_INVALID_HANDLE);"
         ],
-        "response_prepare": [],
-        "outputs": [
-          "if(!out.status) out.status=(uint32_t)mlu_remote_transfer_release(c->remote,out.id);"
+        "call": [
+          "RETURN(result(mlu_remote_graph_invoke(c->remote,(uintptr_t)hEntity,qid)));"
         ]
       },
       "rpc_operations": [
-        "API_GRAPH_ENTITY"
+        "API_GRAPH_ENTITY",
+        "API_GRAPH_HOST"
       ]
     },
     {
@@ -15278,10 +15263,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
+      "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy. After EntityUpdate, Host replay setters require a uniquely proven structural correspondence for the original instantiate-time NodeID (at most 512 top-level nodes); ambiguous roles return Remote unsupported.",
       "native_test": "graph-g2-kernel-20261107/driver-native.log",
       "remote_test": "graph-g2-kernel-20261107/driver-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel",
@@ -15359,10 +15344,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies still need per-invocation staging and publication.",
+      "boundary": "Owned 1D D2D, H2D and D2H memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; device endpoints use AllocationID+offset, Host endpoints use opaque client tokens. Each invocation reads current H2D bytes, owns a private graph and pinned staging, and publishes grouped D2H at completion. Overlapping Host ranges share invocation staging. Summed Host endpoints <=16 MiB; snapshot/view nodes share the 4096-node quota. Native direction validation and retired VA getters retained. Peer, multidimensional copy and capture remain outside this boundary. After EntityUpdate, Host replay setters require a uniquely proven structural correspondence for the original instantiate-time NodeID (at most 512 top-level nodes); ambiguous roles return Remote unsupported.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D/H2D/D2H replay boundary; capture and peer copies remain separate work.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15431,10 +15416,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096. After EntityUpdate, Host replay setters require a uniquely proven structural correspondence for the original instantiate-time NodeID (at most 512 top-level nodes); ambiguous roles return Remote unsupported.",
       "native_test": "graph-g2-memcpy-20261107/driver-native.log",
       "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15511,10 +15496,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing. Host-affecting entity setters after update require a uniquely proven structural map (<=512 top-level nodes); ambiguous roles conservatively return unsupported while replay remains available.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15594,7 +15579,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -15677,7 +15662,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -15758,7 +15743,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -15920,10 +15905,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15985,7 +15970,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/driver-native.log",
       "remote_test": "graph-g2-kernel-20261107/driver-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel_attr",
@@ -16051,7 +16036,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/driver-native.log",
       "remote_test": "graph-g2-kernel-20261107/driver-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel_attr",
@@ -16113,7 +16098,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/driver-native.log",
       "remote_test": "graph-g2-kernel-20261107/driver-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel",
@@ -16195,7 +16180,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/driver-native.log",
       "remote_test": "graph-g2-kernel-20261107/driver-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel_attr",
@@ -16259,7 +16244,7 @@
       "boundary": "Session-owned Graph kernel nodes; compiler-metadata scalar/pointer/aggregate relocation, immutable parameters, clone/child/entity/invocation module and allocation leases, node-owned getter snapshots. kernelParams ABI, reserve=0 and extra=NULL; bounded 2 MiB wire payload. AccessPolicyWindow uses native validation with owned device allocation or NULL; same-graph attribute copy.",
       "native_test": "graph-g2-kernel-20261107/driver-native.log",
       "remote_test": "graph-g2-kernel-20261107/driver-isolated.log;graph-g2-kernel-20261107/backend-resource-rollback.log",
-      "next_step": "G3 capture, G4 callbacks/user refs, Host graph memcpy staging, ordinary/VMM IPC remain.",
+      "next_step": "G3 capture, G4 callbacks/user refs and ordinary/VMM IPC remain.",
       "contract_stage": "G2",
       "wrapper": {
         "rpc": "graph_kernel",
@@ -16331,10 +16316,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies still need per-invocation staging and publication.",
+      "boundary": "Owned 1D D2D, H2D and D2H memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; device endpoints use AllocationID+offset, Host endpoints use opaque client tokens. Each invocation reads current H2D bytes, owns a private graph and pinned staging, and publishes grouped D2H at completion. Overlapping Host ranges share invocation staging. Summed Host endpoints <=16 MiB; snapshot/view nodes share the 4096-node quota. Native direction validation and retired VA getters retained. Peer, multidimensional copy and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D/H2D/D2H replay boundary; capture and peer copies remain separate work.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -16396,10 +16381,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
-      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
-      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies still need per-invocation staging and publication.",
+      "boundary": "Owned 1D D2D, H2D and D2H memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; device endpoints use AllocationID+offset, Host endpoints use opaque client tokens. Each invocation reads current H2D bytes, owns a private graph and pinned staging, and publishes grouped D2H at completion. Overlapping Host ranges share invocation staging. Summed Host endpoints <=16 MiB; snapshot/view nodes share the 4096-node quota. Native direction validation and retired VA getters retained. Peer, multidimensional copy and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log;graph-host-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log;graph-host-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D/H2D/D2H replay boundary; capture and peer copies remain separate work.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -16460,10 +16445,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
       "native_test": "graph-g2-memcpy-20261107/driver-native.log",
       "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -16526,10 +16511,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "boundary": "Installed SDK 1D memset/D2D/H2D/D2H memcpy/empty/child/kernel DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation/module leases. Host copies use private invocation staging and completion publication. Capture and client callbacks remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
       "native_test": "graph-g2-memcpy-20261107/driver-native.log",
       "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child/kernel-node boundary; replay-aware Host graph memcpy staging and publication remain.",
+      "next_step": "No remaining gap in the declared typed-node and 1D Host replay boundary; G3 capture and G4 client callbacks/user objects remain.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -16602,7 +16587,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -16668,7 +16653,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -16749,7 +16734,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -16820,7 +16805,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -16939,7 +16924,7 @@
       "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
       "native_test": "graph-g1-20261107/driver-native.log",
       "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
-      "next_step": "G1 and supported G2 nodes complete within boundary; Host graph memcpy staging/publication, capture and client callbacks/user objects remain.",
+      "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
       "contract_stage": "G1",
       "wrapper": {
         "current": true,
@@ -19254,6 +19239,64 @@
       "backend_binding": [
         "return graph_kernel_attr(s,in,out);"
       ]
+    },
+    {
+      "name": "graph_host",
+      "operation": "API_GRAPH_HOST",
+      "opcode": 89,
+      "request": [
+        {
+          "name": "action",
+          "type": "u32"
+        },
+        {
+          "name": "entity",
+          "type": "u64"
+        },
+        {
+          "name": "queue",
+          "type": "u64"
+        },
+        {
+          "name": "input_bytes",
+          "type": "u64"
+        },
+        {
+          "name": "capacity",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "count",
+          "type": "u64"
+        },
+        {
+          "name": "input_bytes",
+          "type": "u64"
+        },
+        {
+          "name": "output_bytes",
+          "type": "u64"
+        }
+      ],
+      "request_buffer": {
+        "name": "data",
+        "size_from": "input_bytes",
+        "max_bytes": 16875520
+      },
+      "response_buffer": {
+        "name": "data",
+        "size_from": "capacity",
+        "max_bytes": 98304
+      },
+      "backend_binding": [
+        "return graph_host(s,in,out);"
+      ]
     }
   ],
   "extra_exports": {
@@ -19291,7 +19334,7 @@
     "queue_union": "AccessPolicyWindow uses allocation,offset,bytes,f32 ratio,hit,miss. NULL attribute queue rejected. Freed window allocation cannot be reverse-relocated."
   },
   "graph_ipc_plan": {
-    "phase": "g1_g2_supported_nodes_complete_host_capture_pending",
+    "phase": "g1_g2_host_replay_complete_capture_pending",
     "evidence": "graph-ipc-contracts-20261107/README.md",
     "design": "docs/GRAPH_IPC.md",
     "object_models": [
@@ -19356,9 +19399,9 @@
         "depends_on": [
           "G1"
         ],
-        "missing": "44/44 API entries implemented within declared boundaries: 1D memset/D2D memcpy, kernelParams scalar/pointer/nested aggregate relocation, attributes with native validation, nested child ownership, executable snapshots/update and invocation allocation/module leases. Host graph memcpy per-invocation staging/publication remains outside the certified copy boundary.",
-        "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "evidence": "graph-g2-kernel-20261107/README.md",
+        "missing": "44/44 API entries implemented within declared boundaries: 1D memset/D2D/H2D/D2H memcpy, kernelParams scalar/pointer/nested aggregate relocation, native attribute validation, nested child ownership, executable snapshots/update and invocation allocation/module leases. Host replay has private pinned staging, current per-invoke H2D input, aliased Host ranges and grouped completion publication. Ambiguous structural update roles conservatively reject Host-affecting setters; capture remains G3.",
+        "acceptance": "Both libraries: Native/replacement/preload/isolated numerical replay, current Host input, ordinary async mixing, snapshot/update/child, completion publication, allocation/module/Host leases and pending destroy; protocol/quota/failure rollback and clean resource drain.",
+        "evidence": "graph-host-20261107/README.md",
         "status": "IMPLEMENTED"
       },
       {
@@ -19369,7 +19412,7 @@
           "G1",
           "G2"
         ],
-        "missing": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "missing": "Logical client-thread capture state and captured-operation interception are absent. Explicit graph Host replay staging/publication is implemented in G2; capture must reuse it without executing operations during capture.",
         "acceptance": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions."
       },
       {

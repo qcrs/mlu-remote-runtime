@@ -73,7 +73,9 @@ finally:
     if server:server.terminate();server.wait(timeout=15)
     (out/'results.json').write_text(json.dumps(results,indent=2)+'\n')
     files=['tests/native_graph_kernel.mlu','tests/graph_kernel_protocol.py','tests/backend_resources.c','scripts/verify-graph-kernel.py',
-        'scripts/build.sh','scripts/api_codegen.py','scripts/buffer_codegen.py','server/graph_backend.inc','server/mlu_backend.c','server/mlu_backend.h',
+        'scripts/build.sh','scripts/api_codegen.py','scripts/buffer_codegen.py','server/graph_backend.inc',
+        'server/graph_host_backend.inc','server/graph_host_views.inc','client/graph_host_client.inc','client/runtime_context.c','client/host_memory.c',
+        'server/mlu_backend.c','server/mlu_backend.h',
         'include/graph_kernel_wire.h','shim/graph_kernel.inc','shim/cnrt_shim.c','shim/cndrv_shim.c','schema/mlu_api_schema.json',
         'include/generated/typed_api.h','include/generated/typed_opcodes.inc','build/mlu-remote-server','build/shim/libcnrt.so',
         'build/driver-shim/libcndrv.so','build/native_graph_kernel_runtime','build/native_graph_kernel_driver','build/backend-resources-test',

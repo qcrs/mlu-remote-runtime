@@ -389,9 +389,9 @@
         "depends_on": [
           "G1"
         ],
-        "missing": "44/44 API entries implemented within declared boundaries: 1D memset/D2D memcpy, kernelParams scalar/pointer/nested aggregate relocation, attributes with native validation, nested child ownership, executable snapshots/update and invocation allocation/module leases. Host graph memcpy per-invocation staging/publication remains outside the certified copy boundary.",
-        "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "evidence": "graph-g2-kernel-20261107/README.md",
+        "missing": "44/44 API entries implemented within declared boundaries: 1D memset/D2D/H2D/D2H memcpy, kernelParams scalar/pointer/nested aggregate relocation, native attribute validation, nested child ownership, executable snapshots/update and invocation allocation/module leases. Host replay has private pinned staging, current per-invoke H2D input, aliased Host ranges and grouped completion publication. Ambiguous structural update roles conservatively reject Host-affecting setters; capture remains G3.",
+        "acceptance": "Both libraries: Native/replacement/preload/isolated numerical replay, current Host input, ordinary async mixing, snapshot/update/child, completion publication, allocation/module/Host leases and pending destroy; protocol/quota/failure rollback and clean resource drain.",
+        "evidence": "graph-host-20261107/README.md",
         "status": "IMPLEMENTED"
       },
       {
@@ -402,7 +402,7 @@
           "G1",
           "G2"
         ],
-        "missing": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+        "missing": "Logical client-thread capture state and captured-operation interception are absent. Explicit graph Host replay staging/publication is implemented in G2; capture must reuse it without executing operations during capture.",
         "acceptance": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions."
       },
       {

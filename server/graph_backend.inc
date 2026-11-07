@@ -24,8 +24,15 @@ static void graph_kernel_release(mlu_graph_kernel *k) {
 }
 /* Payloads are immutable once attached. Clones and executable snapshots
  * share records, each of which holds its endpoint allocation leases. */
+struct mlu_graph_view;
+static void graph_view_release(struct mlu_graph_view *);
 typedef struct mlu_graph_payload {
   unsigned refs;
+  mlu_backend_session *host_session;
+  void *host_placeholder;
+  uint64_t host_token;
+  unsigned host_kind;
+  struct mlu_graph_view *child_view;
   mlu_graph_kernel *kernel;
   mlu_backend_allocation *attribute_allocation;
   mlu_backend_allocation *allocation;
@@ -39,6 +46,11 @@ static void graph_payload_retain(mlu_graph_payload *p) { if(p) p->refs++; }
 static void graph_payload_release(mlu_graph_payload *p) {
   if(!p || --p->refs) return;
   graph_kernel_release(p->kernel);
+  graph_view_release(p->child_view);
+  if(p->host_placeholder) {
+    free(p->host_placeholder);
+    mlu_resource_release(&p->host_session->usage,MLU_RESOURCE_STAGING,p->memcpy.extent.width);
+  }
   if(p->attribute_allocation) p->attribute_allocation->graph_refs--;
   if(p->allocation) p->allocation->graph_refs--;
   if(p->source_allocation) p->source_allocation->graph_refs--;
@@ -49,6 +61,12 @@ static void graph_payload_release(mlu_graph_payload *p) {
 typedef struct mlu_graph_invocation {
   struct mlu_graph_invocation *next;
   size_t count;
+  mlu_backend_session *session;
+  CNtaskTopoEntity private_entity;
+  struct mlu_graph_view *view;
+  void *host;
+  size_t host_bytes, host_count;
+  struct mlu_graph_host_endpoint *endpoints;
   mlu_graph_payload *payloads[];
 } mlu_graph_invocation;
 typedef struct mlu_graph_entity {
@@ -56,6 +74,8 @@ typedef struct mlu_graph_entity {
   uint64_t id;
   CNtaskTopoEntity handle;
   CNtaskTopo snapshot;
+  struct mlu_graph_view *revision;
+  int *host_slots;
   size_t count;
   size_t lease_count, snapshot_cost;
   uint64_t *source_ids;
@@ -63,20 +83,38 @@ typedef struct mlu_graph_entity {
   mlu_graph_payload **payloads;
   mlu_graph_payload **overrides;
 } mlu_graph_entity;
-static void graph_invocation_release(mlu_graph_invocation *run) {
-  if(!run) return;
+#include "graph_host_views.inc"
+static int graph_invocation_release(mlu_graph_invocation *run) {
+  if(!run) return 0;
+  if(run->private_entity) {
+    int st=cnTaskTopoEntityDestroy(run->private_entity); if(st) return st;
+    run->private_entity=NULL;
+  }
+  if(run->host) {
+    int st=cnFreeHost(run->host); if(st) return st;
+    run->host=NULL;
+    mlu_resource_release(&run->session->usage,MLU_RESOURCE_STAGING,run->host_bytes);
+  }
+  graph_view_release(run->view);
   for(size_t i=0;i<run->count;i++) graph_payload_release(run->payloads[i]);
-  free(run);
+  free(run->endpoints); free(run); return 0;
+}
+static void graph_run_discard(mlu_backend_session *s,mlu_graph_invocation *run) {
+  if(graph_invocation_release(run)) { run->next=s->graph_orphans; s->graph_orphans=run; }
 }
 static void graph_transfer_release(mlu_backend_session *s,mlu_backend_transfer *t) {
-  graph_invocation_release(t->graph_hold); t->graph_hold=NULL;
-  if(s->context) (void)graph_reap_allocations(s);
+  if(!graph_invocation_release(t->graph_hold)) t->graph_hold=NULL;
+  if(s->context) {(void)graph_views_reap(s); (void)graph_reap_allocations(s);}
 }
-static void graph_orphans_release(mlu_backend_session *s) {
-  while(s->graph_orphans) {
-    mlu_graph_invocation *run=s->graph_orphans; s->graph_orphans=run->next;
-    graph_invocation_release(run);
+static int graph_orphans_release(mlu_backend_session *s) {
+  int first=0;
+  mlu_graph_invocation **link=&s->graph_orphans;
+  while(*link) {
+    mlu_graph_invocation *run=*link,*next=run->next;
+    int st=graph_invocation_release(run);
+    if(!st) *link=next; else {if(!first) first=st;link=&run->next;}
   }
+  return first;
 }
 static mlu_graph_entity *graph_find_entity(mlu_backend_session *s,uint64_t id) {
   if(!mlu_object_registry_contains(&s->objects,MLU_OBJECT_GRAPH_ENTITY,id)) return NULL;
@@ -93,6 +131,7 @@ static int graph_entity_destroy(mlu_backend_session *s,mlu_graph_entity *e) {
   if(*link) *link=e->next;
   mlu_object_registry_release(&s->objects,MLU_OBJECT_GRAPH_ENTITY,e->id);
   s->graph_snapshot_nodes-=(unsigned)e->snapshot_cost;
+  graph_view_release(e->revision); free(e->host_slots);
   free(e->source_ids); free(e->nodes); free(e->payloads); free(e->overrides); free(e);
   return 0;
 }
@@ -133,7 +172,10 @@ static int graph_cleanup(mlu_backend_session *s) {
     graphs++; int st=graph_destroy(s,i); if(st && !first) first=st;
   }
   if(graphs) fprintf(stderr,"[server] GRAPH_CLEANUP owner=%llu graphs=%u nodes=%u status=%d\n",(unsigned long long)s->owner_token,graphs,nodes,first);
-  int st=graph_reap_allocations(s); return first ? first : st;
+  int st=graph_views_reap(s); if(st && !first) first=st;
+  for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) if(s->transfers[i].graph_hold && !first) first=CN_ERROR_OPERATING_SYSTEM;
+  if((s->graph_orphans || s->graph_views) && !first) first=CN_ERROR_OPERATING_SYSTEM;
+  st=graph_reap_allocations(s); return first ? first : st;
 }
 static int graph_reserve(mlu_backend_session *s,int node) {
   unsigned limit=node ? MLU_GRAPH_MAX_NODES : MLU_BACKEND_MAX_OBJECTS;
@@ -209,13 +251,13 @@ static int graph_action(mlu_backend_session *s,const mlu_api_graph_action_reques
     case MLU_GRAPH_DESTROY: {
       if(g<0) return CN_ERROR_INVALID_VALUE;
       if(s->graphs[g].owner_node) return CN_ERROR_INVALID_VALUE;
-      int st=graph_destroy(s,g); (void)graph_reap_allocations(s); return st;
+      int st=graph_destroy(s,g); (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
     }
     case MLU_GRAPH_DESTROY_NODE: {
       if(n<0) return CN_ERROR_INVALID_VALUE;
       int st=cnTaskTopoDestroyNode(s->graph_nodes[n].handle);
       if(!st) graph_forget_node(s,n);
-      (void)graph_reap_allocations(s); return st;
+      (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
     }
     case MLU_GRAPH_NODE_TYPE: {
       if(n<0) return CN_ERROR_INVALID_VALUE;
@@ -299,13 +341,15 @@ static int graph_child(mlu_backend_session *s,const mlu_api_graph_child_request 
     p->refs=1; p->children=calloc(MLU_GRAPH_MAX_NODES,sizeof(*p->children));
     if(!p->children) { free(p); return CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
     size_t count=0; int st=graph_collect(s,child,p->children,&count,0);
+    if(!st) st=graph_view_from_registry(s,child,&p->child_view);
+    if(!st && e->host_slots[i]<0 && (graph_view_has_host(e->revision) || graph_view_has_host(p->child_view))) st=MLU_REMOTE_UNSUPPORTED;
     if(!st) st=cnTaskTopoEntityChildTopoNodeSetParams(e->handle,e->nodes[i],s->graphs[child].handle);
     if(!st) {
       p->child_count=count;
       for(size_t j=0;j<count;j++) graph_payload_retain(p->children[j]);
       graph_payload_release(e->overrides[i]); e->overrides[i]=p;
     } else graph_payload_release(p);
-    (void)graph_reap_allocations(s); return st;
+    (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
   }
   if(in->action!=MLU_GRAPH_CHILD_ADD || g<0) return CN_ERROR_INVALID_VALUE;
   CNtaskTopoNode deps[MLU_GRAPH_MAX_NODES];
@@ -383,15 +427,16 @@ static int graph_memset(mlu_backend_session *s,const mlu_api_graph_memset_reques
     if(e) for(;i<e->count;i++) if(e->source_ids[i]==in->node) break;
     if(!e || !e->handle || i==e->count) st=CN_ERROR_INVALID_VALUE;
     else {
-      st=cnTaskTopoEntityMemsetNodeSetParams(e->handle,e->nodes[i],&p->memset);
+      if(e->host_slots[i]<0 && graph_view_has_host(e->revision)) st=MLU_REMOTE_UNSUPPORTED;
+      else st=cnTaskTopoEntityMemsetNodeSetParams(e->handle,e->nodes[i],&p->memset);
       if(!st) { graph_payload_release(e->overrides[i]); e->overrides[i]=p; }
     }
     if(st) graph_payload_release(p);
-    (void)graph_reap_allocations(s); return st;
+    (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
   } else st=cnTaskTopoMemsetNodeSetParams(s->graph_nodes[n].handle,&p->memset);
   if(st) graph_payload_release(p);
   else { graph_payload_release(s->graph_nodes[n].payload); s->graph_nodes[n].payload=p; }
-  (void)graph_reap_allocations(s); return st;
+  (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
 }
 
 static int graph_memcpy(mlu_backend_session *s,const mlu_api_graph_memcpy_request *in,mlu_api_graph_memcpy_response *out) {
@@ -409,24 +454,34 @@ static int graph_memcpy(mlu_backend_session *s,const mlu_api_graph_memcpy_reques
     CNmemcpy3dParam native={0};
     int st=cnTaskTopoMemcpyNodeGetParams(s->graph_nodes[n].handle,&native); if(st) return st;
     mlu_graph_payload *payload=s->graph_nodes[n].payload;
-    if(!payload || !payload->allocation || !payload->source_allocation ||
-       (uintptr_t)native.dst<(uintptr_t)payload->allocation->address ||
-       (uintptr_t)native.src<(uintptr_t)payload->source_allocation->address) return CN_ERROR_INVALID_VALUE;
-    out->dst_allocation=payload->allocation->id;
-    out->dst_offset=(uintptr_t)native.dst-(uintptr_t)payload->allocation->address;
-    out->src_allocation=payload->source_allocation->id;
-    out->src_offset=(uintptr_t)native.src-(uintptr_t)payload->source_allocation->address;
+    if(!payload) return CN_ERROR_INVALID_VALUE;
+    out->dst_allocation=payload->allocation ? payload->allocation->id : 0;
+    out->dst_offset=payload->allocation ? (uintptr_t)native.dst-payload->allocation->address : payload->host_token;
+    out->src_allocation=payload->source_allocation ? payload->source_allocation->id : 0;
+    out->src_offset=payload->source_allocation ? (uintptr_t)native.src-payload->source_allocation->address : payload->host_token;
     out->width=native.extent.width; out->direction=native.dir;
     return 0;
   }
   mlu_backend_allocation *dst=find_alloc(s,in->dst_allocation),*src=find_alloc(s,in->src_allocation);
-  CNaddr dst_address,src_address;
-  if(!dst || !src || !in->width || in->width>MLU_GRAPH_MAX_COPY_BYTES ||
-     range(dst,in->dst_offset,in->width,&dst_address) ||
-     range(src,in->src_offset,in->width,&src_address)) return CN_ERROR_INVALID_VALUE;
+  CNaddr dst_address=0,src_address=0;
+  int host_dst=!in->dst_allocation,host_src=!in->src_allocation;
+  if((host_dst && host_src) || !in->width || in->width>MLU_GRAPH_MAX_COPY_BYTES ||
+     (!host_dst && (!dst || range(dst,in->dst_offset,in->width,&dst_address))) ||
+     (!host_src && (!src || range(src,in->src_offset,in->width,&src_address))) ||
+     (host_dst && (!in->dst_offset || in->dst_offset>UINTPTR_MAX-in->width)) ||
+     (host_src && (!in->src_offset || in->src_offset>UINTPTR_MAX-in->width))) return CN_ERROR_INVALID_VALUE;
   mlu_graph_payload *payload=calloc(1,sizeof(*payload)); if(!payload) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
   payload->refs=1; payload->allocation=dst; payload->source_allocation=src;
-  dst->graph_refs++; src->graph_refs++;
+  if(dst) dst->graph_refs++;
+  if(src) src->graph_refs++;
+  if(host_dst || host_src) {
+    payload->host_session=s;payload->host_kind=host_src ? 1 : 2;
+    payload->host_token=host_src ? in->src_offset : in->dst_offset;
+    if(mlu_resource_reserve(&s->usage,MLU_RESOURCE_STAGING,in->width)) {graph_payload_release(payload);return MLU_REMOTE_RESOURCE_LIMIT;}
+    payload->host_placeholder=calloc(1,in->width);
+    if(!payload->host_placeholder) {mlu_resource_release(&s->usage,MLU_RESOURCE_STAGING,in->width);graph_payload_release(payload);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
+    if(host_src) src_address=(uintptr_t)payload->host_placeholder;else dst_address=(uintptr_t)payload->host_placeholder;
+  }
   payload->memcpy=(CNmemcpy3dParam){0};
   payload->memcpy.dst=(void *)(uintptr_t)dst_address;
   payload->memcpy.src=(void *)(uintptr_t)src_address;
@@ -457,15 +512,16 @@ static int graph_memcpy(mlu_backend_session *s,const mlu_api_graph_memcpy_reques
     if(e) for(;i<e->count;i++) if(e->source_ids[i]==in->node) break;
     if(!e || !e->handle || i==e->count) st=CN_ERROR_INVALID_VALUE;
     else {
-      st=cnTaskTopoEntityMemcpyNodeSetParams(e->handle,e->nodes[i],&payload->memcpy);
+      if(e->host_slots[i]<0 && (graph_view_has_host(e->revision) || payload->host_kind)) st=MLU_REMOTE_UNSUPPORTED;
+      else st=cnTaskTopoEntityMemcpyNodeSetParams(e->handle,e->nodes[i],&payload->memcpy);
       if(!st) { graph_payload_release(e->overrides[i]); e->overrides[i]=payload; }
     }
     if(st) graph_payload_release(payload);
-    (void)graph_reap_allocations(s); return st;
+    (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
   } else st=cnTaskTopoMemcpyNodeSetParams(s->graph_nodes[n].handle,&payload->memcpy);
   if(st) graph_payload_release(payload);
   else { graph_payload_release(s->graph_nodes[n].payload); s->graph_nodes[n].payload=payload; }
-  (void)graph_reap_allocations(s); return st;
+  (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
 }
 
 /* The cloned DAG retains the original instantiate-time node correspondence.
@@ -493,6 +549,13 @@ static int graph_snapshot_create(mlu_backend_session *s,unsigned g,mlu_graph_ent
     }
     if(!e->source_ids[i]) return CN_ERROR_OPERATING_SYSTEM;
   }
+  st=graph_view_from_registry(s,g,&e->revision); if(st) return st;
+  e->host_slots=malloc((count ? count : 1)*sizeof(*e->host_slots));
+  if(!e->host_slots) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  for(size_t i=0;i<count;i++) {
+    e->host_slots[i]=-1;
+    for(size_t j=0;j<e->revision->count;j++) if(e->revision->entries[j].source_id==e->source_ids[i]) e->host_slots[i]=(int)j;
+  }
   return 0;
 }
 static uint64_t graph_node_id(mlu_backend_session *s,CNtaskTopoNode handle) {
@@ -514,16 +577,18 @@ static int graph_entity(mlu_backend_session *s,const mlu_api_graph_entity_reques
     if(!st) st=cnTaskTopoInstantiate(&e->handle,e->snapshot,&error,(char *)out->log,in->log_size);
     if(st) {
       if(error) for(size_t i=0;i<e->count;i++) if(e->nodes[i]==error) { out->error_node=e->source_ids[i]; break; }
-      int cleanup=graph_entity_destroy(s,e); return cleanup ? cleanup : st;
+      int cleanup=graph_entity_destroy(s,e); (void)graph_views_reap(s); return cleanup ? cleanup : st;
     }
     out->id=e->id; return 0;
   }
   mlu_graph_entity *e=graph_find_entity(s,in->entity); if(!e) return CN_ERROR_INVALID_VALUE;
   if(in->action==MLU_GRAPH_ENTITY_DESTROY) {
-    int st=graph_entity_destroy(s,e); (void)graph_reap_allocations(s); return st;
+    int st=graph_entity_destroy(s,e); (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
   }
   if(!e->handle) return CN_ERROR_INVALID_VALUE;
   if(in->action==MLU_GRAPH_ENTITY_INVOKE) {
+    if(graph_view_has_host(e->revision)) return MLU_REMOTE_UNSUPPORTED;
+    for(size_t i=0;i<e->count;i++) if(e->overrides[i] && (e->overrides[i]->host_kind || graph_view_has_host(e->overrides[i]->child_view))) return MLU_REMOTE_UNSUPPORTED;
     mlu_backend_queue *q=in->queue ? find_queue(s,in->queue) : NULL;
     if(in->queue && !q) return CN_ERROR_INVALID_HANDLE;
     int st=transfer_capacity(s); if(st) return st;
@@ -535,13 +600,13 @@ static int graph_entity(mlu_backend_session *s,const mlu_api_graph_entity_reques
     for(size_t i=0;i<run->count;i++) graph_payload_retain(run->payloads[i]);
     if(!in->queue) s->default_queue_used=1;
     st=cnTaskTopoEntityInvoke(e->handle,q ? q->handle : NULL);
-    if(st) { graph_invocation_release(run); return st; }
+    if(st) { graph_run_discard(s,run); return st; }
     st=record_transfer(s,in->queue,1,&out->id);
     if(!st) find_transfer(s,out->id)->graph_hold=run;
     else {
       /* Submission succeeded but no completion identity could be published.
        * Preserve every lease until a confirmed queue/context completion. */
-      if(!cnQueueSync(q ? q->handle : NULL)) graph_invocation_release(run);
+      if(!cnQueueSync(q ? q->handle : NULL)) graph_run_discard(s,run);
       else { run->next=s->graph_orphans; s->graph_orphans=run; }
     }
     return st;
@@ -554,21 +619,31 @@ static int graph_entity(mlu_backend_session *s,const mlu_api_graph_entity_reques
     mlu_graph_payload **replacement=calloc(count ? count : 1,sizeof(*replacement));
     if(!replacement) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
     memcpy(replacement,leases,count*sizeof(*replacement));
+    mlu_graph_view *revision=NULL;
+    st=graph_view_from_registry(s,g,&revision);
+    if(st) {graph_view_release(revision);(void)graph_views_reap(s);free(replacement);return st;}
+    int *slots=malloc((e->count ? e->count : 1)*sizeof(*slots));
+    if(!slots) {graph_view_release(revision);(void)graph_views_reap(s);free(replacement);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
+    graph_view_correspondence(e,revision,slots);
     st=cnTaskTopoEntityUpdate(e->handle,s->graphs[g].handle,&error,&result);
     out->update_result=result; out->error_node=graph_node_id(s,error);
     if(!st) {
-      /* No enumeration order is used as native node correspondence. */
+      graph_view_release(e->revision);e->revision=revision;revision=NULL;
+      free(e->host_slots);e->host_slots=slots;slots=NULL;
+      /* Only a proven unique structural match routes host-affecting overrides. */
       for(size_t i=0;i<count;i++) graph_payload_retain(replacement[i]);
       for(size_t i=0;i<e->lease_count;i++) graph_payload_release(e->payloads[i]);
       free(e->payloads); e->payloads=replacement; replacement=NULL; e->lease_count=count;
       for(size_t i=0;i<e->count;i++) { graph_payload_release(e->overrides[i]); e->overrides[i]=NULL; }
-      (void)graph_reap_allocations(s);
+      (void)graph_views_reap(s); (void)graph_reap_allocations(s);
     }
-    free(replacement);
+    graph_view_release(revision);(void)graph_views_reap(s);free(slots);free(replacement);
     return st;
   }
   return CN_ERROR_INVALID_VALUE;
 }
+
+#include "graph_host_backend.inc"
 
 static int graph_kernel_address(mlu_backend_session *s,mlu_graph_kernel *k,uint64_t id,uint64_t off,uint64_t *value) {
   if(!id) { if(off) return CN_ERROR_INVALID_VALUE; *value=0;return 0; }
@@ -665,18 +740,19 @@ static int graph_kernel(mlu_backend_session *s,const mlu_api_graph_kernel_reques
     if(e) for(;i<e->count;i++) if(e->source_ids[i]==in->node) break;
     if(!e || !e->handle || i==e->count) st=CN_ERROR_INVALID_VALUE;
     else {
-      st=cnTaskTopoEntityKernelNodeSetParams(e->handle,e->nodes[i],&p->kernel->params);
+      if(e->host_slots[i]<0 && graph_view_has_host(e->revision)) st=MLU_REMOTE_UNSUPPORTED;
+      else st=cnTaskTopoEntityKernelNodeSetParams(e->handle,e->nodes[i],&p->kernel->params);
       if(!st) {graph_payload_release(e->overrides[i]);e->overrides[i]=p;}
     }
     if(st) graph_payload_release(p);
-    (void)graph_reap_allocations(s);return st;
+    (void)graph_views_reap(s); (void)graph_reap_allocations(s);return st;
   } else {
     st=cnTaskTopoKernelNodeSetParams(s->graph_nodes[n].handle,&p->kernel->params);
     if(!st) {p->attribute_allocation=s->graph_nodes[n].payload->attribute_allocation;if(p->attribute_allocation) p->attribute_allocation->graph_refs++;}
   }
   if(st) graph_payload_release(p);
   else {graph_payload_release(s->graph_nodes[n].payload);s->graph_nodes[n].payload=p;}
-  (void)graph_reap_allocations(s);return st;
+  (void)graph_views_reap(s); (void)graph_reap_allocations(s);return st;
 }
 static int graph_kernel_attr(mlu_backend_session *s,const mlu_api_graph_kernel_attr_request *in,mlu_api_graph_kernel_attr_response *out) {
   int n=graph_node_index(s,in->node),src=graph_node_index(s,in->src);
@@ -704,5 +780,5 @@ static int graph_kernel_attr(mlu_backend_session *s,const mlu_api_graph_kernel_a
   int st=in->action==3 ? cnTaskTopoKernelNodeCopyAttributes(s->graph_nodes[n].handle,s->graph_nodes[src].handle) :
     cnTaskTopoKernelNodeSetAttribute(s->graph_nodes[n].handle,(CNkernelNodeAttrID)in->attribute,&v);
   if(st) graph_payload_release(p);else {s->graph_nodes[n].payload=p;graph_payload_release(old);}
-  (void)graph_reap_allocations(s);return st;
+  (void)graph_views_reap(s); (void)graph_reap_allocations(s);return st;
 }

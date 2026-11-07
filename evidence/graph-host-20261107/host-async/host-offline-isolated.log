@@ -1,0 +1,8 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:1
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_host_async
+PASS CNRT Host allocation/attributes/free before initialization and without a remote connection

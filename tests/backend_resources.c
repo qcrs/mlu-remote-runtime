@@ -13,6 +13,27 @@ static int fail_host_alloc, fail_host_free, fail_d2h, fail_notifier;
 static int fail_graph_destroy, fail_graph_find, fail_graph_node_destroy;
 static int fail_graph_copy_add, fail_graph_copy_set, fail_graph_copy_entity_set;
 static int fail_graph_kernel_add, fail_graph_kernel_set, fail_graph_kernel_entity_set, fail_module_unload;
+static int fail_graph_clone,fail_graph_instantiate,fail_graph_invoke,fail_graph_entity_destroy;
+extern CNresult __real_cnTaskTopoClone(CNtaskTopo *,CNtaskTopo);
+CNresult __wrap_cnTaskTopoClone(CNtaskTopo *out,CNtaskTopo graph) {
+  if(fail_graph_clone) {--fail_graph_clone;return CN_ERROR_INVALID_VALUE;}
+  return __real_cnTaskTopoClone(out,graph);
+}
+extern CNresult __real_cnTaskTopoInstantiate(CNtaskTopoEntity *,CNtaskTopo,CNtaskTopoNode *,char *,size_t);
+CNresult __wrap_cnTaskTopoInstantiate(CNtaskTopoEntity *out,CNtaskTopo graph,CNtaskTopoNode *node,char *log,size_t bytes) {
+  if(fail_graph_instantiate) {--fail_graph_instantiate;return CN_ERROR_INVALID_VALUE;}
+  return __real_cnTaskTopoInstantiate(out,graph,node,log,bytes);
+}
+extern CNresult __real_cnTaskTopoEntityInvoke(CNtaskTopoEntity,CNqueue);
+CNresult __wrap_cnTaskTopoEntityInvoke(CNtaskTopoEntity entity,CNqueue q) {
+  if(fail_graph_invoke) {--fail_graph_invoke;return CN_ERROR_INVALID_VALUE;}
+  return __real_cnTaskTopoEntityInvoke(entity,q);
+}
+extern CNresult __real_cnTaskTopoEntityDestroy(CNtaskTopoEntity);
+CNresult __wrap_cnTaskTopoEntityDestroy(CNtaskTopoEntity entity) {
+  if(fail_graph_entity_destroy) {--fail_graph_entity_destroy;return CN_ERROR_INVALID_VALUE;}
+  return __real_cnTaskTopoEntityDestroy(entity);
+}
 extern CNresult __real_cnTaskTopoAddKernelNode(CNtaskTopoNode *,CNtaskTopo,const CNtaskTopoNode *,size_t,const CN_KERNEL_NODE_PARAMS *);
 CNresult __wrap_cnTaskTopoAddKernelNode(CNtaskTopoNode *n,CNtaskTopo g,const CNtaskTopoNode *deps,size_t count,const CN_KERNEL_NODE_PARAMS *p) {
   if(fail_graph_kernel_add) { --fail_graph_kernel_add; return CN_ERROR_INVALID_VALUE; }
@@ -215,6 +236,51 @@ static void graph_copy_failures(void) {
   puts("PASS memcpy native Add/Set/EntitySet failure rolls back both endpoint leases; replacement reaps retired endpoints; same-allocation refs balance");
 }
 
+static void graph_host_failures(void) {
+  mlu_backend_session *s=calloc(1,sizeof(*s));assert(s);assert(!mlu_backend_session_init(s,0));
+  uint64_t allocation;assert(!mlu_backend_alloc(s,64,&allocation));
+  mlu_api_graph_action_request action={.action=MLU_GRAPH_CREATE};mlu_api_graph_action_response graph={0},unused={0};
+  assert(!mlu_backend_api_graph_action(s,&action,&graph));
+  mlu_api_graph_memcpy_request copy={.action=MLU_GRAPH_PARAM_ADD,.graph=graph.id,
+    .dst_allocation=allocation,.src_offset=0x10000,.width=64,.direction=2};
+  mlu_api_graph_memcpy_response copied={0};fail_graph_copy_add=1;
+  assert(mlu_backend_api_graph_memcpy(s,&copy,&copied)==CN_ERROR_INVALID_VALUE);assert(!s->usage.bytes[MLU_RESOURCE_STAGING]);
+  assert(!mlu_backend_api_graph_memcpy(s,&copy,&copied));
+  mlu_api_graph_entity_request entity={.action=MLU_GRAPH_INSTANTIATE,.graph=graph.id};mlu_api_graph_entity_response executable={0};
+  assert(!mlu_backend_api_graph_entity(s,&entity,&executable));
+  unsigned snapshot=s->graph_snapshot_nodes;assert(snapshot && s->usage.bytes[MLU_RESOURCE_STAGING]==64);
+  unsigned char descriptor[24]={0},data[88]={0};mlu_api_graph_host_request in={.action=1,.entity=executable.id,.capacity=24};
+  mlu_api_graph_host_response out={.data=descriptor};assert(!mlu_backend_api_graph_host(s,&in,&out));
+  memcpy(data,descriptor,24);memset(data+24,19,64);in.action=2;in.capacity=0;in.input_bytes=sizeof(data);in.data=data;
+  int *faults[]={&fail_graph_clone,&fail_host_alloc,&fail_graph_copy_set,&fail_graph_instantiate,&fail_graph_invoke,&fail_notifier};
+  for(size_t i=0;i<sizeof(faults)/sizeof(*faults);i++) {
+    *faults[i]=1;assert(mlu_backend_api_graph_host(s,&in,&out));
+    assert(!*faults[i] && s->graph_snapshot_nodes==snapshot && s->usage.bytes[MLU_RESOURCE_STAGING]==64 && !s->graph_orphans);
+  }
+  /* A failed completion-record creation plus failed wait cannot free an
+   * invocation that may already be accessing its pinned source. */
+  fail_notifier=1;fail_sync=1;assert(mlu_backend_api_graph_host(s,&in,&out));
+  assert(s->graph_orphans && s->usage.bytes[MLU_RESOURCE_STAGING]==128);
+  fail_sync=0;assert(!mlu_backend_context_sync(s));assert(!s->graph_orphans && s->usage.bytes[MLU_RESOURCE_STAGING]==64);
+  for(unsigned failure=0;failure<3;failure++) {
+    assert(!mlu_backend_api_graph_host(s,&in,&out));uint64_t transfer=out.id;
+    assert(!mlu_backend_transfer_sync(s,transfer));
+    if(failure==0) fail_graph_entity_destroy=1;
+    else if(failure==1) fail_host_free=1;
+    else fail_graph_destroy=1;
+    assert(!mlu_backend_transfer_release(s,transfer));
+    if(failure<2) assert(s->usage.bytes[MLU_RESOURCE_STAGING]==128);
+    else assert(s->graph_snapshot_nodes>snapshot);
+    assert(!mlu_backend_context_sync(s));
+    assert(s->graph_snapshot_nodes==snapshot && s->usage.bytes[MLU_RESOURCE_STAGING]==64);
+  }
+  action.action=MLU_GRAPH_DESTROY;action.graph=graph.id;assert(!mlu_backend_api_graph_action(s,&action,&unused));
+  entity.action=MLU_GRAPH_ENTITY_DESTROY;entity.entity=executable.id;assert(!mlu_backend_api_graph_entity(s,&entity,&executable));
+  assert(!s->graph_views && !s->graph_snapshot_nodes && !s->usage.bytes[MLU_RESOURCE_STAGING]);
+  assert(!mlu_backend_session_cleanup(s));free(s);
+  puts("PASS Host replay clone/allocate/set/instantiate/invoke/notifier rollback; failed wait retains orphan; native entity/Host/view release retries preserve ownership and quota");
+}
+
 static void graph_kernel_failures(const void *image,size_t bytes) {
   mlu_backend_session *s=calloc(1,sizeof(*s)); assert(s);
   assert(!mlu_backend_session_init(s,0)); uint64_t mid=0,kid=0,ids[3];
@@ -269,7 +335,7 @@ static void graph_kernel_failures(const void *image,size_t bytes) {
 int main(int argc, char **argv) {
   assert(argc == 2 || argc == 3);
   mlu_backend_session *s = calloc(1, sizeof(*s)); assert(s);
-  assert(!mlu_backend_global_init()); graph_failures(); graph_copy_failures(); assert(!mlu_backend_session_init(s, 0));
+  assert(!mlu_backend_global_init()); graph_failures(); graph_copy_failures(); graph_host_failures(); assert(!mlu_backend_session_init(s, 0));
   uint64_t a = 0, q = 0, tid = 0, mid = 0, kid = 0;
   fail_alloc = 1;
   assert(mlu_backend_alloc(s, 64, &a) == CN_MEMORY_ERROR_OUT_OF_MEMORY);

@@ -123,7 +123,13 @@ def validate(schema):
             if re.sub(r'\s+','',prototype) != re.sub(r'\s+','',api['signature']):
                 raise ValueError('wrapper parameter/signature drift: '+api['name'])
             rpc=next(r for r in schema['typed_rpc'] if r['name']==api['wrapper']['rpc'])
-            if set(api['wrapper'].get('inputs',{})) != {f['name'] for f in rpc['request']} | ({rpc['request_array']['name']} if rpc.get('request_array') else set()) | ({rpc['request_buffer']['name']} if rpc.get('request_buffer') else set()): raise ValueError('wrapper request mapping incomplete')
+            if 'call' in api['wrapper']:
+                call=api['wrapper']['call']
+                if (not isinstance(call,list) or not call or
+                    not all(isinstance(line,str) and line.strip() for line in call) or
+                    any(key in api['wrapper'] for key in ('inputs','outputs','native_status','response_prepare'))):
+                    raise ValueError('invalid custom wrapper call: '+api['name'])
+            if not api['wrapper'].get('call') and set(api['wrapper'].get('inputs',{})) != {f['name'] for f in rpc['request']} | ({rpc['request_array']['name']} if rpc.get('request_array') else set()) | ({rpc['request_buffer']['name']} if rpc.get('request_buffer') else set()): raise ValueError('wrapper request mapping incomplete')
             if api['wrapper'].get('native_status') and not any(f['name']==api['wrapper']['native_status'] and f['type']=='u32' for f in rpc['response']):
                 raise ValueError('native_status requires a u32 response field')
 
@@ -200,6 +206,9 @@ def generate(root, schema, check):
             lines += ['  '+x for x in w.get('local_prepare',[])]
             if rt: lines += ['  CONNECT();']
             lines += ['  '+x for x in w.get('prepare',[])]
+            if w.get('call'):
+                lines += ['  '+x for x in w['call']] + ['}']
+                continue
             lines += [f'  mlu_api_{rpc}_request in={{0}}; mlu_api_{rpc}_response out={{0}};']
             rpc_fields={field['name']:field for spec in schema['typed_rpc'] if spec['name']==rpc for field in spec['request']}
             rpc_spec=next(spec for spec in schema['typed_rpc'] if spec['name']==rpc)

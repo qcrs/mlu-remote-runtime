@@ -1,0 +1,5 @@
+PASS Host graph pageable replay/getter/clone/setter/update/completion
+PASS Host graph pinned replay/getter/clone/setter/update/completion
+PASS Host nested child clone and entity child replacement
+PASS Host aliases, D2H to H2D feedback, overlapping outputs, memset and default queue
+PASS Host graph reset publication

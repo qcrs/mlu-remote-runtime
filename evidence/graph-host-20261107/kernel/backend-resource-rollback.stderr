@@ -1,0 +1,10 @@
+[server] limit DEVICE session=1073741824 total=8589934592 bytes
+[server] limit STAGING session=67108864 total=268435456 bytes
+[server] limit IMAGE session=67108864 total=268435456 bytes
+[server] GRAPH_CLEANUP owner=1 graphs=3 nodes=5 status=100006
+[server] CLEANUP_QUARANTINED owner=1 Graph release failed
+[server] GRAPH_CLEANUP owner=1 graphs=1 nodes=2 status=0
+[server] CLEANUP_ERROR op=cnDestroyQueue(retired) id=15924954773685431329 status=100006
+[server] RESOURCE_LIMIT kind=STAGING request=16 session_used=67108856 total_used=67108856
+[server] CLEANUP_ERROR op=cnQueueSync id=15924954773685431345 status=100006
+[server] RESOURCE_TOTAL device=0 staging=0 image=0

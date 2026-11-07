@@ -1,0 +1,4 @@
+attribute_status=100006
+PASS Host H2D/kernel/D2H graph mixed with ordinary async copies and overlapping publication
+PASS public retirement retains kernel module/allocation backing and getter identities
+PASS kernel graph scalar/pointer/aggregate relocation, snapshot, clone, entity set/update, child, attributes and completion leases

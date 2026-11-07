@@ -168,12 +168,16 @@ static void invalidate_module_kernels(mlu_backend_session *s, uint64_t module_id
 }
 static void graph_transfer_release(mlu_backend_session *s,mlu_backend_transfer *t);
 static int graph_reap_allocations(mlu_backend_session *s);
+static int graph_orphans_release(mlu_backend_session *s);
+static int graph_views_reap(mlu_backend_session *s);
+static int graph_host_fetch(mlu_backend_session *,mlu_backend_transfer *,void *,uint64_t);
 static void reap_transfers(mlu_backend_session *s) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
     mlu_backend_transfer *t = &s->transfers[i];
     if (!t->live || !t->release_requested) continue;
     if (t->notifier_live && cnQueryNotifier(t->notifier) != CN_SUCCESS) continue;
     graph_transfer_release(s,t);
+    if(t->graph_hold) continue;
     if (t->notifier_live && cnDestroyNotifier(t->notifier) != CN_SUCCESS) continue;
     t->notifier_live = 0;
     if (t->host) {
@@ -344,8 +348,12 @@ int mlu_backend_context_sync(mlu_backend_session *s) {
   CNresult r=cnCtxSync();
   if (r==CN_SUCCESS) {
     release_staging(s,0); reap_transfers(s);
-    int st=reap_retired_queues(s), graph_st=graph_reap_allocations(s);
-    return st ? st : graph_st;
+    /* Only a confirmed context barrier permits reclaiming submissions whose
+     * completion record and queue wait both failed. Retain failed releases
+     * and zero-reference views for the next successful synchronization. */
+    int st=graph_orphans_release(s), view_st=graph_views_reap(s);
+    int queue_st=reap_retired_queues(s), allocation_st=graph_reap_allocations(s);
+    return st ? st : view_st ? view_st : queue_st ? queue_st : allocation_st;
   }
   return (int)r;
 }
@@ -372,7 +380,6 @@ int mlu_backend_session_reset(mlu_backend_session *s) {
 }
 
 static int graph_cleanup(mlu_backend_session *s);
-static void graph_orphans_release(mlu_backend_session *s);
 int mlu_backend_session_cleanup(mlu_backend_session *s) {
   if (!s) return 0;
   int first = 0, synchronized = 1;
@@ -582,6 +589,7 @@ static int backend_d2h_submit(mlu_backend_session *s,uint64_t allocation,uint64_
 }
 static int backend_transfer_fetch(mlu_backend_session *s,uint64_t id,void *out,uint64_t bytes) {
   mlu_backend_transfer *t=find_transfer(s,id);
+  if(t && t->graph_hold) return graph_host_fetch(s,t,out,bytes);
   if(!t || t->release_requested || !t->host || t->bytes!=bytes) return CN_ERROR_INVALID_HANDLE;
   int st=mlu_backend_transfer_query(s,id); if(st) return st;
   memcpy(out,t->host,(size_t)bytes);

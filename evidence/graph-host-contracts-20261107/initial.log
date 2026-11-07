@@ -1,0 +1,30 @@
+dir pinned=0 to_device=0 dir=0 status=0
+dir pinned=0 to_device=1 dir=0 status=0
+dir pinned=0 to_device=0 dir=1 status=100006
+dir pinned=0 to_device=1 dir=1 status=100006
+dir pinned=0 to_device=0 dir=2 status=100006
+dir pinned=0 to_device=1 dir=2 status=0
+dir pinned=0 to_device=0 dir=3 status=0
+dir pinned=0 to_device=1 dir=3 status=100006
+dir pinned=0 to_device=0 dir=4 status=100006
+dir pinned=0 to_device=1 dir=4 status=100006
+dir pinned=0 to_device=0 dir=5 status=100006
+dir pinned=0 to_device=1 dir=5 status=100006
+dir pinned=0 to_device=0 dir=6 status=100006
+dir pinned=0 to_device=1 dir=6 status=100006
+dir pinned=1 to_device=0 dir=0 status=0
+dir pinned=1 to_device=1 dir=0 status=0
+dir pinned=1 to_device=0 dir=1 status=100006
+dir pinned=1 to_device=1 dir=1 status=100006
+dir pinned=1 to_device=0 dir=2 status=100006
+dir pinned=1 to_device=1 dir=2 status=0
+dir pinned=1 to_device=0 dir=3 status=0
+dir pinned=1 to_device=1 dir=3 status=100006
+dir pinned=1 to_device=0 dir=4 status=100006
+dir pinned=1 to_device=1 dir=4 status=100006
+dir pinned=1 to_device=0 dir=5 status=100006
+dir pinned=1 to_device=1 dir=5 status=100006
+dir pinned=1 to_device=0 dir=6 status=100006
+dir pinned=1 to_device=1 dir=6 status=100006
+unrelated_find status=100006 paired=0
+clone_find status=0

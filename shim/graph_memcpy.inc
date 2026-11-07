@@ -4,6 +4,7 @@
 #define GRAPH_OWNER void *owner
 #define GRAPH_PARAMS cnrtMemcpy3dParam_t
 #define GRAPH_LOOKUP(p,o) lookup((const void *)(uintptr_t)(p),o)
+#define GRAPH_ENDPOINT(p,n) copy_endpoint(p,n)
 #define GRAPH_ALLOCATION_OWNER(a) 1
 #define GRAPH_DIR(p) ((uint32_t)(p)->dir)
 #define GRAPH_SET_DIR(p,d) ((p)->dir=(cnrtMemTransDir_t)(d))
@@ -12,6 +13,7 @@
 #define GRAPH_OWNER context *owner
 #define GRAPH_PARAMS CNmemcpy3dParam
 #define GRAPH_LOOKUP(p,o) lookup(owner,(CNaddr)(uintptr_t)(p),o)
+#define GRAPH_ENDPOINT(p,n) unified_device(owner,(CNaddr)(uintptr_t)(p),n)
 #define GRAPH_ALLOCATION_OWNER(a) ((a)->owner==owner)
 #define GRAPH_DIR(p) ((uint32_t)(p)->dir)
 #define GRAPH_SET_DIR(p,d) ((p)->dir=(uint32_t)(d))
@@ -21,13 +23,16 @@ static int graph_memcpy_encode(GRAPH_OWNER,const GRAPH_PARAMS *p,mlu_api_graph_m
   uint64_t dst_offset=0,src_offset=0;
   allocation *dst=GRAPH_LOOKUP(p->dst,&dst_offset);
   allocation *src=GRAPH_LOOKUP(p->src,&src_offset);
-  if(!dst || !src || !GRAPH_ALLOCATION_OWNER(dst) || !GRAPH_ALLOCATION_OWNER(src) ||
-     !p->extent.width || p->extent.width>MLU_GRAPH_MAX_COPY_BYTES ||
+  if(!p->dst || !p->src || !p->extent.width || p->extent.width>MLU_GRAPH_MAX_COPY_BYTES ||
      p->extent.height!=1 || p->extent.depth!=1 ||
      p->dstPtr.pitch!=p->extent.width || p->srcPtr.pitch!=p->extent.width ||
      p->dstPtr.ysize!=1 || p->srcPtr.ysize!=1) return -1;
-  out->dst_allocation=dst->id; out->dst_offset=dst_offset;
-  out->src_allocation=src->id; out->src_offset=src_offset;
+  int d=GRAPH_ENDPOINT(p->dst,p->extent.width),s=GRAPH_ENDPOINT(p->src,p->extent.width);
+  if(d<0 || s<0 || (!d && !s)) return -1;
+  out->dst_allocation=dst ? dst->id : 0;
+  out->dst_offset=dst ? dst_offset : (uintptr_t)p->dst;
+  out->src_allocation=src ? src->id : 0;
+  out->src_offset=src ? src_offset : (uintptr_t)p->src;
   out->width=p->extent.width; out->direction=GRAPH_DIR(p);
   return 0;
 }
@@ -39,6 +44,8 @@ static void graph_memcpy_decode(GRAPH_OWNER,const mlu_api_graph_memcpy_response 
     if(a->id==p->dst_allocation) dst=a;
     if(a->id==p->src_allocation) src=a;
   }
+  if(!p->dst_allocation) out->dst=(void *)(uintptr_t)p->dst_offset;
+  if(!p->src_allocation) out->src=(void *)(uintptr_t)p->src_offset;
   if(dst) out->dst=GRAPH_ADDRESS(dst,p->dst_offset);
   if(src) out->src=GRAPH_ADDRESS(src,p->src_offset);
   out->dstPtr.ptr=out->dst; out->dstPtr.pitch=p->width; out->dstPtr.xsize=p->width; out->dstPtr.ysize=1;
@@ -53,3 +60,5 @@ static void graph_memcpy_decode(GRAPH_OWNER,const mlu_api_graph_memcpy_response 
 #undef GRAPH_DIR
 #undef GRAPH_SET_DIR
 #undef GRAPH_ADDRESS
+
+#undef GRAPH_ENDPOINT

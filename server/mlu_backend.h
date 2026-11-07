@@ -148,6 +148,7 @@ typedef struct mlu_backend_session {
   struct { uint64_t id, owner_node; CNtaskTopo handle; int live; } graphs[MLU_BACKEND_MAX_OBJECTS];
   struct { uint64_t id, parent; CNtaskTopoNode handle; struct mlu_graph_payload *payload; int live; } graph_nodes[4096];
   struct mlu_graph_entity *graph_entities;
+  struct mlu_graph_view *graph_views;
   struct mlu_graph_invocation *graph_orphans;
   unsigned graph_snapshot_nodes;
 } mlu_backend_session;

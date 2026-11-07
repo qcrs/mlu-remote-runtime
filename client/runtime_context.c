@@ -2,6 +2,7 @@
 #include "remote_operator.h"
 #include "remote_io.h"
 #include "host_memory.h"
+#include "remote_graph.h"
 /* Wire value captured from CNDrv 2.5.2; the transport needs no SDK headers. */
 #define CN_ERROR_SYSTEM_OUT_OF_MEMORY 100010
 
@@ -17,11 +18,18 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+typedef struct {
+  void *dst;
+  uint64_t bytes,offset;
+  mlu_host_allocation *lease;
+} graph_writeback_target;
 typedef struct pending_writeback {
   struct pending_writeback *next;
   uint64_t transfer, bytes, queue;
   void *dst;
   mlu_host_allocation *lease;
+  size_t target_count;
+  graph_writeback_target *targets;
   int release_requested, published;
 } pending_writeback;
 struct mlu_remote_context {
@@ -132,6 +140,23 @@ static int rpc_locked(mlu_remote_context *ctx, uint16_t opcode, const void *payl
   if (extra) { *extra_len = rest; *extra = rest ? (unsigned char *)malloc(rest) : NULL; if (rest && !*extra) { free(p); return break_connection(ctx, CN_ERROR_SYSTEM_OUT_OF_MEMORY, "HOST_OUT_OF_MEMORY", "response allocation failed"); } if (rest) memcpy(*extra, p + 8 + nl + ml, rest); } free(p); return (int)status;
 }
 
+static void writeback_free(pending_writeback *w) {
+  mlu_host_release(w->lease);
+  for(size_t i=0;i<w->target_count;i++) mlu_host_release(w->targets[i].lease);
+  free(w->targets);free(w);
+}
+static int writeback_overlap(pending_writeback *a,pending_writeback *b) {
+  for(size_t i=0;i<(a->target_count ? a->target_count : 1);i++) {
+    uintptr_t x=(uintptr_t)(a->target_count ? a->targets[i].dst : a->dst);
+    uint64_t nx=a->target_count ? a->targets[i].bytes : a->bytes;
+    for(size_t j=0;j<(b->target_count ? b->target_count : 1);j++) {
+      uintptr_t y=(uintptr_t)(b->target_count ? b->targets[j].dst : b->dst);
+      uint64_t ny=b->target_count ? b->targets[j].bytes : b->bytes;
+      if(x<=y ? y-x<nx : x-y<ny) return 1;
+    }
+  }
+  return 0;
+}
 static int complete_writebacks(mlu_remote_context *ctx) {
   pending_writeback **link=&ctx->pending;
   while(*link) {
@@ -141,8 +166,7 @@ static int complete_writebacks(mlu_remote_context *ctx) {
      * queues and destinations remain nonblocking. */
     pending_writeback *prior=ctx->pending;
     for(;prior!=w;prior=prior->next) {
-      uintptr_t a=(uintptr_t)prior->dst,b=(uintptr_t)w->dst;
-      if(prior->queue==w->queue || (a<=b ? b-a<prior->bytes : a-b<w->bytes)) break;
+      if(prior->queue==w->queue || writeback_overlap(prior,w)) break;
     }
     if(prior!=w) { link=&w->next; continue; }
     unsigned char request[16], *data=NULL; uint32_t n=0;
@@ -155,12 +179,14 @@ static int complete_writebacks(mlu_remote_context *ctx) {
       put64(request+8,w->bytes);
       st=rpc_locked(ctx,MLU_OP_API_TRANSFER_FETCH,request,16,&data,&n);
       if(st) { free(data); return st; }
-      memcpy(w->dst,data,(size_t)w->bytes); free(data);
+      if(w->targets) for(size_t i=0;i<w->target_count;i++) memcpy(w->targets[i].dst,data+w->targets[i].offset,w->targets[i].bytes);
+      else memcpy(w->dst,data,(size_t)w->bytes);
+      free(data);
       w->published=1;
     }
     if(w->release_requested) st=rpc_locked(ctx,MLU_OP_TRANSFER_RELEASE,request,8,NULL,&n);
     if(st) return st;
-    *link=w->next; mlu_host_release(w->lease); free(w);
+    *link=w->next; writeback_free(w);
   }
   ctx->pending_tail=link;
   return 0;
@@ -321,7 +347,7 @@ void mlu_remote_disconnect(mlu_remote_context *ctx) {
   if (!ctx) return;
   if (ctx->fd >= 0) close(ctx->fd);
   /* No writes after a poisoned exchange/EOF. Server owns its separate pages. */
-  while(ctx->pending) { pending_writeback *w=ctx->pending; ctx->pending=w->next; mlu_host_release(w->lease); free(w); }
+  while(ctx->pending) { pending_writeback *w=ctx->pending; ctx->pending=w->next; writeback_free(w); }
   pthread_mutex_destroy(&ctx->lock); free(ctx);
 }
 const mlu_remote_error *mlu_remote_last_error(const mlu_remote_context *ctx) { return ctx ? &ctx->error : NULL; }
@@ -371,6 +397,7 @@ int mlu_remote_memcpy_d2h_async(mlu_remote_context *ctx,void *dst,uint64_t src,
 }
 #include "simple_rpc_client.inc"
 #include "typed_rpc_client.inc"
+#include "graph_host_client.inc"
 int mlu_remote_queue_create(mlu_remote_context *ctx, uint64_t *q) { unsigned char *e = NULL; uint32_t n = 0; int st = rpc(ctx, MLU_OP_QUEUE_CREATE, NULL, 0, &e, &n); if (!st && n >= 8) *q = get64(e); free(e); return st; }
 int mlu_remote_notifier_create(mlu_remote_context *ctx, uint64_t *n) { unsigned char *e = NULL; uint32_t len = 0; int st = rpc(ctx, MLU_OP_NOTIFIER_CREATE, NULL, 0, &e, &len); if (!st && len >= 8) *n = get64(e); free(e); return st; }
 int mlu_remote_notifier_record(mlu_remote_context *ctx, uint64_t n, uint64_t q) { unsigned char p[16]; put64(p, n); put64(p + 8, q); return rpc(ctx, MLU_OP_NOTIFIER_RECORD, p, 16, NULL, &(uint32_t){0}); }
