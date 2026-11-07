@@ -1,0 +1,22 @@
+COMMAND ['bash', 'scripts/run-isolated-client.sh', '/home/lvtong/mlu-remote-runtime/build/native_queue_retirement', 'driver', '/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50250', 'MLU_TEST_SHIM': '1', 'MLU_REMOTE_SHIM': 'both'}
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50250
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_queue_retirement
+destroy driver frontier=0 seconds=0.000041 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=1 seconds=0.000040 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=2 seconds=0.000039 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=3 seconds=0.000040 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=4 seconds=0.000040 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=5 seconds=0.000039 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+PASS CNDrv retirement; notifier wait/query, context/free/module and cross-queue completion preserve kernel and H2D/D2D; 1200 retirements and pending teardown

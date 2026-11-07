@@ -1,0 +1,3 @@
+2026-11-07 07:14:37.200169: [cnrtError] [93279] [Card: 0] Error occurred during calling 'cnTaskTopoKernelNodeSetAttribute' in CNDrv interface.
+2026-11-07 07:14:37.200225: [cnrtError] [93279] [Card: 0] Return value is 100006, CN_ERROR_INVALID_VALUE.
+2026-11-07 07:14:37.200230: [cnrtError] [93279] [Card: 0] cnrtTaskTopoKernelNodeSetAttribute: Failed to set kernel node attribute.

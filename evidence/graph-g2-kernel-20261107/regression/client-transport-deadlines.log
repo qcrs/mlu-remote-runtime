@@ -1,0 +1,16 @@
+COMMAND ['python3', 'tests/transport_deadlines.py']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+PASS invalid timeout configuration refused before connecting
+PASS hello-blackhole elapsed=0.200s budget=200ms
+PASS hello-partial-header elapsed=0.201s budget=200ms
+PASS hello-partial-body elapsed=0.201s budget=200ms
+PASS hello-slow-drip elapsed=0.201s budget=200ms
+PASS hello-combined-header-body-budget elapsed=0.200s budget=200ms
+PASS rpc-blackhole elapsed=0.200s budget=200ms
+PASS rpc-partial-header elapsed=0.200s budget=200ms
+PASS rpc-partial-body elapsed=0.200s budget=200ms
+PASS rpc-slow-drip elapsed=0.200s budget=200ms
+PASS rpc-combined-header-body-budget elapsed=0.200s budget=200ms
+PASS rpc-send-backpressure elapsed=0.211s budget=200ms
+PASS TCP connect backlog deadline elapsed=0.200s
+PASS rpc-blackhole-EINTR elapsed=0.201s budget=200ms

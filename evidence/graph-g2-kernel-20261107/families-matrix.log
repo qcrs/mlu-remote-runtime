@@ -1,0 +1,15 @@
+runtime-native 0
+runtime-remote 0
+runtime-preload 0
+runtime-isolated 0
+driver-native 0
+driver-remote 0
+driver-preload 0
+driver-isolated 0
+metadata-native 0
+metadata-remote 0
+metadata-preload 0
+metadata-isolated 0
+typed-protocol 0
+typed-client-faults 0
+metadata-validation 0

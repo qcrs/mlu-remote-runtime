@@ -1,0 +1,4 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_bang_drain']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50250', 'LD_PRELOAD': '/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so', 'MLU_TEST_SHIM': '1'}
+pending_queue_status=1
+PASS finite drain_work BANG C numerical check

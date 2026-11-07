@@ -142,7 +142,7 @@ static mlu_backend_module *find_module_by_kernel(mlu_backend_session *s, uint64_
 }
 static mlu_backend_module *find_module_by_operator(mlu_backend_session *s, uint32_t id) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->modules[i].live && s->modules[i].owner == s->owner_token && s->modules[i].operator_id == id) return &s->modules[i];
+    if (s->modules[i].live && s->modules[i].owner == s->owner_token && !s->modules[i].retired && s->modules[i].operator_id == id) return &s->modules[i];
   return NULL;
 }
 static mlu_backend_module *find_module_by_id(mlu_backend_session *s, uint64_t id) {
@@ -167,6 +167,7 @@ static void invalidate_module_kernels(mlu_backend_session *s, uint64_t module_id
   }
 }
 static void graph_transfer_release(mlu_backend_session *s,mlu_backend_transfer *t);
+static int graph_reap_allocations(mlu_backend_session *s);
 static void reap_transfers(mlu_backend_session *s) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
     mlu_backend_transfer *t = &s->transfers[i];
@@ -341,7 +342,11 @@ static int session_has_resources(const mlu_backend_session *s) {
 
 int mlu_backend_context_sync(mlu_backend_session *s) {
   CNresult r=cnCtxSync();
-  if (r==CN_SUCCESS) { release_staging(s,0); reap_transfers(s); return reap_retired_queues(s); }
+  if (r==CN_SUCCESS) {
+    release_staging(s,0); reap_transfers(s);
+    int st=reap_retired_queues(s), graph_st=graph_reap_allocations(s);
+    return st ? st : graph_st;
+  }
   return (int)r;
 }
 
@@ -395,7 +400,7 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     return s->cleanup_failed;
   }
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->modules[i].live && !cleanup_result(&first, "cnModuleUnload", s->modules[i].module_id,
+    if (s->modules[i].live && !s->modules[i].graph_refs && !cleanup_result(&first, "cnModuleUnload", s->modules[i].module_id,
                                              cnModuleUnload(s->modules[i].module))) {
       free(s->modules[i].image); s->modules[i].image = NULL;
       mlu_resource_release(&s->usage, MLU_RESOURCE_IMAGE, s->modules[i].image_size);
@@ -491,10 +496,23 @@ static int graph_release_allocation(mlu_backend_session *s, mlu_backend_allocati
   }
   return st;
 }
+static int graph_release_module(mlu_backend_session *s,mlu_backend_module *m) {
+  if(!m->live || !m->retired || m->graph_refs) return 0;
+  int st=cnModuleUnload(m->module);
+  if(!st) {
+    free(m->image);
+    mlu_resource_release(&s->usage,MLU_RESOURCE_IMAGE,m->image_size);
+    memset(m,0,sizeof(*m));
+  }
+  return st;
+}
+/* Reap both kinds of backing resource after the last immutable graph lease. */
 static int graph_reap_allocations(mlu_backend_session *s) {
   int first=0;
   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) {
     int st=graph_release_allocation(s,&s->allocations[i]);
+    if(st && !first) first=st;
+    st=graph_release_module(s,&s->modules[i]);
     if(st && !first) first=st;
   }
   return first;
@@ -927,6 +945,13 @@ int mlu_backend_module_unload(mlu_backend_session *s, uint64_t module_id) {
   release_staging(s, 0);
   int retired_status = reap_retired_queues(s);
   if (retired_status) return retired_status;
+  if(m->graph_refs) {
+    m->retired=1;
+    invalidate_module_kernels(s,module_id);
+    mlu_object_registry_release(&s->objects,MLU_OBJECT_MODULE,m->module_id);
+    mlu_object_registry_release(&s->objects,MLU_OBJECT_KERNEL,m->kernel_id);
+    return 0;
+  }
   CNresult r = cnModuleUnload(m->module);
   if (r == CN_SUCCESS) {
     invalidate_module_kernels(s, module_id);

@@ -1,6 +1,6 @@
 # 资源配额与服务端关闭
 
-范围：2026-11-02，2026-11-07 补充 Queue retirement 与 Host/deferred D2H；AArch64 / Neuware 3.5.2 / MLU370-S4。保留原有 TCP、对象所有权和 native backend；新增配额不会把原生资源错误改成成功。实现位于 `server/resource_limits.c`、`server/mlu_backend.c` 和 `server/mlu_remote_server.c`。
+范围：2026-11-02，2026-11-07 补充 Queue retirement、Host/deferred D2H 与 Graph kernel leases；AArch64 / Neuware 3.5.2 / MLU370-S4。保留原有 TCP、对象所有权和 native backend；新增配额不会把原生资源错误改成成功。实现位于 `server/resource_limits.c`、`server/mlu_backend.c`、`server/graph_backend.inc` 和 `server/mlu_remote_server.c`。
 
 ## 配置与计量口径
 
@@ -11,8 +11,8 @@
 | MLU_REMOTE_MAX_CONNECTIONS | 32，最大 1024 | 已接受且尚未完成清理的 worker，包括未发送 HELLO、partial frame、发送阻塞及 native cleanup 中的连接 |
 | MLU_REMOTE_SESSION_DEVICE_BYTES | 1 GiB | 单 session 的成功设备分配请求字节及在途预留 |
 | MLU_REMOTE_TOTAL_DEVICE_BYTES | 8 GiB | 全进程上述设备分配预留与存活字节 |
-| MLU_REMOTE_SESSION_STAGING_BYTES | 64 MiB | 单 session 持有的 H2D snapshot 与 pinned D2H buffer |
-| MLU_REMOTE_TOTAL_STAGING_BYTES | 256 MiB | 全进程上述 Host staging |
+| MLU_REMOTE_SESSION_STAGING_BYTES | 64 MiB | 单 session 持有的 H2D snapshot、pinned D2H buffer 与持久 Graph kernel record/wire/aligned 参数存储 |
+| MLU_REMOTE_TOTAL_STAGING_BYTES | 256 MiB | 全进程上述 Host staging 与 Graph kernel 参数 |
 | MLU_REMOTE_SESSION_IMAGE_BYTES | 64 MiB | 单 session 保留的上传 image 原始字节及解析/加载时预留 |
 | MLU_REMOTE_TOTAL_IMAGE_BYTES | 256 MiB | 全进程上述上传 image 字节 |
 | MLU_REMOTE_SESSION_MAX_TRANSFERS | 1024，最大 1024 | 尚未回收的 TransferID；包括已完成但未 release，以及 release 后 native completion 尚未到达的项 |
@@ -32,6 +32,8 @@ Queue destroy 先失效公开 ID，返回时不调用 native sync/destroy；已�
 `cnrtSyncDevice` 同步整个 Server native context，包含已经没有客户端句柄的退役队列。显式/default queue sync 仍遵守各自 native 完成边界，收集器只查询其他退役队列，不等待它们。Free、module unload 与 session cleanup 仍等待所有存活底层队列，包括退役队列；reset/EOF 也不能提前释放在途 staging。真机用例与 SDK pending-destroy 差异见 [Queue retirement](../evidence/queue-retirement-20261107/README.md)。
 
 image 在解析前预留；坏 image、分配失败、native load 失败退回预留。成功 unload 释放 image。失败回滚中的 native unload 如果也失败，保留镜像及额度，交由 session cleanup/context destruction 处理。预置 module 不保留上传 image，因此不计入上传 image 字节。
+
+Graph kernel record 在 native Add/Set/EntitySet 前预留 STAGING，持有 canonical wire、aligned 参数存储、module 和每个参数 pointer 的 allocation lease。clone/child/entity/invocation 共享 immutable record，引用共享不重复计量；setter 先建立新 record，native 成功后替换，失败退回新额度与 refs。属性副本另持有对应 allocation。公开 allocation free/module unload 立即退役身份，backing 保留到所有 graph/entity/invocation refs 释放。最后引用消失后若 native unload 失败，IMAGE 额度和 image/module 保持存活，后续成功 Context sync 重试；不能先清空记录或额度。reset/EOF/context close 按已有图/在途清理顺序释放。详见 [18 场景与失败回滚证据](../evidence/graph-g2-kernel-20261107/README.md)；提前 free/unload 的保活是 Remote 安全策略。
 
 异步 D2H 提交前预留额度，以 `cnMallocHost` 分配独立 pinned buffer，并先登记 staging ownership，再调用 native `cnMemcpyDtoHAsync` 和记录完成 Notifier。成功后 ownership 移交 Transfer；submit/Notifier 失败时尝试同步，若同步也失败则保留 staging 和额度至后续成功同步或 Context 销毁。fetch 必须匹配 owner、TransferID 和精确长度，且 Notifier 已完成。`cnFreeHost` 失败保留指针和额度，可在后续回收时重试；Context 已销毁后仍不能丢失释放失败的 pinned buffer，最终进入 quarantine。旧同步 D2H 请求继续先等待显式 Queue，再同步复制到回复缓冲。
 

@@ -1,0 +1,3 @@
+attribute_status=100006
+PASS public retirement retains kernel module/allocation backing and getter identities
+PASS kernel graph scalar/pointer/aggregate relocation, snapshot, clone, entity set/update, child, attributes and completion leases

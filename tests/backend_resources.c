@@ -2,6 +2,7 @@
  * Success paths execute real CNDrv. No successful native call is fabricated. */
 #include "mlu_backend.h"
 #include "remote_graph.h"
+#include "graph_kernel_wire.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,27 @@ static int fail_alloc, fail_image, fail_copy, fail_sync, fail_destroy, fail_queu
 static int fail_host_alloc, fail_host_free, fail_d2h, fail_notifier;
 static int fail_graph_destroy, fail_graph_find, fail_graph_node_destroy;
 static int fail_graph_copy_add, fail_graph_copy_set, fail_graph_copy_entity_set;
+static int fail_graph_kernel_add, fail_graph_kernel_set, fail_graph_kernel_entity_set, fail_module_unload;
+extern CNresult __real_cnTaskTopoAddKernelNode(CNtaskTopoNode *,CNtaskTopo,const CNtaskTopoNode *,size_t,const CN_KERNEL_NODE_PARAMS *);
+CNresult __wrap_cnTaskTopoAddKernelNode(CNtaskTopoNode *n,CNtaskTopo g,const CNtaskTopoNode *deps,size_t count,const CN_KERNEL_NODE_PARAMS *p) {
+  if(fail_graph_kernel_add) { --fail_graph_kernel_add; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoAddKernelNode(n,g,deps,count,p);
+}
+extern CNresult __real_cnTaskTopoKernelNodeSetParams(CNtaskTopoNode,const CN_KERNEL_NODE_PARAMS *);
+CNresult __wrap_cnTaskTopoKernelNodeSetParams(CNtaskTopoNode n,const CN_KERNEL_NODE_PARAMS *p) {
+  if(fail_graph_kernel_set) { --fail_graph_kernel_set; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoKernelNodeSetParams(n,p);
+}
+extern CNresult __real_cnTaskTopoEntityKernelNodeSetParams(CNtaskTopoEntity,CNtaskTopoNode,const CN_KERNEL_NODE_PARAMS *);
+CNresult __wrap_cnTaskTopoEntityKernelNodeSetParams(CNtaskTopoEntity e,CNtaskTopoNode n,const CN_KERNEL_NODE_PARAMS *p) {
+  if(fail_graph_kernel_entity_set) { --fail_graph_kernel_entity_set; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoEntityKernelNodeSetParams(e,n,p);
+}
+extern CNresult __real_cnModuleUnload(CNmodule);
+CNresult __wrap_cnModuleUnload(CNmodule m) {
+  if(fail_module_unload) { --fail_module_unload; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnModuleUnload(m);
+}
 extern CNresult __real_cnTaskTopoAddMemcpyNode(CNtaskTopoNode *,CNtaskTopo,const CNtaskTopoNode *,size_t,const CNmemcpy3dParam *);
 CNresult __wrap_cnTaskTopoAddMemcpyNode(CNtaskTopoNode *n,CNtaskTopo g,const CNtaskTopoNode *deps,size_t count,const CNmemcpy3dParam *p) {
   if(fail_graph_copy_add) { --fail_graph_copy_add; return CN_ERROR_INVALID_VALUE; }
@@ -193,6 +215,57 @@ static void graph_copy_failures(void) {
   puts("PASS memcpy native Add/Set/EntitySet failure rolls back both endpoint leases; replacement reaps retired endpoints; same-allocation refs balance");
 }
 
+static void graph_kernel_failures(const void *image,size_t bytes) {
+  mlu_backend_session *s=calloc(1,sizeof(*s)); assert(s);
+  assert(!mlu_backend_session_init(s,0)); uint64_t mid=0,kid=0,ids[3];
+  assert(!mlu_backend_module_load_image(s,image,bytes,"_Z11module_readPii",&mid,&kid));
+  mlu_backend_module *m=NULL;
+  for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) if(s->modules[i].module_id==mid) m=&s->modules[i];
+  assert(m); mlu_backend_allocation *a[3];
+  for(unsigned i=0;i<3;i++) {assert(!mlu_backend_alloc(s,64,&ids[i]));a[i]=allocation_record(s,ids[i]);}
+  unsigned char wire[76]={0};gk_put32(wire,1);gk_put32(wire+4,8);gk_put64(wire+8,ids[0]);
+  gk_put32(wire+40,2);gk_put32(wire+44,4);
+  mlu_api_graph_action_request action={.action=MLU_GRAPH_CREATE};
+  mlu_api_graph_action_response graph={0},clone={0},unused={0};
+  assert(!mlu_backend_api_graph_action(s,&action,&graph));
+  mlu_api_graph_kernel_request in={.action=MLU_GRAPH_PARAM_ADD,.graph=graph.id,.module=mid,.kernel=kid,
+    .x=1,.y=1,.z=1,.klass=CN_KERNEL_CLASS_BLOCK,.arg_count=2,.input_bytes=sizeof(wire),.data=wire};
+  mlu_api_graph_kernel_response out={0};
+  fail_graph_kernel_add=1;
+  assert(mlu_backend_api_graph_kernel(s,&in,&out)==CN_ERROR_INVALID_VALUE);
+  assert(!m->graph_refs && !a[0]->graph_refs && !s->usage.bytes[MLU_RESOURCE_STAGING]);
+  assert(!mlu_backend_api_graph_kernel(s,&in,&out));uint64_t node=out.id;
+  uint64_t charge=s->usage.bytes[MLU_RESOURCE_STAGING];assert(charge && m->graph_refs==1 && a[0]->graph_refs==1);
+  in.action=MLU_GRAPH_PARAM_SET;in.node=node;gk_put64(wire+8,ids[1]);fail_graph_kernel_set=1;
+  assert(mlu_backend_api_graph_kernel(s,&in,&out)==CN_ERROR_INVALID_VALUE);
+  assert(m->graph_refs==1 && a[0]->graph_refs==1 && !a[1]->graph_refs && s->usage.bytes[MLU_RESOURCE_STAGING]==charge);
+  assert(!mlu_backend_free(s,ids[0])); assert(!mlu_backend_api_graph_kernel(s,&in,&out));
+  assert(!a[0]->live && a[1]->graph_refs==1 && m->graph_refs==1 && s->usage.bytes[MLU_RESOURCE_STAGING]==charge);
+  action.action=MLU_GRAPH_CLONE;action.graph=graph.id;
+  assert(!mlu_backend_api_graph_action(s,&action,&clone));
+  mlu_api_graph_entity_request entity={.action=MLU_GRAPH_INSTANTIATE,.graph=graph.id};
+  mlu_api_graph_entity_response executable={0};assert(!mlu_backend_api_graph_entity(s,&entity,&executable));
+  assert(m->graph_refs==1 && a[1]->graph_refs==1); /* Shared immutable record. */
+  in.action=MLU_GRAPH_PARAM_ENTITY_SET;in.entity=executable.id;gk_put64(wire+8,ids[2]);fail_graph_kernel_entity_set=1;
+  assert(mlu_backend_api_graph_kernel(s,&in,&out)==CN_ERROR_INVALID_VALUE);
+  assert(m->graph_refs==1 && !a[2]->graph_refs && s->usage.bytes[MLU_RESOURCE_STAGING]==charge);
+  assert(!mlu_backend_api_graph_kernel(s,&in,&out));
+  assert(m->graph_refs==2 && a[2]->graph_refs==1 && s->usage.bytes[MLU_RESOURCE_STAGING]==2*charge);
+  assert(!mlu_backend_free(s,ids[1]));assert(!mlu_backend_free(s,ids[2]));
+  assert(!mlu_backend_module_unload(s,mid));assert(m->retired && m->live && m->graph_refs==2);
+  assert(mlu_backend_module_unload(s,mid)==CN_ERROR_INVALID_HANDLE);
+  action.action=MLU_GRAPH_DESTROY;action.graph=graph.id;assert(!mlu_backend_api_graph_action(s,&action,&unused));
+  action.graph=clone.id;assert(!mlu_backend_api_graph_action(s,&action,&unused));
+  assert(s->usage.bytes[MLU_RESOURCE_STAGING]==2*charge && s->usage.bytes[MLU_RESOURCE_IMAGE]==bytes);
+  fail_module_unload=1;entity.action=MLU_GRAPH_ENTITY_DESTROY;entity.entity=executable.id;
+  assert(!mlu_backend_api_graph_entity(s,&entity,&executable));
+  assert(!m->graph_refs && m->live && !s->usage.bytes[MLU_RESOURCE_STAGING] && !s->usage.bytes[MLU_RESOURCE_DEVICE]);
+  assert(s->usage.bytes[MLU_RESOURCE_IMAGE]==bytes); /* Failed deferred unload keeps backing charged. */
+  assert(!mlu_backend_context_sync(s));assert(!m->live && !s->usage.bytes[MLU_RESOURCE_IMAGE]);
+  assert(!mlu_backend_session_cleanup(s));free(s);
+  puts("PASS kernel Add/Set/EntitySet rollback balances staging/module/allocation leases; clone/entity share immutable records; failed deferred unload retains image until retry");
+}
+
 int main(int argc, char **argv) {
   assert(argc == 2 || argc == 3);
   mlu_backend_session *s = calloc(1, sizeof(*s)); assert(s);
@@ -226,7 +299,8 @@ int main(int argc, char **argv) {
   assert(!mlu_backend_module_load_image(s, image, size, "_Z12module_writei", &mid, &kid));
   assert(s->usage.bytes[MLU_RESOURCE_IMAGE] == (uint64_t)size);
   assert(!mlu_backend_module_unload(s, mid));
-  assert(!s->usage.bytes[MLU_RESOURCE_IMAGE]); free(image);
+  assert(!s->usage.bytes[MLU_RESOURCE_IMAGE]); graph_kernel_failures(image,(size_t)size); free(image);
+  assert(!cnCtxSetCurrent(s->context));
   puts("PASS injected native module-load failure rolls back image reservation");
 
   assert(!mlu_backend_memcpy(s, MLU_MEMCPY_H2D, a, 0, 0, 0, data, NULL, 16, q, &tid));

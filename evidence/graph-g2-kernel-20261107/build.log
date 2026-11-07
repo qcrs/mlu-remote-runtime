@@ -1,0 +1,153 @@
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 54 RPC codecs/dispatch/bindings, 116 public wrappers
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_runtime_version’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:8:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+    8 |   int st=rpc(ctx,MLU_OP_API_RUNTIME_VERSION,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:5:17: note: ‘p’ declared here
+    5 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_runtime_driver_version’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:22:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+   22 |   int st=rpc(ctx,MLU_OP_API_RUNTIME_DRIVER_VERSION,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:19:17: note: ‘p’ declared here
+   19 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_driver_version’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:36:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+   36 |   int st=rpc(ctx,MLU_OP_API_DRIVER_VERSION,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:33:17: note: ‘p’ declared here
+   33 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_driver_legacy_version’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:50:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+   50 |   int st=rpc(ctx,MLU_OP_API_DRIVER_LEGACY_VERSION,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:47:17: note: ‘p’ declared here
+   47 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_driver_lib_version’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:64:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+   64 |   int st=rpc(ctx,MLU_OP_API_DRIVER_LIB_VERSION,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:61:17: note: ‘p’ declared here
+   61 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_priority_range’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:165:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+  165 |   int st=rpc(ctx,MLU_OP_API_PRIORITY_RANGE,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:162:17: note: ‘p’ declared here
+  162 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_memory_info’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:178:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+  178 |   int st=rpc(ctx,MLU_OP_API_MEMORY_INFO,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:175:17: note: ‘p’ declared here
+  175 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_context_version’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:420:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+  420 |   int st=rpc(ctx,MLU_OP_API_CONTEXT_VERSION,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:417:17: note: ‘p’ declared here
+  417 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_cache_reset’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:497:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+  497 |   int st=rpc(ctx,MLU_OP_API_CACHE_RESET,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:494:17: note: ‘p’ declared here
+  494 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc: In function ‘mlu_remote_api_kernel_memory_usage’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:632:10: warning: ‘p’ may be used uninitialized [-Wmaybe-uninitialized]
+  632 |   int st=rpc(ctx,MLU_OP_API_KERNEL_MEMORY_USAGE,p,0,&e,&n);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/lvtong/mlu-remote-runtime/client/runtime_context.c:181:12: note: by argument 3 of type ‘const void *’ to ‘rpc.constprop’ declared here
+  181 | static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+      |            ^~~
+In file included from /home/lvtong/mlu-remote-runtime/client/runtime_context.c:373:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_rpc_client.inc:629:17: note: ‘p’ declared here
+  629 |   unsigned char p[1];
+      |                 ^
+/home/lvtong/mlu-remote-runtime/shim/cnrt_shim.c: In function ‘cnrtQueueCreate’:
+/home/lvtong/mlu-remote-runtime/shim/cnrt_shim.c:258:156: warning: ‘t’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+  258 | cnrtRet_t cnrtQueueCreate(cnrtQueue_t *q) { ENTER(); if(!q) RETURN(cnrtErrorArgsInvalid); CONNECT(); uint64_t t; cnrtRet_t st=create_queue(&t); if(!st) *q=(cnrtQueue_t)(uintptr_t)t; RETURN(st); }
+      |                                                                                                                                                            ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:1232:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc: In function ‘mlu_backend_api_driver_error_text’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:21: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |                     ^~
+/home/lvtong/mlu-remote-runtime/tests/client_cnnl.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/tests/client_cnnl.c:10:73: warning: comparison of integer expressions of different signedness: ‘int’ and ‘enum mlu_remote_protocol_status’ [-Wsign-compare]
+   10 |   printf("CNNL_STATUS=%d\n", st); mlu_remote_disconnect(ctx); return st == MLU_REMOTE_UNSUPPORTED ? 0 : 1;
+      |                                                                         ^~
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c: In function ‘connect_to’:
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c:23:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   23 |   if (getaddrinfo(host, service, &hints, &list)) return -1; int fd = -1;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c:23:61: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   23 |   if (getaddrinfo(host, service, &hints, &list)) return -1; int fd = -1;
+      |                                                             ^~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:1232:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc: In function ‘mlu_backend_api_driver_error_text’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:21: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |                     ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_queue.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/probes/probe_queue.c:4:273: warning: operand of ‘?:’ changes signedness from ‘int’ to ‘cnrtRet_t’ due to unsignedness of other operand [-Wsign-compare]
+    4 | int main(void) { cnrtQueue_t q=NULL; cnrtNotifier_t n=NULL; cnrtRet_t r=cnrtSetDevice(0); if(!r)r=cnrtQueueCreate(&q); if(!r)r=cnrtNotifierCreate(&n); if(!r)r=cnrtPlaceNotifier(n,q); if(!r)r=cnrtQueueSync(q); printf("queue/notifier=%d query=%d\n",r,n?cnrtQueryNotifier(n):-1); if(n)cnrtNotifierDestroy(n);if(q)cnrtQueueDestroy(q);return r != cnrtSuccess; }
+      |                                                                                                                                                                                                                                                                                 ^~
+BANG metadata: 4 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_bang_metadata
+BANG metadata: 2 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_bang_relocations
+BANG metadata: 2 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_graph_kernel_runtime
+BANG metadata: 2 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_graph_kernel_driver
+built in /home/lvtong/mlu-remote-runtime/build

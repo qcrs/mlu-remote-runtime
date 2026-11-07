@@ -4,6 +4,7 @@
 #include "remote_cnrt.h"
 #include "bang_image.h"
 #include "bang_args.h"
+static void graph_kernel_cache_drop(mlu_remote_context *,uint64_t);
 #include "fake_va.h"
 #include "host_memory.h"
 #include <dlfcn.h>
@@ -186,6 +187,7 @@ cnrtRet_t cnrtSyncDevice(void) {
 }
 cnrtRet_t cnrtDeviceReset(void) {
   ENTER(); CONNECT(); int st=mlu_remote_session_reset(ctx); if(st) RETURN(status(st));
+  graph_kernel_cache_drop(ctx,0);
   for(allocation *a=allocations;a;a=a->next) a->live=0;
   memset(queues,0,sizeof(queues)); memset(notifiers,0,sizeof(notifiers)); default_queue_used=0; default_queue_object.live=1;
   for(registration *r=registrations;r;r=r->next) r->mid=0;
@@ -425,9 +427,10 @@ static allocation *allocation_by_id(uint64_t id) {
 #define MLU_GRAPH_RUNTIME
 #include "graph_memset.inc"
 #include "graph_memcpy.inc"
+#include "graph_kernel.inc"
 #include "cnrt_api.inc"
 __attribute__((destructor)) static void shutdown_remote(void) {
-  ENTER(); if(ctx) { mlu_remote_disconnect(ctx); ctx=NULL; }
+  ENTER(); if(ctx) { graph_kernel_cache_drop(ctx,0); mlu_remote_disconnect(ctx); ctx=NULL; }
   while(allocations) { allocation *a=allocations; allocations=a->next; munmap(a->base,a->mapped); free(a); }
   while(kernels) { kernel *k=kernels; kernels=k->next; free(k->name); free(k); }
   while(registrations) { registration *r=registrations; registrations=r->next; free(r->image); free(r); }

@@ -1,0 +1,163 @@
+#include <bang.h>
+#include <cn_api.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#define OK(e) do {int st=(int)(e);if(st){fprintf(stderr,"%s=%d line %d\n",#e,st,__LINE__);exit(2);}}while(0)
+#define REQUIRE(e) do{if(!(e)){fprintf(stderr,"%s line %d\n",#e,__LINE__);exit(3);}}while(0)
+struct GraphLeaf { const int *input,*nullable; int add; };
+struct GraphPayload { GraphLeaf fields[2]; uint64_t scalar; };
+extern "C" __mlu_entry__ void graph_relocated(GraphPayload p,int bias,int *output) {
+  output[0]=p.fields[0].input[0]+p.fields[0].add+bias;
+  output[1]=p.fields[1].input[0]+p.fields[1].add+(p.fields[0].nullable ? p.fields[0].nullable[0] : 0);
+  output[2]=(int)(p.scalar&0xffff);
+}
+extern "C" __mlu_entry__ void graph_empty(void) {}
+#ifdef TEST_CNRT
+#define API(n) cnrt##n
+#define Graph cnrtTaskTopo_t
+#define Node cnrtTaskTopoNode_t
+#define Entity cnrtTaskTopoEntity_t
+#define Queue cnrtQueue_t
+#define Params cnrtKernelNodeParams_t
+#define Attr cnrtKernelNodeAttrValue_t
+typedef void *Address;
+#define ATTR cnrtKernelNodeAttributeAccessPolicyWindow
+#define SYNC(q) cnrtQueueSync(q)
+#define QCREATE(q) cnrtQueueCreate(q)
+#define QDESTROY(q) cnrtQueueDestroy(q)
+#define ALLOC(p) cnrtMalloc(p,64)
+#define FREE(p) cnrtFree(p)
+#define H2D(d,s) cnrtMemcpy(d,s,64,cnrtMemcpyHostToDev)
+#define D2H(d,s) cnrtMemcpy(d,s,64,cnrtMemcpyDevToHost)
+#else
+#define API(n) cn##n
+#define Graph CNtaskTopo
+#define Node CNtaskTopoNode
+#define Entity CNtaskTopoEntity
+#define Queue CNqueue
+#define Params CN_KERNEL_NODE_PARAMS
+#define Attr CNkernelNodeAttrValue
+typedef CNaddr Address;
+#define ATTR CN_KERNEL_NODE_ATTRIBUTE_ACCESS_POLICY_WINDOW
+#define SYNC(q) cnQueueSync(q)
+#define QCREATE(q) cnCreateQueue(q,0)
+#define QDESTROY(q) cnDestroyQueue(q)
+#define ALLOC(p) cnMalloc(p,64)
+#define FREE(p) cnFree(p)
+#define H2D(d,s) cnMemcpyHtoD(d,s,64)
+#define D2H(d,s) cnMemcpyDtoH(d,s,64)
+#endif
+static void check(Address output,GraphPayload p,int bias) {
+  int values[16];OK(D2H(values,output));
+  REQUIRE(values[0]==-77 && values[4]==-77 && values[15]==-77);
+  REQUIRE(values[1]==11+2+bias && values[2]==18+5 && values[3]==(int)(p.scalar&0xffff));
+}
+int main(int argc,char **argv) {
+  int remote=getenv("MLU_TEST_SHIM")!=NULL;const char *mode=argc>1 ? argv[1] : "normal";
+#ifdef TEST_CNRT
+  OK(cnrtSetDevice(0));
+#else
+  OK(cnInit(0));CNdev device;CNcontext context;OK(cnDeviceGet(&device,0));OK(cnCtxCreate(&context,0,device));
+  CNmodule module;CNkernel kernel,empty;REQUIRE(argc>2);OK(cnModuleLoad(argv[2],&module));
+  OK(cnModuleGetKernel(module,"graph_relocated",&kernel));OK(cnModuleGetKernel(module,"graph_empty",&empty));
+#endif
+  Address input,output;OK(ALLOC(&input));OK(ALLOC(&output));
+  int values[16];for(int i=0;i<16;i++)values[i]=i==1 ? 11 : i==3 ? 18 : -77;OK(H2D(input,values));
+  for(int i=0;i<16;i++)values[i]=-77;OK(H2D(output,values));
+  GraphPayload p={};p.fields[0]=(GraphLeaf){(int *)(uintptr_t)input+1,NULL,2};
+  p.fields[1]=(GraphLeaf){(int *)(uintptr_t)input+3,NULL,5};p.scalar=(uintptr_t)input;
+  GraphPayload expected=p;int bias=10;int *destination=(int *)(uintptr_t)output+1;void *args[]={&p,&bias,&destination};
+  Params params={};params.kernelParams=args;
+#ifdef TEST_CNRT
+  params.func=(void *)graph_relocated;params.dim.x=params.dim.y=params.dim.z=1;params.type=cnrtFuncTypeBlock;
+#else
+  params.hkernel=kernel;params.dimx=params.dimy=params.dimz=1;params.c=CN_KERNEL_CLASS_BLOCK;
+#endif
+  Queue queue;OK(QCREATE(&queue));Graph graph,clone;Node node,cloned,zero;Entity entity,child_entity;
+  OK(API(TaskTopoCreate)(&graph,0));OK(API(TaskTopoAddKernelNode)(&node,graph,NULL,0,&params));
+  Params noargs=params;noargs.kernelParams=NULL;
+#ifdef TEST_CNRT
+  noargs.func=(void *)graph_empty;
+#else
+  noargs.hkernel=empty;
+#endif
+  OK(API(TaskTopoAddKernelNode)(&zero,graph,&node,1,&noargs));
+  Params got={};OK(API(TaskTopoKernelNodeGetParams)(node,&got));
+  REQUIRE(got.extra==NULL && got.reserve==0 && got.kernelParams && *(int *)got.kernelParams[1]==10);
+  REQUIRE(!memcmp(got.kernelParams[0],&expected,sizeof(expected)) && *(int **)got.kernelParams[2]==destination);
+#ifdef TEST_CNRT
+  REQUIRE(got.func==params.func && got.dim.x==1 && got.type==cnrtFuncTypeBlock);
+#else
+  REQUIRE(got.hkernel==params.hkernel && got.dimx==1 && got.c==CN_KERNEL_CLASS_BLOCK);
+#endif
+  void **snapshot=got.kernelParams;p.fields[0].add=999;bias=99;
+  OK(API(TaskTopoKernelNodeGetParams)(node,&got));REQUIRE(*(int *)snapshot[1]==10 && *(int *)got.kernelParams[1]==10);p=expected;
+  Attr attr={};OK(API(TaskTopoKernelNodeGetAttribute)(node,ATTR,&attr));REQUIRE(attr.accessPolicyWindow.numBytes==0);
+  OK(API(TaskTopoKernelNodeSetAttribute)(node,ATTR,&attr));
+  attr.accessPolicyWindow.baseAddr=input;attr.accessPolicyWindow.numBytes=64;attr.accessPolicyWindow.hitRatio=.5f;
+  int attribute_status=API(TaskTopoKernelNodeSetAttribute)(node,ATTR,&attr);REQUIRE(attribute_status==100006);printf("attribute_status=%d\n",attribute_status);
+  OK(API(TaskTopoKernelNodeCopyAttributes)(zero,node));
+  OK(API(TaskTopoKernelNodeGetAttribute)(zero,ATTR,&attr));REQUIRE(attr.accessPolicyWindow.numBytes==0);
+  OK(API(TaskTopoClone)(&clone,graph));OK(API(TaskTopoNodeFindInClone)(&cloned,node,clone));
+  bias=20;OK(API(TaskTopoKernelNodeSetParams)(node,&params));
+  OK(API(TaskTopoKernelNodeGetParams)(cloned,&got));REQUIRE(*(int *)got.kernelParams[1]==10);
+  OK(API(TaskTopoInstantiate)(&entity,graph,NULL,NULL,0));
+  bias=30;OK(API(TaskTopoEntityKernelNodeSetParams)(entity,node,&params));
+  bias=40;OK(API(TaskTopoKernelNodeSetParams)(node,&params));
+  OK(API(TaskTopoEntityInvoke)(entity,queue));OK(SYNC(queue));check(output,expected,30);
+  Node error=NULL;int update=-1;OK(API(TaskTopoEntityUpdate)(entity,clone,&error,(
+#ifdef TEST_CNRT
+    cnrtTaskTopoEntityUpdateResult_t *
+#else
+    CNtaskTopoEntityUpdateResult *
+#endif
+  )&update));REQUIRE(update==0);
+  OK(API(TaskTopoEntityInvoke)(entity,queue));OK(SYNC(queue));check(output,expected,10);
+  Graph outer,borrowed;Node child;OK(API(TaskTopoCreate)(&outer,0));OK(API(TaskTopoAddChildTopoNode)(&child,outer,NULL,0,clone));
+  OK(API(TaskTopoChildTopoNodeGetTopo)(child,&borrowed));Node children[2];size_t count=2;OK(API(TaskTopoGetNodes)(borrowed,children,&count));REQUIRE(count==2);
+  for(size_t i=0;i<count;i++) {
+    Params cp={};OK(API(TaskTopoKernelNodeGetParams)(children[i],&cp));if(cp.kernelParams) REQUIRE(*(int *)cp.kernelParams[1]==10);
+  }
+  OK(API(TaskTopoInstantiate)(&child_entity,outer,NULL,NULL,0));
+  if(remote && strcmp(mode,"normal")) {
+    OK(FREE(input));
+#ifndef TEST_CNRT
+    OK(cnModuleUnload(module));
+    REQUIRE(cnInvokeKernel(kernel,1,1,1,CN_KERNEL_CLASS_BLOCK,0,NULL,args,NULL)==CN_ERROR_INVALID_KERNEL);
+#endif
+    if(!strcmp(mode,"abrupt")) {_exit(0);}
+#ifdef TEST_CNRT
+    if(!strcmp(mode,"reset")) {OK(cnrtDeviceReset());puts("PASS kernel graph reset releases live executable leases");return 0;}
+#else
+    if(!strcmp(mode,"reset")) {OK(cnCtxDestroy(context));puts("PASS kernel graph context close releases live executable leases");return 0;}
+#endif
+    OK(API(TaskTopoKernelNodeGetParams)(node,&got));
+    REQUIRE(*(int *)got.kernelParams[1]==40 && !memcmp(got.kernelParams[0],&expected,sizeof(expected)));
+    puts("PASS public retirement retains kernel module/allocation backing and getter identities");
+  }
+  OK(API(TaskTopoDestroy)(clone));OK(API(TaskTopoDestroy)(outer));OK(API(TaskTopoDestroy)(graph));
+  OK(API(TaskTopoEntityInvoke)(child_entity,queue));
+  /* Release executable and queue before completion: invocation owns leases. */
+  OK(API(TaskTopoEntityDestroy)(child_entity));OK(API(TaskTopoEntityDestroy)(entity));OK(QDESTROY(queue));
+#ifdef TEST_CNRT
+  OK(cnrtSyncDevice());
+#else
+  OK(cnCtxSync());
+#endif
+  check(output,expected,10);
+  if(!remote || !strcmp(mode,"normal")) {OK(FREE(input));
+#ifndef TEST_CNRT
+    OK(cnModuleUnload(module));
+#endif
+  }
+  OK(FREE(output));
+#ifdef TEST_CNRT
+  OK(cnrtDeviceReset());
+#else
+  OK(cnCtxDestroy(context));
+#endif
+  puts("PASS kernel graph scalar/pointer/aggregate relocation, snapshot, clone, entity set/update, child, attributes and completion leases");return 0;
+}

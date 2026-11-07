@@ -1,10 +1,33 @@
 /* Native DAG is authoritative. This adapter owns every native graph/node and
  * translates identities and bounded arrays for both public libraries. */
 #include "remote_graph.h"
+#include "graph_kernel_wire.h"
+typedef struct {
+  unsigned refs,count;
+  mlu_backend_session *session;
+  uint64_t host_charge;
+  mlu_backend_module *module;
+  uint64_t kernel_id;
+  CN_KERNEL_NODE_PARAMS params;
+  unsigned char *wire,*storage;
+  size_t bytes;
+  void *values[BANG_MAX_ARGS];
+  unsigned allocation_count;
+  mlu_backend_allocation *allocations[MLU_GRAPH_KERNEL_REFS];
+} mlu_graph_kernel;
+static void graph_kernel_release(mlu_graph_kernel *k) {
+  if(!k || --k->refs) return;
+  k->module->graph_refs--;
+  for(unsigned i=0;i<k->allocation_count;i++) k->allocations[i]->graph_refs--;
+  mlu_resource_release(&k->session->usage,MLU_RESOURCE_STAGING,k->host_charge);
+  free(k->wire);free(k->storage);free(k);
+}
 /* Payloads are immutable once attached. Clones and executable snapshots
  * share records, each of which holds its endpoint allocation leases. */
 typedef struct mlu_graph_payload {
   unsigned refs;
+  mlu_graph_kernel *kernel;
+  mlu_backend_allocation *attribute_allocation;
   mlu_backend_allocation *allocation;
   mlu_backend_allocation *source_allocation;
   CN_MEMSET_NODE_PARAMS memset;
@@ -15,6 +38,8 @@ typedef struct mlu_graph_payload {
 static void graph_payload_retain(mlu_graph_payload *p) { if(p) p->refs++; }
 static void graph_payload_release(mlu_graph_payload *p) {
   if(!p || --p->refs) return;
+  graph_kernel_release(p->kernel);
+  if(p->attribute_allocation) p->attribute_allocation->graph_refs--;
   if(p->allocation) p->allocation->graph_refs--;
   if(p->source_allocation) p->source_allocation->graph_refs--;
   for(size_t i=0;i<p->child_count;i++) graph_payload_release(p->children[i]);
@@ -543,4 +568,141 @@ static int graph_entity(mlu_backend_session *s,const mlu_api_graph_entity_reques
     return st;
   }
   return CN_ERROR_INVALID_VALUE;
+}
+
+static int graph_kernel_address(mlu_backend_session *s,mlu_graph_kernel *k,uint64_t id,uint64_t off,uint64_t *value) {
+  if(!id) { if(off) return CN_ERROR_INVALID_VALUE; *value=0;return 0; }
+  mlu_backend_allocation *a=find_alloc(s,id);
+  if(!a || off>a->bytes || k->allocation_count==MLU_GRAPH_KERNEL_REFS) return CN_ERROR_INVALID_VALUE;
+  k->allocations[k->allocation_count++]=a;a->graph_refs++;
+  *value=a->address+off;return 0;
+}
+static int graph_kernel_prepare(mlu_backend_session *s,const mlu_api_graph_kernel_request *in,mlu_graph_payload **out) {
+  mlu_backend_module *m=find_module_by_id(s,in->module);
+  mlu_backend_kernel *native=find_generic_kernel(s,in->kernel);
+  if(!m || !native || native->module_id!=in->module) return CN_ERROR_INVALID_HANDLE;
+  if(in->arg_count!=native->params.count || !in->x || !in->y || !in->z || in->reserve) return CN_ERROR_INVALID_VALUE;
+  const unsigned char *wire=in->data+8*in->count;size_t bytes=in->input_bytes-8*in->count;
+  gk_arg args[BANG_MAX_ARGS];if(gk_parse(wire,bytes,in->arg_count,args)) return CN_ERROR_INVALID_VALUE;
+  size_t storage=0;
+  for(unsigned i=0;i<in->arg_count;i++) {
+    if(args[i].size!=native->params.sizes[i]) return CN_ERROR_INVALID_VALUE;
+    storage+=(args[i].size+15u)&~15u;
+  }
+  mlu_graph_payload *p=calloc(1,sizeof(*p));mlu_graph_kernel *k=calloc(1,sizeof(*k));
+  if(!p || !k) {free(p);free(k);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
+  uint64_t charge=sizeof(*k)+bytes+storage;
+  if(mlu_resource_reserve(&s->usage,MLU_RESOURCE_STAGING,charge)) {free(p);free(k);return MLU_REMOTE_RESOURCE_LIMIT;}
+  p->refs=1;p->kernel=k;k->refs=1;k->session=s;k->host_charge=charge;k->module=m;m->graph_refs++;
+  k->wire=malloc(bytes ? bytes : 1);k->storage=calloc(storage ? storage : 1,1);
+  if(!k->wire || !k->storage) {graph_payload_release(p);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
+  memcpy(k->wire,wire,bytes);k->bytes=bytes;k->count=in->arg_count;k->kernel_id=in->kernel;
+  k->params=(CN_KERNEL_NODE_PARAMS){.hkernel=native->handle,.dimx=in->x,.dimy=in->y,.dimz=in->z,.c=(KernelClass)in->klass,
+    .kernelParams=in->arg_count ? k->values : NULL};
+  size_t cursor=0;int st=0;
+  for(unsigned i=0;i<in->arg_count && !st;i++) {
+    gk_arg *a=&args[i];k->values[i]=k->storage+cursor;
+    memcpy(k->values[i],a->scalar,a->size);
+    if(a->kind==1) {
+      uint64_t value=0;st=graph_kernel_address(s,k,a->allocation,a->offset,&value);memcpy(k->values[i],&value,8);
+    }
+    for(unsigned j=0;j<a->relocations && !st;j++) {
+      const unsigned char *r=a->relocs+24*j;uint64_t value=0;
+      st=graph_kernel_address(s,k,gk_u64(r+8),gk_u64(r+16),&value);
+      memcpy((unsigned char *)k->values[i]+gk_u32(r),&value,8);
+    }
+    cursor+=(a->size+15u)&~15u;
+  }
+  if(st) graph_payload_release(p);else *out=p;return st;
+}
+static int graph_kernel_ancestry(mlu_backend_session *s,unsigned n,uint64_t ids[128]) {
+  for(unsigned depth=0;depth<64;depth++) {
+    ids[2*depth]=s->graph_nodes[n].id;
+    int g=graph_index(s,s->graph_nodes[n].parent);if(g<0) return CN_ERROR_INVALID_VALUE;
+    ids[2*depth+1]=s->graphs[g].id;
+    if(!s->graphs[g].owner_node) return 0;
+    int next=graph_node_index(s,s->graphs[g].owner_node);if(next<0) return CN_ERROR_INVALID_VALUE;
+    n=(unsigned)next;
+  }
+  return MLU_REMOTE_RESOURCE_LIMIT;
+}
+static int graph_kernel(mlu_backend_session *s,const mlu_api_graph_kernel_request *in,mlu_api_graph_kernel_response *out) {
+  int g=graph_index(s,in->graph),n=graph_node_index(s,in->node);
+  if(in->action<MLU_GRAPH_PARAM_ADD || in->action>MLU_GRAPH_PARAM_ENTITY_SET ||
+     in->count>MLU_GRAPH_MAX_NODES || in->input_bytes<8*in->count ||
+     (in->action==MLU_GRAPH_PARAM_ADD ? g<0 : n<0) ||
+     (in->action!=MLU_GRAPH_PARAM_ADD && in->count)) return CN_ERROR_INVALID_VALUE;
+  if(in->action!=MLU_GRAPH_PARAM_ADD) {
+    CNtaskTopoNodeType kind;int st=cnTaskTopoNodeGetType(s->graph_nodes[n].handle,&kind);
+    if(st || kind!=CN_TASK_TOPO_NODE_TYPE_KERNEL) return st ? st : CN_ERROR_INVALID_VALUE;
+  }
+  if(in->action==MLU_GRAPH_PARAM_GET) {
+    CN_KERNEL_NODE_PARAMS native={0};int st=cnTaskTopoKernelNodeGetParams(s->graph_nodes[n].handle,&native);if(st) return st;
+    mlu_graph_kernel *k=s->graph_nodes[n].payload->kernel;if(!k) return CN_ERROR_INVALID_VALUE;
+    out->bytes=k->bytes;out->arg_count=k->count;out->kernel=k->kernel_id;
+    out->x=native.dimx;out->y=native.dimy;out->z=native.dimz;out->klass=native.c;out->reserve=native.reserve;
+    if(in->capacity) {if(in->capacity<k->bytes) return CN_ERROR_INVALID_VALUE;memcpy(out->data,k->wire,k->bytes);}
+    return graph_kernel_ancestry(s,n,out->ancestors);
+  }
+  mlu_graph_payload *p=NULL;int st=graph_kernel_prepare(s,in,&p);if(st) return st;
+  if(in->action==MLU_GRAPH_PARAM_ADD) {
+    CNtaskTopoNode handles[MLU_GRAPH_MAX_NODES];
+    for(uint64_t i=0;i<in->count;i++) {
+      int d=graph_node_index(s,gk_u64(in->data+8*i));
+      if(d<0 || s->graph_nodes[d].parent!=in->graph) {st=CN_ERROR_INVALID_VALUE;break;}
+      handles[i]=s->graph_nodes[d].handle;
+    }
+    if(!st) {
+      n=graph_reserve(s,1);if(n<0) st=MLU_REMOTE_RESOURCE_LIMIT;
+      else {
+        st=cnTaskTopoAddKernelNode(&s->graph_nodes[n].handle,s->graphs[g].handle,handles,in->count,&p->kernel->params);
+        if(st) graph_forget_node(s,n);
+        else {s->graph_nodes[n].parent=in->graph;out->id=s->graph_nodes[n].id;}
+      }
+    }
+  } else if(in->action==MLU_GRAPH_PARAM_ENTITY_SET) {
+    mlu_graph_entity *e=graph_find_entity(s,in->entity);size_t i=0;
+    if(e) for(;i<e->count;i++) if(e->source_ids[i]==in->node) break;
+    if(!e || !e->handle || i==e->count) st=CN_ERROR_INVALID_VALUE;
+    else {
+      st=cnTaskTopoEntityKernelNodeSetParams(e->handle,e->nodes[i],&p->kernel->params);
+      if(!st) {graph_payload_release(e->overrides[i]);e->overrides[i]=p;}
+    }
+    if(st) graph_payload_release(p);
+    (void)graph_reap_allocations(s);return st;
+  } else {
+    st=cnTaskTopoKernelNodeSetParams(s->graph_nodes[n].handle,&p->kernel->params);
+    if(!st) {p->attribute_allocation=s->graph_nodes[n].payload->attribute_allocation;if(p->attribute_allocation) p->attribute_allocation->graph_refs++;}
+  }
+  if(st) graph_payload_release(p);
+  else {graph_payload_release(s->graph_nodes[n].payload);s->graph_nodes[n].payload=p;}
+  (void)graph_reap_allocations(s);return st;
+}
+static int graph_kernel_attr(mlu_backend_session *s,const mlu_api_graph_kernel_attr_request *in,mlu_api_graph_kernel_attr_response *out) {
+  int n=graph_node_index(s,in->node),src=graph_node_index(s,in->src);
+  if(n<0 || in->action<1 || in->action>3 || (in->action!=3 && in->attribute!=1)) return CN_ERROR_INVALID_VALUE;
+  mlu_graph_payload *old=s->graph_nodes[n].payload;
+  if(!old || !old->kernel) return CN_ERROR_INVALID_VALUE;
+  if(in->action==1) {
+    CNkernelNodeAttrValue v={0};int st=cnTaskTopoKernelNodeGetAttribute(s->graph_nodes[n].handle,(CNkernelNodeAttrID)in->attribute,&v);if(st) return st;
+    mlu_backend_allocation *a=old->attribute_allocation;
+    out->allocation=a ? a->id : 0;out->offset=a ? v.accessPolicyWindow.baseAddr-a->address : 0;
+    out->bytes=v.accessPolicyWindow.numBytes;out->hit_ratio=v.accessPolicyWindow.hitRatio;
+    out->hit=v.accessPolicyWindow.hitProp;out->miss=v.accessPolicyWindow.missProp;return 0;
+  }
+  mlu_backend_allocation *a=NULL;CNaddr address=0;
+  if(in->action==3) {
+    if(src<0 || s->graph_nodes[src].parent!=s->graph_nodes[n].parent || !s->graph_nodes[src].payload || !s->graph_nodes[src].payload->kernel) return CN_ERROR_INVALID_VALUE;
+    a=s->graph_nodes[src].payload->attribute_allocation;
+  } else if(in->allocation) {
+    a=find_alloc(s,in->allocation);if(range(a,in->offset,in->bytes,&address)) return CN_ERROR_INVALID_VALUE;
+  } else if(in->offset || in->bytes) return CN_ERROR_INVALID_VALUE;
+  mlu_graph_payload *p=calloc(1,sizeof(*p));if(!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  p->refs=1;p->kernel=old->kernel;p->kernel->refs++;p->attribute_allocation=a;if(a) a->graph_refs++;
+  CNkernelNodeAttrValue v={0};v.accessPolicyWindow=(CNaccessPolicyWindow){.baseAddr=address,.numBytes=in->bytes,
+    .hitRatio=in->hit_ratio,.hitProp=(CNaccessProperty)in->hit,.missProp=(CNaccessProperty)in->miss};
+  int st=in->action==3 ? cnTaskTopoKernelNodeCopyAttributes(s->graph_nodes[n].handle,s->graph_nodes[src].handle) :
+    cnTaskTopoKernelNodeSetAttribute(s->graph_nodes[n].handle,(CNkernelNodeAttrID)in->attribute,&v);
+  if(st) graph_payload_release(p);else {s->graph_nodes[n].payload=p;graph_payload_release(old);}
+  (void)graph_reap_allocations(s);return st;
 }

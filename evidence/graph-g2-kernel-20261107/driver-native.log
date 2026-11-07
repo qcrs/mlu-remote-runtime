@@ -1,0 +1,2 @@
+attribute_status=100006
+PASS kernel graph scalar/pointer/aggregate relocation, snapshot, clone, entity set/update, child, attributes and completion leases

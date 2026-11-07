@@ -19,7 +19,7 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/client_abrupt.c" -o "$ROOT/build/mlu-remote-abrupt-client" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/protocol_errors.c" -o "$ROOT/build/mlu-remote-protocol-error-test" $LDFLAGS
 "$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/object_identity.c" "$ROOT/server/object_registry.c" -Wl,--wrap=getrandom -lpthread -o "$ROOT/build/object-identity-test"
-"$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/backend_resources.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/resource_limits.c" "$ROOT/server/object_registry.c" "$ROOT/common/bang_image.c" -Wl,--wrap=cnMalloc,--wrap=cnModuleLoadFatBinary,--wrap=cnMemcpyHtoDAsync,--wrap=cnQueueSync,--wrap=cnCtxDestroy,--wrap=cnDestroyQueue,--wrap=cnMallocHost,--wrap=cnFreeHost,--wrap=cnMemcpyDtoHAsync,--wrap=cnCreateNotifier,--wrap=cnTaskTopoDestroy,--wrap=cnTaskTopoNodeFindInClone,--wrap=cnTaskTopoDestroyNode,--wrap=cnTaskTopoAddMemcpyNode,--wrap=cnTaskTopoMemcpyNodeSetParams,--wrap=cnTaskTopoEntityMemcpyNodeSetParams $LDFLAGS -lcndrv -lcnrt -lpthread -ldl -o "$ROOT/build/backend-resources-test"
+"$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/backend_resources.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/resource_limits.c" "$ROOT/server/object_registry.c" "$ROOT/common/bang_image.c" -Wl,--wrap=cnMalloc,--wrap=cnModuleLoadFatBinary,--wrap=cnMemcpyHtoDAsync,--wrap=cnQueueSync,--wrap=cnCtxDestroy,--wrap=cnDestroyQueue,--wrap=cnMallocHost,--wrap=cnFreeHost,--wrap=cnMemcpyDtoHAsync,--wrap=cnCreateNotifier,--wrap=cnTaskTopoDestroy,--wrap=cnTaskTopoNodeFindInClone,--wrap=cnTaskTopoDestroyNode,--wrap=cnTaskTopoAddMemcpyNode,--wrap=cnTaskTopoMemcpyNodeSetParams,--wrap=cnTaskTopoEntityMemcpyNodeSetParams,--wrap=cnTaskTopoAddKernelNode,--wrap=cnTaskTopoKernelNodeSetParams,--wrap=cnTaskTopoEntityKernelNodeSetParams,--wrap=cnModuleUnload $LDFLAGS -lcndrv -lcnrt -lpthread -ldl -o "$ROOT/build/backend-resources-test"
 "$CC" $CFLAGS -shared "$ROOT/tests/fault_cleanup.c" -o "$ROOT/build/libtest-fail-cleanup.so"
 "$CC" $CFLAGS "$ROOT/tests/client_isolation.c" -o "$ROOT/build/mlu-remote-session-isolation-test" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/client_device_select.c" -o "$ROOT/build/mlu-remote-device-select-test" $CLIENT_LIBS $LDFLAGS -lpthread
@@ -88,6 +88,20 @@ if command -v cncc >/dev/null 2>&1 || [ -x "$NEUWARE_HOME/bin/cncc" ] || [ -x /u
   python3 "$ROOT/scripts/generate_bang_metadata.py" --host "$ROOT/build/native_bang_relocations" \
     --pair "$ROOT/build/relocation-audit/types.ll:$ROOT/build/relocation-audit/native_bang_relocations-bang-mlisa-cambricon-bang.cnfatbin" \
     --manifest "$ROOT/build/relocation-audit/manifest.json" --attach-images
+
+
+  for GRAPH_VARIANT in runtime driver; do
+    GRAPH_FLAGS=()
+    if [ "$GRAPH_VARIANT" = runtime ]; then GRAPH_FLAGS=(-DTEST_CNRT); fi
+    mkdir -p "$ROOT/build/graph-kernel-$GRAPH_VARIANT"
+    (cd "$ROOT/build/graph-kernel-$GRAPH_VARIANT" && "$CNCC" --bang-mlu-arch=mtp_372 -save-temps "${GRAPH_FLAGS[@]}" \
+      "$ROOT/tests/native_graph_kernel.mlu" -lcndrv -o "$ROOT/build/native_graph_kernel_$GRAPH_VARIANT")
+    "$CNCC" --bang-device-only --bang-mlu-arch=mtp_372 -S -emit-llvm \
+      "$ROOT/tests/native_graph_kernel.mlu" -o "$ROOT/build/graph-kernel-$GRAPH_VARIANT/types.ll"
+    python3 "$ROOT/scripts/generate_bang_metadata.py" --host "$ROOT/build/native_graph_kernel_$GRAPH_VARIANT" \
+      --pair "$ROOT/build/graph-kernel-$GRAPH_VARIANT/types.ll:$ROOT/build/graph-kernel-$GRAPH_VARIANT/native_graph_kernel-bang-mlisa-cambricon-bang.cnfatbin" \
+      --manifest "$ROOT/build/graph-kernel-$GRAPH_VARIANT/manifest.json" --attach-images
+  done
 
 else
   echo "WARN: cncc not found; preset kernel remains PARTIAL"

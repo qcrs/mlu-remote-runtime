@@ -557,4 +557,57 @@ typedef struct {
   uint32_t direction;
 } mlu_api_graph_memcpy_response;
 int mlu_remote_api_graph_memcpy(mlu_remote_context *, const mlu_api_graph_memcpy_request *, mlu_api_graph_memcpy_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t graph;
+  uint64_t node;
+  uint64_t entity;
+  uint64_t module;
+  uint64_t kernel;
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+  uint32_t klass;
+  uint32_t reserve;
+  uint32_t arg_count;
+  uint64_t count;
+  uint64_t input_bytes;
+  uint64_t capacity;
+  const unsigned char *data;
+} mlu_api_graph_kernel_request;
+typedef struct {
+  uint64_t id;
+  uint64_t kernel;
+  uint32_t x;
+  uint32_t y;
+  uint32_t z;
+  uint32_t klass;
+  uint32_t reserve;
+  uint32_t arg_count;
+  uint64_t bytes;
+  uint64_t ancestors[128];
+  unsigned char *data;
+} mlu_api_graph_kernel_response;
+int mlu_remote_api_graph_kernel(mlu_remote_context *, const mlu_api_graph_kernel_request *, mlu_api_graph_kernel_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t node;
+  uint64_t src;
+  uint32_t attribute;
+  uint64_t allocation;
+  uint64_t offset;
+  uint64_t bytes;
+  float hit_ratio;
+  uint32_t hit;
+  uint32_t miss;
+} mlu_api_graph_kernel_attr_request;
+typedef struct {
+  uint64_t allocation;
+  uint64_t offset;
+  uint64_t bytes;
+  float hit_ratio;
+  uint32_t hit;
+  uint32_t miss;
+} mlu_api_graph_kernel_attr_response;
+int mlu_remote_api_graph_kernel_attr(mlu_remote_context *, const mlu_api_graph_kernel_attr_request *, mlu_api_graph_kernel_attr_response *);
 #endif

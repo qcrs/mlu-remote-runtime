@@ -1,0 +1,2 @@
+PASS graph kernel exact buffer bounds, nested relocation slots and resource/dependency/attribute ownership
+PASS entity membership, retired module/allocation getter identities and reset stale IDs

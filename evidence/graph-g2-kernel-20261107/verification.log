@@ -1,0 +1,15 @@
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 54 RPC codecs/dispatch/bindings, 116 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 29, "IMPLEMENTED": 95, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 50, "IMPLEMENTED": 122, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 79, 'IMPLEMENTED': 217, 'BLOCKED': 11, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 2}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 54 RPC codecs/dispatch/bindings, 116 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 29, "IMPLEMENTED": 95, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 50, "IMPLEMENTED": 122, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 79, 'IMPLEMENTED': 217, 'BLOCKED': 11, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 2}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence
+PASS final provenance and artifact manifest hashes: all recorded files match
+PASS final result counts: kernel 18/18, G2 16/16, G1 14/14, families 15/15, core 76/76
+PASS git diff --cached --check (including all new source and evidence files)

@@ -3,6 +3,7 @@
 #include "remote_cnrt.h"
 #include "bang_image.h"
 #include "bang_args.h"
+static void graph_kernel_cache_drop(mlu_remote_context *,uint64_t);
 #include "fake_va.h"
 #include "host_memory.h"
 #include <errno.h>
@@ -182,6 +183,7 @@ CNresult cnCtxDestroy(CNcontext handle) {
   ENTER(); INIT(); context *c=find_context((uintptr_t)handle); if(!c) RETURN(CN_CONTEXT_ERROR_INVALID);
   int st=mlu_remote_session_close(c->remote);
   /* Even on transport failure the old context can never be reused/replayed. */
+  graph_kernel_cache_drop(c->remote,0);
   mlu_remote_disconnect(c->remote); c->remote=NULL; c->live=0;
   for (object *o=objects;o;o=o->next) if(o->owner==c) { o->live=0; free(o->image); o->image=NULL; }
   for (allocation *a=allocations;a;a=a->next) if(a->owner==c) a->live=0;
@@ -449,13 +451,14 @@ CNresult cnInvokeKernel(CNkernel handle,unsigned x,unsigned y,unsigned z,KernelC
   RETURN(result(release(c,st,transfer)));
 }
 __attribute__((destructor)) static void finish(void) {
-  ENTER(); for(context *c=contexts;c;c=c->next) if(c->remote) mlu_remote_disconnect(c->remote);
+  ENTER(); for(context *c=contexts;c;c=c->next) if(c->remote) { graph_kernel_cache_drop(c->remote,0); mlu_remote_disconnect(c->remote); }
   if(control) mlu_remote_disconnect(control);
   pthread_mutex_unlock(&lock);
 }
 #include "driver_queries.inc"
 #include "graph_memset.inc"
 #include "graph_memcpy.inc"
+#include "graph_kernel.inc"
 #include "cndrv_api.inc"
 
 CNresult cnCreateQueueWithPriority(CNqueue *out,unsigned flags,int priority) {

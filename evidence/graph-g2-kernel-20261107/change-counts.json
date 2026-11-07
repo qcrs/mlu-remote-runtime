@@ -1,0 +1,130 @@
+{
+  "baseline_commit": "d72dd367f16b88635777971ac2dabdba781597ea",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnrtTaskTopoAddKernelNode",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoEntityKernelNodeSetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoKernelNodeCopyAttributes",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoKernelNodeGetAttribute",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoKernelNodeGetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoKernelNodeSetAttribute",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoKernelNodeSetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoAddKernelNode",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoEntityKernelNodeSetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoKernelNodeCopyAttributes",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoKernelNodeGetAttribute",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoKernelNodeGetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoKernelNodeSetAttribute",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoKernelNodeSetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    }
+  ],
+  "new_status_counts": {
+    "IMPLEMENTED": 14
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 93,
+    "IMPLEMENTED": 203,
+    "BLOCKED": 11,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 79,
+    "IMPLEMENTED": 217,
+    "BLOCKED": 11,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "generated_before": {
+    "typed_rpc": 52,
+    "public_wrappers": 102
+  },
+  "generated_after": {
+    "typed_rpc": 54,
+    "public_wrappers": 116
+  }
+}

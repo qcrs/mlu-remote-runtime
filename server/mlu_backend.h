@@ -48,6 +48,8 @@ typedef struct {
   CNmodule module;
   CNkernel kernel;
   char kernel_name[256];
+  unsigned graph_refs;
+  int retired;
   int generic_image;
   void *image;
   size_t image_size;

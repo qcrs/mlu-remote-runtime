@@ -1,0 +1,16 @@
+COMMAND ['bash', 'scripts/run-isolated-client.sh', '/home/lvtong/mlu-remote-runtime/build/native_driver', '/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin', '/home/lvtong/mlu-remote-runtime/build/audit/native_bang_abi-bang-mlisa-cambricon-bang.cnfatbin', '/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50250', 'MLU_TEST_SHIM': '1', 'MLU_REMOTE_SHIM': 'driver'}
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542192]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50250
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_driver
+Driver device=MLU370-S4[mtp_372.41] bytes=25769803776 count=1
+PASS Driver file/fatbinary load, two kernels share globals, two contexts isolate state, TLS bind/unbind
+PASS Driver mixed primitive args, pointer offsets/NULL, xyz, 1200 launches, 1200 async H2D, D2D, notifier
+Driver pending queue default=0 status=1
+Driver pending queue default=1 status=1
+PASS Driver explicit/NULL queue module unload drains finite kernel and preserves its result
+PASS Driver explicit destroy drains resources and invalidates context children

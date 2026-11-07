@@ -1,0 +1,102 @@
+{
+  "generated_c_lines": 4494,
+  "files": [
+    {
+      "path": "build/mlu-remote-server",
+      "bytes": 149240,
+      "sha256": "f97068601981efea57393d24551028cec8ee25cf8f7baf39a589c96e3081d8e9"
+    },
+    {
+      "path": "build/native_query_boundaries",
+      "bytes": 31920,
+      "sha256": "79efa370aa7b811c22534b9a44f8cdd81f28aa96352fc0f4941d5e467a51e416"
+    },
+    {
+      "path": "build/probes/probe_query_semantics",
+      "bytes": 18616,
+      "sha256": "2c1710fa97cbe0b0788c38b2880c0b6fd16324044d07f10118e1fb7c9f15b472"
+    },
+    {
+      "path": "build/shim/libcnrt.so",
+      "bytes": 119928,
+      "sha256": "4d19dca8525c5f74cc58d96cac1baf9dabeebbc0b5bc5d75ed262a044bc7b39a"
+    },
+    {
+      "path": "build/driver-shim/libcndrv.so",
+      "bytes": 128592,
+      "sha256": "2e7eeb86a418cc03af08dc1c6cc261b22e24d007f817aeb2f470f01e1f7a8bb5"
+    },
+    {
+      "path": "build/libremote_cnrt.so",
+      "bytes": 78600,
+      "sha256": "ac7230d6809117006cea8ca57c16fdbc43f89cd607fc1afea4dc646adcccf909"
+    },
+    {
+      "path": "schema/mlu_api_schema.json",
+      "bytes": 747991,
+      "sha256": "6dbde464c3f3736e626dfd5e6273d7f8822c0eb34ef7038af90d6677d17a2f97"
+    },
+    {
+      "path": "include/generated/typed_api.h",
+      "bytes": 19862,
+      "sha256": "cc58fcc183b66aae76e3cc27e81be78a5d829547c41907af4f692c6306240775"
+    },
+    {
+      "path": "include/generated/typed_opcodes.inc",
+      "bytes": 1810,
+      "sha256": "ff2e0e76aa805be0bc674642892ee5023c0404b876e7df78f2440e0f7b3aa589"
+    },
+    {
+      "path": "server/api_queries.inc",
+      "bytes": 4704,
+      "sha256": "23033fae1872d886fc96c6f76c3ddbe0a7fd9c1b5d99d8ac2cc83ff357fbe1b6"
+    },
+    {
+      "path": "shim/driver_queries.inc",
+      "bytes": 3539,
+      "sha256": "968b1a2f05a71ab44e717107e5a82947b5ec66fcd12f006f719ea6ba5f36bc87"
+    },
+    {
+      "path": "build/generated/typed_rpc_client.inc",
+      "bytes": 48454,
+      "sha256": "9cc583dd47422dc31d6adb9b3fee069f66b2d1dd6b7d61c3780487588b158588",
+      "lines": 1059
+    },
+    {
+      "path": "build/generated/typed_rpc_server.inc",
+      "bytes": 40665,
+      "sha256": "16966622c2187d9e5b04cd5ddf8379bf27e488c0bf8917b5b84b51079185bcc1",
+      "lines": 876
+    },
+    {
+      "path": "build/generated/typed_backend.inc",
+      "bytes": 16071,
+      "sha256": "b1a75408ef9b16aa7e0bd693e16220b656078fffb22edad0c2e4be6b6f73d0e0",
+      "lines": 253
+    },
+    {
+      "path": "build/generated/cnrt_api.inc",
+      "bytes": 38912,
+      "sha256": "a9266f9bc88703cfbbfa916f02c655aa52246daa5756effe54a47924f209d2a8",
+      "lines": 1078
+    },
+    {
+      "path": "build/generated/cndrv_api.inc",
+      "bytes": 39850,
+      "sha256": "22ce9fcc5eab2a44ff14f027ad1462d133e6f6c705e04d63ef1ad21a9598d91e",
+      "lines": 1118
+    },
+    {
+      "path": "build/generated/typed_success.inc",
+      "bytes": 3481,
+      "sha256": "7901f241e5582298ce63cec9581ed974e7b760463fbe9744fea8072507fb065b",
+      "lines": 55
+    },
+    {
+      "path": "build/generated/typed_backend_decls.inc",
+      "bytes": 7692,
+      "sha256": "eff6a12ef235b988cd075c729e81e6c8c67894f73bcabbf46e527f1544daeb6a",
+      "lines": 55
+    }
+  ]
+}
