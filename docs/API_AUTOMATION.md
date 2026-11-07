@@ -1,8 +1,8 @@
 # API 泛化与编译器元数据
 
-本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 43 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 47 个公共包装；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
+本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 43 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 45 个公共 RPC 包装和 4 个本地 error API；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
 
-2026-11-03 新增 CNDrv `cnGetErrorName` 和 `cnGetErrorString`：共享 typed request 传错误码和查询类型，server 按真实 `CNresult(error, const char **)` ABI 查询后复制 bounded response，client 返回 thread-local 副本。Native/Remote 的 `CN_SUCCESS` name/string 一致；其他错误值和 SDK 变体尚未验收，因此状态为 PARTIAL。L0 build/schema/codegen/contracts 与 L1 family probe/L2 core smoke 通过；未触碰需要 Full Regression 的核心组件，未跑 L3。
+2026-11-07 error closure：四个 CNRT/CNDrv error API 改为 `generated_local`。显式 SDK-builder 命令 `capture-error-catalog.py` 从当前头文件枚举并集捕获 139 个不同错误值的原生文本；reviewed JSON 纳入版本控制，普通 build 只消费 JSON。生成器输出 immutable Host-local 查询、枚举静态断言和仅含输入值的 native probe，不依赖客户端 Driver/设备/Server。已验证初始化前、远端 port 1、replacement/preload/namespace 的全目录与八个未知值，区分 CNRT 在 199999 以上的回退。旧 typed error RPC 保留 wire 兼容，公共入口不再使用线程共享可覆盖文本。Native Driver 的 NULL 输出崩溃，Shim 安全返回 INVALID_VALUE。
 
 ## 实际参考与 MLU 取舍
 
@@ -31,7 +31,7 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 之前仅有 10 个 ObjectID RPC 能生成。普通 API 需要分别增加 header、client 编解码、server 长度检查/dispatch、backend、导出与台账；各处重复字段和 opcode。现在新增一个已审查的普通 API，主要填写 Schema 中的字段/映射/native binding，再补功能族语义断言；其余重复路径一次生成。
 
-首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 43/47，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 43/45，另有 4 个本地 error API，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
 ## 2026-11-13 V2 conversion
 

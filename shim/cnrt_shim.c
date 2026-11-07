@@ -3,6 +3,7 @@
 #include "bang_registration.h"
 #include "remote_cnrt.h"
 #include "bang_image.h"
+#include "fake_va.h"
 #include <dlfcn.h>
 #include <elf.h>
 #include <link.h>
@@ -208,11 +209,26 @@ cnrtRet_t cnrtFree(void *p) {
   /* Keep a PROT_NONE tombstone until process exit: no stale VA alias. */
   RETURN(status(st));
 }
+static int copy_endpoint(const void *p,size_t bytes) {
+  for(allocation *a=allocations;a;a=a->next) {
+    int kind=mlu_fake_va_endpoint((uintptr_t)p,bytes,(uintptr_t)a->base,a->bytes,a->mapped,a->live,1);
+    if(kind!=MLU_ENDPOINT_HOST) return kind;
+  }
+  return MLU_ENDPOINT_HOST;
+}
 static cnrtRet_t copy(void *dst,void *src,size_t bytes,cnrtQueue_t handle,cnrtMemTransDir_t dir,int sync) {
   cnrtRet_t st=connect_remote(); if(st) return st;
   if(!bytes) return cnrtSuccess;
   if(!dst || !src) return cnrtErrorArgsInvalid;
-  if(dir==cnrtMemcpyHostToHost) { memmove(dst,src,bytes); return cnrtSuccess; }
+  int d=copy_endpoint(dst,bytes),s=copy_endpoint(src,bytes);
+  if(d<0 || s<0) return cnrtErrorArgsInvalid;
+  if(dir==cnrtMemcpyNoDirection)
+    dir=d ? (s ? cnrtMemcpyDevToDev : cnrtMemcpyHostToDev) :
+            (s ? cnrtMemcpyDevToHost : cnrtMemcpyHostToHost);
+  if(dir==cnrtMemcpyHostToHost) {
+    if(d || s) return cnrtErrorArgsInvalid;
+    memmove(dst,src,bytes); return cnrtSuccess;
+  }
   object *q=get_queue(handle); if(!q) return cnrtErrorInvalidResourceHandle;
   uint64_t doff=0,soff=0,tid=0;
   allocation *da=lookup(dst,&doff),*sa=lookup(src,&soff);
@@ -467,19 +483,7 @@ cnrtRet_t cnrtInvokeKernel(const void *host,cnrtDim3_t dim,cnrtFunctionType_t ty
 }
 cnrtRet_t cnrtGetLastError(void) { cnrtRet_t r=last_error; last_error=cnrtSuccess; return r; }
 cnrtRet_t cnrtPeekAtLastError(void) { return last_error; }
-const char *cnrtGetErrorName(cnrtRet_t e) {
-  switch(e) {
-    case cnrtSuccess: return "cnrtSuccess";
-    case cnrtErrorArgsInvalid: return "cnrtErrorArgsInvalid";
-    case cnrtErrorInvalidResourceHandle: return "cnrtErrorInvalidResourceHandle";
-    case cnrtErrorNotSupport: return "cnrtErrorNotSupport";
-    case cnrtErrorInvalidKernel: return "cnrtErrorInvalidKernel";
-    case cnrtErrorInit: return "cnrtErrorInit";
-    case cnrtErrorNotReady: return "cnrtErrorNotReady";
-    default: return "cnrtErrorUnknown";
-  }
-}
-const char *cnrtGetErrorStr(cnrtRet_t e) { return cnrtGetErrorName(e); }
+#include "local_cnrt_errors.inc"
 /* Unsupported declarations are exported with explicit errors, never success. */
 cnrtRet_t cnrtMallocConstant(void **p,size_t n) { (void)p; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }
 cnrtRet_t cnrtHostMalloc(void **p,size_t n) { (void)p; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }

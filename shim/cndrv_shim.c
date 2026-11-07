@@ -2,6 +2,7 @@
 #include <cn_api.h>
 #include "remote_cnrt.h"
 #include "bang_image.h"
+#include "fake_va.h"
 #include <errno.h>
 #include <limits.h>
 #include <pthread.h>
@@ -10,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include "local_cndrv_errors.inc"
 
 /* One native remote session per Driver context. A process lock protects every
  * registry/RPC against destroy, and TLS represents native current context.
@@ -263,11 +265,8 @@ static CNresult copy(context *c,int direction,CNaddr dst,CNaddr src,const void *
  * pointer bits. Tombstones/guard pages must not be treated as host memory. */
 static int unified_device(context *c,CNaddr p,cn_uint64_t bytes) {
   for(allocation *a=allocations;a;a=a->next) {
-    if(p>=(uintptr_t)a->base && p-(uintptr_t)a->base<a->mapped) {
-      uint64_t off=p-(uintptr_t)a->base;
-      if(!a->live || a->owner!=c || off>=a->bytes || bytes>a->bytes-off) return -1;
-      return 1;
-    }
+    int kind=mlu_fake_va_endpoint(p,bytes,(uintptr_t)a->base,a->bytes,a->mapped,a->live,a->owner==c);
+    if(kind!=MLU_ENDPOINT_HOST) return kind;
   }
   return 0;
 }
@@ -286,7 +285,18 @@ CNresult cnMemcpyDtoH(void *dst,CNaddr src,cn_uint64_t n) { ENTER(); CURRENT(); 
 CNresult cnMemcpyDtoD(CNaddr dst,CNaddr src,cn_uint64_t n) { ENTER(); CURRENT(); RETURN(copy(c,3,dst,src,NULL,NULL,n,NULL,0)); }
 CNresult cnMemcpyHtoDAsync(CNaddr dst,const void *src,cn_uint64_t n,CNqueue q) { ENTER(); CURRENT(); RETURN(copy(c,1,dst,0,src,NULL,n,q,1)); }
 CNresult cnMemcpyDtoDAsync(CNaddr dst,CNaddr src,cn_uint64_t n,CNqueue q) { ENTER(); CURRENT(); RETURN(copy(c,3,dst,src,NULL,NULL,n,q,1)); }
-CNresult cnMemcpyAsync(CNaddr dst,CNaddr src,cn_uint64_t n,CNqueue q) { ENTER(); CURRENT(); RETURN(copy(c,3,dst,src,NULL,NULL,n,q,1)); }
+CNresult cnMemcpyAsync(CNaddr dst,CNaddr src,cn_uint64_t n,CNqueue q) {
+  ENTER(); CURRENT(); uint64_t queue;
+  if(queue_id(c,q,&queue)) RETURN(CN_QUEUE_ERROR_INVALID);
+  if(!n) RETURN(CN_SUCCESS);
+  if(!dst || !src) RETURN(CN_ERROR_INVALID_VALUE);
+  int d=unified_device(c,dst,n),s=unified_device(c,src,n);
+  if(d<0 || s<0) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);
+  if(d && s) RETURN(copy(c,MLU_MEMCPY_D2D,dst,src,NULL,NULL,n,q,1));
+  if(d) RETURN(copy(c,MLU_MEMCPY_H2D,dst,0,(void *)(uintptr_t)src,NULL,n,q,1));
+  /* Async D2H needs deferred Host writeback; never disguise a blocking copy. */
+  RETURN(CN_OPS_ERROR_NOT_SUPPORTED);
+}
 /* Host completion/writeback cannot yet preserve the native async D2H API. */
 CNresult cnMemcpyDtoHAsync(void *dst,CNaddr src,cn_uint64_t n,CNqueue q) { (void)dst;(void)src;(void)n;(void)q; ENTER(); CURRENT(); (void)c; RETURN(CN_OPS_ERROR_NOT_SUPPORTED); }
 

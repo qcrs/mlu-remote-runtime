@@ -50,7 +50,7 @@ LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/native_bang_generic
 
 ## API 自动化扩展（2026-11-02）
 
-首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；后续查询边界、Driver error、allocation/context、quantization 和 V2 conversion 批次继续复用同一 Schema。当前 Schema 覆盖 310 个公共声明，生成 43 个 typed RPC、47 个公共 wrapper；状态及各入口的支持边界以 [compatibility summary](compat/summary.json) 和 [closure audit](docs/API_COMPATIBILITY_CLOSURE.md) 为准。最近的 Driver module memory query 继续保留单 image/单设备边界，证据见 [API 扩展记录](evidence/api-expansion-20261107/README.md)。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)。
+首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；后续查询边界、Driver error、allocation/context、quantization 和 V2 conversion 批次继续复用同一 Schema。当前 Schema 覆盖 310 个公共声明，生成 43 个 typed RPC、45 个公共 RPC wrapper 和 4 个本地 error API；状态及各入口的支持边界以 [compatibility summary](compat/summary.json) 和 [closure audit](docs/API_COMPATIBILITY_CLOSURE.md) 为准。最近的 Driver module memory query 继续保留单 image/单设备边界，证据见 [API 扩展记录](evidence/api-expansion-20261107/README.md)。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)。
 
 ## Application Workloads
 

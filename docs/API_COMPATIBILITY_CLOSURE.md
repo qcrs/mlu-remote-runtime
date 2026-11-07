@@ -35,3 +35,7 @@
 先修核心语义，再做 Graph/IPC。Graph 为 CNRT capture / CNDrv TaskTopo，需共享 capture、node、instantiate/update/launch 状态及句柄 ownership；IPC 需跨独立 session/process 的可导出身份、导入引用、关闭与源资源存活。当前两族未实现，不能靠同一 session 内转发伪造完成。
 
 审计回归：[功能族 15 项和查询 11 项](../evidence/closure-20261107/README.md) 均通过，包括独立 TCP Server/Client、Native、替换库、preload、隐藏 SDK 和设备节点的 namespace。契约检查证明结构一致性，数值和语义证明来自差分运行。
+
+## 2026-11-07 error/copy resolution
+
+四个 error API 与 `cnrtMemcpy` 已收口，当前 126 IMPLEMENTED、14 PARTIAL。错误目录生成覆盖两套枚举的 139 个不同数值及八个未知输入，支持离线初始化前调用；同步 NoDirection 支持 H2H/H2D/D2H/D2D。共享 fake-VA range helper 保留 tombstone/guard/owner 拒绝；CNDrv unified async 补入 H2D 与 staging snapshot。两库异步拷贝仍因 D2H completion/writeback 保持 PARTIAL。证据与完整回归见 [core-copy](../evidence/core-copy-20261107/README.md)。

@@ -1,0 +1,1729 @@
+{
+  "scope": "Neuware 3.5.2; CNRT 6.5.2; CNDrv 2.5.2; AArch64",
+  "headers_sha256": {
+    "cnrt.h": "d29d66084ab522bd42a7a3515c95b8ee4eee89512ae45e74012d51aa86bbf614",
+    "cn_api.h": "3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6"
+  },
+  "declarations": {
+    "CNRT": [
+      {
+        "name": "cnrtSuccess",
+        "value": 0
+      },
+      {
+        "name": "cnrtErrorNotReady",
+        "value": 1
+      },
+      {
+        "name": "cnrtErrorInit",
+        "value": 100002
+      },
+      {
+        "name": "cnrtErrorNoDevice",
+        "value": 100004
+      },
+      {
+        "name": "cnrtErrorDeviceInvalid",
+        "value": 100005
+      },
+      {
+        "name": "cnrtErrorArgsInvalid",
+        "value": 100006
+      },
+      {
+        "name": "cnrtErrorSys",
+        "value": 100007
+      },
+      {
+        "name": "cnrtErrorSysNoMem",
+        "value": 100010
+      },
+      {
+        "name": "cnrtErrorInvalidResourceHandle",
+        "value": 100014
+      },
+      {
+        "name": "cnrtErrorIllegalState",
+        "value": 100015
+      },
+      {
+        "name": "cnrtErrorNotSupport",
+        "value": 100050
+      },
+      {
+        "name": "cnrtErrorOpsNotPermitted",
+        "value": 100051
+      },
+      {
+        "name": "cnrtErrorQueue",
+        "value": 100060
+      },
+      {
+        "name": "cnrtErrorNoMem",
+        "value": 100100
+      },
+      {
+        "name": "cnrtErrorAssert",
+        "value": 100128
+      },
+      {
+        "name": "cnrtErrorKernelTrap",
+        "value": 100132
+      },
+      {
+        "name": "cnrtErrorKernelUserTrap",
+        "value": 100133
+      },
+      {
+        "name": "cnrtErrorNotFound",
+        "value": 100301
+      },
+      {
+        "name": "cnrtErrorInvalidKernel",
+        "value": 100302
+      },
+      {
+        "name": "cnrtErrorNoKernel",
+        "value": 101312
+      },
+      {
+        "name": "cnrtErrorNoModule",
+        "value": 101315
+      },
+      {
+        "name": "cnrtErrorQueueCaptureUnsupported",
+        "value": 100360
+      },
+      {
+        "name": "cnrtErrorQueueCaptureInvalidated",
+        "value": 100361
+      },
+      {
+        "name": "cnrtErrorQueueCaptureWrongThread",
+        "value": 100362
+      },
+      {
+        "name": "cnrtErrorQueueCaptureMerged",
+        "value": 100363
+      },
+      {
+        "name": "cnrtErrorQueueCaptureUnjoined",
+        "value": 100364
+      },
+      {
+        "name": "cnrtErrorQueueCaptureIsolation",
+        "value": 100365
+      },
+      {
+        "name": "cnrtErrorQueueCaptureUnmatched",
+        "value": 100366
+      },
+      {
+        "name": "cnrtErrorTaskTopoEntityUpdateFailure",
+        "value": 100400
+      },
+      {
+        "name": "cnrtErrorSetOnActiveProcess",
+        "value": 632002
+      },
+      {
+        "name": "cnrtErrorDevice",
+        "value": 632006
+      },
+      {
+        "name": "cnrtErrorNoAttribute",
+        "value": 632009
+      },
+      {
+        "name": "cnrtErrorMemcpyDirectionInvalid",
+        "value": 632013
+      },
+      {
+        "name": "cnrtErrorBusy",
+        "value": 632014
+      },
+      {
+        "name": "cnrtErrorCndrvFuncCall",
+        "value": 632015
+      },
+      {
+        "name": "cnrtErrorCndevFuncCall",
+        "value": 632017
+      },
+      {
+        "name": "cnrtErrorNoCnrtContext",
+        "value": 632019
+      },
+      {
+        "name": "cnrtErrorCndrvFuncNotFound",
+        "value": 632020
+      },
+      {
+        "name": "cnrtErrorInvalidSymbol",
+        "value": 632100
+      },
+      {
+        "name": "cnrtErrorUnknown",
+        "value": 999991
+      },
+      {
+        "name": "cnrtErrorMax",
+        "value": 999992
+      }
+    ],
+    "CNDrv": [
+      {
+        "name": "CN_SUCCESS",
+        "value": 0
+      },
+      {
+        "name": "CN_ERROR_NOT_READY",
+        "value": 1
+      },
+      {
+        "name": "CN_ERROR_NOT_INITIALIZED",
+        "value": 100002
+      },
+      {
+        "name": "CN_ERROR_DEINITIALIZED",
+        "value": 100003
+      },
+      {
+        "name": "CN_ERROR_NO_DEVICE",
+        "value": 100004
+      },
+      {
+        "name": "CN_ERROR_INVALID_DEVICE",
+        "value": 100005
+      },
+      {
+        "name": "CN_ERROR_INVALID_VALUE",
+        "value": 100006
+      },
+      {
+        "name": "CN_ERROR_OPERATING_SYSTEM",
+        "value": 100007
+      },
+      {
+        "name": "CN_ERROR_SYSTEM_NOT_READY",
+        "value": 100008
+      },
+      {
+        "name": "CN_ERROR_SYSTEM_DRIVER_MISMATCH",
+        "value": 100009
+      },
+      {
+        "name": "CN_ERROR_SYSTEM_OUT_OF_MEMORY",
+        "value": 100010
+      },
+      {
+        "name": "CN_ERROR_INVALID_ADDRESS",
+        "value": 100011
+      },
+      {
+        "name": "CN_ERROR_FILE_NOT_FOUND",
+        "value": 100012
+      },
+      {
+        "name": "CN_ERROR_COMPAT_NOT_SUPPORT_ON_SYSTEM",
+        "value": 100013
+      },
+      {
+        "name": "CN_ERROR_INVALID_HANDLE",
+        "value": 100014
+      },
+      {
+        "name": "CN_ERROR_ILLEGAL_STATE",
+        "value": 100015
+      },
+      {
+        "name": "CN_OPS_ERROR_NOT_SUPPORTED",
+        "value": 100050
+      },
+      {
+        "name": "CN_OPS_ERROR_NOT_PERMITTED",
+        "value": 100051
+      },
+      {
+        "name": "CN_OPS_ERROR_TIMEOUT",
+        "value": 100052
+      },
+      {
+        "name": "CN_OPS_ERROR_OUT_OF_RESOURCES",
+        "value": 100053
+      },
+      {
+        "name": "CN_QUEUE_ERROR_INVALID",
+        "value": 100060
+      },
+      {
+        "name": "CN_QUEUE_ERROR_OUT_OF_RESOURCES",
+        "value": 100061
+      },
+      {
+        "name": "CN_NOTIFIER_ERROR_INVALID",
+        "value": 100080
+      },
+      {
+        "name": "CN_NOTIFIER_ERROR_OUT_OF_RESOURCES",
+        "value": 100081
+      },
+      {
+        "name": "CN_MEMORY_ERROR_OUT_OF_MEMORY",
+        "value": 100100
+      },
+      {
+        "name": "CN_MEMORY_ERROR_OUT_OF_PROCESS_MAX_MEMORY",
+        "value": 100101
+      },
+      {
+        "name": "CN_MEMORY_ERROR_INVALID_ADDRESS",
+        "value": 100102
+      },
+      {
+        "name": "CN_INVOKE_ERROR_OUT_OF_RESOURCES",
+        "value": 100120
+      },
+      {
+        "name": "CN_INVOKE_ERROR_EXECUTED_TIMEOUT",
+        "value": 100121
+      },
+      {
+        "name": "CN_INVOKE_ERROR_TIMEOUT",
+        "value": 100122
+      },
+      {
+        "name": "CN_INVOKE_ERROR_ILLEGAL_INSTRUCTION",
+        "value": 100123
+      },
+      {
+        "name": "CN_INVOKE_ERROR_ADDRESS_SPACE",
+        "value": 100124
+      },
+      {
+        "name": "CN_INVOKE_NO_TINYCORE",
+        "value": 100125
+      },
+      {
+        "name": "CN_INVOKE_ERROR_INVALID_PC",
+        "value": 100126
+      },
+      {
+        "name": "CN_INVOKE_ERROR_ILLEGAL_OPERAND",
+        "value": 100127
+      },
+      {
+        "name": "CN_INVOKE_ERROR_ASSERT",
+        "value": 100128
+      },
+      {
+        "name": "CN_INVOKE_ERROR_MEMORY_MISALIGNED_ADDRESS",
+        "value": 100130
+      },
+      {
+        "name": "CN_INVOKE_ERROR_MEMORY_ILLEGAL_ADDRESS",
+        "value": 100131
+      },
+      {
+        "name": "CN_INVOKE_ERROR_KERNEL_TRAP",
+        "value": 100132
+      },
+      {
+        "name": "CN_INVOKE_ERROR_KERNEL_USER_TRAP",
+        "value": 100133
+      },
+      {
+        "name": "CN_INVOKE_ERROR_STACK_OVERFLOW",
+        "value": 100134
+      },
+      {
+        "name": "CN_INVOKE_ERROR",
+        "value": 100200
+      },
+      {
+        "name": "CN_CONTEXT_ERROR_INVALID",
+        "value": 100201
+      },
+      {
+        "name": "CN_CONTEXT_ERROR_OUT_OF_RESOURCES",
+        "value": 100202
+      },
+      {
+        "name": "CN_ERROR_INVALID_FATBIN",
+        "value": 100300
+      },
+      {
+        "name": "CN_ERROR_NOT_FOUND",
+        "value": 100301
+      },
+      {
+        "name": "CN_ERROR_INVALID_KERNEL",
+        "value": 100302
+      },
+      {
+        "name": "CN_FATBIN_ERROR_UNSUPPORTED_VERSION",
+        "value": 100303
+      },
+      {
+        "name": "CN_FATBIN_ERROR_NO_KERNEL",
+        "value": 101312
+      },
+      {
+        "name": "CN_FATBIN_INVALID_IMAGE",
+        "value": 101313
+      },
+      {
+        "name": "CN_FATBIN_LIBCNBIN_NOT_FOUND",
+        "value": 101314
+      },
+      {
+        "name": "CN_FATBIN_INVALID_ARCH",
+        "value": 101315
+      },
+      {
+        "name": "CN_ERROR_QUEUE_CAPTURE_UNSUPPORTED",
+        "value": 100360
+      },
+      {
+        "name": "CN_ERROR_QUEUE_CAPTURE_INVALIDATED",
+        "value": 100361
+      },
+      {
+        "name": "CN_ERROR_QUEUE_CAPTURE_WRONG_THREAD",
+        "value": 100362
+      },
+      {
+        "name": "CN_ERROR_QUEUE_CAPTURE_MERGED",
+        "value": 100363
+      },
+      {
+        "name": "CN_ERROR_QUEUE_CAPTURE_UNJOINED",
+        "value": 100364
+      },
+      {
+        "name": "CN_ERROR_QUEUE_CAPTURE_ISOLATION",
+        "value": 100365
+      },
+      {
+        "name": "CN_ERROR_QUEUE_CAPTURE_UNMATCHED",
+        "value": 100366
+      },
+      {
+        "name": "CN_ERROR_TASK_TOPO_ENTITY_UPDATE_FAILURE",
+        "value": 100400
+      },
+      {
+        "name": "CN_NCS_ACK_TASK_TIMEOUT",
+        "value": 101410
+      },
+      {
+        "name": "CN_NCS_ACK_QP_INVALID",
+        "value": 101411
+      },
+      {
+        "name": "CN_NCS_ACK_QP_BUSY",
+        "value": 101412
+      },
+      {
+        "name": "CN_NCS_ACK_QP_NOT_EXISTS",
+        "value": 101413
+      },
+      {
+        "name": "CN_NCS_ACK_TEMPLATE_INVALID",
+        "value": 101414
+      },
+      {
+        "name": "CN_NCS_ACK_TEMPLATE_NOT_EXISTS",
+        "value": 101415
+      },
+      {
+        "name": "CN_NCS_ACK_PARAM_INVALID",
+        "value": 101416
+      },
+      {
+        "name": "CN_NCS_ACK_DECS_CNT_ERR",
+        "value": 101417
+      },
+      {
+        "name": "CN_NCS_ACK_SRC_ADDR_ERR",
+        "value": 101418
+      },
+      {
+        "name": "CN_NCS_ACK_DST_ADDR_ERR",
+        "value": 101419
+      },
+      {
+        "name": "CN_NCS_ACK_KERNEL_ERR",
+        "value": 101420
+      },
+      {
+        "name": "CN_NCS_ACK_TRIGGER_CNT_ERR",
+        "value": 101421
+      },
+      {
+        "name": "CN_NCS_ACK_REMOTE_ERR",
+        "value": 101422
+      },
+      {
+        "name": "CN_NCS_ACK_LINK_UNCORR_ERR",
+        "value": 101423
+      },
+      {
+        "name": "CN_NCS_ACK_LINK_ERR",
+        "value": 101424
+      },
+      {
+        "name": "CN_NCS_ACK_TASK_EXIST",
+        "value": 101425
+      },
+      {
+        "name": "CN_NCS_ACK_TASK_TYPE_INVALID",
+        "value": 101426
+      },
+      {
+        "name": "CN_NCS_ACK_DESC_NOT_MATCH",
+        "value": 101427
+      },
+      {
+        "name": "CN_NCS_ACK_OTHER",
+        "value": 101449
+      },
+      {
+        "name": "CN_TCDP_ACK_INTERNAL_ERROR",
+        "value": 101450
+      },
+      {
+        "name": "CN_TCDP_ACK_TCDP_HANDLE_INVALID",
+        "value": 101451
+      },
+      {
+        "name": "CN_TCDP_ACK_TCDP_NO_RESOURCE",
+        "value": 101452
+      },
+      {
+        "name": "CN_TCDP_ACK_TCDP_RESEND_EXCEED_MAX_NUM",
+        "value": 101453
+      },
+      {
+        "name": "CN_TCDP_ACK_OTHER",
+        "value": 101500
+      },
+      {
+        "name": "CN_NCS_HW_ERROR",
+        "value": 101600
+      },
+      {
+        "name": "CN_NCS_PORT_NOT_IN_RANGE",
+        "value": 101601
+      },
+      {
+        "name": "CN_NCS_PORT_LINK_ERR",
+        "value": 101602
+      },
+      {
+        "name": "CN_NCS_QP_CREATE_PARAM_INVALID",
+        "value": 101603
+      },
+      {
+        "name": "CN_NCS_QP_CREATE_NO_RESOURCE",
+        "value": 101604
+      },
+      {
+        "name": "CN_NCS_QP_MODIFY_PAIRING",
+        "value": 101605
+      },
+      {
+        "name": "CN_NCS_QP_MODIFY_LQP_INVALID",
+        "value": 101606
+      },
+      {
+        "name": "CN_NCS_QP_MODIFY_RQP_INVALID",
+        "value": 101607
+      },
+      {
+        "name": "CN_NCS_QP_MODIFY_NO_RESOURCE",
+        "value": 101608
+      },
+      {
+        "name": "CN_NCS_QP_DESTROY_PARAM_INVALID",
+        "value": 101609
+      },
+      {
+        "name": "CN_NCS_QP_DESTROY_NOT_EXISTS",
+        "value": 101610
+      },
+      {
+        "name": "CN_NCS_QP_DESTROY_BUSY",
+        "value": 101611
+      },
+      {
+        "name": "CN_NCS_QP_DESTROY_USER_INVALID",
+        "value": 101612
+      },
+      {
+        "name": "CN_NCS_TEMPLATE_CREATE_PARAM_INVALID",
+        "value": 101613
+      },
+      {
+        "name": "CN_NCS_TEMPLATE_CREATE_NO_RESOURCE",
+        "value": 101614
+      },
+      {
+        "name": "CN_NCS_TEMPLATE_CREATE_LOAD_ERR",
+        "value": 101615
+      },
+      {
+        "name": "CN_NCS_TEMPLATE_DESTROY_PARAM_INVALID",
+        "value": 101616
+      },
+      {
+        "name": "CN_NCS_TEMPLATE_DESTROY_NOT_EXISTS",
+        "value": 101617
+      },
+      {
+        "name": "CN_NCS_TEMPLATE_DESTROY_BUSY",
+        "value": 101618
+      },
+      {
+        "name": "CN_NCS_TEMPLATE_DESTROY_USER_INVALID",
+        "value": 101619
+      },
+      {
+        "name": "CN_NCS_PORT_OB_DISABLED",
+        "value": 101620
+      },
+      {
+        "name": "CN_NCS_PORT_IB_DISABLED",
+        "value": 101621
+      },
+      {
+        "name": "CN_NCS_PORT_DISABLED",
+        "value": 101622
+      },
+      {
+        "name": "CN_NCS_UNSUPPORT",
+        "value": 101623
+      },
+      {
+        "name": "CN_NCS_GET_LQP_INVALID",
+        "value": 101624
+      },
+      {
+        "name": "CN_NCS_INPLACEBUFF_IS_NOT_CONTINUOUS_ERROR",
+        "value": 101625
+      },
+      {
+        "name": "CN_NCS_QP_IS_INJECTING_ERROR",
+        "value": 101626
+      },
+      {
+        "name": "CN_TCDP_HW_ERROR",
+        "value": 101700
+      },
+      {
+        "name": "CN_TCDP_NO_RESOURCE",
+        "value": 101701
+      },
+      {
+        "name": "CN_TCDP_INVALID_PARAM",
+        "value": 101702
+      },
+      {
+        "name": "CN_TCDP_SLOT_NOT_EXIST",
+        "value": 101703
+      },
+      {
+        "name": "CN_TCDP_USER_INVALID",
+        "value": 101704
+      },
+      {
+        "name": "CN_TCDP_QP_BUSY",
+        "value": 101705
+      },
+      {
+        "name": "CN_TCDP_UNSUPPORT",
+        "value": 101706
+      },
+      {
+        "name": "CN_NCS_UPDATE_TOPOLOGY",
+        "value": 101800
+      },
+      {
+        "name": "CN_NCS_LAUNCH_KERNEL",
+        "value": 101801
+      },
+      {
+        "name": "CN_NCS_GET_PORT_INFO",
+        "value": 101802
+      },
+      {
+        "name": "CN_NCS_GET_DEVICE_UUID",
+        "value": 101803
+      },
+      {
+        "name": "CN_NCS_PORT_ID_INVALID",
+        "value": 101804
+      },
+      {
+        "name": "CN_NCS_DESC_INVALID",
+        "value": 101805
+      },
+      {
+        "name": "CN_NCS_ERROR",
+        "value": 101898
+      },
+      {
+        "name": "CN_NCS_INTERNAL_ERROR",
+        "value": 101899
+      },
+      {
+        "name": "CN_ERROR_UNKNOWN",
+        "value": 200000
+      }
+    ]
+  },
+  "entries": [
+    {
+      "value": 0,
+      "runtime_name": "cnrtSuccess",
+      "runtime_description": "no error.",
+      "driver_name": "CN_SUCCESS",
+      "driver_description": "\"no error\""
+    },
+    {
+      "value": 1,
+      "runtime_name": "cnrtErrorNotReady",
+      "runtime_description": "device not ready.",
+      "driver_name": "CN_ERROR_NOT_READY",
+      "driver_description": "\"Asynchronous operations issued previously not completed yet\""
+    },
+    {
+      "value": 100002,
+      "runtime_name": "cnrtErrorInit",
+      "runtime_description": "initialization error.",
+      "driver_name": "CN_ERROR_NOT_INITIALIZED",
+      "driver_description": "\"initialization error\""
+    },
+    {
+      "value": 100003,
+      "runtime_name": "CN_ERROR_DEINITIALIZED",
+      "runtime_description": "\"driver shutting down\"",
+      "driver_name": "CN_ERROR_DEINITIALIZED",
+      "driver_description": "\"driver shutting down\""
+    },
+    {
+      "value": 100004,
+      "runtime_name": "cnrtErrorNoDevice",
+      "runtime_description": "no MLU device is detected.",
+      "driver_name": "CN_ERROR_NO_DEVICE",
+      "driver_description": "\"No useful mlu device\""
+    },
+    {
+      "value": 100005,
+      "runtime_name": "cnrtErrorDeviceInvalid",
+      "runtime_description": "device ordinal out of range.",
+      "driver_name": "CN_ERROR_INVALID_DEVICE",
+      "driver_description": "\"invalid device ordinal\""
+    },
+    {
+      "value": 100006,
+      "runtime_name": "cnrtErrorArgsInvalid",
+      "runtime_description": "invalid argument.",
+      "driver_name": "CN_ERROR_INVALID_VALUE",
+      "driver_description": "\"invalid argument\""
+    },
+    {
+      "value": 100007,
+      "runtime_name": "cnrtErrorSys",
+      "runtime_description": "system function call error.",
+      "driver_name": "CN_ERROR_OPERATING_SYSTEM",
+      "driver_description": "\"OS call failed or operation not supported on this OS\""
+    },
+    {
+      "value": 100008,
+      "runtime_name": "CN_ERROR_SYSTEM_NOT_READY",
+      "runtime_description": "\"system not yet initialized\"",
+      "driver_name": "CN_ERROR_SYSTEM_NOT_READY",
+      "driver_description": "\"system not yet initialized\""
+    },
+    {
+      "value": 100009,
+      "runtime_name": "CN_ERROR_SYSTEM_DRIVER_MISMATCH",
+      "runtime_description": "\"system has unsupported display driver combination\"",
+      "driver_name": "CN_ERROR_SYSTEM_DRIVER_MISMATCH",
+      "driver_description": "\"system has unsupported display driver combination\""
+    },
+    {
+      "value": 100010,
+      "runtime_name": "cnrtErrorSysNoMem",
+      "runtime_description": "insufficient system memory.",
+      "driver_name": "CN_ERROR_SYSTEM_OUT_OF_MEMORY",
+      "driver_description": "\"system has no memory to alloc\""
+    },
+    {
+      "value": 100011,
+      "runtime_name": "CN_ERROR_INVALID_ADDRESS",
+      "runtime_description": "\"invaild address\"",
+      "driver_name": "CN_ERROR_INVALID_ADDRESS",
+      "driver_description": "\"invaild address\""
+    },
+    {
+      "value": 100012,
+      "runtime_name": "CN_ERROR_FILE_NOT_FOUND",
+      "runtime_description": "\"can not open the file\"",
+      "driver_name": "CN_ERROR_FILE_NOT_FOUND",
+      "driver_description": "\"can not open the file\""
+    },
+    {
+      "value": 100013,
+      "runtime_name": "CN_ERROR_COMPAT_NOT_SUPPORT_ON_SYSTEM",
+      "runtime_description": "\"System has compatibility issues\"",
+      "driver_name": "CN_ERROR_COMPAT_NOT_SUPPORT_ON_SYSTEM",
+      "driver_description": "\"System has compatibility issues\""
+    },
+    {
+      "value": 100014,
+      "runtime_name": "cnrtErrorInvalidResourceHandle",
+      "runtime_description": "invalid resource handle.",
+      "driver_name": "CN_ERROR_INVALID_HANDLE",
+      "driver_description": "\"invalid resource handle\""
+    },
+    {
+      "value": 100015,
+      "runtime_name": "cnrtErrorIllegalState",
+      "runtime_description": "the operation cannot be performed in the present state.",
+      "driver_name": "CN_ERROR_ILLEGAL_STATE",
+      "driver_description": "\"A resource required by the API call is not in a \" \"valid state to perform the operation\""
+    },
+    {
+      "value": 100050,
+      "runtime_name": "cnrtErrorNotSupport",
+      "runtime_description": "operation not supported.",
+      "driver_name": "CN_OPS_ERROR_NOT_SUPPORTED",
+      "driver_description": "\"operation not supported\""
+    },
+    {
+      "value": 100051,
+      "runtime_name": "cnrtErrorOpsNotPermitted",
+      "runtime_description": "operation not permitted",
+      "driver_name": "CN_OPS_ERROR_NOT_PERMITTED",
+      "driver_description": "\"operation not permitted\""
+    },
+    {
+      "value": 100052,
+      "runtime_name": "CN_OPS_ERROR_TIMEOUT",
+      "runtime_description": "\"operation timeout\"",
+      "driver_name": "CN_OPS_ERROR_TIMEOUT",
+      "driver_description": "\"operation timeout\""
+    },
+    {
+      "value": 100053,
+      "runtime_name": "CN_OPS_ERROR_OUT_OF_RESOURCES",
+      "runtime_description": "\"no resources to do the operation\"",
+      "driver_name": "CN_OPS_ERROR_OUT_OF_RESOURCES",
+      "driver_description": "\"no resources to do the operation\""
+    },
+    {
+      "value": 100060,
+      "runtime_name": "cnrtErrorQueue",
+      "runtime_description": "failed to get default queue.",
+      "driver_name": "CN_QUEUE_ERROR_INVALID",
+      "driver_description": "\"invalid queue handle\""
+    },
+    {
+      "value": 100061,
+      "runtime_name": "CN_QUEUE_ERROR_OUT_OF_RESOURCES",
+      "runtime_description": "\"no resources to create queue\"",
+      "driver_name": "CN_QUEUE_ERROR_OUT_OF_RESOURCES",
+      "driver_description": "\"no resources to create queue\""
+    },
+    {
+      "value": 100080,
+      "runtime_name": "CN_NOTIFIER_ERROR_INVALID",
+      "runtime_description": "\"invalid notifier\"",
+      "driver_name": "CN_NOTIFIER_ERROR_INVALID",
+      "driver_description": "\"invalid notifier\""
+    },
+    {
+      "value": 100081,
+      "runtime_name": "CN_NOTIFIER_ERROR_OUT_OF_RESOURCES",
+      "runtime_description": "\"no resources to create notifier\"",
+      "driver_name": "CN_NOTIFIER_ERROR_OUT_OF_RESOURCES",
+      "driver_description": "\"no resources to create notifier\""
+    },
+    {
+      "value": 100100,
+      "runtime_name": "cnrtErrorNoMem",
+      "runtime_description": "insufficient MLU memory.",
+      "driver_name": "CN_MEMORY_ERROR_OUT_OF_MEMORY",
+      "driver_description": "\"device has no memory to alloc\""
+    },
+    {
+      "value": 100101,
+      "runtime_name": "CN_MEMORY_ERROR_OUT_OF_PROCESS_MAX_MEMORY",
+      "runtime_description": "\"out of the current process's available device memory\"",
+      "driver_name": "CN_MEMORY_ERROR_OUT_OF_PROCESS_MAX_MEMORY",
+      "driver_description": "\"out of the current process's available device memory\""
+    },
+    {
+      "value": 100102,
+      "runtime_name": "CN_MEMORY_ERROR_INVALID_ADDRESS",
+      "runtime_description": "\"Invalid device address\"",
+      "driver_name": "CN_MEMORY_ERROR_INVALID_ADDRESS",
+      "driver_description": "\"Invalid device address\""
+    },
+    {
+      "value": 100120,
+      "runtime_name": "CN_INVOKE_ERROR_OUT_OF_RESOURCES",
+      "runtime_description": "\"no resources to invoke\"",
+      "driver_name": "CN_INVOKE_ERROR_OUT_OF_RESOURCES",
+      "driver_description": "\"no resources to invoke\""
+    },
+    {
+      "value": 100121,
+      "runtime_name": "CN_INVOKE_ERROR_EXECUTED_TIMEOUT",
+      "runtime_description": "\"execute timeout\"",
+      "driver_name": "CN_INVOKE_ERROR_EXECUTED_TIMEOUT",
+      "driver_description": "\"execute timeout\""
+    },
+    {
+      "value": 100122,
+      "runtime_name": "CN_INVOKE_ERROR_TIMEOUT",
+      "runtime_description": "\"invoke timeout\"",
+      "driver_name": "CN_INVOKE_ERROR_TIMEOUT",
+      "driver_description": "\"invoke timeout\""
+    },
+    {
+      "value": 100123,
+      "runtime_name": "CN_INVOKE_ERROR_ILLEGAL_INSTRUCTION",
+      "runtime_description": "\"illegal instruction\"",
+      "driver_name": "CN_INVOKE_ERROR_ILLEGAL_INSTRUCTION",
+      "driver_description": "\"illegal instruction\""
+    },
+    {
+      "value": 100124,
+      "runtime_name": "CN_INVOKE_ERROR_ADDRESS_SPACE",
+      "runtime_description": "\"operation not supported on global/shared address space\"",
+      "driver_name": "CN_INVOKE_ERROR_ADDRESS_SPACE",
+      "driver_description": "\"operation not supported on global/shared address space\""
+    },
+    {
+      "value": 100125,
+      "runtime_name": "CN_INVOKE_NO_TINYCORE",
+      "runtime_description": "\"tinycore is disabled\"",
+      "driver_name": "CN_INVOKE_NO_TINYCORE",
+      "driver_description": "\"tinycore is disabled\""
+    },
+    {
+      "value": 100126,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 100127,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 100128,
+      "runtime_name": "cnrtErrorAssert",
+      "runtime_description": "\"Device-side assert triggered\"",
+      "driver_name": "CN_INVOKE_ERROR_ASSERT",
+      "driver_description": "\"Device-side assert triggered\""
+    },
+    {
+      "value": 100130,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 100131,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 100132,
+      "runtime_name": "cnrtErrorKernelTrap",
+      "runtime_description": "\"Enter to a kernel trap, see trap message for details\"",
+      "driver_name": "CN_INVOKE_ERROR_KERNEL_TRAP",
+      "driver_description": "\"Enter to a kernel trap, see trap message for details\""
+    },
+    {
+      "value": 100133,
+      "runtime_name": "cnrtErrorKernelUserTrap",
+      "runtime_description": "\"Enter to a kernel user specific trap, see trap id for details\"",
+      "driver_name": "CN_INVOKE_ERROR_KERNEL_USER_TRAP",
+      "driver_description": "\"Enter to a kernel user specific trap, see trap id for details\""
+    },
+    {
+      "value": 100134,
+      "runtime_name": "CN_INVOKE_ERROR_STACK_OVERFLOW",
+      "runtime_description": "\"Stack exceeding the stack size limit\"",
+      "driver_name": "CN_INVOKE_ERROR_STACK_OVERFLOW",
+      "driver_description": "\"Stack exceeding the stack size limit\""
+    },
+    {
+      "value": 100200,
+      "runtime_name": "CN_INVOKE_ERROR",
+      "runtime_description": "\"Failed to invoke\"",
+      "driver_name": "CN_INVOKE_ERROR",
+      "driver_description": "\"Failed to invoke\""
+    },
+    {
+      "value": 100201,
+      "runtime_name": "CN_CONTEXT_ERROR_INVALID",
+      "runtime_description": "\"invalid context\"",
+      "driver_name": "CN_CONTEXT_ERROR_INVALID",
+      "driver_description": "\"invalid context\""
+    },
+    {
+      "value": 100202,
+      "runtime_name": "CN_CONTEXT_ERROR_OUT_OF_RESOURCES",
+      "runtime_description": "\"no resources to create context\"",
+      "driver_name": "CN_CONTEXT_ERROR_OUT_OF_RESOURCES",
+      "driver_description": "\"no resources to create context\""
+    },
+    {
+      "value": 100300,
+      "runtime_name": "CN_ERROR_INVALID_FATBIN",
+      "runtime_description": "\"invalid fatbin\"",
+      "driver_name": "CN_ERROR_INVALID_FATBIN",
+      "driver_description": "\"invalid fatbin\""
+    },
+    {
+      "value": 100301,
+      "runtime_name": "cnrtErrorNotFound",
+      "runtime_description": "\"the specified resources were not found\"",
+      "driver_name": "CN_ERROR_NOT_FOUND",
+      "driver_description": "\"the specified resources were not found\""
+    },
+    {
+      "value": 100302,
+      "runtime_name": "cnrtErrorInvalidKernel",
+      "runtime_description": "\"Failed to invoke kernel\"",
+      "driver_name": "CN_ERROR_INVALID_KERNEL",
+      "driver_description": "\"Failed to invoke kernel\""
+    },
+    {
+      "value": 100303,
+      "runtime_name": "CN_FATBIN_ERROR_UNSUPPORTED_VERSION",
+      "runtime_description": "\"unsupport tool-chain\"",
+      "driver_name": "CN_FATBIN_ERROR_UNSUPPORTED_VERSION",
+      "driver_description": "\"unsupport tool-chain\""
+    },
+    {
+      "value": 100360,
+      "runtime_name": "cnrtErrorQueueCaptureUnsupported",
+      "runtime_description": "operation not permitted when queue is capturing.",
+      "driver_name": "CN_ERROR_QUEUE_CAPTURE_UNSUPPORTED",
+      "driver_description": "\"the operation is not permitted when the Queue is capturing\""
+    },
+    {
+      "value": 100361,
+      "runtime_name": "cnrtErrorQueueCaptureInvalidated",
+      "runtime_description": "operation failed due to a previous error during capture.",
+      "driver_name": "CN_ERROR_QUEUE_CAPTURE_INVALIDATED",
+      "driver_description": "\"current capture sequence on the Queue has been invalidated due to previous error\""
+    },
+    {
+      "value": 100362,
+      "runtime_name": "cnrtErrorQueueCaptureWrongThread",
+      "runtime_description": "current capture sequence on queue ends in a different thread.",
+      "driver_name": "CN_ERROR_QUEUE_CAPTURE_WRONG_THREAD",
+      "driver_description": "\"current capture sequence on the Queue does not  begin with relaxed mode, and \" \"ends in a different thread\""
+    },
+    {
+      "value": 100363,
+      "runtime_name": "CN_ERROR_QUEUE_CAPTURE_MERGED",
+      "runtime_description": "\"two independent capture sequences are merged\"",
+      "driver_name": "CN_ERROR_QUEUE_CAPTURE_MERGED",
+      "driver_description": "\"two independent capture sequences are merged\""
+    },
+    {
+      "value": 100364,
+      "runtime_name": "CN_ERROR_QUEUE_CAPTURE_UNJOINED",
+      "runtime_description": "\"the capture sequence contains at least \" \"a fork that is not joined to the primary Queue\"",
+      "driver_name": "CN_ERROR_QUEUE_CAPTURE_UNJOINED",
+      "driver_description": "\"the capture sequence contains at least \" \"a fork that is not joined to the primary Queue\""
+    },
+    {
+      "value": 100365,
+      "runtime_name": "CN_ERROR_QUEUE_CAPTURE_ISOLATION",
+      "runtime_description": "\"a Queue in capture sequence is trying to create a dependency which crosses the \" \"Queue capture boundary\"",
+      "driver_name": "CN_ERROR_QUEUE_CAPTURE_ISOLATION",
+      "driver_description": "\"a Queue in capture sequence is trying to create a dependency which crosses the \" \"Queue capture boundary\""
+    },
+    {
+      "value": 100366,
+      "runtime_name": "CN_ERROR_QUEUE_CAPTURE_UNMATCHED",
+      "runtime_description": "\"the Queue in capture sequence is not initially captured one\"",
+      "driver_name": "CN_ERROR_QUEUE_CAPTURE_UNMATCHED",
+      "driver_description": "\"the Queue in capture sequence is not initially captured one\""
+    },
+    {
+      "value": 100400,
+      "runtime_name": "cnrtErrorTaskTopoEntityUpdateFailure",
+      "runtime_description": "failed to update task topo entity.",
+      "driver_name": "CN_ERROR_TASK_TOPO_ENTITY_UPDATE_FAILURE",
+      "driver_description": "\"Tasktopo entity update failed\""
+    },
+    {
+      "value": 101312,
+      "runtime_name": "cnrtErrorNoKernel",
+      "runtime_description": "cncc does not register the kernel to runtime.",
+      "driver_name": "CN_FATBIN_ERROR_NO_KERNEL",
+      "driver_description": "\"no kernel in the fatbin\""
+    },
+    {
+      "value": 101313,
+      "runtime_name": "CN_FATBIN_INVALID_IMAGE",
+      "runtime_description": "\"image is invalid\"",
+      "driver_name": "CN_FATBIN_INVALID_IMAGE",
+      "driver_description": "\"image is invalid\""
+    },
+    {
+      "value": 101314,
+      "runtime_name": "CN_FATBIN_LIBCNBIN_NOT_FOUND",
+      "runtime_description": "\"cnbin library was not found\"",
+      "driver_name": "CN_FATBIN_LIBCNBIN_NOT_FOUND",
+      "driver_description": "\"cnbin library was not found\""
+    },
+    {
+      "value": 101315,
+      "runtime_name": "cnrtErrorNoModule",
+      "runtime_description": "cncc does not register the module to runtime.",
+      "driver_name": "CN_FATBIN_INVALID_ARCH",
+      "driver_description": "\"the architecture option passed into cncc when \" \"compiling does not match current MLU platform\""
+    },
+    {
+      "value": 101410,
+      "runtime_name": "CN_NCS_ACK_TASK_TIMEOUT",
+      "runtime_description": "\"ncs task timeout error\"",
+      "driver_name": "CN_NCS_ACK_TASK_TIMEOUT",
+      "driver_description": "\"ncs task timeout error\""
+    },
+    {
+      "value": 101411,
+      "runtime_name": "CN_NCS_ACK_QP_INVALID",
+      "runtime_description": "\"ncs qp is invalid\"",
+      "driver_name": "CN_NCS_ACK_QP_INVALID",
+      "driver_description": "\"ncs qp is invalid\""
+    },
+    {
+      "value": 101412,
+      "runtime_name": "CN_NCS_ACK_QP_BUSY",
+      "runtime_description": "\"ncs qp is using by other qtask\"",
+      "driver_name": "CN_NCS_ACK_QP_BUSY",
+      "driver_description": "\"ncs qp is using by other qtask\""
+    },
+    {
+      "value": 101413,
+      "runtime_name": "CN_NCS_ACK_QP_NOT_EXISTS",
+      "runtime_description": "\"ncs qp is not exists\"",
+      "driver_name": "CN_NCS_ACK_QP_NOT_EXISTS",
+      "driver_description": "\"ncs qp is not exists\""
+    },
+    {
+      "value": 101414,
+      "runtime_name": "CN_NCS_ACK_TEMPLATE_INVALID",
+      "runtime_description": "\"ncs template is invalid\"",
+      "driver_name": "CN_NCS_ACK_TEMPLATE_INVALID",
+      "driver_description": "\"ncs template is invalid\""
+    },
+    {
+      "value": 101415,
+      "runtime_name": "CN_NCS_ACK_TEMPLATE_NOT_EXISTS",
+      "runtime_description": "\"ncs template is not exists\"",
+      "driver_name": "CN_NCS_ACK_TEMPLATE_NOT_EXISTS",
+      "driver_description": "\"ncs template is not exists\""
+    },
+    {
+      "value": 101416,
+      "runtime_name": "CN_NCS_ACK_PARAM_INVALID",
+      "runtime_description": "\"ncs task param is invalid\"",
+      "driver_name": "CN_NCS_ACK_PARAM_INVALID",
+      "driver_description": "\"ncs task param is invalid\""
+    },
+    {
+      "value": 101417,
+      "runtime_name": "CN_NCS_ACK_DECS_CNT_ERR",
+      "runtime_description": "\"ncs task descriptor count error\"",
+      "driver_name": "CN_NCS_ACK_DECS_CNT_ERR",
+      "driver_description": "\"ncs task descriptor count error\""
+    },
+    {
+      "value": 101418,
+      "runtime_name": "CN_NCS_ACK_SRC_ADDR_ERR",
+      "runtime_description": "\"ncs task source address error\"",
+      "driver_name": "CN_NCS_ACK_SRC_ADDR_ERR",
+      "driver_description": "\"ncs task source address error\""
+    },
+    {
+      "value": 101419,
+      "runtime_name": "CN_NCS_ACK_DST_ADDR_ERR",
+      "runtime_description": "\"ncs task destination address error\"",
+      "driver_name": "CN_NCS_ACK_DST_ADDR_ERR",
+      "driver_description": "\"ncs task destination address error\""
+    },
+    {
+      "value": 101420,
+      "runtime_name": "CN_NCS_ACK_KERNEL_ERR",
+      "runtime_description": "\"ncs task ipu kernel error\"",
+      "driver_name": "CN_NCS_ACK_KERNEL_ERR",
+      "driver_description": "\"ncs task ipu kernel error\""
+    },
+    {
+      "value": 101421,
+      "runtime_name": "CN_NCS_ACK_TRIGGER_CNT_ERR",
+      "runtime_description": "\"ncs task trigger count error\"",
+      "driver_name": "CN_NCS_ACK_TRIGGER_CNT_ERR",
+      "driver_description": "\"ncs task trigger count error\""
+    },
+    {
+      "value": 101422,
+      "runtime_name": "CN_NCS_ACK_REMOTE_ERR",
+      "runtime_description": "\"ncs task remote endpoint error\"",
+      "driver_name": "CN_NCS_ACK_REMOTE_ERR",
+      "driver_description": "\"ncs task remote endpoint error\""
+    },
+    {
+      "value": 101423,
+      "runtime_name": "CN_NCS_ACK_LINK_UNCORR_ERR",
+      "runtime_description": "\"ncs task link has uncorrected bits\"",
+      "driver_name": "CN_NCS_ACK_LINK_UNCORR_ERR",
+      "driver_description": "\"ncs task link has uncorrected bits\""
+    },
+    {
+      "value": 101424,
+      "runtime_name": "CN_NCS_ACK_LINK_ERR",
+      "runtime_description": "\"ncs task link error\"",
+      "driver_name": "CN_NCS_ACK_LINK_ERR",
+      "driver_description": "\"ncs task link error\""
+    },
+    {
+      "value": 101425,
+      "runtime_name": "CN_NCS_ACK_TASK_EXIST",
+      "runtime_description": "\"ncs task kernel id is exists\"",
+      "driver_name": "CN_NCS_ACK_TASK_EXIST",
+      "driver_description": "\"ncs task kernel id is exists\""
+    },
+    {
+      "value": 101426,
+      "runtime_name": "CN_NCS_ACK_TASK_TYPE_INVALID",
+      "runtime_description": "\"ncs task type error\"",
+      "driver_name": "CN_NCS_ACK_TASK_TYPE_INVALID",
+      "driver_description": "\"ncs task type error\""
+    },
+    {
+      "value": 101427,
+      "runtime_name": "CN_NCS_ACK_DESC_NOT_MATCH",
+      "runtime_description": "\"ncs task type error\"",
+      "driver_name": "CN_NCS_ACK_DESC_NOT_MATCH",
+      "driver_description": "\"ncs task type error\""
+    },
+    {
+      "value": 101449,
+      "runtime_name": "CN_NCS_ACK_OTHER",
+      "runtime_description": "\"ncs other error\"",
+      "driver_name": "CN_NCS_ACK_OTHER",
+      "driver_description": "\"ncs other error\""
+    },
+    {
+      "value": 101450,
+      "runtime_name": "CN_TCDP_ACK_INTERNAL_ERROR",
+      "runtime_description": "\"tcdp internal error\"",
+      "driver_name": "CN_TCDP_ACK_INTERNAL_ERROR",
+      "driver_description": "\"tcdp internal error\""
+    },
+    {
+      "value": 101451,
+      "runtime_name": "CN_TCDP_ACK_TCDP_HANDLE_INVALID",
+      "runtime_description": "\"tcdp handle is invalid\"",
+      "driver_name": "CN_TCDP_ACK_TCDP_HANDLE_INVALID",
+      "driver_description": "\"tcdp handle is invalid\""
+    },
+    {
+      "value": 101452,
+      "runtime_name": "CN_TCDP_ACK_TCDP_NO_RESOURCE",
+      "runtime_description": "\"tcdp has not enough slot resource\"",
+      "driver_name": "CN_TCDP_ACK_TCDP_NO_RESOURCE",
+      "driver_description": "\"tcdp has not enough slot resource\""
+    },
+    {
+      "value": 101453,
+      "runtime_name": "CN_TCDP_ACK_TCDP_RESEND_EXCEED_MAX_NUM",
+      "runtime_description": "\"tcdp resend cnt exceed max resend cnt\"",
+      "driver_name": "CN_TCDP_ACK_TCDP_RESEND_EXCEED_MAX_NUM",
+      "driver_description": "\"tcdp resend cnt exceed max resend cnt\""
+    },
+    {
+      "value": 101500,
+      "runtime_name": "CN_TCDP_ACK_OTHER",
+      "runtime_description": "\"tcdp other error\"",
+      "driver_name": "CN_TCDP_ACK_OTHER",
+      "driver_description": "\"tcdp other error\""
+    },
+    {
+      "value": 101600,
+      "runtime_name": "CN_NCS_HW_ERROR",
+      "runtime_description": "\"ncs hw error\"",
+      "driver_name": "CN_NCS_HW_ERROR",
+      "driver_description": "\"ncs hw error\""
+    },
+    {
+      "value": 101601,
+      "runtime_name": "CN_NCS_PORT_NOT_IN_RANGE",
+      "runtime_description": "\"ncs port id is not in range\"",
+      "driver_name": "CN_NCS_PORT_NOT_IN_RANGE",
+      "driver_description": "\"ncs port id is not in range\""
+    },
+    {
+      "value": 101602,
+      "runtime_name": "CN_NCS_PORT_LINK_ERR",
+      "runtime_description": "\"ncs port link error\"",
+      "driver_name": "CN_NCS_PORT_LINK_ERR",
+      "driver_description": "\"ncs port link error\""
+    },
+    {
+      "value": 101603,
+      "runtime_name": "CN_NCS_QP_CREATE_PARAM_INVALID",
+      "runtime_description": "\"ncs create qp param error\"",
+      "driver_name": "CN_NCS_QP_CREATE_PARAM_INVALID",
+      "driver_description": "\"ncs create qp param error\""
+    },
+    {
+      "value": 101604,
+      "runtime_name": "CN_NCS_QP_CREATE_NO_RESOURCE",
+      "runtime_description": "\"ncs has not enough qp resource\"",
+      "driver_name": "CN_NCS_QP_CREATE_NO_RESOURCE",
+      "driver_description": "\"ncs has not enough qp resource\""
+    },
+    {
+      "value": 101605,
+      "runtime_name": "CN_NCS_QP_MODIFY_PAIRING",
+      "runtime_description": "\"ncs qp is paring\"",
+      "driver_name": "CN_NCS_QP_MODIFY_PAIRING",
+      "driver_description": "\"ncs qp is paring\""
+    },
+    {
+      "value": 101606,
+      "runtime_name": "CN_NCS_QP_MODIFY_LQP_INVALID",
+      "runtime_description": "\"ncs local qp is invalid\"",
+      "driver_name": "CN_NCS_QP_MODIFY_LQP_INVALID",
+      "driver_description": "\"ncs local qp is invalid\""
+    },
+    {
+      "value": 101607,
+      "runtime_name": "CN_NCS_QP_MODIFY_RQP_INVALID",
+      "runtime_description": "\"ncs remote qp is invalid\"",
+      "driver_name": "CN_NCS_QP_MODIFY_RQP_INVALID",
+      "driver_description": "\"ncs remote qp is invalid\""
+    },
+    {
+      "value": 101608,
+      "runtime_name": "CN_NCS_QP_MODIFY_NO_RESOURCE",
+      "runtime_description": "\"ncs has not enough qp resource\"",
+      "driver_name": "CN_NCS_QP_MODIFY_NO_RESOURCE",
+      "driver_description": "\"ncs has not enough qp resource\""
+    },
+    {
+      "value": 101609,
+      "runtime_name": "CN_NCS_QP_DESTROY_PARAM_INVALID",
+      "runtime_description": "\"ncs qp destroy param is invalid\"",
+      "driver_name": "CN_NCS_QP_DESTROY_PARAM_INVALID",
+      "driver_description": "\"ncs qp destroy param is invalid\""
+    },
+    {
+      "value": 101610,
+      "runtime_name": "CN_NCS_QP_DESTROY_NOT_EXISTS",
+      "runtime_description": "\"ncs qp is not exists\"",
+      "driver_name": "CN_NCS_QP_DESTROY_NOT_EXISTS",
+      "driver_description": "\"ncs qp is not exists\""
+    },
+    {
+      "value": 101611,
+      "runtime_name": "CN_NCS_QP_DESTROY_BUSY",
+      "runtime_description": "\"ncs qp is using\"",
+      "driver_name": "CN_NCS_QP_DESTROY_BUSY",
+      "driver_description": "\"ncs qp is using\""
+    },
+    {
+      "value": 101612,
+      "runtime_name": "CN_NCS_QP_DESTROY_USER_INVALID",
+      "runtime_description": "\"ncs qp is not belong to current user\"",
+      "driver_name": "CN_NCS_QP_DESTROY_USER_INVALID",
+      "driver_description": "\"ncs qp is not belong to current user\""
+    },
+    {
+      "value": 101613,
+      "runtime_name": "CN_NCS_TEMPLATE_CREATE_PARAM_INVALID",
+      "runtime_description": "\"ncs template create param is invalid\"",
+      "driver_name": "CN_NCS_TEMPLATE_CREATE_PARAM_INVALID",
+      "driver_description": "\"ncs template create param is invalid\""
+    },
+    {
+      "value": 101614,
+      "runtime_name": "CN_NCS_TEMPLATE_CREATE_NO_RESOURCE",
+      "runtime_description": "\"ncs has not enough template resource\"",
+      "driver_name": "CN_NCS_TEMPLATE_CREATE_NO_RESOURCE",
+      "driver_description": "\"ncs has not enough template resource\""
+    },
+    {
+      "value": 101615,
+      "runtime_name": "CN_NCS_TEMPLATE_CREATE_LOAD_ERR",
+      "runtime_description": "\"ncs replace template error\"",
+      "driver_name": "CN_NCS_TEMPLATE_CREATE_LOAD_ERR",
+      "driver_description": "\"ncs replace template error\""
+    },
+    {
+      "value": 101616,
+      "runtime_name": "CN_NCS_TEMPLATE_DESTROY_PARAM_INVALID",
+      "runtime_description": "\"ncs template destroy param error\"",
+      "driver_name": "CN_NCS_TEMPLATE_DESTROY_PARAM_INVALID",
+      "driver_description": "\"ncs template destroy param error\""
+    },
+    {
+      "value": 101617,
+      "runtime_name": "CN_NCS_TEMPLATE_DESTROY_NOT_EXISTS",
+      "runtime_description": "\"ncs template is not exists\"",
+      "driver_name": "CN_NCS_TEMPLATE_DESTROY_NOT_EXISTS",
+      "driver_description": "\"ncs template is not exists\""
+    },
+    {
+      "value": 101618,
+      "runtime_name": "CN_NCS_TEMPLATE_DESTROY_BUSY",
+      "runtime_description": "\"ncs template is using\"",
+      "driver_name": "CN_NCS_TEMPLATE_DESTROY_BUSY",
+      "driver_description": "\"ncs template is using\""
+    },
+    {
+      "value": 101619,
+      "runtime_name": "CN_NCS_TEMPLATE_DESTROY_USER_INVALID",
+      "runtime_description": "\"ncs template is not belong to current user\"",
+      "driver_name": "CN_NCS_TEMPLATE_DESTROY_USER_INVALID",
+      "driver_description": "\"ncs template is not belong to current user\""
+    },
+    {
+      "value": 101620,
+      "runtime_name": "CN_NCS_PORT_OB_DISABLED",
+      "runtime_description": "\"ncs port is disabled by ob\"",
+      "driver_name": "CN_NCS_PORT_OB_DISABLED",
+      "driver_description": "\"ncs port is disabled by ob\""
+    },
+    {
+      "value": 101621,
+      "runtime_name": "CN_NCS_PORT_IB_DISABLED",
+      "runtime_description": "\"ncs port is disabled by ib\"",
+      "driver_name": "CN_NCS_PORT_IB_DISABLED",
+      "driver_description": "\"ncs port is disabled by ib\""
+    },
+    {
+      "value": 101622,
+      "runtime_name": "CN_NCS_PORT_DISABLED",
+      "runtime_description": "\"ncs port is disabled\"",
+      "driver_name": "CN_NCS_PORT_DISABLED",
+      "driver_description": "\"ncs port is disabled\""
+    },
+    {
+      "value": 101623,
+      "runtime_name": "CN_NCS_UNSUPPORT",
+      "runtime_description": "\"not support ncs on current platform\"",
+      "driver_name": "CN_NCS_UNSUPPORT",
+      "driver_description": "\"not support ncs on current platform\""
+    },
+    {
+      "value": 101624,
+      "runtime_name": "CN_NCS_GET_LQP_INVALID",
+      "runtime_description": "\"the QPair parameter passed in is invalid\"",
+      "driver_name": "CN_NCS_GET_LQP_INVALID",
+      "driver_description": "\"the QPair parameter passed in is invalid\""
+    },
+    {
+      "value": 101625,
+      "runtime_name": "CN_NCS_INPLACEBUFF_IS_NOT_CONTINUOUS_ERROR",
+      "runtime_description": "\"the physical address of inplace buffer is not continuous\"",
+      "driver_name": "CN_NCS_INPLACEBUFF_IS_NOT_CONTINUOUS_ERROR",
+      "driver_description": "\"the physical address of inplace buffer is not continuous\""
+    },
+    {
+      "value": 101626,
+      "runtime_name": "CN_NCS_QP_IS_INJECTING_ERROR",
+      "runtime_description": "\"the QPair error injection fails. QPair status and link should be checked\"",
+      "driver_name": "CN_NCS_QP_IS_INJECTING_ERROR",
+      "driver_description": "\"the QPair error injection fails. QPair status and link should be checked\""
+    },
+    {
+      "value": 101700,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 101701,
+      "runtime_name": "CN_TCDP_NO_RESOURCE",
+      "runtime_description": "\"tcdp has not enough slot resource\"",
+      "driver_name": "CN_TCDP_NO_RESOURCE",
+      "driver_description": "\"tcdp has not enough slot resource\""
+    },
+    {
+      "value": 101702,
+      "runtime_name": "CN_TCDP_INVALID_PARAM",
+      "runtime_description": "\"tcdp api param invalid\"",
+      "driver_name": "CN_TCDP_INVALID_PARAM",
+      "driver_description": "\"tcdp api param invalid\""
+    },
+    {
+      "value": 101703,
+      "runtime_name": "CN_TCDP_SLOT_NOT_EXIST",
+      "runtime_description": "\"tcdp slot does not exist\"",
+      "driver_name": "CN_TCDP_SLOT_NOT_EXIST",
+      "driver_description": "\"tcdp slot does not exist\""
+    },
+    {
+      "value": 101704,
+      "runtime_name": "CN_TCDP_USER_INVALID",
+      "runtime_description": "\"tcdp handle does not belong to current user\"",
+      "driver_name": "CN_TCDP_USER_INVALID",
+      "driver_description": "\"tcdp handle does not belong to current user\""
+    },
+    {
+      "value": 101705,
+      "runtime_name": "CN_TCDP_QP_BUSY",
+      "runtime_description": "\"tcdp QP is using by other task\"",
+      "driver_name": "CN_TCDP_QP_BUSY",
+      "driver_description": "\"tcdp QP is using by other task\""
+    },
+    {
+      "value": 101706,
+      "runtime_name": "CN_TCDP_UNSUPPORT",
+      "runtime_description": "\"not support tcdp on current platform\"",
+      "driver_name": "CN_TCDP_UNSUPPORT",
+      "driver_description": "\"not support tcdp on current platform\""
+    },
+    {
+      "value": 101800,
+      "runtime_name": "CN_NCS_UPDATE_TOPOLOGY",
+      "runtime_description": "\"ncs update topology error\"",
+      "driver_name": "CN_NCS_UPDATE_TOPOLOGY",
+      "driver_description": "\"ncs update topology error\""
+    },
+    {
+      "value": 101801,
+      "runtime_name": "CN_NCS_LAUNCH_KERNEL",
+      "runtime_description": "\"ncs launch kernel error\"",
+      "driver_name": "CN_NCS_LAUNCH_KERNEL",
+      "driver_description": "\"ncs launch kernel error\""
+    },
+    {
+      "value": 101802,
+      "runtime_name": "CN_NCS_GET_PORT_INFO",
+      "runtime_description": "\"ncs get port information error\"",
+      "driver_name": "CN_NCS_GET_PORT_INFO",
+      "driver_description": "\"ncs get port information error\""
+    },
+    {
+      "value": 101803,
+      "runtime_name": "CN_NCS_GET_DEVICE_UUID",
+      "runtime_description": "\"ncs get device uuid error\"",
+      "driver_name": "CN_NCS_GET_DEVICE_UUID",
+      "driver_description": "\"ncs get device uuid error\""
+    },
+    {
+      "value": 101804,
+      "runtime_name": "CN_NCS_PORT_ID_INVALID",
+      "runtime_description": "\"ncs port id is invalid\"",
+      "driver_name": "CN_NCS_PORT_ID_INVALID",
+      "driver_description": "\"ncs port id is invalid\""
+    },
+    {
+      "value": 101805,
+      "runtime_name": "CN_NCS_DESC_INVALID",
+      "runtime_description": "\"ncs descriptor is invalid\"",
+      "driver_name": "CN_NCS_DESC_INVALID",
+      "driver_description": "\"ncs descriptor is invalid\""
+    },
+    {
+      "value": 101898,
+      "runtime_name": "CN_NCS_ERROR",
+      "runtime_description": "\"ncs other error\"",
+      "driver_name": "CN_NCS_ERROR",
+      "driver_description": "\"ncs other error\""
+    },
+    {
+      "value": 101899,
+      "runtime_name": "CN_NCS_INTERNAL_ERROR",
+      "runtime_description": "\"ncs internal error\"",
+      "driver_name": "CN_NCS_INTERNAL_ERROR",
+      "driver_description": "\"ncs internal error\""
+    },
+    {
+      "value": 200000,
+      "runtime_name": "unknown error code",
+      "runtime_description": "unknown error code.",
+      "driver_name": "CN_ERROR_UNKNOWN",
+      "driver_description": "\"unknown error\""
+    },
+    {
+      "value": 632002,
+      "runtime_name": "cnrtErrorSetOnActiveProcess",
+      "runtime_description": "set device flags error when the process is active.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632006,
+      "runtime_name": "cnrtErrorDevice",
+      "runtime_description": "resources used is not from the current device.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632009,
+      "runtime_name": "cnrtErrorNoAttribute",
+      "runtime_description": "no such attribute.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632013,
+      "runtime_name": "cnrtErrorMemcpyDirectionInvalid",
+      "runtime_description": "invalid memcpy direction.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632014,
+      "runtime_name": "cnrtErrorBusy",
+      "runtime_description": "device or resources requesting to use is busy.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632015,
+      "runtime_name": "cnrtErrorCndrvFuncCall",
+      "runtime_description": "failed to call the driver-api function.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632017,
+      "runtime_name": "cnrtErrorCndevFuncCall",
+      "runtime_description": "failed to call the cndev function.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632019,
+      "runtime_name": "cnrtErrorNoCnrtContext",
+      "runtime_description": "CNRT context not found.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632020,
+      "runtime_name": "cnrtErrorCndrvFuncNotFound",
+      "runtime_description": "CNDrv API not found.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 632100,
+      "runtime_name": "cnrtErrorInvalidSymbol",
+      "runtime_description": "The symbol name/identifier is invalid.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 999991,
+      "runtime_name": "cnrtErrorUnknown",
+      "runtime_description": "unknown error.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 999992,
+      "runtime_name": "unknown error code",
+      "runtime_description": "unknown error code.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    }
+  ],
+  "runtime_driver_fallback_max": 199999,
+  "fallback": {
+    "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+    "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+    "driver_name": "This error code is not in the scope of the CNresult enumeration",
+    "driver_description": "This error code is not in the scope of the CNresult enumeration"
+  },
+  "runtime_fallback": {
+    "runtime_name": "unknown error code",
+    "runtime_description": "unknown error code."
+  },
+  "unknown_samples": [
+    {
+      "value": -2147483648,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": -1,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 123456,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 199999,
+      "runtime_name": "This error code is not in the scope of the CNresult enumeration",
+      "runtime_description": "This error code is not in the scope of the CNresult enumeration",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 200001,
+      "runtime_name": "unknown error code",
+      "runtime_description": "unknown error code.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 999990,
+      "runtime_name": "unknown error code",
+      "runtime_description": "unknown error code.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 999993,
+      "runtime_name": "unknown error code",
+      "runtime_description": "unknown error code.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    },
+    {
+      "value": 2147483647,
+      "runtime_name": "unknown error code",
+      "runtime_description": "unknown error code.",
+      "driver_name": "This error code is not in the scope of the CNresult enumeration",
+      "driver_description": "This error code is not in the scope of the CNresult enumeration"
+    }
+  ]
+}

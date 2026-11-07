@@ -1,0 +1,7 @@
+PASS unknown aggregate/vector/oversize scalar/indirect pointer require ABI review
+PASS compiler aggregate layout/padding; reject embedded pointers/recursive/opaque/packed types
+PASS image/symbol association across duplicate symbols
+PASS rejected metadata stale-image
+PASS rejected metadata wrong-size
+PASS rejected metadata wrong-kind
+PASS rejected metadata truncated

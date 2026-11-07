@@ -68,6 +68,9 @@ def validate(schema):
             raise ValueError('terminal scope status requires a reason: '+api['name'])
         for p in api['parameters']:
             if p['kind'] not in schema['types'] or p['direction'] not in ('in','out','inout','unknown'): raise ValueError('invalid parameter')
+        if api['implementation']=='generated_local':
+            if api.get('wrapper') or api.get('local_error',{}).get('field') not in ('name','description'):
+                raise ValueError('invalid generated local API: '+api['name'])
         if api.get('wrapper'):
             if api['wrapper']['rpc'] not in seen: raise ValueError('missing RPC')
             if any(p['direction']=='unknown' or p['length']=='review_required' or p['mapping']=='review_required' for p in api['parameters']):
@@ -158,6 +161,8 @@ def generate(root, schema, check):
     files['family_test_template.c']=[NOTICE,'#include <assert.h>','#include <cnrt.h>','#include <cn_api.h>',
         '/* Add native and remote value/ordering assertions, not just status. */',
         *[f"/* {a['name']}: {a['family']}; {a['signature']} */" for a in schema['apis'] if a.get('wrapper')]]
+    from error_codegen import generate_errors
+    files.update(generate_errors(root, schema))
     for name,lines in files.items():
         content=lines if isinstance(lines,str) else '\n'.join(lines)+'\n'
         path=root/('include/generated' if name in ('typed_api.h','typed_opcodes.inc') else 'build/generated')/name

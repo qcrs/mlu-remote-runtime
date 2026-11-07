@@ -1,0 +1,15 @@
+2026-11-07 03:02:40.539521: [cnrtError] [4051678] [Card: 0] Error occurred during calling 'cnSharedContextSetFlags' in CNDrv interface.
+2026-11-07 03:02:40.539589: [cnrtError] [4051678] [Card: 0] Return value is 100006, CN_ERROR_INVALID_VALUE.
+2026-11-07 03:02:40.539595: [cnrtError] [4051678] [Card: 0] cnrtSetDeviceFlag: Set device flags failed.
+2026-11-07 03:02:40.539610: [cnrtError] [4051678] [Card: 0] Error occurred during calling 'cnDeviceGetPCIBusId' in CNDrv interface.
+2026-11-07 03:02:40.539614: [cnrtError] [4051678] [Card: 0] Return value is 100006, CN_ERROR_INVALID_VALUE.
+2026-11-07 03:02:40.539617: [cnrtError] [4051678] [Card: 0] cnrtDeviceGetPCIBusId: Failed to get the device PCI bus ID.
+2026-11-07 03:02:40.539621: [cnrtError] [4051678] [Card: 0] Error occurred during calling 'cnDeviceGetByPCIBusId' in CNDrv interface.
+2026-11-07 03:02:40.539625: [cnrtError] [4051678] [Card: 0] Return value is 100005, CN_ERROR_INVALID_DEVICE.
+2026-11-07 03:02:40.539628: [cnrtError] [4051678] [Card: 0] cnrtDeviceGetByPCIBusId: Failed to get the device by PCI bus ID.
+2026-11-07 03:02:40.540983: [cnrtError] [4051678] [Card: 0] Error occurred during calling 'cnMemcpyHtoD' in CNDrv interface.
+2026-11-07 03:02:40.541013: [cnrtError] [4051678] [Card: 0] Return value is 100102, CN_MEMORY_ERROR_INVALID_ADDRESS.
+2026-11-07 03:02:40.541028: [cnrtError] [4051678] [Card: 0] cnrtMemcpy: Failed to copy memory from host to device.
+2026-11-07 03:02:40.541551: [cnrtError] [4051678] [Card: 0] Error occurred during calling 'cnQueueSetAttribute' in CNDrv interface.
+2026-11-07 03:02:40.541562: [cnrtError] [4051678] [Card: 0] Return value is 100006, CN_ERROR_INVALID_VALUE.
+2026-11-07 03:02:40.541569: [cnrtError] [4051678] [Card: 0] cnrtSetDeviceFlag: Set device flags failed.

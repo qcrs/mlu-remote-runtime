@@ -60,7 +60,7 @@ summary = dict(headers_sha256=hashes,scope='MLU370-S4, single device, Neuware 3.
     totals={f:sum(r['family']==f for r in rows) for f in ('CNRT','CNDrv')},
     private_bang_hooks=sorted(x for x in exports['CNRT'] if x.startswith('__bang')),
     legacy_exports_outside_headers=sorted(x for x in exports['CNRT'] if x.startswith('cnrt') and x not in {r['api'] for r in rows}),
-    generated_object_rpc_count=len(schema['simple_rpc']),generated_typed_rpc_count=len(schema['typed_rpc']),generated_public_wrapper_count=sum(bool(a.get('wrapper')) for a in schema['apis']))
+    generated_object_rpc_count=len(schema['simple_rpc']),generated_typed_rpc_count=len(schema['typed_rpc']),generated_public_wrapper_count=sum(bool(a.get('wrapper')) for a in schema['apis']),generated_local_api_count=sum(a['implementation']=='generated_local' for a in schema['apis']))
 annotations={a['name']:{k:a[k] for k in ('status','boundary','native_test','remote_test','next_step','blocker')} | ({'closure':a['closure']} if a.get('closure') else {}) for a in schema['apis'] if a['implementation']!='none' or a['status'] in ('BLOCKED','OUT_OF_SCOPE')}
 families=[]
 for family in sorted({a['family'] for a in schema['apis']}):

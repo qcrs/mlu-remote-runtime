@@ -1,0 +1,14 @@
+{
+  "forbidden_access": [],
+  "failed_sdk_path_searches": [
+    "4050497 openat(AT_FDCWD, \"/usr/local/neuware/lib64/tls/aarch64/atomics/libc.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)",
+    "4050497 openat(AT_FDCWD, \"/usr/local/neuware/lib64/tls/aarch64/libc.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)",
+    "4050497 openat(AT_FDCWD, \"/usr/local/neuware/lib64/tls/atomics/libc.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)",
+    "4050497 openat(AT_FDCWD, \"/usr/local/neuware/lib64/tls/libc.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)",
+    "4050497 openat(AT_FDCWD, \"/usr/local/neuware/lib64/aarch64/atomics/libc.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)",
+    "4050497 openat(AT_FDCWD, \"/usr/local/neuware/lib64/aarch64/libc.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)",
+    "4050497 openat(AT_FDCWD, \"/usr/local/neuware/lib64/atomics/libc.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)",
+    "4050497 openat(AT_FDCWD, \"/usr/local/neuware/lib64/libc.so.6\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)"
+  ],
+  "scope": "replacement Driver library; no successful vendor SDK opens or device access; original executable RUNPATH may probe missing system libraries in SDK directory; isolated-driver separately hides SDK and devices"
+}

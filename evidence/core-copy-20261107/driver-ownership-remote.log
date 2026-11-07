@@ -1,0 +1,1 @@
+PASS driver foreign/stale/guard rejection, H2D snapshot and explicit unsupported async D2H/H2H

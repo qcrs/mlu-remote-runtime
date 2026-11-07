@@ -58,63 +58,9 @@
     "family": "error",
     "priority": 0,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 4,
-      "IMPLEMENTED": 2
+      "IMPLEMENTED": 6
     },
-    "remaining": [
-      {
-        "api": "cnrtGetErrorName",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "status mapping",
-        "blocker": "",
-        "next_step": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
-        "closure": {
-          "gap": "Only seven names are mapped and descriptive strings incorrectly return the name.",
-          "fix": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
-          "acceptance": "Same binary compares every declared CNRT status and one unknown code against Native, replacement and preload without a local Driver."
-        }
-      },
-      {
-        "api": "cnrtGetErrorStr",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "status mapping",
-        "blocker": "",
-        "next_step": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
-        "closure": {
-          "gap": "Only seven names are mapped and descriptive strings incorrectly return the name.",
-          "fix": "Generate a reviewed host-local catalogue from all current SDK return values and native strings, including unknown-value behavior.",
-          "acceptance": "Same binary compares every declared CNRT status and one unknown code against Native, replacement and preload without a local Driver."
-        }
-      },
-      {
-        "api": "cnGetErrorName",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "status mapping",
-        "blocker": "",
-        "next_step": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
-        "closure": {
-          "gap": "Known error text is delegated, but only CN_SUCCESS has differential evidence; unknown-code output publication is not yet checked.",
-          "fix": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
-          "acceptance": "Full declared error catalogue has identical return status, string contents and untouched-on-error outputs in Native and Remote."
-        }
-      },
-      {
-        "api": "cnGetErrorString",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "status mapping",
-        "blocker": "",
-        "next_step": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
-        "closure": {
-          "gap": "Known error text is delegated, but only CN_SUCCESS has differential evidence; unknown-code output publication is not yet checked.",
-          "fix": "Compare all current SDK CNresult values and one unknown code, correcting status/output handling if needed.",
-          "acceptance": "Full declared error catalogue has identical return status, string contents and untouched-on-error outputs in Native and Remote."
-        }
-      }
-    ]
+    "remaining": []
   },
   {
     "family": "graph",
@@ -1373,35 +1319,22 @@
     "family": "memcpy",
     "priority": 1,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 3,
-      "IMPLEMENTED": 12,
+      "IMPLEMENTED": 13,
+      "PARTIAL_IMPLEMENTED": 2,
       "NOT_IMPLEMENTED": 4,
       "UNSUPPORTED": 1
     },
     "remaining": [
-      {
-        "api": "cnrtMemcpy",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "",
-        "next_step": "Share endpoint classification for H2H/H2D/D2H/D2D, retaining fake-VA tombstones to reject stale device addresses.",
-        "closure": {
-          "gap": "cnrtMemcpyNoDirection is declared for normal copies but the shim does not infer local-host versus owned-device endpoints.",
-          "fix": "Share endpoint classification for H2H/H2D/D2H/D2D, retaining fake-VA tombstones to reject stale device addresses.",
-          "acceptance": "Native/Remote same-binary copies in all four inferred directions, with nonzero offsets and stale/foreign rejection."
-        }
-      },
       {
         "api": "cnrtMemcpyAsync",
         "status": "PARTIAL_IMPLEMENTED",
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "",
-        "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers; share endpoint classification.",
+        "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
         "closure": {
-          "gap": "D2H blocks before returning bytes, and NoDirection endpoint inference is missing.",
-          "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers; share endpoint classification.",
+          "gap": "D2H blocks before returning bytes; deferred Host completion/writeback remains missing.",
+          "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
           "acceptance": "Pinned Host D2H returns while a finite queued kernel is pending; queue, notifier and context waits/queries publish matching bytes, including cross-queue waits and release/reset."
         }
       },
@@ -1447,10 +1380,10 @@
         "priority": 1,
         "depends_on": "allocation/queue",
         "blocker": "",
-        "next_step": "Share registry endpoint classification with synchronous copy, enqueue H2D through existing staging, and add Host completion/fetch/writeback for D2H.",
+        "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
         "closure": {
-          "gap": "Unified asynchronous copy is implemented as D2D only; Host endpoint inference and deferred D2H writeback are missing.",
-          "fix": "Share registry endpoint classification with synchronous copy, enqueue H2D through existing staging, and add Host completion/fetch/writeback for D2H.",
+          "gap": "D2H is explicitly rejected; deferred Host completion/writeback remains missing.",
+          "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
           "acceptance": "Native/Remote unified async H2D/D2D/D2H with queue and context completion returns matching bytes; D2H submit returns while finite queued work remains."
         }
       },

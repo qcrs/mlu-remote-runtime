@@ -36,6 +36,8 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/native_memory_allocations.c" -o "$ROOT/build/native_memory_allocations" $LDFLAGS -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_cast.c" -o "$ROOT/build/native_cast" $LDFLAGS -lcnrt
 "$CC" $CFLAGS "$ROOT/tests/native_query_boundaries.c" -o "$ROOT/build/native_query_boundaries" $LDFLAGS -lcnrt -lcndrv
+"$CC" $CFLAGS "$ROOT/tests/native_error_catalog.c" -o "$ROOT/build/native_error_catalog" $LDFLAGS -lcnrt -lcndrv
+"$CC" $CFLAGS "$ROOT/tests/native_inferred_copy.c" -o "$ROOT/build/native_inferred_copy" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/probes/probe_query_semantics.c" -o "$ROOT/build/probes/probe_query_semantics" $LDFLAGS -lcnrt -lcndrv
 "$CC" -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I"$ROOT/include" "$ROOT/common/bang_image.c" "$ROOT/tests/bang_image_bounds.c" -ldl -o "$ROOT/build/bang-image-bounds"
 

@@ -1,0 +1,8 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542192]
+mnt mnt:[4026542193]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50223
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_inferred_copy
+PASS driver foreign/stale/guard rejection, H2D snapshot and explicit unsupported async D2H/H2H

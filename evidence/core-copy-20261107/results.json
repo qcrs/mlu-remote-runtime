@@ -1,0 +1,140 @@
+[
+  {
+    "name": "errors-offline-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_error_catalog"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "errors-offline-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_error_catalog"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "errors-offline-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_error_catalog"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "errors-offline-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_error_catalog"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-copy-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-copy-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-copy-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-copy-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-ownership-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "runtime",
+      "ownership"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-ownership-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "runtime",
+      "ownership"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-copy-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-copy-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-copy-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-copy-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-ownership-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "driver",
+      "ownership"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-ownership-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_inferred_copy",
+      "driver",
+      "ownership"
+    ],
+    "returncode": 0
+  }
+]
