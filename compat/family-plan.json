@@ -66,8 +66,8 @@
     "family": "graph",
     "priority": 5,
     "counts": {
-      "NOT_IMPLEMENTED": 52,
-      "IMPLEMENTED": 50
+      "NOT_IMPLEMENTED": 44,
+      "IMPLEMENTED": 58
     },
     "remaining": [
       {
@@ -151,16 +151,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnrtTaskTopoAddMemcpyNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnrtTaskTopoDebugDotPrint",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -182,16 +172,6 @@
       },
       {
         "api": "cnrtTaskTopoEntityKernelNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoEntityMemcpyNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "G1",
@@ -262,26 +242,6 @@
       },
       {
         "api": "cnrtTaskTopoKernelNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoMemcpyNodeGetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoMemcpyNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "G1",
@@ -411,16 +371,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnTaskTopoAddMemcpyNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnTaskTopoDebugDotPrint",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -442,16 +392,6 @@
       },
       {
         "api": "cnTaskTopoEntityKernelNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnTaskTopoEntityMemcpyNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "G1",
@@ -531,26 +471,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnTaskTopoMemcpyNodeGetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnTaskTopoMemcpyNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnTaskTopoReleaseUserObject",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -609,9 +529,9 @@
         "depends_on": [
           "G1"
         ],
-        "missing": "22/44 APIs implemented: 1D memset nodes, nested child ownership, executable snapshots/update and invocation allocation leases. Remaining: kernel nodes/attributes (14), replay-aware memcpy nodes (8), module leases and per-invocation Host publication.",
+        "missing": "30/44 APIs implemented: 1D memset and D2D memcpy nodes, nested child ownership, executable snapshots/update and invocation allocation leases. Remaining API entries: kernel nodes/attributes (14); Host graph copy staging/publication and module leases are not certified.",
         "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "evidence": "graph-g2-execution-20261107/README.md"
+        "evidence": "graph-g2-memcpy-20261107/README.md"
       },
       {
         "id": "G3",

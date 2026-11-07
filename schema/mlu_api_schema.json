@@ -99,7 +99,8 @@
     "API_GRAPH_QUERY": 82,
     "API_GRAPH_MEMSET": 83,
     "API_GRAPH_ENTITY": 84,
-    "API_GRAPH_CHILD": 85
+    "API_GRAPH_CHILD": 85,
+    "API_GRAPH_MEMCPY": 86
   },
   "hello": {
     "request": [
@@ -4607,10 +4608,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -4930,7 +4931,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddMemcpyNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies, const cnrtMemcpy3dParam_t *copyParams);",
       "parameters": [
@@ -4938,9 +4939,9 @@
           "name": "pNode",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "taskTopo",
@@ -4955,8 +4956,8 @@
           "c_type": "const cnrtTaskTopoNode_t *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "bounded_node_ids"
         },
         {
           "name": "numDependencies",
@@ -4971,17 +4972,52 @@
           "c_type": "const cnrtMemcpy3dParam_t *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memcpy_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies need per-invocation staging and publication, and G2 kernel nodes/attributes still require module leases.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode",
+          "copyParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memcpy_request params={0};",
+          "if(graph_memcpy_encode(NULL,copyParams,&params)) RETURN(cnrtErrorArgsInvalid);",
+          "if(numDependencies>MLU_GRAPH_MAX_NODES || (numDependencies && !dependencies)) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t ids[MLU_GRAPH_MAX_NODES];",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_ADD",
+          "graph": "(uintptr_t)taskTopo",
+          "node": "0",
+          "count": "numDependencies",
+          "ids": "ids",
+          "entity": "0",
+          "dst_allocation": "params.dst_allocation",
+          "dst_offset": "params.dst_offset",
+          "src_allocation": "params.src_allocation",
+          "src_offset": "params.src_offset",
+          "width": "params.width",
+          "direction": "params.direction"
+        },
+        "rpc": "graph_memcpy",
+        "outputs": [
+          "*pNode=(cnrtTaskTopoNode_t)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMCPY"
+      ]
     },
     {
       "name": "cnrtTaskTopoAddMemsetNode",
@@ -5036,10 +5072,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5107,10 +5143,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5414,10 +5450,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5460,10 +5496,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5557,10 +5593,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5635,7 +5671,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityMemcpyNodeSetParams( cnrtTaskTopoEntity_t entity, cnrtTaskTopoNode_t node, const cnrtMemcpy3dParam_t *nodeParams);",
       "parameters": [
@@ -5660,17 +5696,46 @@
           "c_type": "const cnrtMemcpy3dParam_t *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memcpy_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies need per-invocation staging and publication, and G2 kernel nodes/attributes still require module leases.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memcpy_request params={0};",
+          "if(graph_memcpy_encode(NULL,nodeParams,&params)) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "rpc": "graph_memcpy",
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_ENTITY_SET",
+          "graph": "0",
+          "node": "(uintptr_t)node",
+          "entity": "(uintptr_t)entity",
+          "count": "0",
+          "ids": "NULL",
+          "dst_allocation": "params.dst_allocation",
+          "dst_offset": "params.dst_offset",
+          "src_allocation": "params.src_allocation",
+          "src_offset": "params.src_offset",
+          "width": "params.width",
+          "direction": "params.direction"
+        },
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMCPY"
+      ]
     },
     {
       "name": "cnrtTaskTopoEntityMemsetNodeSetParams",
@@ -5709,10 +5774,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -5789,10 +5854,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -6198,10 +6263,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -6429,7 +6494,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoMemcpyNodeGetParams(cnrtTaskTopoNode_t node, cnrtMemcpy3dParam_t *nodeParams);",
       "parameters": [
@@ -6445,18 +6510,48 @@
           "name": "nodeParams",
           "c_type": "cnrtMemcpy3dParam_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "typed_memcpy_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies need per-invocation staging and publication, and G2 kernel nodes/attributes still require module leases.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memcpy_request params={0};"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_GET",
+          "graph": "0",
+          "node": "(uintptr_t)node",
+          "count": "0",
+          "ids": "NULL",
+          "entity": "0",
+          "dst_allocation": "params.dst_allocation",
+          "dst_offset": "params.dst_offset",
+          "src_allocation": "params.src_allocation",
+          "src_offset": "params.src_offset",
+          "width": "params.width",
+          "direction": "params.direction"
+        },
+        "rpc": "graph_memcpy",
+        "outputs": [
+          "graph_memcpy_decode(NULL,&out,nodeParams);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMCPY"
+      ]
     },
     {
       "name": "cnrtTaskTopoMemcpyNodeSetParams",
@@ -6464,7 +6559,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoMemcpyNodeSetParams( cnrtTaskTopoNode_t node, const cnrtMemcpy3dParam_t *nodeParams);",
       "parameters": [
@@ -6481,17 +6576,46 @@
           "c_type": "const cnrtMemcpy3dParam_t *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memcpy_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies need per-invocation staging and publication, and G2 kernel nodes/attributes still require module leases.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memcpy_request params={0};",
+          "if(graph_memcpy_encode(NULL,nodeParams,&params)) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_SET",
+          "graph": "0",
+          "node": "(uintptr_t)node",
+          "count": "0",
+          "ids": "NULL",
+          "entity": "0",
+          "dst_allocation": "params.dst_allocation",
+          "dst_offset": "params.dst_offset",
+          "src_allocation": "params.src_allocation",
+          "src_offset": "params.src_offset",
+          "width": "params.width",
+          "direction": "params.direction"
+        },
+        "rpc": "graph_memcpy",
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMCPY"
+      ]
     },
     {
       "name": "cnrtTaskTopoMemsetNodeGetParams",
@@ -6522,10 +6646,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -6588,10 +6712,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
-      "native_test": "graph-g2-execution-20261107/runtime-native.log",
-      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-memcpy-20261107/runtime-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -13816,10 +13940,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14139,7 +14263,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddMemcpyNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies, const CNmemcpy3dParam *copyParams);",
       "parameters": [
@@ -14147,9 +14271,9 @@
           "name": "pNode",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "hTopo",
@@ -14164,8 +14288,8 @@
           "c_type": "const CNtaskTopoNode *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "bounded_node_ids"
         },
         {
           "name": "numDependencies",
@@ -14180,17 +14304,52 @@
           "c_type": "const CNmemcpy3dParam *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memcpy_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies need per-invocation staging and publication, and G2 kernel nodes/attributes still require module leases.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode",
+          "copyParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memcpy_request params={0};",
+          "if(graph_memcpy_encode(c,copyParams,&params)) RETURN(CN_ERROR_INVALID_VALUE);",
+          "if(numDependencies>MLU_GRAPH_MAX_NODES || (numDependencies && !dependencies)) RETURN(CN_ERROR_INVALID_VALUE);",
+          "uint64_t ids[MLU_GRAPH_MAX_NODES];",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_ADD",
+          "graph": "(uintptr_t)hTopo",
+          "node": "0",
+          "count": "numDependencies",
+          "ids": "ids",
+          "entity": "0",
+          "dst_allocation": "params.dst_allocation",
+          "dst_offset": "params.dst_offset",
+          "src_allocation": "params.src_allocation",
+          "src_offset": "params.src_offset",
+          "width": "params.width",
+          "direction": "params.direction"
+        },
+        "rpc": "graph_memcpy",
+        "outputs": [
+          "*pNode=(CNtaskTopoNode)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMCPY"
+      ]
     },
     {
       "name": "cnTaskTopoAddMemsetNode",
@@ -14245,10 +14404,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14316,10 +14475,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14623,10 +14782,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14669,10 +14828,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14766,10 +14925,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14844,7 +15003,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityMemcpyNodeSetParams(CNtaskTopoEntity hEntity, CNtaskTopoNode hNode, const CNmemcpy3dParam *nodeParams);",
       "parameters": [
@@ -14869,17 +15028,46 @@
           "c_type": "const CNmemcpy3dParam *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memcpy_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies need per-invocation staging and publication, and G2 kernel nodes/attributes still require module leases.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memcpy_request params={0};",
+          "if(graph_memcpy_encode(c,nodeParams,&params)) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "rpc": "graph_memcpy",
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_ENTITY_SET",
+          "graph": "0",
+          "node": "(uintptr_t)hNode",
+          "entity": "(uintptr_t)hEntity",
+          "count": "0",
+          "ids": "NULL",
+          "dst_allocation": "params.dst_allocation",
+          "dst_offset": "params.dst_offset",
+          "src_allocation": "params.src_allocation",
+          "src_offset": "params.src_offset",
+          "width": "params.width",
+          "direction": "params.direction"
+        },
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMCPY"
+      ]
     },
     {
       "name": "cnTaskTopoEntityMemsetNodeSetParams",
@@ -14918,10 +15106,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -14998,10 +15186,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15407,10 +15595,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15638,7 +15826,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoMemcpyNodeGetParams(CNtaskTopoNode hNode, CNmemcpy3dParam *nodeParams);",
       "parameters": [
@@ -15654,18 +15842,48 @@
           "name": "nodeParams",
           "c_type": "CNmemcpy3dParam *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "typed_memcpy_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies need per-invocation staging and publication, and G2 kernel nodes/attributes still require module leases.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memcpy_request params={0};"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_GET",
+          "graph": "0",
+          "node": "(uintptr_t)hNode",
+          "count": "0",
+          "ids": "NULL",
+          "entity": "0",
+          "dst_allocation": "params.dst_allocation",
+          "dst_offset": "params.dst_offset",
+          "src_allocation": "params.src_allocation",
+          "src_offset": "params.src_offset",
+          "width": "params.width",
+          "direction": "params.direction"
+        },
+        "rpc": "graph_memcpy",
+        "outputs": [
+          "graph_memcpy_decode(c,&out,nodeParams);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMCPY"
+      ]
     },
     {
       "name": "cnTaskTopoMemcpyNodeSetParams",
@@ -15673,7 +15891,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoMemcpyNodeSetParams(CNtaskTopoNode hNode, const CNmemcpy3dParam *nodeParams);",
       "parameters": [
@@ -15690,17 +15908,46 @@
           "c_type": "const CNmemcpy3dParam *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memcpy_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Owned 1D device-to-device memcpy nodes, 1..1048576 bytes, pitch=width/ysize=1 and extent height=depth=1; AllocationID+offset for both endpoints, bounded dependencies <=4096, clone/entity/invocation allocation leases and retired client VA getters. SDK-ignored fields are canonicalized; Host/peer copies and capture remain outside this boundary.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared 1D D2D boundary; Host graph copies need per-invocation staging and publication, and G2 kernel nodes/attributes still require module leases.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memcpy_request params={0};",
+          "if(graph_memcpy_encode(c,nodeParams,&params)) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_SET",
+          "graph": "0",
+          "node": "(uintptr_t)hNode",
+          "count": "0",
+          "ids": "NULL",
+          "entity": "0",
+          "dst_allocation": "params.dst_allocation",
+          "dst_offset": "params.dst_offset",
+          "src_allocation": "params.src_allocation",
+          "src_offset": "params.src_offset",
+          "width": "params.width",
+          "direction": "params.direction"
+        },
+        "rpc": "graph_memcpy",
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMCPY"
+      ]
     },
     {
       "name": "cnTaskTopoMemsetNodeGetParams",
@@ -15731,10 +15978,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -15797,10 +16044,10 @@
       ],
       "implementation": "generated",
       "status": "IMPLEMENTED",
-      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
-      "native_test": "graph-g2-execution-20261107/driver-native.log",
-      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
-      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "boundary": "Installed SDK 1D memset/D2D memcpy/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/Host memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-memcpy-20261107/driver-native.log",
+      "remote_test": "graph-g2-memcpy-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/D2D memcpy/empty/child-node boundary; finish kernel and replay-aware Host memcpy nodes for the whole G2 stage.",
       "contract_stage": "G2",
       "wrapper": {
         "current": true,
@@ -18236,6 +18483,96 @@
       "backend_binding": [
         "return graph_child(s,in,out);"
       ]
+    },
+    {
+      "name": "graph_memcpy",
+      "operation": "API_GRAPH_MEMCPY",
+      "opcode": 86,
+      "request": [
+        {
+          "name": "action",
+          "type": "u32"
+        },
+        {
+          "name": "graph",
+          "type": "u64"
+        },
+        {
+          "name": "node",
+          "type": "u64"
+        },
+        {
+          "name": "entity",
+          "type": "u64"
+        },
+        {
+          "name": "dst_allocation",
+          "type": "u64"
+        },
+        {
+          "name": "dst_offset",
+          "type": "u64"
+        },
+        {
+          "name": "src_allocation",
+          "type": "u64"
+        },
+        {
+          "name": "src_offset",
+          "type": "u64"
+        },
+        {
+          "name": "width",
+          "type": "u64"
+        },
+        {
+          "name": "direction",
+          "type": "u32"
+        },
+        {
+          "name": "count",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "dst_allocation",
+          "type": "u64"
+        },
+        {
+          "name": "dst_offset",
+          "type": "u64"
+        },
+        {
+          "name": "src_allocation",
+          "type": "u64"
+        },
+        {
+          "name": "src_offset",
+          "type": "u64"
+        },
+        {
+          "name": "width",
+          "type": "u64"
+        },
+        {
+          "name": "direction",
+          "type": "u32"
+        }
+      ],
+      "request_array": {
+        "name": "ids",
+        "type": "u64",
+        "size_from": "count",
+        "max_count": 4096
+      },
+      "backend_binding": [
+        "return graph_memcpy(s,in,out);"
+      ]
     }
   ],
   "extra_exports": {
@@ -18273,7 +18610,7 @@
     "queue_union": "AccessPolicyWindow uses allocation,offset,bytes,f32 ratio,hit,miss. NULL attribute queue rejected. Freed window allocation cannot be reverse-relocated."
   },
   "graph_ipc_plan": {
-    "phase": "g1_complete_g2_memset_child_entity_complete_kernel_memcpy_pending",
+    "phase": "g1_complete_g2_memset_d2d_child_entity_complete_kernel_pending",
     "evidence": "graph-ipc-contracts-20261107/README.md",
     "design": "docs/GRAPH_IPC.md",
     "object_models": [
@@ -18338,9 +18675,9 @@
         "depends_on": [
           "G1"
         ],
-        "missing": "22/44 APIs implemented: 1D memset nodes, nested child ownership, executable snapshots/update and invocation allocation leases. Remaining: kernel nodes/attributes (14), replay-aware memcpy nodes (8), module leases and per-invocation Host publication.",
+        "missing": "30/44 APIs implemented: 1D memset and D2D memcpy nodes, nested child ownership, executable snapshots/update and invocation allocation leases. Remaining API entries: kernel nodes/attributes (14); Host graph copy staging/publication and module leases are not certified.",
         "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "evidence": "graph-g2-execution-20261107/README.md"
+        "evidence": "graph-g2-memcpy-20261107/README.md"
       },
       {
         "id": "G3",

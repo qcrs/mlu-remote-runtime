@@ -455,6 +455,7 @@ __attribute__((destructor)) static void finish(void) {
 }
 #include "driver_queries.inc"
 #include "graph_memset.inc"
+#include "graph_memcpy.inc"
 #include "cndrv_api.inc"
 
 CNresult cnCreateQueueWithPriority(CNqueue *out,unsigned flags,int priority) {

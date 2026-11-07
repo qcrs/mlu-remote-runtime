@@ -10,11 +10,13 @@ typedef cnrtTaskTopoNode_t Node;
 typedef cnrtTaskTopoEntity_t Entity;
 typedef cnrtTaskTopoEntityUpdateResult_t Update;
 typedef cnrtMemsetParams_t Params;
+typedef cnrtMemcpy3dParam_t CopyParams;
 typedef void *Address;
 typedef cnrtQueue_t Queue;
 #define ALLOC(p,n) cnrtMalloc(p,n)
 #define FREE(p) cnrtFree(p)
 #define READ(p,a,n) cnrtMemcpy(p,a,n,cnrtMemcpyDevToHost)
+#define WRITE(a,p,n) cnrtMemcpy(a,p,n,cnrtMemcpyHostToDev)
 #define QCREATE(p) cnrtQueueCreate(p)
 #define QSYNC(q) cnrtQueueSync(q)
 #define QDESTROY(q) cnrtQueueDestroy(q)
@@ -26,11 +28,13 @@ typedef CNtaskTopoNode Node;
 typedef CNtaskTopoEntity Entity;
 typedef CNtaskTopoEntityUpdateResult Update;
 typedef CN_MEMSET_NODE_PARAMS Params;
+typedef CNmemcpy3dParam CopyParams;
 typedef CNaddr Address;
 typedef CNqueue Queue;
 #define ALLOC(p,n) cnMalloc(p,n)
 #define FREE(p) cnFree(p)
 #define READ(p,a,n) cnMemcpyDtoH(p,a,n)
+#define WRITE(a,p,n) cnMemcpyHtoD(a,p,n)
 #define QCREATE(p) cnCreateQueue(p,0)
 #define QSYNC(q) cnQueueSync(q)
 #define QDESTROY(q) cnDestroyQueue(q)
@@ -93,6 +97,76 @@ static void children(Address a,Queue q,Queue q2) {
   OK(F(EntityInvoke)(e,q)); OK(F(EntityDestroy)(e)); OK(QSYNC(q)); values(a,40,41,42);
   puts("PASS nested child snapshot leases");
 }
+static CopyParams copy_params(Address dst,unsigned doff,Address src,unsigned soff,unsigned bytes) {
+  CopyParams p={0}; p.dst=(void *)((uintptr_t)dst+doff); p.src=(void *)((uintptr_t)src+soff);
+  p.dstPtr.pitch=p.srcPtr.pitch=bytes; p.dstPtr.ysize=p.srcPtr.ysize=1;
+  p.extent.width=bytes; p.extent.height=p.extent.depth=1; return p;
+}
+static void copy_get(Node node,const CopyParams *p) {
+  CopyParams got={0}; OK(F(MemcpyNodeGetParams)(node,&got));
+  CHECK(got.dst==p->dst && got.src==p->src && got.extent.width==p->extent.width);
+  CHECK(got.dstPtr.pitch==p->dstPtr.pitch && got.srcPtr.pitch==p->srcPtr.pitch &&
+        got.dstPtr.ysize==1 && got.srcPtr.ysize==1 && got.extent.height==1 && got.extent.depth==1 && got.dir==p->dir);
+}
+static void copy_values(Address dst,unsigned doff,const unsigned char *src,unsigned soff,unsigned bytes,unsigned char *expected) {
+  unsigned char got[512]; OK(READ(got,dst,sizeof(got)));
+  memcpy(expected+doff,src+soff,bytes);
+  CHECK(!memcmp(got,expected,sizeof(got)));
+}
+static void copies(Queue q,Queue q2) {
+  Address src,dst; unsigned char bytes[512],expected[512];
+  for(unsigned i=0;i<sizeof(bytes);i++) bytes[i]=(unsigned char)(i*37+11);
+  memset(expected,0xa6,sizeof(expected));
+  OK(ALLOC(&src,sizeof(bytes))); OK(ALLOC(&dst,sizeof(bytes))); OK(WRITE(src,bytes,sizeof(bytes)));
+  OK(WRITE(dst,expected,sizeof(expected)));
+  Graph g,clone,h,parent,inside; Node n,c,m,child,inner; Entity e,ec,en; Update result; Node error=NULL;
+  OK(F(Create)(&g,0)); CopyParams p=copy_params(dst,32,src,16,64);
+  OK(F(AddMemcpyNode)(&n,g,NULL,0,&p)); copy_get(n,&p);
+  OK(F(Clone)(&clone,g)); OK(F(NodeFindInClone)(&c,n,clone));
+  OK(F(Instantiate)(&e,g,NULL,NULL,0));
+  p=copy_params(dst,112,src,96,64); OK(F(MemcpyNodeSetParams)(c,&p)); copy_get(c,&p);
+  OK(F(Instantiate)(&ec,clone,NULL,NULL,0));
+  p=copy_params(dst,192,src,176,64); p.dir=5; OK(F(MemcpyNodeSetParams)(n,&p)); copy_get(n,&p);
+  OK(F(Instantiate)(&en,g,NULL,NULL,0));
+  OK(F(EntityInvoke)(e,q)); OK(QSYNC(q)); copy_values(dst,32,bytes,16,64,expected);
+  OK(F(EntityInvoke)(ec,q2)); OK(QSYNC(q2)); copy_values(dst,112,bytes,96,64,expected);
+  OK(F(EntityInvoke)(en,q)); OK(QSYNC(q)); copy_values(dst,192,bytes,176,64,expected);
+  OK(F(EntityDestroy)(en));
+  p=copy_params(dst,272,src,240,64); OK(F(EntityMemcpyNodeSetParams)(e,n,&p));
+  OK(F(EntityInvoke)(e,q)); OK(QSYNC(q)); copy_values(dst,272,bytes,240,64,expected);
+  for(unsigned i=0;i<sizeof(bytes);i++) bytes[i]^=0xa5;
+  OK(WRITE(src,bytes,sizeof(bytes)));
+  OK(F(EntityInvoke)(e,q2)); OK(QSYNC(q2)); copy_values(dst,272,bytes,240,64,expected);
+  OK(F(Create)(&h,0)); p=copy_params(dst,352,src,320,64);
+  OK(F(AddMemcpyNode)(&m,h,NULL,0,&p));
+  OK(F(EntityUpdate)(e,h,&error,&result)); CHECK(result==0 && !error);
+  OK(F(EntityInvoke)(e,q)); OK(QSYNC(q)); copy_values(dst,352,bytes,320,64,expected);
+  p=copy_params(dst,432,src,400,64); OK(F(EntityMemcpyNodeSetParams)(e,n,&p));
+  OK(F(EntityInvoke)(e,q)); OK(QSYNC(q)); copy_values(dst,432,bytes,400,64,expected);
+  OK(F(Destroy)(g)); OK(F(Destroy)(h)); OK(F(Destroy)(clone));
+  OK(F(EntityInvoke)(ec,q)); OK(F(EntityDestroy)(ec)); OK(QSYNC(q)); copy_values(dst,112,bytes,96,64,expected);
+  OK(F(EntityInvoke)(e,q2)); OK(F(EntityDestroy)(e)); OK(QSYNC(q2)); copy_values(dst,432,bytes,400,64,expected);
+  puts("PASS graph memcpy get/set/clone/snapshot/update/current bytes/pending destroy");
+  /* Non-overlapping endpoints in the same allocation own two balanced leases. */
+  OK(F(Create)(&g,0)); p=copy_params(src,128,src,0,64); OK(F(AddMemcpyNode)(&n,g,NULL,0,&p));
+  OK(F(Create)(&parent,0)); OK(F(AddChildTopoNode)(&child,parent,NULL,0,g));
+  OK(F(ChildTopoNodeGetTopo)(child,&inside)); OK(F(NodeFindInClone)(&inner,n,inside)); copy_get(inner,&p);
+  OK(F(Instantiate)(&e,parent,NULL,NULL,0)); OK(F(Destroy)(g)); OK(F(Destroy)(parent));
+  OK(F(EntityInvoke)(e,q)); OK(F(EntityDestroy)(e)); OK(QSYNC(q)); copy_values(src,128,bytes,0,64,bytes);
+  puts("PASS child memcpy same-allocation endpoints");
+  if(getenv("MLU_TEST_SHIM")) {
+    OK(F(Create)(&g,0)); p=copy_params(dst,32,src,16,64); OK(F(AddMemcpyNode)(&n,g,NULL,0,&p));
+    OK(F(Clone)(&clone,g)); OK(F(NodeFindInClone)(&c,n,clone)); OK(F(Instantiate)(&e,g,NULL,NULL,0));
+    OK(F(EntityInvoke)(e,q)); OK(FREE(src)); src=0; OK(FREE(dst)); dst=0;
+    copy_get(n,&p); copy_get(c,&p);
+    OK(F(Instantiate)(&ec,clone,NULL,NULL,0));
+    OK(F(Destroy)(g)); OK(F(Destroy)(clone)); OK(F(EntityDestroy)(e));
+    OK(F(EntityInvoke)(ec,q2)); OK(F(EntityDestroy)(ec)); OK(QSYNC(q)); OK(QSYNC(q2));
+    /* Keep safety-only output out of the Native comparison. */
+  }
+  if(src) OK(FREE(src));
+  if(dst) OK(FREE(dst));
+}
 int main(int argc,char **argv) {
 #ifdef TEST_CNRT
   OK(cnrtSetDevice(0));
@@ -122,8 +196,11 @@ int main(int argc,char **argv) {
   OK(F(EntityInvoke)(e,q)); OK(F(EntityDestroy)(e)); OK(QSYNC(q)); values(a,5,6,0x12345678);
   puts("PASS graph memset snapshots/update/pending destroy");
   children(a,q,q2);
+  copies(q,q2);
   if(argc>1) {
     dag(&g,n,a,11); OK(F(Create)(&h,0));
+    CopyParams copy=copy_params(a,192,a,0,32);
+    OK(F(AddMemcpyNode)(&c,g,n,1,&copy));
     OK(F(AddChildTopoNode)(&c,h,NULL,0,g));
     OK(F(Instantiate)(&e,h,NULL,NULL,0)); OK(F(EntityInvoke)(e,q));
     if(!strcmp(argv[1],"lease")) {

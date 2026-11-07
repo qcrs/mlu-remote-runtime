@@ -61,7 +61,7 @@ finally:
     files=['tests/native_graph_execution.c','tests/graph_execution_protocol.py','tests/backend_resources.c',
            'scripts/verify-graph-execution.py','scripts/build.sh',
            'server/graph_backend.inc','server/mlu_backend.c','server/mlu_backend.h',
-           'server/object_registry.h','include/remote_graph.h','shim/graph_memset.inc','shim/cnrt_shim.c','shim/cndrv_shim.c',
+           'server/object_registry.h','include/remote_graph.h','shim/graph_memset.inc','shim/graph_memcpy.inc','shim/cnrt_shim.c','shim/cndrv_shim.c',
            'schema/mlu_api_schema.json','include/generated/typed_api.h','include/generated/typed_opcodes.inc',
            'build/mlu-remote-server','build/shim/libcnrt.so','build/driver-shim/libcndrv.so',
            'build/native_graph_execution_runtime','build/native_graph_execution_driver','build/backend-resources-test',

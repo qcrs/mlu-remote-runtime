@@ -1,0 +1,21 @@
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 52 RPC codecs/dispatch/bindings, 102 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 36, "IMPLEMENTED": 88, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 57, "IMPLEMENTED": 115, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 93, 'IMPLEMENTED': 203, 'BLOCKED': 11, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 2}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence
+
+Final evidence audit (2026-11-07):
+PASS full build: ./scripts/build.sh exited 0; see build.log.
+After the full build, the test-only complete-destination/guard assertion was strengthened; both native_graph_execution binaries were recompiled with the build script's compiler flags, then Graph execution was rerun.
+PASS Graph execution: python3 scripts/verify-graph-execution.py --out evidence/graph-g2-memcpy-20261107 --port 50253; results.json 16/16, all returncode=0.
+PASS G1: python3 scripts/verify-graph.py --out evidence/graph-g2-memcpy-20261107/g1 --port 50252; g1/results.json 14/14, all returncode=0.
+PASS API families: python3 scripts/verify-api-families.py --out evidence/graph-g2-memcpy-20261107/families --port 50251; families/results.json 15/15, all returncode=0.
+PASS core: python3 scripts/verify-transparent.py --out evidence/graph-g2-memcpy-20261107/core --port 50250; core/results.json 76/76, all returncode=0.
+PASS Graph server cleanup: DRAIN_COMPLETE workers=0 cleanup_errors=0; RESOURCE_TOTAL device=0 staging=0 image=0.
+PASS final code generation: python3 scripts/generate_rpc.py --check; 310 APIs, 52 typed RPCs, 102 public wrappers.
+PASS final ledger generation: python3 scripts/generate_compat.py --check; 203 IMPLEMENTED, 93 NOT_IMPLEMENTED, 11 BLOCKED, 2 OUT_OF_SCOPE, 1 UNSUPPORTED, 0 PARTIAL.
+PASS final contracts: python3 scripts/verify-api-contracts.py; signatures, codecs, bindings, exports, ledger, evidence and closure audit.
+PASS source/binary provenance: all 25 provenance.json hashes and 18 artifact-manifest.json records match the current workspace.
+PASS evidence README: all local links resolve.
+PASS final whitespace: git diff --check and all new text files; no trailing spaces/tabs or conflict markers. Only line-end whitespace in 13 new evidence logs was normalized. Historical evidence is unchanged.

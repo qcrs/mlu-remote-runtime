@@ -10,6 +10,22 @@
 static int fail_alloc, fail_image, fail_copy, fail_sync, fail_destroy, fail_queue_destroy;
 static int fail_host_alloc, fail_host_free, fail_d2h, fail_notifier;
 static int fail_graph_destroy, fail_graph_find, fail_graph_node_destroy;
+static int fail_graph_copy_add, fail_graph_copy_set, fail_graph_copy_entity_set;
+extern CNresult __real_cnTaskTopoAddMemcpyNode(CNtaskTopoNode *,CNtaskTopo,const CNtaskTopoNode *,size_t,const CNmemcpy3dParam *);
+CNresult __wrap_cnTaskTopoAddMemcpyNode(CNtaskTopoNode *n,CNtaskTopo g,const CNtaskTopoNode *deps,size_t count,const CNmemcpy3dParam *p) {
+  if(fail_graph_copy_add) { --fail_graph_copy_add; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoAddMemcpyNode(n,g,deps,count,p);
+}
+extern CNresult __real_cnTaskTopoMemcpyNodeSetParams(CNtaskTopoNode,const CNmemcpy3dParam *);
+CNresult __wrap_cnTaskTopoMemcpyNodeSetParams(CNtaskTopoNode n,const CNmemcpy3dParam *p) {
+  if(fail_graph_copy_set) { --fail_graph_copy_set; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoMemcpyNodeSetParams(n,p);
+}
+extern CNresult __real_cnTaskTopoEntityMemcpyNodeSetParams(CNtaskTopoEntity,CNtaskTopoNode,const CNmemcpy3dParam *);
+CNresult __wrap_cnTaskTopoEntityMemcpyNodeSetParams(CNtaskTopoEntity e,CNtaskTopoNode n,const CNmemcpy3dParam *p) {
+  if(fail_graph_copy_entity_set) { --fail_graph_copy_entity_set; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoEntityMemcpyNodeSetParams(e,n,p);
+}
 extern CNresult __real_cnTaskTopoDestroy(CNtaskTopo);
 CNresult __wrap_cnTaskTopoDestroy(CNtaskTopo graph) {
   if(fail_graph_destroy) { --fail_graph_destroy; return CN_ERROR_INVALID_VALUE; }
@@ -88,6 +104,10 @@ static void graph_failures(void) {
     .allocation=allocation,.element_size=1,.width=64,.height=1,.value=7};
   mlu_api_graph_memset_response filled={0};
   assert(!mlu_backend_api_graph_memset(s,&fill,&filled));
+  mlu_api_graph_memcpy_request copy={.action=MLU_GRAPH_PARAM_ADD,.graph=graph.id,
+    .dst_allocation=allocation,.dst_offset=32,.src_allocation=allocation,.width=32};
+  mlu_api_graph_memcpy_response copied={0};
+  assert(!mlu_backend_api_graph_memcpy(s,&copy,&copied));
   /* A real clone/add succeeds before its identity adoption is made to fail.
    * Failed native rollback must retain the hidden native objects and leases. */
   action.action=MLU_GRAPH_CLONE; action.graph=graph.id;
@@ -108,10 +128,75 @@ static void graph_failures(void) {
   puts("PASS failed graph/child adoption rollback retains ownership; cleanup quarantine retries and releases allocation leases");
 }
 
+static mlu_backend_allocation *allocation_record(mlu_backend_session *s,uint64_t id) {
+  for(size_t i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) if(s->allocations[i].live && s->allocations[i].id==id) return &s->allocations[i];
+  assert(0); return NULL;
+}
+static void graph_copy_failures(void) {
+  mlu_backend_session *s=calloc(1,sizeof(*s)); assert(s);
+  assert(!mlu_backend_session_init(s,0));
+  uint64_t ids[6]; mlu_backend_allocation *a[6];
+  for(unsigned i=0;i<4;i++) { assert(!mlu_backend_alloc(s,128,&ids[i])); a[i]=allocation_record(s,ids[i]); }
+  mlu_api_graph_action_request action={.action=MLU_GRAPH_CREATE};
+  mlu_api_graph_action_response graph={0},unused={0};
+  assert(!mlu_backend_api_graph_action(s,&action,&graph));
+  mlu_api_graph_memcpy_request copy={.action=MLU_GRAPH_PARAM_ADD,.graph=graph.id,
+    .dst_allocation=ids[0],.src_allocation=ids[1],.width=32};
+  mlu_api_graph_memcpy_response out={0};
+  fail_graph_copy_add=1;
+  assert(mlu_backend_api_graph_memcpy(s,&copy,&out)==CN_ERROR_INVALID_VALUE);
+  assert(!a[0]->graph_refs && !a[1]->graph_refs);
+  assert(!mlu_backend_api_graph_memcpy(s,&copy,&out)); uint64_t node=out.id;
+  assert(a[0]->graph_refs==1 && a[1]->graph_refs==1);
+  copy.action=MLU_GRAPH_PARAM_SET; copy.node=node; copy.dst_allocation=ids[2]; copy.src_allocation=ids[3];
+  fail_graph_copy_set=1;
+  assert(mlu_backend_api_graph_memcpy(s,&copy,&out)==CN_ERROR_INVALID_VALUE);
+  assert(a[0]->graph_refs==1 && a[1]->graph_refs==1 && !a[2]->graph_refs && !a[3]->graph_refs);
+  assert(!mlu_backend_free(s,ids[0])); assert(!mlu_backend_free(s,ids[1]));
+  assert(s->usage.bytes[MLU_RESOURCE_DEVICE]==512);
+  assert(!mlu_backend_api_graph_memcpy(s,&copy,&out));
+  assert(!a[0]->live && !a[1]->live && a[2]->graph_refs==1 && a[3]->graph_refs==1);
+  assert(s->usage.bytes[MLU_RESOURCE_DEVICE]==256);
+  mlu_api_graph_entity_request entity={.action=MLU_GRAPH_INSTANTIATE,.graph=graph.id};
+  mlu_api_graph_entity_response executable={0};
+  assert(!mlu_backend_api_graph_entity(s,&entity,&executable));
+  for(unsigned i=4;i<6;i++) { assert(!mlu_backend_alloc(s,128,&ids[i])); a[i]=allocation_record(s,ids[i]); }
+  copy.action=MLU_GRAPH_PARAM_ENTITY_SET; copy.entity=executable.id;
+  copy.dst_allocation=ids[4]; copy.src_allocation=ids[5];
+  fail_graph_copy_entity_set=1;
+  assert(mlu_backend_api_graph_memcpy(s,&copy,&out)==CN_ERROR_INVALID_VALUE);
+  assert(!a[4]->graph_refs && !a[5]->graph_refs && a[2]->graph_refs==1 && a[3]->graph_refs==1);
+  assert(!mlu_backend_api_graph_memcpy(s,&copy,&out));
+  assert(a[4]->graph_refs==1 && a[5]->graph_refs==1);
+  for(unsigned i=2;i<6;i++) assert(!mlu_backend_free(s,ids[i]));
+  action.action=MLU_GRAPH_DESTROY; action.graph=graph.id;
+  assert(!mlu_backend_api_graph_action(s,&action,&unused));
+  assert(s->usage.bytes[MLU_RESOURCE_DEVICE]==512);
+  entity.action=MLU_GRAPH_ENTITY_DESTROY; entity.entity=executable.id;
+  assert(!mlu_backend_api_graph_entity(s,&entity,&executable));
+  assert(!s->usage.bytes[MLU_RESOURCE_DEVICE]);
+  /* One allocation can occupy both endpoints; success and native failure
+   * each acquire/release exactly two references, including after retirement. */
+  assert(!mlu_backend_alloc(s,128,&ids[0])); a[0]=allocation_record(s,ids[0]);
+  action.action=MLU_GRAPH_CREATE; assert(!mlu_backend_api_graph_action(s,&action,&graph));
+  copy=(mlu_api_graph_memcpy_request){.action=MLU_GRAPH_PARAM_ADD,.graph=graph.id,
+    .dst_allocation=ids[0],.dst_offset=64,.src_allocation=ids[0],.width=32};
+  assert(!mlu_backend_api_graph_memcpy(s,&copy,&out)); assert(a[0]->graph_refs==2);
+  fail_graph_copy_add=1;
+  assert(mlu_backend_api_graph_memcpy(s,&copy,&out)==CN_ERROR_INVALID_VALUE);
+  assert(a[0]->graph_refs==2);
+  assert(!mlu_backend_free(s,ids[0])); assert(s->usage.bytes[MLU_RESOURCE_DEVICE]==128);
+  action.action=MLU_GRAPH_DESTROY; action.graph=graph.id;
+  assert(!mlu_backend_api_graph_action(s,&action,&unused));
+  assert(!s->usage.bytes[MLU_RESOURCE_DEVICE]);
+  assert(!mlu_backend_session_cleanup(s)); free(s);
+  puts("PASS memcpy native Add/Set/EntitySet failure rolls back both endpoint leases; replacement reaps retired endpoints; same-allocation refs balance");
+}
+
 int main(int argc, char **argv) {
   assert(argc == 2 || argc == 3);
   mlu_backend_session *s = calloc(1, sizeof(*s)); assert(s);
-  assert(!mlu_backend_global_init()); graph_failures(); assert(!mlu_backend_session_init(s, 0));
+  assert(!mlu_backend_global_init()); graph_failures(); graph_copy_failures(); assert(!mlu_backend_session_init(s, 0));
   uint64_t a = 0, q = 0, tid = 0, mid = 0, kid = 0;
   fail_alloc = 1;
   assert(mlu_backend_alloc(s, 64, &a) == CN_MEMORY_ERROR_OUT_OF_MEMORY);

@@ -1,0 +1,3 @@
+2026-11-07 06:36:44.521868: [cnrtError] [52182] [Card: 0] Error occurred during calling 'cnTaskTopoAddDependencies' in CNDrv interface.
+2026-11-07 06:36:44.521934: [cnrtError] [52182] [Card: 0] Return value is 100006, CN_ERROR_INVALID_VALUE.
+2026-11-07 06:36:44.521939: [cnrtError] [52182] [Card: 0] cnrtTaskTopoAddDependencies: failed to add dependency.

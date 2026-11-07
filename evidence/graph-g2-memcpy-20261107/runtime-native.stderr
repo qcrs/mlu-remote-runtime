@@ -1,0 +1,3 @@
+2026-11-07 06:38:38.951513: [cnrtError] [54191] [Card: 0] Error occurred during calling 'cnTaskTopoEntityUpdate' in CNDrv interface.
+2026-11-07 06:38:38.951585: [cnrtError] [54191] [Card: 0] Return value is 100400, CN_ERROR_TASK_TOPO_ENTITY_UPDATE_FAILURE.
+2026-11-07 06:38:38.951591: [cnrtError] [54191] [Card: 0] cnrtTaskTopoEntityUpdate: Failed to set memcpy node params.

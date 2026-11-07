@@ -1,0 +1,88 @@
+{
+  "baseline_commit": "4beeb96cde40c2a794b97944dc5f6e128763b66b",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnrtTaskTopoAddMemcpyNode",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoEntityMemcpyNodeSetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoMemcpyNodeGetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoMemcpyNodeSetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoAddMemcpyNode",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoEntityMemcpyNodeSetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoMemcpyNodeGetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoMemcpyNodeSetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    }
+  ],
+  "new_status_counts": {
+    "IMPLEMENTED": 8
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 101,
+    "IMPLEMENTED": 195,
+    "BLOCKED": 11,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 93,
+    "IMPLEMENTED": 203,
+    "BLOCKED": 11,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "generated_before": {
+    "typed_rpc": 51,
+    "public_wrappers": 94
+  },
+  "generated_after": {
+    "typed_rpc": 52,
+    "public_wrappers": 102
+  }
+}

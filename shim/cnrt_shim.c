@@ -424,6 +424,7 @@ static allocation *allocation_by_id(uint64_t id) {
 }
 #define MLU_GRAPH_RUNTIME
 #include "graph_memset.inc"
+#include "graph_memcpy.inc"
 #include "cnrt_api.inc"
 __attribute__((destructor)) static void shutdown_remote(void) {
   ENTER(); if(ctx) { mlu_remote_disconnect(ctx); ctx=NULL; }

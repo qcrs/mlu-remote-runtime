@@ -4,6 +4,7 @@
  * session-owned IDs, never native pointers. Limits include all graphs/session. */
 #define MLU_GRAPH_MAX_NODES 4096u
 #define MLU_GRAPH_MAX_ARRAY 65536u
+#define MLU_GRAPH_MAX_COPY_BYTES (1024u*1024u)
 enum mlu_graph_action { MLU_GRAPH_CREATE=1, MLU_GRAPH_DESTROY, MLU_GRAPH_CLONE,
   MLU_GRAPH_FIND_CLONE, MLU_GRAPH_NODE_TYPE, MLU_GRAPH_DESTROY_NODE };
 enum mlu_graph_edit { MLU_GRAPH_ADD_EMPTY=1, MLU_GRAPH_ADD_EDGES, MLU_GRAPH_REMOVE_EDGES };

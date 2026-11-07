@@ -533,4 +533,28 @@ typedef struct {
   uint64_t id;
 } mlu_api_graph_child_response;
 int mlu_remote_api_graph_child(mlu_remote_context *, const mlu_api_graph_child_request *, mlu_api_graph_child_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t graph;
+  uint64_t node;
+  uint64_t entity;
+  uint64_t dst_allocation;
+  uint64_t dst_offset;
+  uint64_t src_allocation;
+  uint64_t src_offset;
+  uint64_t width;
+  uint32_t direction;
+  uint64_t count;
+  const uint64_t *ids;
+} mlu_api_graph_memcpy_request;
+typedef struct {
+  uint64_t id;
+  uint64_t dst_allocation;
+  uint64_t dst_offset;
+  uint64_t src_allocation;
+  uint64_t src_offset;
+  uint64_t width;
+  uint32_t direction;
+} mlu_api_graph_memcpy_response;
+int mlu_remote_api_graph_memcpy(mlu_remote_context *, const mlu_api_graph_memcpy_request *, mlu_api_graph_memcpy_response *);
 #endif

@@ -2,11 +2,13 @@
  * translates identities and bounded arrays for both public libraries. */
 #include "remote_graph.h"
 /* Payloads are immutable once attached. Clones and executable snapshots
- * share records, each of which holds one native allocation lease. */
+ * share records, each of which holds its endpoint allocation leases. */
 typedef struct mlu_graph_payload {
   unsigned refs;
   mlu_backend_allocation *allocation;
+  mlu_backend_allocation *source_allocation;
   CN_MEMSET_NODE_PARAMS memset;
+  CNmemcpy3dParam memcpy;
   size_t child_count;
   struct mlu_graph_payload **children;
 } mlu_graph_payload;
@@ -14,6 +16,7 @@ static void graph_payload_retain(mlu_graph_payload *p) { if(p) p->refs++; }
 static void graph_payload_release(mlu_graph_payload *p) {
   if(!p || --p->refs) return;
   if(p->allocation) p->allocation->graph_refs--;
+  if(p->source_allocation) p->source_allocation->graph_refs--;
   for(size_t i=0;i<p->child_count;i++) graph_payload_release(p->children[i]);
   free(p->children);
   free(p);
@@ -363,6 +366,80 @@ static int graph_memset(mlu_backend_session *s,const mlu_api_graph_memset_reques
   } else st=cnTaskTopoMemsetNodeSetParams(s->graph_nodes[n].handle,&p->memset);
   if(st) graph_payload_release(p);
   else { graph_payload_release(s->graph_nodes[n].payload); s->graph_nodes[n].payload=p; }
+  (void)graph_reap_allocations(s); return st;
+}
+
+static int graph_memcpy(mlu_backend_session *s,const mlu_api_graph_memcpy_request *in,mlu_api_graph_memcpy_response *out) {
+  int g=graph_index(s,in->graph),n=graph_node_index(s,in->node);
+  if(in->action<MLU_GRAPH_PARAM_ADD || in->action>MLU_GRAPH_PARAM_ENTITY_SET ||
+     in->count>MLU_GRAPH_MAX_NODES || (in->count && !in->ids) ||
+     (in->action==MLU_GRAPH_PARAM_ADD ? g<0 : n<0) ||
+     (in->action!=MLU_GRAPH_PARAM_ADD && in->count)) return CN_ERROR_INVALID_VALUE;
+  if(in->action!=MLU_GRAPH_PARAM_ADD) {
+    CNtaskTopoNodeType kind;
+    int st=cnTaskTopoNodeGetType(s->graph_nodes[n].handle,&kind);
+    if(st || kind!=CN_TASK_TOPO_NODE_TYPE_MEMCPY) return st ? st : CN_ERROR_INVALID_VALUE;
+  }
+  if(in->action==MLU_GRAPH_PARAM_GET) {
+    CNmemcpy3dParam native={0};
+    int st=cnTaskTopoMemcpyNodeGetParams(s->graph_nodes[n].handle,&native); if(st) return st;
+    mlu_graph_payload *payload=s->graph_nodes[n].payload;
+    if(!payload || !payload->allocation || !payload->source_allocation ||
+       (uintptr_t)native.dst<(uintptr_t)payload->allocation->address ||
+       (uintptr_t)native.src<(uintptr_t)payload->source_allocation->address) return CN_ERROR_INVALID_VALUE;
+    out->dst_allocation=payload->allocation->id;
+    out->dst_offset=(uintptr_t)native.dst-(uintptr_t)payload->allocation->address;
+    out->src_allocation=payload->source_allocation->id;
+    out->src_offset=(uintptr_t)native.src-(uintptr_t)payload->source_allocation->address;
+    out->width=native.extent.width; out->direction=native.dir;
+    return 0;
+  }
+  mlu_backend_allocation *dst=find_alloc(s,in->dst_allocation),*src=find_alloc(s,in->src_allocation);
+  CNaddr dst_address,src_address;
+  if(!dst || !src || !in->width || in->width>MLU_GRAPH_MAX_COPY_BYTES ||
+     range(dst,in->dst_offset,in->width,&dst_address) ||
+     range(src,in->src_offset,in->width,&src_address)) return CN_ERROR_INVALID_VALUE;
+  mlu_graph_payload *payload=calloc(1,sizeof(*payload)); if(!payload) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  payload->refs=1; payload->allocation=dst; payload->source_allocation=src;
+  dst->graph_refs++; src->graph_refs++;
+  payload->memcpy=(CNmemcpy3dParam){0};
+  payload->memcpy.dst=(void *)(uintptr_t)dst_address;
+  payload->memcpy.src=(void *)(uintptr_t)src_address;
+  payload->memcpy.dstPtr.ptr=payload->memcpy.dst;
+  payload->memcpy.dstPtr.pitch=in->width; payload->memcpy.dstPtr.xsize=in->width; payload->memcpy.dstPtr.ysize=1;
+  payload->memcpy.srcPtr.ptr=payload->memcpy.src;
+  payload->memcpy.srcPtr.pitch=in->width; payload->memcpy.srcPtr.xsize=in->width; payload->memcpy.srcPtr.ysize=1;
+  payload->memcpy.extent.depth=1; payload->memcpy.extent.height=1; payload->memcpy.extent.width=in->width;
+  payload->memcpy.dir=in->direction;
+  int st=0;
+  if(in->action==MLU_GRAPH_PARAM_ADD) {
+    CNtaskTopoNode handles[MLU_GRAPH_MAX_NODES];
+    for(uint64_t i=0;i<in->count;i++) {
+      int d=graph_node_index(s,in->ids[i]);
+      if(d<0 || s->graph_nodes[d].parent!=in->graph) { st=CN_ERROR_INVALID_VALUE; break; }
+      handles[i]=s->graph_nodes[d].handle;
+    }
+    if(!st) {
+      n=graph_reserve(s,1); if(n<0) st=MLU_REMOTE_RESOURCE_LIMIT;
+      else {
+        st=cnTaskTopoAddMemcpyNode(&s->graph_nodes[n].handle,s->graphs[g].handle,handles,in->count,&payload->memcpy);
+        if(st) graph_forget_node(s,n);
+        else { s->graph_nodes[n].parent=in->graph; out->id=s->graph_nodes[n].id; }
+      }
+    }
+  } else if(in->action==MLU_GRAPH_PARAM_ENTITY_SET) {
+    mlu_graph_entity *e=graph_find_entity(s,in->entity); size_t i=0;
+    if(e) for(;i<e->count;i++) if(e->source_ids[i]==in->node) break;
+    if(!e || !e->handle || i==e->count) st=CN_ERROR_INVALID_VALUE;
+    else {
+      st=cnTaskTopoEntityMemcpyNodeSetParams(e->handle,e->nodes[i],&payload->memcpy);
+      if(!st) { graph_payload_release(e->overrides[i]); e->overrides[i]=payload; }
+    }
+    if(st) graph_payload_release(payload);
+    (void)graph_reap_allocations(s); return st;
+  } else st=cnTaskTopoMemcpyNodeSetParams(s->graph_nodes[n].handle,&payload->memcpy);
+  if(st) graph_payload_release(payload);
+  else { graph_payload_release(s->graph_nodes[n].payload); s->graph_nodes[n].payload=payload; }
   (void)graph_reap_allocations(s); return st;
 }
 
