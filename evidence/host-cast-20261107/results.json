@@ -1,0 +1,34 @@
+[
+  {
+    "name": "native",
+    "returncode": 0,
+    "cases": 7507,
+    "guards": true,
+    "endpoint": "127.0.0.1:1 (unreachable)",
+    "matches_native": true
+  },
+  {
+    "name": "remote",
+    "returncode": 0,
+    "cases": 7507,
+    "guards": true,
+    "endpoint": "127.0.0.1:1 (unreachable)",
+    "matches_native": true
+  },
+  {
+    "name": "preload",
+    "returncode": 0,
+    "cases": 7507,
+    "guards": true,
+    "endpoint": "127.0.0.1:1 (unreachable)",
+    "matches_native": true
+  },
+  {
+    "name": "isolated",
+    "returncode": 0,
+    "cases": 7507,
+    "guards": true,
+    "endpoint": "127.0.0.1:1 (unreachable)",
+    "matches_native": true
+  }
+]

@@ -1093,37 +1093,10 @@
     "family": "host_utilities",
     "priority": 3,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 2,
-      "IMPLEMENTED": 3,
+      "IMPLEMENTED": 5,
       "NOT_IMPLEMENTED": 4
     },
     "remaining": [
-      {
-        "api": "cnrtCastDataType",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "",
-        "next_step": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
-        "closure": {
-          "gap": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
-          "fix": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
-          "acceptance": "One Native/host-shim numerical family comparison covers supported source/destination types, scalar and by-channel parameters, saturation and rounding."
-        }
-      },
-      {
-        "api": "cnrtCastDataType_V2",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "",
-        "next_step": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
-        "closure": {
-          "gap": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
-          "fix": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
-          "acceptance": "One Native/host-shim numerical family comparison covers supported source/destination types, scalar and by-channel parameters, saturation and rounding."
-        }
-      },
       {
         "api": "cnrtFilterReshape",
         "status": "NOT_IMPLEMENTED",

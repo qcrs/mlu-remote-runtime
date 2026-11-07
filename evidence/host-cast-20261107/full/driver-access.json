@@ -1,0 +1,4 @@
+{
+  "forbidden_access": [],
+  "scope": "client process with replacement CNRT on MLU host; not a separate driverless machine"
+}

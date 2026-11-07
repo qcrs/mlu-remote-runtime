@@ -460,21 +460,21 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Host-local conversion for FLOAT32/INT32/UINT8 with null quantization plus FLOAT32<->INT8 using scalar quantization parameter (scale/pos, signed rounding, clamp, reverse dequantization; current SDK offset ignored in observed conversion). No device or remote buffers.",
-      "native_test": "api-expansion-20261112/quant-cast-native.log",
-      "remote_test": "api-expansion-20261112/quant-cast-remote.log",
-      "next_step": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
-      "closure": {
-        "gap": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
-        "fix": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
-        "acceptance": "One Native/host-shim numerical family comparison covers supported source/destination types, scalar and by-channel parameters, saturation and rounding."
-      },
+      "status": "IMPLEMENTED",
+      "boundary": "Host-only CNRT 6.5.2 AArch64 conversion for observed supported pairs: 24 plain and 13 scalar-quantized legacy pairs, half and 64-bit outputs; both support full-shape by-channel float32->int8/int16 with owned parameters. Pair masks, rounding, saturation and SDK quirks are documented in docs/HOST_CAST.md. Unsupported enum/pairs return ArgsInvalid. Host buffers must be valid and sized; no device pointers, general overlap or exhaustive IEEE special-value certification. Legacy int16 -32768->half SDK hang is not reproduced.",
+      "native_test": "host-cast-20261107/native.json",
+      "remote_test": "host-cast-20261107/remote.json; host-cast-20261107/preload.json; host-cast-20261107/isolated.json",
+      "next_step": "Closed for the observed current-SDK Host conversion matrix; Graph/IPC are separate families.",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
         "baseline_boundary": "Host-local conversion for FLOAT32/INT32/UINT8 with null quantization plus FLOAT32<->INT8 using scalar quantization parameter (scale/pos, signed rounding, clamp, reverse dequantization; current SDK offset ignored in observed conversion). No device or remote buffers.",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Shared host conversion engine; 7,507 differential cases cover all enum pairs and six V2 modes with plain/scalar/by-channel parameters, owned-array mutation, guards, wide integers and negative pos. Native unsupported INT4/fix8/quant8 are rejected; observed SDK numerical quirks preserved. Offline replacement/preload and SDK/device-isolated runs are byte-exact.",
+        "native_test": "host-cast-20261107/native.json",
+        "remote_test": "host-cast-20261107/remote.json; host-cast-20261107/preload.json; host-cast-20261107/isolated.json"
       }
     },
     {
@@ -545,21 +545,21 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Host-local V2 FLOAT/INT/UCHAR/HALF/BFLOAT/INT64/UINT64 conversion with six rounding modes and null quantization. No remote buffers.",
-      "native_test": "api-expansion-20261113/v2-cast-native.log",
-      "remote_test": "api-expansion-20261113/v2-cast-remote.log",
-      "next_step": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
-      "closure": {
-        "gap": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
-        "fix": "Extend the shared host conversion/quantization engine from Native observations, including per-channel indexing and packed INT4; preserve documented rounding.",
-        "acceptance": "One Native/host-shim numerical family comparison covers supported source/destination types, scalar and by-channel parameters, saturation and rounding."
-      },
+      "status": "IMPLEMENTED",
+      "boundary": "Host-only CNRT 6.5.2 AArch64 conversion for observed supported pairs: 53 plain and 17 scalar-quantized V2 pairs, six rounding modes, half/bfloat and 64-bit outputs; both support full-shape by-channel float32->int8/int16 with owned parameters. Pair masks, rounding, saturation and SDK quirks are documented in docs/HOST_CAST.md. Unsupported enum/pairs return ArgsInvalid. Host buffers must be valid and sized; no device pointers, general overlap or exhaustive IEEE special-value certification. Legacy int16 -32768->half SDK hang is not reproduced.",
+      "native_test": "host-cast-20261107/native.json",
+      "remote_test": "host-cast-20261107/remote.json; host-cast-20261107/preload.json; host-cast-20261107/isolated.json",
+      "next_step": "Closed for the observed current-SDK Host conversion matrix; Graph/IPC are separate families.",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "By-channel quantization and SDK-declared integer/fixed/INT4 conversions are missing; V2 non-null quantization is rejected.",
         "baseline_boundary": "Host-local V2 FLOAT/INT/UCHAR/HALF/BFLOAT/INT64/UINT64 conversion with six rounding modes and null quantization. No remote buffers.",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Shared host conversion engine; 7,507 differential cases cover all enum pairs and six V2 modes with plain/scalar/by-channel parameters, owned-array mutation, guards, wide integers and negative pos. Native unsupported INT4/fix8/quant8 are rejected; observed SDK numerical quirks preserved. Offline replacement/preload and SDK/device-isolated runs are byte-exact.",
+        "native_test": "host-cast-20261107/native.json",
+        "remote_test": "host-cast-20261107/remote.json; host-cast-20261107/preload.json; host-cast-20261107/isolated.json"
       }
     },
     {
@@ -608,8 +608,8 @@
       "implementation": "manual",
       "status": "IMPLEMENTED",
       "boundary": "Copies scalar pos/scale/offset into owned Host quantization metadata; actual cast coverage is tracked separately.",
-      "native_test": "api-expansion-20261110/quant-native.log",
-      "remote_test": "api-expansion-20261110/quant-remote.log",
+      "native_test": "api-expansion-20261110/quant-native.log; host-cast-20261107/native.json",
+      "remote_test": "api-expansion-20261110/quant-remote.log; host-cast-20261107/remote.json; host-cast-20261107/isolated.json",
       "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
@@ -688,8 +688,8 @@
       "implementation": "manual",
       "status": "IMPLEMENTED",
       "boundary": "Copies channel shape and pos/scale/offset arrays into owned Host metadata; actual cast coverage is tracked separately.",
-      "native_test": "api-expansion-20261111/quant-native.log",
-      "remote_test": "api-expansion-20261111/quant-remote.log",
+      "native_test": "api-expansion-20261111/quant-native.log; host-cast-20261107/native.json",
+      "remote_test": "api-expansion-20261111/quant-remote.log; host-cast-20261107/remote.json; host-cast-20261107/isolated.json",
       "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
@@ -719,9 +719,9 @@
       ],
       "implementation": "manual",
       "status": "IMPLEMENTED",
-      "boundary": "Frees owned scalar or channel quantization metadata; rejects unknown or already destroyed handles.",
-      "native_test": "api-expansion-20261110/quant-native.log",
-      "remote_test": "api-expansion-20261110/quant-remote.log",
+      "boundary": "Frees owned scalar or channel Host quantization metadata; NULL is accepted. Non-NULL input must be a live parameter returned by the creation APIs.",
+      "native_test": "api-expansion-20261110/quant-native.log; host-cast-20261107/native.json",
+      "remote_test": "api-expansion-20261110/quant-remote.log; host-cast-20261107/remote.json; host-cast-20261107/isolated.json",
       "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",

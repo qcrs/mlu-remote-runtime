@@ -1,0 +1,15 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_host_async', 'runtime']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50231', 'LD_PRELOAD': '/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so:/home/lvtong/mlu-remote-runtime/build/driver-shim/libcndrv.so', 'MLU_TEST_SHIM': '1'}
+PASS CNRT Host allocation/attributes/free before initialization and without a remote connection
+PASS Host attributes: shared CNRT/CNDrv registry, interior pointer, native output widths and mixed batch
+PASS CNRT async D2H frontier=0 data=2515503399,305419896,305419896 ordered=2515503399
+PASS CNRT async D2H frontier=1 data=2515503399,305419896,305419896 ordered=2515503399
+PASS CNRT async D2H frontier=2 data=2515503399,305419896,305419896 ordered=2515503399
+PASS CNRT async D2H frontier=3 data=2515503399,305419896,305419896 ordered=2515503399
+PASS CNRT async D2H frontier=4 data=2515503399,305419896,305419896 ordered=2515503399
+PASS CNRT async D2H frontier=5 data=2515503399,305419896,305419896 ordered=2515503399
+PASS CNRT async D2H frontier=6 data=2515503399,305419896,305419896 ordered=2515503399
+PASS CNRT async D2H frontier=7 data=2515503399,305419896,305419896 ordered=2515503399
+PASS CNRT async D2H frontier=8 data=2515503399,305419896,305419896 ordered=2515503399
+PASS Host attributes: shared CNRT/CNDrv registry, interior pointer, native output widths and mixed batch
+PASS Host zero/free, large pinned/pageable D2H, default/explicit queue and shared free

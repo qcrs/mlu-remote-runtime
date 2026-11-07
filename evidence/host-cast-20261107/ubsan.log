@@ -1,0 +1,1 @@
+PASS: -fsanitize=undefined,float-cast-overflow, UBSAN_OPTIONS=halt_on_error=1; all 7507 cases, guards; no sanitizer diagnostic.

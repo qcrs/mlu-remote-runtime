@@ -6,9 +6,9 @@
 
 | 层 | IMPLEMENTED | PARTIAL | BLOCKED | OUT_OF_SCOPE | UNSUPPORTED | NOT_IMPLEMENTED | 合计 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| CNRT | 57 | 2 | 3 | 0 | 1 | 67 | 130 |
+| CNRT | 59 | 0 | 3 | 0 | 1 | 67 | 130 |
 | CNDrv | 86 | 0 | 4 | 2 | 0 | 88 | 180 |
-| 合计 | 143 | 2 | 7 | 2 | 1 | 155 | 310 |
+| 合计 | 145 | 0 | 7 | 2 | 1 | 155 | 310 |
 
 已完成 [closure audit](API_COMPATIBILITY_CLOSURE.md)：冻结原 97 个 PARTIAL，77 项以已有实现与证据收口、18 项保留、2 项范围外；另纠正 CNRT queue destroy 的虚高状态。每个剩余 PARTIAL 都有具体 gap/fix/acceptance；台账不会因导出存在而自动提升。最新机器可读数据见 [summary](../compat/summary.json)、[ledger](../compat/api-ledger.csv)、[family plan](../compat/family-plan.json)。6 个私有 `__bang*` hooks 独立统计，legacy `cnrtInit` 不在公共分母内。
 
@@ -21,16 +21,19 @@
 - 当前 CNCC CNFBv2/ELF64 LE、共享 module→多个 kernel、DSO reload、pending unload/reset；metadata v2 支持 C/enum/template/zero args，以及自然 LP64 nested struct/array 按值参数内的 pointer 字段。两库共享字段重定位；Driver 从 image 读取编译器 metadata，保留 v1 和 primitive fallback。
 - CNRT kernel memory usage 按客户端存活 registration 计量，首 launch 前已计入、reset 保留、最终 unregister 扣除；独立 CNDrv load 不计入。普通未初始化、初始化和 const device globals 的 size 与 kernel 数值已对照。
 - Schema 覆盖 310 个声明，生成 10 对对象 RPC、45 个 typed RPC、44 个公共 RPC wrapper 和 4 个本地 error API。生成器支持有界 caller-owned response buffer/size_from、连接前本地处理及精确成功形状；复杂 owner/routing/relocation 仍有手写 adapter。
+- 两个 Host cast 共用类型/量化/half/bfloat/rounding 引擎；scalar 与 full-shape by-channel、owned 参数和实际 SDK 数值 quirks 已差分，不依赖远端或本地设备。
 - Reviewed error catalogue 生成四个本地查询，覆盖 139 个枚举值并集及未知值回退，初始化前/离线可用；返回文本有进程级稳定生命周期。
 - 会话资源配额、失败回滚/隔离、EOF/关闭清理、server worker drain 及 parser bounds 已有回归证据。
 
 ## 当前真实缺口
 
-2 个 PARTIAL 的完整清单与升级条件见 [family plan](../compat/family-plan.json)：`cnrtCastDataType`、`cnrtCastDataType_V2`。下一步推进 Host cast 的 by-channel、INT4/fixed 与量化矩阵。当前 image ABI 的 device pointer graph、packed/opaque aggregate 和未知地址空间不在认证范围，不能从字段重定位推导支持。
+当前 PARTIAL 为 0；两个 cast 入口已按本机 SDK 支持矩阵收口，见 [Host cast](HOST_CAST.md)。INT4/fix8/quant8 等拒绝组合与 Native 一致。当前 image ABI 的 device pointer graph、packed/opaque aggregate 和未知地址空间不在认证范围，不能从字段重定位推导支持。
 
 7 个 Peer 入口因只有一个物理设备 BLOCKED。security/framebuffer 专用消费者范围外。Runtime MallocConstant 仍明确拒绝。CNNL 无对应库，不能把明确拒绝用例称为 CNNL native 成功。Graph/IPC 尚未实现；核心补齐后分别推进 capture/TaskTopo 状态机和跨进程导出/导入引用生命周期。
 
 ## 验证与证据
+
+本批 [Host cast](../evidence/host-cast-20261107/README.md) 的 7,507 个观察在 Native/replacement/preload/隔离客户端逐字节一致，源/目标 guard、64-bit 大数、by-channel ownership 和 UBSan 均通过；功能族 15/15、完整核心回归 76/76。
 
 本批 [module accounting / globals / argument relocation](../evidence/module-accounting-20261107/README.md) 验证两库 Native、replacement、preload 和隐藏 SDK/设备的客户端。覆盖两 image 注册计量、DSO 引用/注销、reset/reload、三类 globals、嵌套 pointer/NULL/offset/scalar guards、跨 owner/stale 拒绝、畸形 wire/metadata、v1 兼容和 ASan/UBSan；五个 module/kernel PARTIAL 已按逐项 boundary 收口。
 

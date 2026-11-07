@@ -8,7 +8,7 @@
 
 收口依据包括：默认 Queue 已经转发 native NULL，不再按旧文档认定为合成 Queue；Notifier flags、priority、跨 Queue wait 和 timing 已有真实对照；内存 node/zero-fill/kind、Context TLS/flags 和当前 CNCC image/module 生命周期的证据也已齐备。无需穷举的负例、多设备和其他 SDK 格式不再模糊阻塞当前单设备入口。
 
-审计明确了统一异步 copy、立即 Queue destroy、Host 属性、模块计量和参数 relocation 的具体缺口。后续批次已按下面的 resolution 收口；剩余两个 cast 入口继续保留明确验收条件。
+审计明确了统一异步 copy、立即 Queue destroy、Host 属性、模块计量和参数 relocation 的具体缺口。后续批次已按下面的 resolution 收口；两个 cast 入口在 Host cast 续批按本机 SDK 支持矩阵收口。
 
 ## 审计时的待修复项
 
@@ -63,3 +63,11 @@
 MLUABI02 明确提供自然 LP64 聚合参数的 pointer 字段 offset；两库共享 AllocationID+offset 打包，Server 校验 owner/range/NULL/alignment/order 后重建参数。Driver image 也可携带该 metadata，支持 extern-C/aggregate/zero args；v1 reader 和保守 primitive fallback 保留。嵌套 struct/array 数值、guard、scalar 位值、reset/reload、foreign/stale owner 与损坏 metadata/wire 均有验证。指纹只关联构建产物；device pointer graph、packed/opaque/未知 ABI 不包含在当前声明。详见 [批次证据](../evidence/module-accounting-20261107/README.md)。
 
 剩余 PARTIAL 为 `cnrtCastDataType` 和 `cnrtCastDataType_V2`。Graph/IPC 的共享状态机尚待核心阶段后推进；Peer 的 7 项仍需第二设备。
+
+## 2026-11-07 Host cast resolution
+
+`cnrtCastDataType`、`cnrtCastDataType_V2` 已收口：145 IMPLEMENTED、0 PARTIAL、7 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、155 NOT_IMPLEMENTED。旧 `closure_review` 保留，新增实际组合、数值 boundary 和 `closure_resolution`。
+
+共享 Host engine 覆盖 legacy plain/scalar 24/13 对、V2 plain/scalar 53/17 对，以及两版本 full-shape by-channel f32→i8/i16；参数持有自己的 shape/数组。7,507 个观察在 Native、replacement、preload、隐藏 SDK/设备客户端中逐字节一致，远端均不可达；支持/拒绝状态与源/目标 guards 一同校验。数值实现保留原生 rounding、offset 位解释、窄化和成功但不写目标的特例；未把 INT4/fix8/quant8 等 enum 声明当成 Native 支持。Native legacy i16 -32768→half 挂起缺陷不复制，有限数值认证边界见 [HOST_CAST](HOST_CAST.md)。
+
+专项、UBSan、功能族 15/15 和核心 76/76 证据见 [host-cast](../evidence/host-cast-20261107/README.md)。核心 PARTIAL 已清零；继续推进 Graph/IPC 的共享状态机与跨进程 lifetime，不能据此宣称整个项目完成。

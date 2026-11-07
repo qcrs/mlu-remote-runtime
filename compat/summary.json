@@ -7,8 +7,7 @@
   "counts": {
     "CNRT": {
       "NOT_IMPLEMENTED": 67,
-      "PARTIAL_IMPLEMENTED": 2,
-      "IMPLEMENTED": 57,
+      "IMPLEMENTED": 59,
       "BLOCKED": 3,
       "UNSUPPORTED": 1
     },

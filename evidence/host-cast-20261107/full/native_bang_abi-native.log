@@ -1,0 +1,8 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_bang_abi']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+stage: memory/vector
+stage: mixed
+stage: notifier
+stage: threads
+stage: async copy pressure
+PASS BANG ABI: original image; mixed scalars; pointer offsets/null; xyz; 1200 launches; 1200 async copies; threads; queue/notifier

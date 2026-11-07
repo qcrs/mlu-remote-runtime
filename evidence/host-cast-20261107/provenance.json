@@ -1,0 +1,10 @@
+{
+  "common/host_cast.c": "a960cb4226f953df84e0f1994e6e33bc875331544a34e1624529b88b45e3f640",
+  "scripts/build-client.sh": "bb6da787ad0dd93ccdb5dbfa12bab49d37590e96ca33fbf1fdc69292d2424f92",
+  "tests/host_cast.py": "0f21a1351bbbb0d9bc0e9de90bb5b13399000d52291b674b64179bdd7ec90fd0",
+  "scripts/verify-host-cast.py": "15ee03814fafe25a86eba9b348acdb3da1176355d201eefab30ee588efaea820",
+  "build/shim/libcnrt.so": "1e800180d98ce75e9c6b23813a6a052fcc6b95a1456af37d5cba41606362bbe4",
+  "/tmp/libhostcast-ubsan.so": "9c95afa185c6f1198a32b68bb8c9f0f3621fe597034a3817234314ee05be90d6",
+  "/tmp/mlu-cast-ubsan.json": "6840f9289593e8622d5826f6e8749cac51d6909a7487dc7308fc4775d6a1158d",
+  "/usr/local/neuware/lib64/libcnrt.so": "292ee5817ade82f82740a2c47dfdbf4d4dbcd25b6549d48cff87b8690eda5972"
+}

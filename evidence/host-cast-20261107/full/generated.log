@@ -1,0 +1,4 @@
+COMMAND ['python3', 'scripts/generate_rpc.py', '--check']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 45 RPC codecs/dispatch/bindings, 44 public wrappers

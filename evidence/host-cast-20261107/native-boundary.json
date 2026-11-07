@@ -1,0 +1,6 @@
+{
+  "timeout": true,
+  "timeout_seconds": 2,
+  "stdout": "BEGIN legacy int16(-32768)->half\n",
+  "scope": "Native SDK defect; excluded from finite numerical matrix"
+}
