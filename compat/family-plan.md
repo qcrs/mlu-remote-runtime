@@ -14,6 +14,6 @@
 | memory | 42 | 22 | 3 | 0 | 2 | 1 | 14 | P1 |
 | module_kernel | 13 | 6 | 5 | 0 | 0 | 0 | 2 | P2 |
 | peer | 7 | 0 | 0 | 7 | 0 | 0 | 0 | P4 |
-| queue_notifier | 40 | 36 | 2 | 0 | 0 | 0 | 2 | P1 |
+| queue_notifier | 40 | 38 | 0 | 0 | 0 | 0 | 2 | P1 |
 
 P0：设备/context/版本基础查询；P1：owned memory、stride copy、queue/notifier；P2：Host completion 与 kernel/module ABI；P3：Host 数值工具；P4：多设备 Peer；P5：Graph/IPC。具体 API 可在同一功能族中按依赖再排序。

@@ -1,0 +1,43 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/probes/probe_driver_semantics', '/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50228', 'MLU_TEST_SHIM': '1'}
+cnDeviceGetCount(&n)=100002
+cnCtxGetCurrent(&current)=100002
+cnInit(1)=0
+cnCtxGetCurrent(&current)=0
+initial_context_null=1
+cnMalloc(&p,16)=100201
+no_context_output=4660
+default_flags=0
+cnMalloc(&p,0)=0
+malloc_zero_output=4660
+cnFree(0)=0
+cnMemcpyHtoD(0,&value,0)=0
+cnMemcpyDtoH(&value,0,0)=0
+cnMemcpyDtoD(0,0,0)=0
+cnQueueSync(NULL)=0
+cnQueryQueue(NULL)=0
+cnDeviceGetName(name,sizeof(name),-1)=100005
+invalid_device_name=sentinel
+cnDeviceTotalMem(&memory,-1)=100005
+invalid_device_memory=1234
+cnDeviceTotalMem(&memory,(CNdev)1<<32)=0
+wide_invalid_device_memory=25769803776
+cnCtxCreate(&invalid,0,(CNdev)1<<32)=0
+wide_context_created=1
+cnInvokeKernel(k,1,1,1,CN_KERNEL_CLASS_BLOCK,0,NULL,params,NULL)=0
+cnPlaceNotifier(note,NULL)=0
+cnWaitNotifier(note)=0
+cnModuleGetKernel(m,"missing_symbol",&k)=100301
+missing_kernel_output=0
+cnModuleLoad("/mlu-remote-missing-image.cnfatbin",&m)=100012
+missing_file_output=4660
+create_b_binds=1
+cnCtxGetCurrent(&current)=0
+destroy_b_current_null=1
+unbind_context_null=1
+cnCtxSetCurrent(a)=100201
+cnCtxDestroy(a)=100201
+context_flags_requested=0 actual=0
+context_flags_requested=1 actual=1
+context_flags_requested=2 actual=2
+context_flags_requested=3 actual=3

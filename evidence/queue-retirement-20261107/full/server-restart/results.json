@@ -1,0 +1,17 @@
+[
+  {
+    "name": "stopped-server-deadline-no-replay-new-session-after-resume",
+    "passed": true,
+    "elapsed_seconds": 0.2504
+  },
+  {
+    "name": "killed-server-incomplete-exchange-poisons-context",
+    "passed": true
+  },
+  {
+    "name": "restart-old-session-and-old-ID-rejected",
+    "passed": true,
+    "old_id": 2894294429340871345,
+    "new_id": 1366312158660113249
+  }
+]

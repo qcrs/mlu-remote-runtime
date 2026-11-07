@@ -1,0 +1,5 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/bang-image-bounds', '/home/lvtong/mlu-remote-runtime/build/audit/native_bang_abi-bang-mlisa-cambricon-bang.cnfatbin', '_Z10vector_addPfPKfS1_i', '/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin', '/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang-mtp_372.o']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+PASS bounded ELF/CNFB parser: native image, truncation, extents, NOBITS, 2000 mutations
+PASS device variable metadata, sizes, truncation and 2000 mutations
+PASS device variable metadata, sizes, truncation and 2000 mutations

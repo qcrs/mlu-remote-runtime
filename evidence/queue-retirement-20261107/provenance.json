@@ -1,0 +1,23 @@
+{
+  "captured_at": "2026-11-07T03:21:26.417016+00:00",
+  "platform": "Linux-5.15.0-185-generic-aarch64-with-glibc2.35",
+  "base_head": "c9aa787b0b99f0daf0b67af1616123e09c674562",
+  "source_state": "working tree; hashes identify tested source and binaries",
+  "sha256": {
+    "tests/native_queue_retirement.mlu": "f57cd85efead717d23cc48e529a6c96deb10d93af6f1d147464b573c00fd6068",
+    "tests/backend_resources.c": "946d0d960d26d6dfd7525f2f7eb2f08b4408bc179417a7d8c2bcb04eee834491",
+    "server/mlu_backend.c": "344058e19d72bd087e21080e6e9f132b999a3816b04b4c27220cbbad4cd5a68d",
+    "server/mlu_backend.h": "4b42c89124c19a08d0f5cae8c69c259fc1a3dabb6ee3aa6df279427701be0060",
+    "shim/cnrt_shim.c": "1d2b09da5a45fbd85adc1a7834d83a980aea933022073aa93468f7923a01984f",
+    "scripts/verify-queue-retirement.py": "12b28b1de5a478f2f1807955af41c2d1458e3095cd99a261b28729037d9d4a61",
+    "scripts/verify-transparent.py": "b9470af0dc8c29fabcd7c67b457944ef569d3a7db0818d91d6771d3c30a3f034",
+    "scripts/build.sh": "b8b1e7bd7124fbff99c18f1dddf6d37227d741727471469cbd2a3f38978c84d2",
+    "build/native_queue_retirement": "a76c36b3ffc572d67020e424db9074ddcb1a3e46f9916ce1b112bf00673096b6",
+    "build/backend-resources-test": "09da6d2181a35590d1f588a8c97aadfd8541a88e19f424ff18e690c602877ff1",
+    "build/mlu-remote-server": "6128759592ec022907f92e1492cbc5fae61503c70c3881ff5ebf0f9a1b0cb0d5",
+    "build/shim/libcnrt.so": "72070ac6ad6664aa1c78e5c8c5b3515f6e7056fae1f389c1e955096823051986",
+    "build/driver-shim/libcndrv.so": "91d73d6d865062f409c2fb97b7394b2222d359b4a584c5672c32de9ebc861989",
+    "build/libremote_cnrt.so": "bbab88eb4c46e914bc26d83c8313c3259f65e655a21f38d5c114e02c912a41fc",
+    "build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin": "449328bdd5627eb5baf2dd6b969b809032dd5b3df0e3fb5640a6b8c201ccb9cc"
+  }
+}

@@ -7,16 +7,16 @@
   "counts": {
     "CNRT": {
       "NOT_IMPLEMENTED": 67,
-      "PARTIAL_IMPLEMENTED": 8,
-      "IMPLEMENTED": 49,
+      "PARTIAL_IMPLEMENTED": 7,
+      "IMPLEMENTED": 50,
       "UNSUPPORTED": 3,
       "BLOCKED": 3
     },
     "CNDrv": {
       "NOT_IMPLEMENTED": 90,
-      "IMPLEMENTED": 77,
-      "PARTIAL_IMPLEMENTED": 6,
+      "IMPLEMENTED": 78,
       "BLOCKED": 4,
+      "PARTIAL_IMPLEMENTED": 5,
       "OUT_OF_SCOPE": 2,
       "UNSUPPORTED": 1
     }

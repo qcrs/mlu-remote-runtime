@@ -38,4 +38,10 @@
 
 ## 2026-11-07 error/copy resolution
 
-四个 error API 与 `cnrtMemcpy` 已收口，当前 126 IMPLEMENTED、14 PARTIAL。错误目录生成覆盖两套枚举的 139 个不同数值及八个未知输入，支持离线初始化前调用；同步 NoDirection 支持 H2H/H2D/D2H/D2D。共享 fake-VA range helper 保留 tombstone/guard/owner 拒绝；CNDrv unified async 补入 H2D 与 staging snapshot。两库异步拷贝仍因 D2H completion/writeback 保持 PARTIAL。证据与完整回归见 [core-copy](../evidence/core-copy-20261107/README.md)。
+四个 error API 与 `cnrtMemcpy` 已收口，该批为 126 IMPLEMENTED、14 PARTIAL。错误目录生成覆盖两套枚举的 139 个不同数值及八个未知输入，支持离线初始化前调用；同步 NoDirection 支持 H2H/H2D/D2H/D2D。共享 fake-VA range helper 保留 tombstone/guard/owner 拒绝；CNDrv unified async 补入 H2D 与 staging snapshot。两库异步拷贝仍因 D2H completion/writeback 保持 PARTIAL。证据与完整回归见 [core-copy](../evidence/core-copy-20261107/README.md)。
+
+## 2026-11-07 Queue retirement resolution
+
+`cnrtQueueDestroy` 与 `cnDestroyQueue` 已收口，当前 128 IMPLEMENTED、12 PARTIAL。公开 ID 立即失效，底层队列/staging 保留到完成；后续完成操作或创建队列触发收集，失败保留底层句柄并返回错误。CNRT `SyncDevice` 改为 Server context sync，包含已退役队列。
+
+证据见 [Queue retirement](../evidence/queue-retirement-20261107/README.md)：两库 pending kernel/H2D/D2D、Notifier wait/query、context/free/module/cross-queue 完成，1200 次退役、pending reset/teardown 与 destroy 失败重试。Native pending destroy 在本 SDK 上可能使 Notifier 成功而输出仍是填充值；保留独立观测，Native 数值基线先等待，Remote 仍在 pending 状态调用 destroy 并验证最终数值。收口依据为 SDK 声明的延后释放契约及这些执行结果，不宣称复现该 SDK 的丢数据行为。收集发生在后续 API/teardown，没有后台回收时限或 native 取消保证。

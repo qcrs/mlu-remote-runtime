@@ -6,7 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int fail_alloc, fail_image, fail_copy, fail_sync, fail_destroy;
+static int fail_alloc, fail_image, fail_copy, fail_sync, fail_destroy, fail_queue_destroy;
+extern CNresult __real_cnDestroyQueue(CNqueue);
+CNresult __wrap_cnDestroyQueue(CNqueue q) {
+  if (fail_queue_destroy) { fail_queue_destroy = 0; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnDestroyQueue(q);
+}
 extern CNresult __real_cnMalloc(CNaddr *, cn_uint64_t);
 CNresult __wrap_cnMalloc(CNaddr *a, cn_uint64_t n) {
   if (fail_alloc) { fail_alloc = 0; return CN_MEMORY_ERROR_OUT_OF_MEMORY; }
@@ -68,6 +73,23 @@ int main(int argc, char **argv) {
   assert(!mlu_backend_module_unload(s, mid));
   assert(!s->usage.bytes[MLU_RESOURCE_IMAGE]); free(image);
   puts("PASS injected native module-load failure rolls back image reservation");
+
+  assert(!mlu_backend_memcpy(s, MLU_MEMCPY_H2D, a, 0, 0, 0, data, NULL, 16, q, &tid));
+  fail_sync = 1;
+  assert(!mlu_backend_queue_destroy(s, q));
+  assert(s->usage.bytes[MLU_RESOURCE_STAGING] == 16);
+  assert(mlu_backend_queue_sync(s, q) == CN_ERROR_INVALID_HANDLE);
+  fail_sync = 0; fail_queue_destroy = 1;
+  assert(mlu_backend_context_sync(s) == CN_ERROR_INVALID_VALUE);
+  assert(!s->usage.bytes[MLU_RESOURCE_STAGING]);
+  unsigned retained = 0;
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) retained += !!s->queues[i].live;
+  assert(retained == 1);
+  assert(!mlu_backend_transfer_sync(s, tid));
+  assert(!mlu_backend_transfer_release(s, tid));
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) assert(!s->queues[i].live);
+  assert(!mlu_backend_queue_create(s, &q));
+  puts("PASS queue retirement retains staging; failed deferred destroy is observable and retry retains native ownership");
 
   assert(!mlu_backend_memcpy(s, MLU_MEMCPY_H2D, a, 0, 0, 0, data, NULL, 16, q, &tid));
   fail_sync = 1; fail_destroy = argc == 3;

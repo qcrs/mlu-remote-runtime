@@ -19,7 +19,7 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/client_abrupt.c" -o "$ROOT/build/mlu-remote-abrupt-client" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/protocol_errors.c" -o "$ROOT/build/mlu-remote-protocol-error-test" $LDFLAGS
 "$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/object_identity.c" "$ROOT/server/object_registry.c" -Wl,--wrap=getrandom -lpthread -o "$ROOT/build/object-identity-test"
-"$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/backend_resources.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/resource_limits.c" "$ROOT/server/object_registry.c" "$ROOT/common/bang_image.c" -Wl,--wrap=cnMalloc,--wrap=cnModuleLoadFatBinary,--wrap=cnMemcpyHtoDAsync,--wrap=cnQueueSync,--wrap=cnCtxDestroy $LDFLAGS -lcndrv -lcnrt -lpthread -ldl -o "$ROOT/build/backend-resources-test"
+"$CC" $CFLAGS -I"$ROOT/server" "$ROOT/tests/backend_resources.c" "$ROOT/server/mlu_backend.c" "$ROOT/server/resource_limits.c" "$ROOT/server/object_registry.c" "$ROOT/common/bang_image.c" -Wl,--wrap=cnMalloc,--wrap=cnModuleLoadFatBinary,--wrap=cnMemcpyHtoDAsync,--wrap=cnQueueSync,--wrap=cnCtxDestroy,--wrap=cnDestroyQueue $LDFLAGS -lcndrv -lcnrt -lpthread -ldl -o "$ROOT/build/backend-resources-test"
 "$CC" $CFLAGS -shared "$ROOT/tests/fault_cleanup.c" -o "$ROOT/build/libtest-fail-cleanup.so"
 "$CC" $CFLAGS "$ROOT/tests/client_isolation.c" -o "$ROOT/build/mlu-remote-session-isolation-test" $CLIENT_LIBS $LDFLAGS -lpthread
 "$CC" $CFLAGS "$ROOT/tests/client_device_select.c" -o "$ROOT/build/mlu-remote-device-select-test" $CLIENT_LIBS $LDFLAGS -lpthread
@@ -52,6 +52,7 @@ if command -v cncc >/dev/null 2>&1 || [ -x "$NEUWARE_HOME/bin/cncc" ] || [ -x /u
   for TEST in native_bang_remote native_bang_generic; do
     "$CNCC" --bang-mlu-arch=mtp_372 "$ROOT/tests/$TEST.mlu" -o "$ROOT/build/$TEST"
   done
+  "$CNCC" --bang-mlu-arch=mtp_372 "$ROOT/tests/native_queue_retirement.mlu" -lcndrv -o "$ROOT/build/native_queue_retirement"
   # Keep the actual embedded ELF container/host stub for ABI and parser probes.
   mkdir -p "$ROOT/build/audit"
   (cd "$ROOT/build/audit" && "$CNCC" --bang-mlu-arch=mtp_372 -save-temps "$ROOT/tests/native_bang_abi.mlu" -o "$ROOT/build/native_bang_abi")

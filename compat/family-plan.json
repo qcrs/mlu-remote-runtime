@@ -1773,37 +1773,10 @@
     "family": "queue_notifier",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 36,
-      "PARTIAL_IMPLEMENTED": 2,
+      "IMPLEMENTED": 38,
       "NOT_IMPLEMENTED": 2
     },
     "remaining": [
-      {
-        "api": "cnrtQueueDestroy",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "",
-        "next_step": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
-        "closure": {
-          "gap": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
-          "fix": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
-          "acceptance": "Finite pending kernel plus async copies: destroy returns while work remains, stale handle is rejected, completion via notifier/context preserves data and no resources leak."
-        }
-      },
-      {
-        "api": "cnDestroyQueue",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "",
-        "next_step": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
-        "closure": {
-          "gap": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
-          "fix": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
-          "acceptance": "Finite pending kernel plus async copies: destroy returns while work remains, stale handle is rejected, completion via notifier/context preserves data and no resources leak."
-        }
-      },
       {
         "api": "cnQueueAddCallback",
         "status": "NOT_IMPLEMENTED",

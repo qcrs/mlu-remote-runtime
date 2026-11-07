@@ -26,6 +26,8 @@ typedef struct {
   CNqueue handle;
   uint64_t owner;
   uint32_t generation;
+  /* Public identity is gone; native work and staging still belong to session. */
+  int retired;
   int live;
 } mlu_backend_queue;
 

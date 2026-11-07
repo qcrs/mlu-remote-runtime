@@ -1,0 +1,1 @@
+PASS CNRT retirement; notifier wait/query, context/free and cross-queue completion preserve kernel and H2D/D2D; 1200 retirements and pending reset

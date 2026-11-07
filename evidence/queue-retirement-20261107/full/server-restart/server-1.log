@@ -1,0 +1,12 @@
+[server] limit DEVICE session=1073741824 total=8589934592 bytes
+[server] limit STAGING session=67108864 total=268435456 bytes
+[server] limit IMAGE session=67108864 total=268435456 bytes
+[server] MLU_REMOTE_BIND=127.0.0.1 PORT=49959 device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+[server] listening handshake_timeout_ms=5000 io_timeout_ms=120000 max_connections=32
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] response failed fd=10 opcode=2 request=3 errno=32 (Broken pipe)
+[server] session fd=10 disconnected; cleaning native resources
+[server] session start fd=13 awaiting HELLO
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] native context created fd=13 device=0 flags=1

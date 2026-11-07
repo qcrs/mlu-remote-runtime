@@ -3847,15 +3847,15 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "MLU370-S4, Neuware 3.5.2/CNRT 6.5.2/CNDrv 2.5.2, AArch64 -> AArch64, one device; Queue identity invalidates correctly; pending native work is currently synchronized before destruction.",
-      "native_test": "native_bang_abi-native.log",
-      "remote_test": "native_bang_abi-replacement.log",
-      "next_step": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
-      "closure": {
-        "gap": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
-        "fix": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
-        "acceptance": "Finite pending kernel plus async copies: destroy returns while work remains, stale handle is rejected, completion via notifier/context preserves data and no resources leak."
+      "status": "IMPLEMENTED",
+      "boundary": "Owned explicit queue ID retires without a native synchronization; native queue and H2D staging remain session-owned until confirmed completion. Notifier/context/free/module and cross-queue completion preserve pending work; deferred destruction failures retain the handle and are reported. MLU370-S4 / Neuware 3.5.2; native pending-destroy data-loss observation is documented separately.",
+      "native_test": "queue-retirement-20261107/runtime-retirement-native.log; queue-retirement-20261107/runtime-native-pending-observation.log",
+      "remote_test": "queue-retirement-20261107/runtime-retirement-remote.log; queue-retirement-20261107/runtime-retirement-preload.log; queue-retirement-20261107/runtime-retirement-isolated.log",
+      "next_step": "Complete within the declared single-device scope; no background collector or bounded native cancellation is claimed.",
+      "closure_resolution": {
+        "summary": "Public QueueID invalidates immediately; nonblocking collection waits for native queue completion before destruction and staging release. Real pending kernel/H2D/D2D survives notifier wait/query, context sync, free, cross-queue wait and Driver module unload; 1200 retirements, pending reset/teardown and native destroy failure retention are verified. Native pending-destroy behavior is an explicit SDK observation, not the numerical baseline.",
+        "native_test": "queue-retirement-20261107/runtime-retirement-native.log; queue-retirement-20261107/runtime-native-pending-observation.log",
+        "remote_test": "queue-retirement-20261107/runtime-retirement-remote.log; queue-retirement-20261107/runtime-retirement-preload.log; queue-retirement-20261107/runtime-retirement-isolated.log; queue-retirement-20261107/backend-retirement-rollback.log; queue-retirement-20261107/backend-retirement-quarantine.log"
       }
     },
     {
@@ -4491,10 +4491,10 @@
       "parameters": [],
       "implementation": "manual",
       "status": "IMPLEMENTED",
-      "boundary": "All live queues in this process session; blocks until completion",
-      "native_test": "native_bang_abi-native.log",
-      "remote_test": "native_bang_abi-replacement.log",
-      "next_step": "Probe and implement this functional family"
+      "boundary": "Synchronizes the Server native context for this process session, including default, live explicit and publicly retired queues; successful completion collects staging and completed retired native queues.",
+      "native_test": "queue-retirement-20261107/runtime-retirement-native.log",
+      "remote_test": "queue-retirement-20261107/runtime-retirement-remote.log; queue-retirement-20261107/runtime-retirement-preload.log; queue-retirement-20261107/runtime-retirement-isolated.log",
+      "next_step": "Complete within the process-session single-device scope."
     },
     {
       "name": "cnrtTaskTopoAcquireUserObject",
@@ -7289,21 +7289,21 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Flags=0 explicit queue; owned/stale handles; destroy conservatively synchronizes before release, whereas native may return before pending work completes",
-      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
-      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-      "next_step": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
-      "closure": {
-        "gap": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
-        "fix": "Retire public QueueID immediately; keep its native queue, staging and completion frontiers until queued work completes, then reclaim during collection/context teardown.",
-        "acceptance": "Finite pending kernel plus async copies: destroy returns while work remains, stale handle is rejected, completion via notifier/context preserves data and no resources leak."
-      },
+      "status": "IMPLEMENTED",
+      "boundary": "Owned explicit queue ID retires without a native synchronization; native queue and H2D staging remain session-owned until confirmed completion. Notifier/context/free/module and cross-queue completion preserve pending work; deferred destruction failures retain the handle and are reported. MLU370-S4 / Neuware 3.5.2; native pending-destroy data-loss observation is documented separately.",
+      "native_test": "queue-retirement-20261107/driver-retirement-native.log; queue-retirement-20261107/driver-native-pending-observation.log",
+      "remote_test": "queue-retirement-20261107/driver-retirement-remote.log; queue-retirement-20261107/driver-retirement-preload.log; queue-retirement-20261107/driver-retirement-isolated.log",
+      "next_step": "Complete within the declared single-device scope; no background collector or bounded native cancellation is claimed.",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Destroy synchronizes the queue before returning, contrary to the SDK promise to return immediately and release after pending work.",
         "baseline_boundary": "Flags=0 explicit queue; owned/stale handles; destroy conservatively synchronizes before release, whereas native may return before pending work completes",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Public QueueID invalidates immediately; nonblocking collection waits for native queue completion before destruction and staging release. Real pending kernel/H2D/D2D survives notifier wait/query, context sync, free, cross-queue wait and Driver module unload; 1200 retirements, pending reset/teardown and native destroy failure retention are verified. Native pending-destroy behavior is an explicit SDK observation, not the numerical baseline.",
+        "native_test": "queue-retirement-20261107/driver-retirement-native.log; queue-retirement-20261107/driver-native-pending-observation.log",
+        "remote_test": "queue-retirement-20261107/driver-retirement-remote.log; queue-retirement-20261107/driver-retirement-preload.log; queue-retirement-20261107/driver-retirement-isolated.log; queue-retirement-20261107/backend-retirement-rollback.log; queue-retirement-20261107/backend-retirement-quarantine.log"
       }
     },
     {

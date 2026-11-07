@@ -1,6 +1,6 @@
 # 资源配额与服务端关闭
 
-范围：2026-11-02，AArch64 / Neuware 3.5.2 / MLU370-S4。保留原有 TCP、对象所有权和 native backend；新增配额不会把原生资源错误改成成功。实现位于 `server/resource_limits.c`、`server/mlu_backend.c` 和 `server/mlu_remote_server.c`。
+范围：2026-11-02，2026-11-07 补充 Queue retirement；AArch64 / Neuware 3.5.2 / MLU370-S4。保留原有 TCP、对象所有权和 native backend；新增配额不会把原生资源错误改成成功。实现位于 `server/resource_limits.c`、`server/mlu_backend.c` 和 `server/mlu_remote_server.c`。
 
 ## 配置与计量口径
 
@@ -26,6 +26,10 @@ Transfer 容量在 copy/launch 的 native 提交前检查。不能先改变内�
 ## 释放与失败路径
 
 设备分配 native 失败会退回预留；成功 free 退回对应字节。异步 H2D 只在确认 queue completion 后释放 snapshot 和额度；拒绝、host malloc 或 native enqueue 失败退回本次预留。不同 queue 的 snapshot 不互相释放。
+
+Queue destroy 先失效公开 ID，返回时不调用 native sync/destroy；已提交的 kernel、copy、Notifier 和 H2D snapshot 继续归 session 所有。后续创建 queue、成功的 queue/Notifier/Transfer query 或 wait、context sync、free 和 module unload 会非阻塞查询已退役队列，仅在整个队列完成后释放 snapshot 并销毁底层句柄。未完成或查询失败时保留资源；底层 destroy 失败会返回错误并保留句柄供后续重试/teardown。没有独立后台收集线程，空闲 session 的资源可保留到下一次这些操作或 session cleanup。每类 1024 项的 queue 表包含尚未回收的退役队列。
+
+`cnrtSyncDevice` 同步整个 Server native context，包含已经没有客户端句柄的退役队列。显式/default queue sync 仍遵守各自 native 完成边界，收集器只查询其他退役队列，不等待它们。Free、module unload 与 session cleanup 仍等待所有存活底层队列，包括退役队列；reset/EOF 也不能提前释放在途 staging。真机用例与 SDK pending-destroy 差异见 [Queue retirement](../evidence/queue-retirement-20261107/README.md)。
 
 image 在解析前预留；坏 image、分配失败、native load 失败退回预留。成功 unload 释放 image。失败回滚中的 native unload 如果也失败，保留镜像及额度，交由 session cleanup/context destruction 处理。预置 module 不保留上传 image，因此不计入上传 image 字节。
 

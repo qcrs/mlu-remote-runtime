@@ -18,6 +18,7 @@ python3 scripts/generate_compat.py
 - `build/driver-shim/libcndrv.so`：部分原生 Driver ABI，只有系统库与 client core 依赖；与 CNRT Shim 分目录选择。
 - `build/native_driver`、`build/probes/probe_driver_semantics`：普通 CNDrv binary 的模块/launch/TLS/生命周期及原生语义探针；[运行方式](DRIVER_SHIM.md)。
 - `build/native_bang_{remote,generic,abi,module,drain}`：普通 CNCC 编译的原生程序。
+- `build/native_queue_retirement`：CNRT/CNDrv pending Queue destroy、独立 completion 和回收压力测试。
 - `build/libnative_bang_module.so`、`build/native_bang_module_dso`：CNCC 生成的共享库及原生 CNRT/动态 loader 测试程序。
 - `build/audit/`：ABI 用例的 `-save-temps` host/device 产物。
 - `build/module-audit/`：共享 module/globals 用例的 host/device 产物。
@@ -104,6 +105,7 @@ python3 scripts/verify-transparent.py --host SERVER_IP --port 50051 --out eviden
 | transport_deadlines.py | SDK-free Client 的真实 TCP 黑洞、半包、慢滴、总预算、backpressure、connect backlog 和 EINTR；超时后不发送/重放 |
 | server_transport.py | 自启 loopback 真机 server；首包/重复 HELLO、延迟 context 创建、空闲/收发 deadline、另一客户端持续工作 |
 | native_bang_drain | 有限 kernel 数值 native/replacement/preload；queue NOT_READY 为关闭测试提供原生对照 |
+| native_queue_retirement / verify-queue-retirement.py | 两库公开句柄立即失效、pending kernel/H2D/D2D 的 Notifier wait/query、context/free/module/cross-queue 完成、1200 次退役及 pending reset/teardown；SDK pending-destroy 异常单独记录，Native 数值基线先等待，Remote 验证 pending destroy |
 | server_resources.py / backend_resources.c | 自建真机 server 的配额、并发预留、pending kernel/H2D、socket drain、cnmon 计量；原生失败注入验证回滚/隔离 |
 | server_restart.py | 仅暂停/kill 自建 server；断线/超时 context 不重放，重启后旧对象 ID 不误命中新 allocation |
 | bang_image_bounds | ASan/UBSan：真实 image、截断、越界 section、NOBITS、变量 OBJECT/大小；kernel parser 与两种 variable image 各 2000 次 mutation |

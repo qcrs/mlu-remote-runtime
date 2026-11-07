@@ -177,9 +177,8 @@ cnrtRet_t cnrtSetDeviceFlag(uint32_t flags) {
 }
 cnrtRet_t cnrtSyncDevice(void) {
   ENTER(); CONNECT();
-  for(unsigned i=0;i<256;++i) if(queues[i].live) { int st=mlu_remote_queue_sync(ctx,queues[i].id); if(st) RETURN(status(st)); }
-  if(default_queue_used) { int st=mlu_remote_queue_sync(ctx,0); if(st) RETURN(status(st)); }
-  RETURN(cnrtSuccess);
+  /* Retired queues no longer have client handles but still own native work. */
+  RETURN(status(mlu_remote_context_sync(ctx)));
 }
 cnrtRet_t cnrtDeviceReset(void) {
   ENTER(); CONNECT(); int st=mlu_remote_session_reset(ctx); if(st) RETURN(status(st));

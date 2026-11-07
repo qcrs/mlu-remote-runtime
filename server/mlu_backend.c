@@ -121,7 +121,7 @@ static mlu_backend_allocation *find_alloc(mlu_backend_session *s, uint64_t id) {
 }
 static mlu_backend_queue *find_queue(mlu_backend_session *s, uint64_t id) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->queues[i].live && s->queues[i].owner == s->owner_token &&
+    if (s->queues[i].live && !s->queues[i].retired && s->queues[i].owner == s->owner_token &&
         s->queues[i].id == id && mlu_object_registry_contains(&s->objects, MLU_OBJECT_QUEUE, id)) return &s->queues[i];
   return NULL;
 }
@@ -261,6 +261,25 @@ static void release_staging_default(mlu_backend_session *s) {
     }
 }
 
+/* Destroy must not wait for queued work. Keep native ownership after retiring
+ * the public ID, and collect only queues confirmed complete. Transfer/notifier
+ * objects have independent completion handles and survive this collection.
+ * Failed native destruction retains the handle for retry or session teardown. */
+static int reap_retired_queues(mlu_backend_session *s) {
+  int first = 0;
+  for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
+    mlu_backend_queue *q = &s->queues[i];
+    if (!q->live || !q->retired) continue;
+    CNresult r = cnQueryQueue(q->handle);
+    if (r == CN_ERROR_NOT_READY) continue;
+    if (cleanup_result(&first, "cnQueryQueue(retired)", q->id, r)) continue;
+    release_staging(s, q->id);
+    if (!cleanup_result(&first, "cnDestroyQueue(retired)", q->id,
+                        cnDestroyQueue(q->handle))) memset(q, 0, sizeof(*q));
+  }
+  return first;
+}
+
 int mlu_backend_session_init(mlu_backend_session *s, int ordinal) {
   return mlu_backend_session_init_flags(s, ordinal, CN_CTX_SCHED_SYNC_WAIT);
 }
@@ -295,7 +314,7 @@ static int session_has_resources(const mlu_backend_session *s) {
 
 int mlu_backend_context_sync(mlu_backend_session *s) {
   CNresult r=cnCtxSync();
-  if (r==CN_SUCCESS) { release_staging(s,0); reap_transfers(s); }
+  if (r==CN_SUCCESS) { release_staging(s,0); reap_transfers(s); return reap_retired_queues(s); }
   return (int)r;
 }
 
@@ -413,6 +432,8 @@ int mlu_backend_free(mlu_backend_session *s, uint64_t id) {
     if (s->queues[i].live) { CNresult qr = cnQueueSync(s->queues[i].handle); if (qr != CN_SUCCESS) return (int)qr; }
   if (s->default_queue_used) { CNresult qr=cnQueueSync(NULL); if(qr) return (int)qr; }
   release_staging(s, 0);
+  int retired_status = reap_retired_queues(s);
+  if (retired_status) return retired_status;
   CNresult r = cnFree(a->address);
   if (r == CN_SUCCESS) {
     mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, a->bytes);
@@ -504,6 +525,8 @@ int mlu_backend_memcpy(mlu_backend_session *s, int direction,
 }
 
 static int mlu_backend_queue_create_options(mlu_backend_session *s, uint32_t flags, int priority, uint64_t *id) {
+  int st = reap_retired_queues(s);
+  if (st) return st;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) if (!s->queues[i].live) {
     CNqueue q = NULL; CNresult r = cnCreateQueueWithPriority(&q, flags, priority); if (r != CN_SUCCESS) return (int)r;
     uint64_t object_id = 0; uint32_t generation = 0;
@@ -519,20 +542,27 @@ int mlu_backend_queue_create(mlu_backend_session *s, uint64_t *id) {
 }
 int mlu_backend_queue_destroy(mlu_backend_session *s, uint64_t id) {
   mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
-  CNresult r = cnQueueSync(q->handle); if (r == CN_SUCCESS) release_staging(s, id);
-  if (r == CN_SUCCESS) r = cnDestroyQueue(q->handle); if (r == CN_SUCCESS) { q->live = 0; mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id); } return (int)r;
+  q->retired = 1;
+  mlu_object_registry_release(&s->objects, MLU_OBJECT_QUEUE, id);
+  return 0;
 }
 int mlu_backend_queue_sync(mlu_backend_session *s, uint64_t id) {
   /* Driver NULL queue is passed through to CNDrv. It must not become a
    * context-wide barrier or release staging owned by explicit queues. */
-  if (!id) { CNresult r=cnQueueSync(NULL); if(!r) { release_staging_default(s); reap_transfers(s); } return (int)r; }
+  if (!id) { CNresult r=cnQueueSync(NULL); if(!r) { release_staging_default(s); reap_transfers(s); return reap_retired_queues(s); } return (int)r; }
   mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
-  CNresult r = cnQueueSync(q->handle); if (r == CN_SUCCESS) { release_staging(s, id); reap_transfers(s); } return (int)r;
+  CNresult r = cnQueueSync(q->handle); if (r == CN_SUCCESS) { release_staging(s, id); reap_transfers(s); return reap_retired_queues(s); } return (int)r;
 }
 int mlu_backend_queue_query(mlu_backend_session *s, uint64_t id) {
-  if (!id) return (int)cnQueryQueue(NULL);
-  mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
-  return (int)cnQueryQueue(q->handle);
+  mlu_backend_queue *q = id ? find_queue(s, id) : NULL;
+  if (id && !q) return (int)CN_ERROR_INVALID_HANDLE;
+  CNresult r = cnQueryQueue(q ? q->handle : NULL);
+  if (r == CN_SUCCESS) {
+    if (q) release_staging(s, id); else release_staging_default(s);
+    reap_transfers(s);
+    return reap_retired_queues(s);
+  }
+  return (int)r;
 }
 static int mlu_backend_notifier_create_options(mlu_backend_session *s, uint32_t flags, uint64_t *id) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) if (!s->notifiers[i].live) {
@@ -559,18 +589,20 @@ int mlu_backend_notifier_record(mlu_backend_session *s, uint64_t nid, uint64_t q
 }
 int mlu_backend_notifier_query(mlu_backend_session *s, uint64_t id) {
   mlu_backend_notifier *n = find_notifier(s, id); if (!n) return (int)CN_ERROR_INVALID_HANDLE;
-  return (int)cnQueryNotifier(n->handle);
+  CNresult r = cnQueryNotifier(n->handle);
+  return r == CN_SUCCESS ? reap_retired_queues(s) : (int)r;
 }
 int mlu_backend_notifier_sync(mlu_backend_session *s, uint64_t id) {
   mlu_backend_notifier *n = find_notifier(s, id); if (!n) return (int)CN_ERROR_INVALID_HANDLE;
-  return (int)cnWaitNotifier(n->handle);
+  CNresult r = cnWaitNotifier(n->handle);
+  return r == CN_SUCCESS ? reap_retired_queues(s) : (int)r;
 }
 int mlu_backend_transfer_query(mlu_backend_session *s, uint64_t id) {
   mlu_backend_transfer *t = find_transfer(s, id);
   if (!t) return (int)CN_ERROR_INVALID_HANDLE;
   if (!t->notifier_live) { t->state = MLU_BACKEND_OPERATION_COMPLETE; return 0; }
   int st = (int)cnQueryNotifier(t->notifier);
-  if (st == CN_SUCCESS) t->state = MLU_BACKEND_OPERATION_COMPLETE;
+  if (st == CN_SUCCESS) { t->state = MLU_BACKEND_OPERATION_COMPLETE; return reap_retired_queues(s); }
   return st;
 }
 int mlu_backend_transfer_sync(mlu_backend_session *s, uint64_t id) {
@@ -578,7 +610,7 @@ int mlu_backend_transfer_sync(mlu_backend_session *s, uint64_t id) {
   if (!t) return (int)CN_ERROR_INVALID_HANDLE;
   if (!t->notifier_live) { t->state = MLU_BACKEND_OPERATION_COMPLETE; return 0; }
   int st = (int)cnWaitNotifier(t->notifier);
-  if (st == CN_SUCCESS) t->state = MLU_BACKEND_OPERATION_COMPLETE;
+  if (st == CN_SUCCESS) { t->state = MLU_BACKEND_OPERATION_COMPLETE; return reap_retired_queues(s); }
   else t->state = MLU_BACKEND_OPERATION_FAILED;
   return st;
 }
@@ -771,6 +803,8 @@ int mlu_backend_module_unload(mlu_backend_session *s, uint64_t module_id) {
     }
   if (s->default_queue_used) { CNresult r=cnQueueSync(NULL); if(r) return (int)r; }
   release_staging(s, 0);
+  int retired_status = reap_retired_queues(s);
+  if (retired_status) return retired_status;
   CNresult r = cnModuleUnload(m->module);
   if (r == CN_SUCCESS) {
     invalidate_module_kernels(s, module_id);

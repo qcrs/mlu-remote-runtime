@@ -1,0 +1,6 @@
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 43 RPC codecs/dispatch/bindings, 45 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 67, "PARTIAL_IMPLEMENTED": 7, "IMPLEMENTED": 50, "UNSUPPORTED": 3, "BLOCKED": 3}, "CNDrv": {"NOT_IMPLEMENTED": 90, "IMPLEMENTED": 78, "BLOCKED": 4, "PARTIAL_IMPLEMENTED": 5, "OUT_OF_SCOPE": 2, "UNSUPPORTED": 1}}
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 157, 'PARTIAL_IMPLEMENTED': 12, 'IMPLEMENTED': 128, 'UNSUPPORTED': 4, 'BLOCKED': 7, 'OUT_OF_SCOPE': 2}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence
