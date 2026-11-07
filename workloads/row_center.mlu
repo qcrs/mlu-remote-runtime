@@ -1,0 +1,86 @@
+#include "common.h"
+
+struct Shape { int rows, cols, pitch; };
+struct CenterParams { Shape shape; float affine[2]; };
+
+/* Both kernels share one module. Nested struct/array travel by value using
+ * the existing compiler metadata tool; no pointer fields or remote calls. */
+__mlu_entry__ void row_mean_kernel(const float *input, float *means, CenterParams params) {
+  for (int row = taskId; row < params.shape.rows; row += taskDim) {
+    float sum = 0;
+    for (int col = 0; col < params.shape.cols; ++col)
+      sum += input[row * params.shape.pitch + col];
+    means[row] = sum / params.shape.cols;
+  }
+}
+
+__mlu_entry__ void row_center_kernel(const float *input, const float *means,
+                                    float *output, CenterParams params) {
+  for (int i = taskId; i < params.shape.rows * params.shape.cols; i += taskDim) {
+    int row = i / params.shape.cols, col = i % params.shape.cols;
+    output[i] = (input[row * params.shape.pitch + col] - means[row]) * params.affine[0]
+                + params.affine[1];
+  }
+}
+
+int main(int argc, char **argv) {
+  if (argc != 1 && argc != 3) {
+    fprintf(stderr, "usage: %s [rows columns]\n", argv[0]); return 2;
+  }
+  const int rows = argc == 3 ? dimension(argv[1], 1024) : 65;
+  const int cols = argc == 3 ? dimension(argv[2], 1024) : 127;
+  const int n = rows * cols, pitch = cols + 3, padded_count = rows * pitch + 2;
+  const float guard = -777;
+  CenterParams params = {{rows, cols, pitch}, {1.25f, -0.5f}};
+  float *input = host_buffer(n), *padded = host_buffer(padded_count);
+  float *reference = host_buffer(n), *output = host_buffer(n + 2);
+  float *means = host_buffer(rows), *mean_reference = host_buffer(rows);
+  for (int i = 0; i < padded_count; ++i) padded[i] = guard;
+  output[0] = output[n + 1] = guard;
+  for (int row = 0; row < rows; ++row) {
+    double sum = 0;
+    for (int col = 0; col < cols; ++col) {
+      float value = (float)(((row * 17 + col * 13) % 113) - 56) / 7.0f;
+      input[row * cols + col] = value; sum += value;
+    }
+    mean_reference[row] = (float)(sum / cols);
+    for (int col = 0; col < cols; ++col)
+      reference[row * cols + col] = (input[row * cols + col] - mean_reference[row])
+                                   * params.affine[0] + params.affine[1];
+  }
+  float *compact = device_copy(input, n), *dp = device_copy(padded, padded_count);
+  float *dout = device_copy(output, n + 2), *dm = device_copy(means, rows);
+  CHECK(cnrtMemcpy2D(dp + 1, pitch * sizeof(float), compact, cols * sizeof(float),
+                     cols * sizeof(float), rows, cnrtMemcpyDevToDev));
+  /* Default queue, async memset, then two ordered kernels and context sync. */
+  CHECK(cnrtMemsetAsync(dm, 0, rows * sizeof(float), NULL));
+  cnrtDim3_t dim = {4, 1, 1};
+  row_mean_kernel<<<dim, cnrtFuncTypeBlock, NULL>>>(dp + 1, dm, params);
+  CHECK(cnrtGetLastError());
+  row_center_kernel<<<dim, cnrtFuncTypeBlock, NULL>>>(dp + 1, dm, dout + 1, params);
+  CHECK(cnrtGetLastError()); CHECK(cnrtSyncDevice()); CHECK(cnrtQueueQuery(NULL));
+  CHECK(cnrtMemcpy(output, dout, (n + 2) * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(means, dm, rows * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(padded, dp, padded_count * sizeof(float), cnrtMemcpyDevToHost));
+  int guards = output[0] != guard || output[n + 1] != guard || padded[0] != guard
+               || padded[padded_count - 1] != guard;
+  for (int row = 0; row < rows; ++row) {
+    for (int col = 0; col < pitch; ++col) {
+      float expected = col < cols ? input[row * cols + col] : guard;
+      if (padded[1 + row * pitch + col] != expected) ++guards;
+    }
+  }
+  float mean_error = 0;
+  for (int row = 0; row < rows; ++row) {
+    float delta = fabsf(means[row] - mean_reference[row]);
+    if (!isfinite(means[row])) delta = INFINITY;
+    if (delta > mean_error) mean_error = delta;
+  }
+  char shape[64]; snprintf(shape, sizeof(shape), "%dx%d", rows, cols);
+  printf("GUARD_MISMATCH=%d\nMEAN_MAX_ABS_ERROR=%.9g\n", guards, mean_error);
+  int result = report("row_center", shape, reference, output + 1, n, 1e-4f,
+                      guards + (mean_error > 1e-4f));
+  CHECK(cnrtFree(compact)); CHECK(cnrtFree(dp)); CHECK(cnrtFree(dout)); CHECK(cnrtFree(dm));
+  free(input); free(padded); free(reference); free(output); free(means); free(mean_reference);
+  return result || guards || mean_error > 1e-4f;
+}

@@ -1,0 +1,59 @@
+#include "common.h"
+
+/* L1 gradient magnitude: min(abs(Gx) + abs(Gy), 255). Border is zero. */
+__mlu_entry__ void image_sobel_kernel(const float *src, float *dst, int width, int height) {
+  for (int i = taskId; i < width * height; i += taskDim) {
+    int y = i / width, x = i % width;
+    if (x == 0 || y == 0 || x == width - 1 || y == height - 1) {
+      dst[i] = 0; continue;
+    }
+    int gx = (int)(src[i - width + 1] + 2 * src[i + 1] + src[i + width + 1]
+                 - src[i - width - 1] - 2 * src[i - 1] - src[i + width - 1]);
+    int gy = (int)(src[i + width - 1] + 2 * src[i + width] + src[i + width + 1]
+                 - src[i - width - 1] - 2 * src[i - width] - src[i - width + 1]);
+    int magnitude = (gx < 0 ? -gx : gx) + (gy < 0 ? -gy : gy);
+    dst[i] = (float)(magnitude > 255 ? 255 : magnitude);
+  }
+}
+
+int main(int argc, char **argv) {
+  if (argc != 1 && argc != 3) {
+    fprintf(stderr, "usage: %s [width height]\n", argv[0]); return 2;
+  }
+  const int width = argc == 3 ? dimension(argv[1], 1024) : 512;
+  const int height = argc == 3 ? dimension(argv[2], 1024) : 512;
+  const int n = width * height;
+  float *src = host_buffer(n), *reference = host_buffer(n), *output = host_buffer(n);
+  for (int y = 0; y < height; ++y)
+    for (int x = 0; x < width; ++x) src[y * width + x] = pixel(x, y);
+  const int horizontal[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+  const int vertical[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      reference[y * width + x] = 0;
+      if (x == 0 || y == 0 || x + 1 == width || y + 1 == height) continue;
+      int gx = 0, gy = 0;
+      for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+          int value = (int)src[(y + dy) * width + x + dx];
+          gx += horizontal[dy + 1][dx + 1] * value;
+          gy += vertical[dy + 1][dx + 1] * value;
+        }
+      }
+      int magnitude = abs(gx) + abs(gy);
+      reference[y * width + x] = (float)(magnitude > 255 ? 255 : magnitude);
+    }
+  }
+  float *ds = device_copy(src, n), *dd = device_copy(output, n);
+  cnrtQueue_t queue = NULL; CHECK(cnrtQueueCreate(&queue));
+  cnrtDim3_t dim = {4, 1, 1};
+  image_sobel_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(ds, dd, width, height);
+  CHECK(cnrtGetLastError()); CHECK(cnrtQueueSync(queue));
+  CHECK(cnrtMemcpy(output, dd, n * sizeof(float), cnrtMemcpyDevToHost));
+  char shape[64]; snprintf(shape, sizeof(shape), "%dx%d", width, height);
+  printf("WIDTH=%d\nHEIGHT=%d\nBOUNDARY=zero\n", width, height);
+  int result = report("image_sobel", shape, reference, output, n, 0);
+  CHECK(cnrtQueueDestroy(queue)); CHECK(cnrtFree(ds)); CHECK(cnrtFree(dd));
+  free(src); free(reference); free(output);
+  return result;
+}

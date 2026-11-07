@@ -1,0 +1,17 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542190]
+mnt mnt:[4026542191]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50261
+CLIENT /home/lvtong/mlu-remote-runtime/build/workloads/row_center
+GUARD_MISMATCH=0
+MEAN_MAX_ABS_ERROR=5.21540642e-08
+WORKLOAD=row_center
+SHAPE=65x127
+CPU_CHECKSUM=-4127.499997317791
+MLU_CHECKSUM=-4127.5000411570072
+MAX_ABS_ERROR=9.53674316e-07
+TOLERANCE=9.99999975e-05
+MISMATCH=0
+RESULT=PASS

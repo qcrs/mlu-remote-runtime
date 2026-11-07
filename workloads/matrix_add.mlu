@@ -1,26 +1,33 @@
 #include "common.h"
 
-__mlu_entry__ void matrix_add_kernel(float *a, float *b, float *c, int n) {
-  for(int i=taskId;i<n;i+=taskDim)c[i]=a[i]+b[i];
+__mlu_entry__ void matrix_add_kernel(const float *a, const float *b, float *c, int n) {
+  for (int i = taskId; i < n; i += taskDim) c[i] = a[i] + b[i];
 }
 
-int main(void) {
-  const int n=65536;
-  float *a=(float *)malloc(n*sizeof(float)),*b=(float *)malloc(n*sizeof(float));
-  float *ref=(float *)malloc(n*sizeof(float)),*out=(float *)malloc(n*sizeof(float));
-  if(!a||!b||!ref||!out)return 2;
-  for(int i=0;i<n;++i){a[i]=(float)((i%29)-14)/8.0f;b[i]=(float)((i%17)-8)/16.0f;}
-  for(int i=0;i<n;++i)ref[i]=a[i]+b[i];
-  float *da=device_copy(a,n),*dc=NULL;CHECK(cnrtMalloc((void **)&dc,n*sizeof(float)));
-  float *db=device_copy(b,n);
-  cnrtQueue_t queue=NULL;CHECK(cnrtQueueCreate(&queue));
-  cnrtDim3_t dim={4,1,1};
-  matrix_add_kernel<<<dim,cnrtFuncTypeBlock,queue>>>(da,db,dc,n);
-  CHECK(cnrtGetLastError());
-  CHECK(cnrtQueueSync(queue));
-  CHECK(cnrtMemcpy(out,dc,n*sizeof(float),cnrtMemcpyDevToHost));
-  int result=report("matrix_add","256x256",ref,out,n,0);
-  CHECK(cnrtQueueDestroy(queue));CHECK(cnrtFree(da));CHECK(cnrtFree(dc));
-  CHECK(cnrtFree(db));
-  free(a);free(b);free(ref);free(out);return result;
+int main(int argc, char **argv) {
+  if (argc != 1 && argc != 3) {
+    fprintf(stderr, "usage: %s [rows columns]\n", argv[0]); return 2;
+  }
+  const int rows = argc == 3 ? dimension(argv[1], 1024) : 256;
+  const int cols = argc == 3 ? dimension(argv[2], 1024) : 256;
+  const int n = rows * cols;
+  float *a = host_buffer(n), *b = host_buffer(n);
+  float *reference = host_buffer(n), *output = host_buffer(n);
+  for (int i = 0; i < n; ++i) {
+    a[i] = (float)((i % 29) - 14) / 8.0f;
+    b[i] = (float)((i % 17) - 8) / 16.0f;
+    reference[i] = a[i] + b[i];
+  }
+  float *da = device_copy(a, n), *db = device_copy(b, n), *dc = device_copy(output, n);
+  cnrtQueue_t queue = NULL; CHECK(cnrtQueueCreate(&queue));
+  cnrtDim3_t dim = {4, 1, 1};
+  matrix_add_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(da, db, dc, n);
+  CHECK(cnrtGetLastError()); CHECK(cnrtQueueSync(queue));
+  CHECK(cnrtMemcpy(output, dc, n * sizeof(float), cnrtMemcpyDevToHost));
+  char shape[64]; snprintf(shape, sizeof(shape), "%dx%d", rows, cols);
+  int result = report("matrix_add", shape, reference, output, n, 0);
+  CHECK(cnrtQueueDestroy(queue));
+  CHECK(cnrtFree(da)); CHECK(cnrtFree(db)); CHECK(cnrtFree(dc));
+  free(a); free(b); free(reference); free(output);
+  return result;
 }

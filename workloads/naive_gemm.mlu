@@ -1,26 +1,49 @@
 #include "common.h"
 
-__mlu_entry__ void naive_gemm_kernel(float *a, float *b, float *c, int n) {
-  for(int idx=taskId;idx<n;idx+=taskDim){int row=idx/64,col=idx%64;float sum=0;for(int k=0;k<64;++k)sum+=a[row*64+k]*b[k*64+col];c[idx]=sum;}
+/* Ordinary M/N/K loops; one task computes each assigned row. */
+__mlu_entry__ void naive_gemm_kernel(const float *a, const float *b, float *c,
+                                   int m, int n, int k) {
+  for (int row = taskId; row < m; row += taskDim) {
+    for (int col = 0; col < n; ++col) {
+      float sum = 0;
+      for (int inner = 0; inner < k; ++inner)
+        sum += a[row * k + inner] * b[inner * n + col];
+      c[row * n + col] = sum;
+    }
+  }
 }
 
-int main(void) {
-  const int n=4096;
-  float *a=(float *)malloc(n*sizeof(float)),*b=(float *)malloc(n*sizeof(float));
-  float *ref=(float *)malloc(n*sizeof(float)),*out=(float *)malloc(n*sizeof(float));
-  if(!a||!b||!ref||!out)return 2;
-  for(int i=0;i<n;++i){a[i]=(float)((i%29)-14)/8.0f;b[i]=(float)((i%17)-8)/16.0f;}
-  for(int row=0;row<64;++row)for(int col=0;col<64;++col){float sum=0;for(int k=0;k<64;++k)sum+=a[row*64+k]*b[k*64+col];ref[row*64+col]=sum;}
-  float *da=device_copy(a,n),*dc=NULL;CHECK(cnrtMalloc((void **)&dc,n*sizeof(float)));
-  float *db=device_copy(b,n);
-  cnrtQueue_t queue=NULL;CHECK(cnrtQueueCreate(&queue));
-  cnrtDim3_t dim={4,1,1};
-  naive_gemm_kernel<<<dim,cnrtFuncTypeBlock,queue>>>(da,db,dc,n);
-  CHECK(cnrtGetLastError());
-  CHECK(cnrtQueueSync(queue));
-  CHECK(cnrtMemcpy(out,dc,n*sizeof(float),cnrtMemcpyDevToHost));
-  int result=report("naive_gemm","64x64x64",ref,out,n,1e-4f);
-  CHECK(cnrtQueueDestroy(queue));CHECK(cnrtFree(da));CHECK(cnrtFree(dc));
-  CHECK(cnrtFree(db));
-  free(a);free(b);free(ref);free(out);return result;
+int main(int argc, char **argv) {
+  if (argc != 1 && argc != 4) {
+    fprintf(stderr, "usage: %s [M N K]\n", argv[0]); return 2;
+  }
+  const int m = argc == 4 ? dimension(argv[1], 128) : 64;
+  const int n = argc == 4 ? dimension(argv[2], 128) : 64;
+  const int k = argc == 4 ? dimension(argv[3], 128) : 64;
+  float *a = host_buffer(m * k), *b = host_buffer(k * n);
+  float *reference = host_buffer(m * n), *output = host_buffer(m * n);
+  /* Non-binary fractions exercise tolerance; CPU accumulates in double. */
+  for (int i = 0; i < m * k; ++i) a[i] = (float)((i % 29) - 14) / 13.0f;
+  for (int i = 0; i < k * n; ++i) b[i] = (float)((i % 17) - 8) / 11.0f;
+  for (int row = 0; row < m; ++row) {
+    for (int col = 0; col < n; ++col) {
+      double sum = 0;
+      for (int inner = 0; inner < k; ++inner)
+        sum += (double)a[row * k + inner] * (double)b[inner * n + col];
+      reference[row * n + col] = (float)sum;
+    }
+  }
+  float *da = device_copy(a, m * k), *db = device_copy(b, k * n);
+  float *dc = device_copy(output, m * n);
+  cnrtQueue_t queue = NULL; CHECK(cnrtQueueCreate(&queue));
+  cnrtDim3_t dim = {4, 1, 1};
+  naive_gemm_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(da, db, dc, m, n, k);
+  CHECK(cnrtGetLastError()); CHECK(cnrtQueueSync(queue));
+  CHECK(cnrtMemcpy(output, dc, m * n * sizeof(float), cnrtMemcpyDevToHost));
+  char shape[64]; snprintf(shape, sizeof(shape), "%dx%dx%d", m, n, k);
+  int result = report("naive_gemm", shape, reference, output, m * n, 1e-4f);
+  CHECK(cnrtQueueDestroy(queue));
+  CHECK(cnrtFree(da)); CHECK(cnrtFree(db)); CHECK(cnrtFree(dc));
+  free(a); free(b); free(reference); free(output);
+  return result;
 }

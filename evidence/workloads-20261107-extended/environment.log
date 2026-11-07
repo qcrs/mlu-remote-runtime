@@ -1,0 +1,27 @@
+COMMAND ['uname', '-m']
+aarch64
+COMMAND ['/usr/local/neuware/bin/cncc', '--version']
+cncc 4.5.1 clang version 11.1.0
+Target: aarch64-unknown-linux-gnu
+Thread model: posix
+InstalledDir: /usr/local/neuware/bin
+COMMAND ['cnmon']
+Sat Nov  7 02:15:17 2026
++------------------------------------------------------------------------------+
+| CNMON v5.10.35                                               Driver v5.10.35 |
++-------------------------------+----------------------+-----------------------+
+| Card  VF  Name       Firmware |               Bus-Id | Util        Ecc-Error |
+| Fan   Temp      Pwr:Usage/Cap |         Memory-Usage | Mode     Compute-Mode |
+|===============================+======================+=======================|
+| 0     /   MLU370-S4    v1.1.6 |         0000:84:00.0 | 0%                N/A |
+|  0%   58C          23 W/ 75 W |     0 MiB/ 23365 MiB | FULL          Default |
++-------------------------------+----------------------+-----------------------+
+
++------------------------------------------------------------------------------+
+| Processes:                                                                   |
+|  Card  MI  PID     Command Line                             MLU Memory Usage |
+|==============================================================================|
+|  No running processes found                                                  |
++------------------------------------------------------------------------------+
+
+

@@ -1,0 +1,154 @@
+[
+  {
+    "symbol": "_Z15row_mean_kernelPKfPf12CenterParams",
+    "image_size": 3848,
+    "fingerprint": "0x45942215e29382e8",
+    "parameters": [
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 20,
+        "kind": "aggregate",
+        "layout": {
+          "type": "struct",
+          "size": 20,
+          "alignment": 4,
+          "fields": [
+            {
+              "offset": 0,
+              "layout": {
+                "type": "struct",
+                "size": 12,
+                "alignment": 4,
+                "fields": [
+                  {
+                    "offset": 0,
+                    "layout": {
+                      "type": "i32",
+                      "size": 4,
+                      "alignment": 4
+                    }
+                  },
+                  {
+                    "offset": 4,
+                    "layout": {
+                      "type": "i32",
+                      "size": 4,
+                      "alignment": 4
+                    }
+                  },
+                  {
+                    "offset": 8,
+                    "layout": {
+                      "type": "i32",
+                      "size": 4,
+                      "alignment": 4
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "offset": 12,
+              "layout": {
+                "type": "array",
+                "count": 2,
+                "size": 8,
+                "alignment": 4,
+                "element": {
+                  "type": "float",
+                  "size": 4,
+                  "alignment": 4
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "symbol": "_Z17row_center_kernelPKfS0_Pf12CenterParams",
+    "image_size": 3848,
+    "fingerprint": "0x45942215e29382e8",
+    "parameters": [
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 20,
+        "kind": "aggregate",
+        "layout": {
+          "type": "struct",
+          "size": 20,
+          "alignment": 4,
+          "fields": [
+            {
+              "offset": 0,
+              "layout": {
+                "type": "struct",
+                "size": 12,
+                "alignment": 4,
+                "fields": [
+                  {
+                    "offset": 0,
+                    "layout": {
+                      "type": "i32",
+                      "size": 4,
+                      "alignment": 4
+                    }
+                  },
+                  {
+                    "offset": 4,
+                    "layout": {
+                      "type": "i32",
+                      "size": 4,
+                      "alignment": 4
+                    }
+                  },
+                  {
+                    "offset": 8,
+                    "layout": {
+                      "type": "i32",
+                      "size": 4,
+                      "alignment": 4
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "offset": 12,
+              "layout": {
+                "type": "array",
+                "count": 2,
+                "size": 8,
+                "alignment": 4,
+                "element": {
+                  "type": "float",
+                  "size": 4,
+                  "alignment": 4
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

@@ -1,24 +1,30 @@
 #include "common.h"
 
-__mlu_entry__ void image_threshold_kernel(float *a, float *c, int n) {
-  for(int i=taskId;i<n;i+=taskDim)c[i]=a[i]>127?255:0;
+__mlu_entry__ void image_threshold_kernel(const float *src, float *dst, int width, int height) {
+  for (int i = taskId; i < width * height; i += taskDim) dst[i] = src[i] > 127 ? 255 : 0;
 }
 
-int main(void) {
-  const int n=262144;
-  float *a=(float *)malloc(n*sizeof(float)),*b=(float *)malloc(n*sizeof(float));
-  float *ref=(float *)malloc(n*sizeof(float)),*out=(float *)malloc(n*sizeof(float));
-  if(!a||!b||!ref||!out)return 2;
-  for(int i=0;i<n;++i){a[i]=(float)((i*37+i/512*13)%256);b[i]=(float)((i%17)-8)/16.0f;}
-  for(int i=0;i<n;++i)ref[i]=a[i]>127?255:0;
-  float *da=device_copy(a,n),*dc=NULL;CHECK(cnrtMalloc((void **)&dc,n*sizeof(float)));
-  cnrtQueue_t queue=NULL;CHECK(cnrtQueueCreate(&queue));
-  cnrtDim3_t dim={4,1,1};
-  image_threshold_kernel<<<dim,cnrtFuncTypeBlock,queue>>>(da,dc,n);
-  CHECK(cnrtGetLastError());
-  CHECK(cnrtQueueSync(queue));
-  CHECK(cnrtMemcpy(out,dc,n*sizeof(float),cnrtMemcpyDevToHost));
-  int result=report("image_threshold","512x512",ref,out,n,0);
-  CHECK(cnrtQueueDestroy(queue));CHECK(cnrtFree(da));CHECK(cnrtFree(dc));
-  free(a);free(b);free(ref);free(out);return result;
+int main(int argc, char **argv) {
+  if (argc != 1 && argc != 3) {
+    fprintf(stderr, "usage: %s [width height]\n", argv[0]); return 2;
+  }
+  const int width = argc == 3 ? dimension(argv[1], 1024) : 512;
+  const int height = argc == 3 ? dimension(argv[2], 1024) : 512;
+  const int n = width * height;
+  float *src = host_buffer(n), *reference = host_buffer(n), *output = host_buffer(n);
+  for (int y = 0; y < height; ++y)
+    for (int x = 0; x < width; ++x) src[y * width + x] = pixel(x, y);
+  for (int i = 0; i < n; ++i) reference[i] = src[i] > 127 ? 255 : 0;
+  float *ds = device_copy(src, n), *dd = device_copy(output, n);
+  cnrtQueue_t queue = NULL; CHECK(cnrtQueueCreate(&queue));
+  cnrtDim3_t dim = {4, 1, 1};
+  image_threshold_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(ds, dd, width, height);
+  CHECK(cnrtGetLastError()); CHECK(cnrtQueueSync(queue));
+  CHECK(cnrtMemcpy(output, dd, n * sizeof(float), cnrtMemcpyDevToHost));
+  char shape[64]; snprintf(shape, sizeof(shape), "%dx%d", width, height);
+  printf("WIDTH=%d\nHEIGHT=%d\nBOUNDARY=pointwise-threshold-127\n", width, height);
+  int result = report("image_threshold", shape, reference, output, n, 0);
+  CHECK(cnrtQueueDestroy(queue)); CHECK(cnrtFree(ds)); CHECK(cnrtFree(dd));
+  free(src); free(reference); free(output);
+  return result;
 }

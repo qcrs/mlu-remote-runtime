@@ -96,7 +96,9 @@ MLU370-S4 / AArch64 / Neuware 3.5.2 真机运行通过；同一 CNCC binary 的 
 
 ## Application Workloads
 
-已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur），以及 `queue_notifier` 的异步 H2D、device pointer attributes、Notifier query/wait、跨 Queue 依赖和计时。应用均使用普通 BANG C Kernel、CNRT Memory 与 Queue，CPU reference 对照，Native/replacement/preload 运行同一 executable。运行方式和两个终端模拟本地/远程见 [workloads](../workloads/README.md)，最新数值结果见 [证据](../evidence/workloads-20261107/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。
+已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur / Sobel），以及 `queue_notifier` 的异步 H2D、device pointer attributes、Notifier query/wait、跨 Queue 依赖和计时。2026-11-07 续批新增 Sobel 和 `row_center`：后者通过同一 Module 的两个 Kernel 执行行均值归约和 affine 中心化，使用现有 compiler metadata 描述 nested struct/array 按值参数，并覆盖默认 Queue、context sync、async memset、pitched D2D、offset 和 padding guards。
+
+七个普通 BANG C 程序共 16 组尺寸（含非方形 GEMM、task tail、1×1 threshold、1×7 邻域边界）均由 CPU reference 逐元素检查；同一 executable 的 Native/replacement/preload 共 48 次运行全部通过。GEMM 和中心化最大绝对误差均为 `9.53674316e-7`，其他五项为 0；所有 mismatch/guard mismatch 为 0。Sobel 与 struct 双 Kernel 程序另通过隐藏 SDK 和 `/dev` 的客户端 namespace 验证。本批未发现新的 Runtime 缺口，未修改 Runtime 或扩展 API。L0 build/schema/codegen/contracts、L1 workload 对照与 L2 generic core smoke 通过，未触及需 L3 的核心组件，因此未重复历史完整 suite。运行方式及双终端命令见 [workloads](../workloads/README.md)，最新结果见 [证据](../evidence/workloads-20261107-extended/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。
 
 ## 2026-11-07 Driver module memory query
 

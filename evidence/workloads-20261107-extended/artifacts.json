@@ -1,0 +1,136 @@
+{
+  "matrix_add": {
+    "sha256": "1a15dadc6dd1d76fccf5139f5d29af0fd92681f62afcc27fc510245cf3752f7b",
+    "sources": {
+      "workloads/matrix_add.mlu": "af70d5387688af16a2dc1e1b4c8c534245340a8dbe4de524dbffe6d136ef0f02",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "/home/lvtong/mlu-remote-runtime/workloads/matrix_add.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/matrix_add"
+      ]
+    ]
+  },
+  "naive_gemm": {
+    "sha256": "9862e4957a84d919328282f8228675cd236018cffac418b371b7cad1457ed587",
+    "sources": {
+      "workloads/naive_gemm.mlu": "b0b62269e9094fc4561def02ce03621fdb3d39c406c3fb8cbe0b83ab25a7458b",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "/home/lvtong/mlu-remote-runtime/workloads/naive_gemm.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/naive_gemm"
+      ]
+    ]
+  },
+  "image_threshold": {
+    "sha256": "0897211546a37662318fa377f55cdd9f0d166e5719010cb2850c3f7171c1dd09",
+    "sources": {
+      "workloads/image_threshold.mlu": "8a370d68b3ac68ed6e6ea17cc7a650f1e8608ab35279586507e4ea6c1569262b",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "/home/lvtong/mlu-remote-runtime/workloads/image_threshold.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold"
+      ]
+    ]
+  },
+  "image_blur": {
+    "sha256": "b21f2ed6832f17bc339f47832fecf3235465aae23593d1155e8e436976072ebe",
+    "sources": {
+      "workloads/image_blur.mlu": "7dc1b70880533a1f9cbd23d3d30bfd10425feabb22412e2770ca296a546e0c0d",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "/home/lvtong/mlu-remote-runtime/workloads/image_blur.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur"
+      ]
+    ]
+  },
+  "queue_notifier": {
+    "sha256": "b962378683f1163829d91ec3cd9391da6048a31bd1666c7bdbe2b29992be9079",
+    "sources": {
+      "workloads/queue_notifier.mlu": "a199a99c368077873f198e0be98635c4069c6d229da0a6814071b57154e7e362",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "/home/lvtong/mlu-remote-runtime/workloads/queue_notifier.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/queue_notifier"
+      ]
+    ]
+  },
+  "image_sobel": {
+    "sha256": "e858d15914348a1c5bfb1c5984cd15ffb2a3d5a0f19dc7c0d165d5e08c600111",
+    "sources": {
+      "workloads/image_sobel.mlu": "008657d32b63410a3c9437c2d3fc1d78909c6e98c552c3df833e82180bd9776c",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "/home/lvtong/mlu-remote-runtime/workloads/image_sobel.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel"
+      ]
+    ]
+  },
+  "row_center": {
+    "sha256": "096b183ebcdfb06a9a0b34c46afa440398449a109e63326713622635c7a97508",
+    "sources": {
+      "workloads/row_center.mlu": "e731a3a049df5ab5e422000213f1b3811fbeaeb3c3ef49af00c852c9d7c0d848",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c",
+      "scripts/generate_bang_metadata.py": "9ac8ac5bb6cf1e730d23a9d7de5b12eb32ea1d612841492f1cf1750fae4cfd28"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "-save-temps",
+        "/home/lvtong/mlu-remote-runtime/workloads/row_center.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/row_center"
+      ],
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-device-only",
+        "--bang-mlu-arch=mtp_372",
+        "-S",
+        "-emit-llvm",
+        "/home/lvtong/mlu-remote-runtime/workloads/row_center.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/row_center/types.ll"
+      ],
+      [
+        "/usr/bin/python3",
+        "/home/lvtong/mlu-remote-runtime/scripts/generate_bang_metadata.py",
+        "--host",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/row_center",
+        "--pair",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/row_center/types.ll:/home/lvtong/mlu-remote-runtime/build/workloads/audit/row_center/row_center-bang-mlisa-cambricon-bang.cnfatbin",
+        "--manifest",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/row_center/abi.json"
+      ]
+    ]
+  }
+}

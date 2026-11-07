@@ -1,0 +1,11 @@
+PASS runner rejects nonfinite checksum
+PASS runner rejects out of tolerance
+PASS runner rejects missing metric
+PASS runner rejects duplicate result
+PASS runner rejects failure hidden by PASS substring
+PASS runner rejects nonzero mismatch
+PASS runner rejects wrong shape
+PASS current build receipt validates all 7 executables
+PASS build receipt rejects changed executable
+PASS all workload sources/executables use ordinary CNRT/CNCC, no remote helpers
+PASS no Runtime/schema/API source changed
