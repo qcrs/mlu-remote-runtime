@@ -1,0 +1,11 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50260
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_graph_host_driver
+PASS Host graph pageable replay/getter/clone/setter/update/completion
+PASS Host graph pinned replay/getter/clone/setter/update/completion
+PASS Host nested child clone and entity child replacement
+PASS Host aliases, D2H to H2D feedback, overlapping outputs, memset and default queue

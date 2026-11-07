@@ -1,0 +1,154 @@
+#include <bang.h>
+#include <cn_api.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#define OK(e) do {int st=(int)(e);if(st){fprintf(stderr,"%s=%d line %d\n",#e,st,__LINE__);exit(2);}}while(0)
+#define REQUIRE(e) do{if(!(e)){fprintf(stderr,"%s line %d\n",#e,__LINE__);exit(3);}}while(0)
+struct CaptureLeaf {const int *p,*nullable;int add;};
+struct CapturePayload {CaptureLeaf fields[2];uint64_t scalar;};
+extern "C" __mlu_entry__ void capture_relocated(CapturePayload p,int bias,int *out) {
+  out[0]=p.fields[0].p[0]+p.fields[0].add+bias;
+  out[1]=p.fields[1].p[0]+p.fields[1].add+(p.fields[0].nullable ? p.fields[0].nullable[0] : 0);
+  out[2]=(int)(p.scalar&0xffff);
+}
+#ifdef TEST_CNRT
+#define API(n) cnrt##n
+#define Graph cnrtTaskTopo_t
+#define Node cnrtTaskTopoNode_t
+#define Entity cnrtTaskTopoEntity_t
+#define Queue cnrtQueue_t
+#define Params cnrtKernelNodeParams_t
+#define Notifier cnrtNotifier_t
+#define Status enum cnrtQueueCaptureStatus
+typedef void *Address;
+#define QCREATE(q) cnrtQueueCreate(q)
+#define QDESTROY(q) cnrtQueueDestroy(q)
+#define ALLOC(p) cnrtMalloc(p,64)
+#define FREE(p) cnrtFree(p)
+#define H2D(d,s) cnrtMemcpy(d,s,64,cnrtMemcpyHostToDev)
+#define D2H(d,s) cnrtMemcpy(d,s,64,cnrtMemcpyDevToHost)
+#define H2DA(d,s,q) cnrtMemcpyAsync(d,s,64,q,cnrtMemcpyHostToDev)
+#define D2HA(d,s,q) cnrtMemcpyAsync(d,s,64,q,cnrtMemcpyDevToHost)
+#define BEGIN(q) cnrtQueueBeginCapture(q,cnrtQueueCaptureModeRelaxed)
+#define SET(a,v,q) cnrtMemsetAsync(a,v,64,q)
+#define NCREATE(n) cnrtNotifierCreate(n)
+#define RECORD(n,q) cnrtPlaceNotifier(n,q)
+#define WAIT(q,n) cnrtQueueWaitNotifier(n,q,0)
+#define NDESTROY(n) cnrtNotifierDestroy(n)
+#else
+#define API(n) cn##n
+#define Graph CNtaskTopo
+#define Node CNtaskTopoNode
+#define Entity CNtaskTopoEntity
+#define Queue CNqueue
+#define Params CN_KERNEL_NODE_PARAMS
+#define Notifier CNnotifier
+#define Status CNqueueCaptureStatus
+typedef CNaddr Address;
+#define QCREATE(q) cnCreateQueue(q,0)
+#define QDESTROY(q) cnDestroyQueue(q)
+#define ALLOC(p) cnMalloc(p,64)
+#define FREE(p) cnFree(p)
+#define H2D(d,s) cnMemcpyHtoD(d,s,64)
+#define D2H(d,s) cnMemcpyDtoH(d,s,64)
+#define H2DA(d,s,q) cnMemcpyHtoDAsync(d,s,64,q)
+#define D2HA(d,s,q) cnMemcpyDtoHAsync(d,s,64,q)
+#define BEGIN(q) cnQueueBeginCapture(q,CN_QUEUE_CAPTURE_MODE_RELAXED)
+#define SET(a,v,q) cnMemsetD8Async(a,v,64,q)
+#define NCREATE(n) cnCreateNotifier(n,0)
+#define RECORD(n,q) cnPlaceNotifier(n,q)
+#define WAIT(q,n) cnQueueWaitNotifier(q,n)
+#define NDESTROY(n) cnDestroyNotifier(n)
+#endif
+int main(int argc,char **argv) {
+  const char *mode=argc>1 ? argv[1] : "normal";int remote=getenv("MLU_TEST_SHIM")!=NULL;
+#ifdef TEST_CNRT
+  OK(cnrtSetDevice(0));
+#else
+  OK(cnInit(0));CNcontext ctx;OK(cnCtxCreate(&ctx,0,0));CNmodule module;CNkernel kernel;
+  REQUIRE(argc>2);OK(cnModuleLoad(argv[2],&module));OK(cnModuleGetKernel(module,"capture_relocated",&kernel));
+#endif
+  Address input,output;OK(ALLOC(&input));OK(ALLOC(&output));Queue q,r;OK(QCREATE(&q));OK(QCREATE(&r));
+  int baseline[16],result[16],inspect[16];size_t page=(size_t)sysconf(_SC_PAGESIZE);
+  int *source=(int *)mmap(NULL,page,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);REQUIRE(source!=MAP_FAILED);
+  for(int i=0;i<16;i++) {baseline[i]=-77;source[i]=i*3;result[i]=-99;}
+  OK(H2D(input,baseline));OK(H2D(output,baseline));
+  CapturePayload p={};p.fields[0]=(CaptureLeaf){(int *)(uintptr_t)input+1,NULL,2};
+  p.fields[1]=(CaptureLeaf){(int *)(uintptr_t)input+3,NULL,5};p.scalar=0x1234;
+  CapturePayload snapshot=p;int bias=10;int *dst=(int *)(uintptr_t)output+1;void *args[]={&p,&bias,&dst};
+  Graph g;REQUIRE(!mprotect(source,page,PROT_NONE));OK(BEGIN(q));OK(H2DA(input,source,q));
+#ifdef TEST_CNRT
+  cnrtDim3_t dim={1,1,1};OK(cnrtInvokeKernel((void *)capture_relocated,dim,cnrtFuncTypeBlock,args,0,q));
+#else
+  OK(cnInvokeKernel(kernel,1,1,1,CN_KERNEL_CLASS_BLOCK,0,q,args,NULL));
+#endif
+  OK(D2HA(result,output,q));
+  Status state;uint64_t id;const Node *frontier;size_t count;
+  OK(API(QueueIsCapturing)(q,&state));REQUIRE(state==1);
+  OK(API(QueueGetCaptureInfo)(q,&state,&id,&g,&frontier,&count));REQUIRE(state==1 && id && count==1);
+  size_t nodes_count=8;Node nodes[8];OK(API(TaskTopoGetNodes)(g,nodes,&nodes_count));REQUIRE(nodes_count==3);
+  Params got={};int found=0;
+  for(size_t i=0;i<nodes_count;i++) {
+    int type=-1;OK(API(TaskTopoNodeGetType)(nodes[i],(
+#ifdef TEST_CNRT
+      enum cnrtTaskTopoNodeType *
+#else
+      CNtaskTopoNodeType *
+#endif
+    )&type));
+    if(type!=1) continue;
+    OK(API(TaskTopoKernelNodeGetParams)(nodes[i],&got));found++;
+    REQUIRE(got.kernelParams && *(int *)got.kernelParams[1]==10 && !memcmp(got.kernelParams[0],&snapshot,sizeof(p)));
+#ifdef TEST_CNRT
+    REQUIRE(got.func==(void *)capture_relocated);
+#else
+    REQUIRE(got.hkernel==kernel);
+#endif
+  }
+  REQUIRE(found==1);p.fields[0].add=999;bias=999;
+  for(int i=0;i<16;i++) REQUIRE(result[i]==-99);
+  OK(API(QueueEndCapture)(q,&g));REQUIRE(!mprotect(source,page,PROT_READ|PROT_WRITE));OK(D2H(inspect,output));for(int i=0;i<16;i++) REQUIRE(inspect[i]==-77);
+  Entity e;OK(API(TaskTopoInstantiate)(&e,g,NULL,NULL,0));
+  for(int run=0;run<2;run++) {
+    for(int i=0;i<16;i++) {source[i]=run*100+i*3;result[i]=-99;}
+    OK(API(TaskTopoEntityInvoke)(e,q));
+    if(remote) for(int i=0;i<16;i++) REQUIRE(result[i]==-99);
+    OK(API(QueueSync)(q));
+    for(int i=0;i<16;i++) REQUIRE(result[i]==(i==1 ? source[1]+12 : i==2 ? source[3]+5 : i==3 ? 0x1234 : -77));
+  }
+  puts("PASS captured H2D/kernel/D2H, aggregate relocations, identity/snapshot and current-input replay");
+  /* Existing executable invocation remains an ordinary enqueue in this SDK. */
+  Graph empty;OK(BEGIN(q));source[1]=231;OK(API(TaskTopoEntityInvoke)(e,q));OK(API(QueueEndCapture)(q,&empty));
+  count=0;OK(API(TaskTopoGetNodes)(empty,NULL,&count));REQUIRE(count==0);OK(API(QueueSync)(q));REQUIRE(result[1]==243);
+  OK(API(TaskTopoDestroy)(empty));puts("PASS EntityInvoke during capture executes normally and adds no captured node");
+  Notifier first,last;OK(NCREATE(&first));OK(NCREATE(&last));OK(BEGIN(q));
+  OK(SET(input,17,q));OK(RECORD(first,q));OK(WAIT(r,first));OK(SET(output,29,r));OK(RECORD(last,r));OK(WAIT(q,last));
+  OK(SET(input,31,q));OK(API(QueueEndCapture)(q,&empty));count=0;OK(API(TaskTopoGetNodes)(empty,NULL,&count));REQUIRE(count==3);
+  Entity fork;OK(API(TaskTopoInstantiate)(&fork,empty,NULL,NULL,0));OK(API(TaskTopoEntityInvoke)(fork,q));OK(API(QueueSync)(q));
+  OK(D2H(inspect,input));REQUIRE(((unsigned char *)inspect)[0]==31);OK(D2H(inspect,output));REQUIRE(((unsigned char *)inspect)[0]==29);
+  OK(API(TaskTopoEntityDestroy)(fork));OK(API(TaskTopoDestroy)(empty));OK(NDESTROY(first));OK(NDESTROY(last));
+  puts("PASS notifier fork/join accepts branch ancestors after the root frontier advances");
+  if(remote && strcmp(mode,"normal")) {
+    /* Pending real output is published on reset even with an active capture. */
+    source[1]=351;for(int i=0;i<16;i++) result[i]=-99;
+    OK(API(TaskTopoEntityInvoke)(e,q));OK(BEGIN(r));OK(SET(input,59,r));
+    if(!strcmp(mode,"abrupt")) _exit(0);
+#ifdef TEST_CNRT
+    OK(cnrtDeviceReset());
+#else
+    OK(cnCtxDestroy(ctx));
+#endif
+    REQUIRE(result[1]==363);puts("PASS reset/close drains pending publication and discards active capture");return 0;
+  }
+  OK(API(TaskTopoEntityDestroy)(e));OK(API(TaskTopoDestroy)(g));OK(QDESTROY(q));OK(QDESTROY(r));OK(FREE(input));OK(FREE(output));
+#ifdef TEST_CNRT
+  OK(cnrtDeviceReset());
+#else
+  OK(cnModuleUnload(module));OK(cnCtxDestroy(ctx));
+#endif
+  REQUIRE(!munmap(source,page));return 0;
+}

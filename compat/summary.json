@@ -6,14 +6,14 @@
   "scope": "MLU370-S4, single device, Neuware 3.5.2, CNRT 6.5.2, CNDrv 2.5.2, AArch64 -> AArch64; installed public headers including deprecated declarations; private BANG hooks separate",
   "counts": {
     "CNRT": {
-      "NOT_IMPLEMENTED": 29,
-      "IMPLEMENTED": 95,
+      "NOT_IMPLEMENTED": 24,
+      "IMPLEMENTED": 100,
       "BLOCKED": 5,
       "UNSUPPORTED": 1
     },
     "CNDrv": {
-      "NOT_IMPLEMENTED": 50,
-      "IMPLEMENTED": 122,
+      "NOT_IMPLEMENTED": 45,
+      "IMPLEMENTED": 127,
       "BLOCKED": 6,
       "OUT_OF_SCOPE": 2
     }
@@ -34,7 +34,7 @@
     "cnrtInit"
   ],
   "generated_object_rpc_count": 10,
-  "generated_typed_rpc_count": 55,
-  "generated_public_wrapper_count": 116,
+  "generated_typed_rpc_count": 56,
+  "generated_public_wrapper_count": 126,
   "generated_local_api_count": 4
 }

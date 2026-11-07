@@ -626,4 +626,23 @@ typedef struct {
   unsigned char *data;
 } mlu_api_graph_host_response;
 int mlu_remote_api_graph_host(mlu_remote_context *, const mlu_api_graph_host_request *, mlu_api_graph_host_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t queue;
+  uint64_t thread;
+  uint32_t mode;
+  uint32_t opcode;
+  uint64_t input_bytes;
+  uint64_t capacity;
+  const unsigned char *data;
+} mlu_api_graph_capture_request;
+typedef struct {
+  uint32_t handled;
+  uint32_t state;
+  uint64_t id;
+  uint64_t graph;
+  uint64_t count;
+  unsigned char *data;
+} mlu_api_graph_capture_response;
+int mlu_remote_api_graph_capture(mlu_remote_context *, const mlu_api_graph_capture_request *, mlu_api_graph_capture_response *);
 #endif

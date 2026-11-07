@@ -4,6 +4,7 @@
 #include "bang_image.h"
 #include "bang_args.h"
 static void graph_kernel_cache_drop(mlu_remote_context *,uint64_t);
+static int graph_kernel_remember(mlu_remote_context *,uint64_t,uintptr_t);
 #include "fake_va.h"
 #include "host_memory.h"
 #include <errno.h>
@@ -121,7 +122,7 @@ static int queue_id(context *c,CNqueue handle,uint64_t *id) {
   *id=o->id; return 0;
 }
 static int release(context *c,int st,uint64_t transfer) {
-  return st ? st : mlu_remote_transfer_release(c->remote,transfer);
+  return st || !transfer ? st : mlu_remote_transfer_release(c->remote,transfer);
 }
 
 CNresult cnInit(unsigned flags) {
@@ -447,6 +448,8 @@ CNresult cnInvokeKernel(CNkernel handle,unsigned x,unsigned y,unsigned z,KernelC
   mlu_remote_kernel_relocation relocations[BANG_MAX_RELOCS];
   int packed=bang_pack_args(&k->layout,&k->types,params,resolve_kernel_pointer,c,args,relocations);
   if(packed) RETURN(packed==-1 ? CN_ERROR_INVALID_VALUE : CN_MEMORY_ERROR_INVALID_ADDRESS);
+  int remember=graph_kernel_remember(c->remote,k->id,(uintptr_t)handle);
+  if(remember) RETURN(result(remember));
   uint64_t transfer=0; int st=mlu_remote_kernel_launch_generic(c->remote,m->id,k->id,q,x,y,z,cls,args,k->layout.count,&transfer);
   RETURN(result(release(c,st,transfer)));
 }

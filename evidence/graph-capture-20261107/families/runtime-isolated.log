@@ -1,0 +1,82 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50264
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_api_families
+runtime kernel memory usage 0
+runtime version 6.5.2
+runtime driver version 5.10.35
+runtime properties MLU370 24576 3 0 6 4
+properties hash 2181653352
+runtime attr 0 0 0
+runtime attr 1 0 3
+runtime attr 2 0 0
+runtime attr 3 0 0
+runtime attr 4 0 1
+runtime attr 5 0 1
+runtime attr 6 0 1
+runtime attr 7 0 1
+runtime attr 8 0 0
+runtime attr 9 0 0
+runtime attr 257 0 4080
+runtime attr 258 0 24000
+runtime attr 259 0 1
+runtime attr 260 0 0
+runtime attr 261 0 1
+runtime attr 262 0 1
+runtime attr 263 0 1
+runtime attr 264 0 0
+runtime attr 265 0 0
+runtime attr 513 0 65535
+runtime attr 514 0 65535
+runtime attr 515 0 65535
+runtime attr 516 0 16
+runtime attr 517 0 6
+runtime attr 518 0 4
+runtime attr 519 0 2
+runtime attr 520 0 2
+runtime attr 521 0 4
+runtime attr 522 0 372
+runtime attr 523 0 1
+runtime attr 769 0 2097152
+runtime attr 770 0 786432
+runtime attr 771 0 1048576
+runtime attr 772 0 24576
+runtime attr 773 0 511
+runtime attr 774 0 4194304
+runtime attr 775 0 1
+runtime attr 777 0 0
+runtime attr 786 0 23365
+runtime attr 1025 0 0
+runtime attr 1026 0 1000000
+runtime attr 1027 0 3200000
+runtime attr 1028 0 384
+runtime attr 1029 0 24576
+runtime attr 1030 0 132
+runtime attr 1031 0 0
+runtime attr 1032 0 0
+runtime attr 1033 0 256
+runtime attr 16777215 0 0
+runtime attr 16777216 0 0
+runtime attr 16777217 0 0
+runtime attr 16777218 0 0
+runtime attr 16777219 0 0
+runtime attr 16777220 0 0
+runtime attr 16777221 0 0
+runtime attr 16777222 0 0
+runtime attr 16777223 0 0
+runtime attr 16777224 0 0
+runtime attr 16777225 0 0
+runtime attr 16777226 0 0
+runtime attr 16777227 100006 -1
+runtime memory info valid
+runtime priority range 7 0
+runtime priority low 7
+runtime priority clamped 0
+runtime fill truncation/offset/async; cross queue wait; timing PASS
+runtime flags 2 timing 632015
+runtime flags 4 timing 632015
+PASS pitched 2D/3D: differing pitches; offsets; xyz; depth; untouched padding; aliases
+PASS API families

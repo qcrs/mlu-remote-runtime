@@ -1,0 +1,3 @@
+attribute_status=100006
+PASS Host H2D/kernel/D2H graph mixed with ordinary async copies and overlapping publication
+PASS kernel graph reset releases live executable leases

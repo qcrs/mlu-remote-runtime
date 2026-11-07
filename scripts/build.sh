@@ -105,6 +105,8 @@ if command -v cncc >/dev/null 2>&1 || [ -x "$NEUWARE_HOME/bin/cncc" ] || [ -x /u
       --manifest "$ROOT/build/graph-kernel-$GRAPH_VARIANT/manifest.json" --attach-images
   done
 
+  bash "$ROOT/scripts/build-graph-capture.sh"
+
 else
   echo "WARN: cncc not found; preset kernel remains PARTIAL"
 fi

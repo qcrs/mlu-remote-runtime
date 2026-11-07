@@ -166,7 +166,7 @@ def generate(root, schema, check):
         client += [f'int mlu_remote_api_{name}(mlu_remote_context *ctx, const mlu_api_{name}_request *request, mlu_api_{name}_response *response) {{',
                    '  if (!ctx || !request || !response) return MLU_REMOTE_BAD_LENGTH;',
                    '  if (!(ctx->capabilities & MLU_CAP_TYPED_API)) return MLU_REMOTE_UNSUPPORTED;',
-                   f'  unsigned char p[{max(1,size(req))}];', '  unsigned char *e=NULL; uint32_t n=0;',
+                   f'  unsigned char p[{max(1,size(req))}]={{0}};', '  unsigned char *e=NULL; uint32_t n=0;',
                    '  mlu_api_'+name+'_request in=*request; (void)in;', *codec(req,'in','p',True),
                    *([f'  if(in.{buffer["size_from"]}>{buffer["max_bytes"]}u || (in.{buffer["size_from"]} && !response->{buffer["name"]})) return MLU_REMOTE_BAD_LENGTH;'] if buffer else []),
                    f'  int st=rpc(ctx,{op},p,{size(req)},&e,&n);',

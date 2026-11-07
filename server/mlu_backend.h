@@ -12,6 +12,9 @@
 
 #define MLU_BACKEND_MAX_OBJECTS 1024
 
+struct mlu_backend_session;
+int mlu_backend_capture_guard(struct mlu_backend_session *s,uint16_t op,const unsigned char *p,uint32_t n);
+
 typedef struct {
   uint64_t id;
   CNaddr address;
@@ -150,6 +153,9 @@ typedef struct mlu_backend_session {
   struct mlu_graph_entity *graph_entities;
   struct mlu_graph_view *graph_views;
   struct mlu_graph_invocation *graph_orphans;
+  struct mlu_capture *captures;
+  struct mlu_capture_queue *capture_queues;
+  struct mlu_capture_notifier *capture_notifiers;
   unsigned graph_snapshot_nodes;
 } mlu_backend_session;
 

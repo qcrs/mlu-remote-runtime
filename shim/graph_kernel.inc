@@ -51,6 +51,12 @@ static void graph_kernel_cache_drop(mlu_remote_context *session,uint64_t id) {
     while(*identity) {graph_kernel_identity *k=*identity;if(k->session!=session) {identity=&k->next;continue;}*identity=k->next;free(k);}
   }
 }
+static int graph_kernel_remember(mlu_remote_context *session,uint64_t id,uintptr_t function) {
+  graph_kernel_identity *v;
+  for(v=graph_kernel_identities;v;v=v->next) if(v->session==session && v->id==id) return 0;
+  v=calloc(1,sizeof(*v));if(!v) return GK_NOMEM;
+  v->session=session;v->id=id;v->function=function;v->next=graph_kernel_identities;graph_kernel_identities=v;return 0;
+}
 static int graph_kernel_encode(GK_OWNER,const GK_PARAMS *p,const void *dependencies,size_t count,mlu_api_graph_kernel_request *out) {
   if(count>MLU_GRAPH_MAX_NODES || (count && !dependencies) || p->reserve || p->extra ||
      !GK_X(p) || !GK_Y(p) || !GK_Z(p)) return GK_INVALID;
@@ -89,12 +95,8 @@ static int graph_kernel_encode(GK_OWNER,const GK_PARAMS *p,const void *dependenc
     }
     cursor+=32+a->size+24*a->relocation_count;
   }
-  graph_kernel_identity *identity;
-  for(identity=graph_kernel_identities;identity;identity=identity->next) if(identity->session==GK_SESSION && identity->id==out->kernel) break;
-  if(!identity) {
-    identity=calloc(1,sizeof(*identity));if(!identity) {free(data);return GK_NOMEM;}
-    identity->session=GK_SESSION;identity->id=out->kernel;identity->function=function;identity->next=graph_kernel_identities;graph_kernel_identities=identity;
-  }
+  int remembered=graph_kernel_remember(GK_SESSION,out->kernel,function);
+  if(remembered) {free(data);return remembered;}
   out->x=GK_X(p);out->y=GK_Y(p);out->z=GK_Z(p);out->klass=GK_CLASS(p);out->arg_count=layout->count;
   out->input_bytes=bytes;out->data=data;out->count=count;return 0;
 }

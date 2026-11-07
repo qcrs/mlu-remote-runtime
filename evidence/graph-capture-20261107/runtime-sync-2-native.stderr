@@ -1,0 +1,5 @@
+2026-11-07 08:36:39.755682: [cnrtError] [169052] [Card: 0] Error occurred during calling 'cnQueueSync' in CNDrv interface.
+2026-11-07 08:36:39.755747: [cnrtError] [169052] [Card: 0] Return value is 100360, CN_ERROR_QUEUE_CAPTURE_UNSUPPORTED.
+2026-11-07 08:36:39.755752: [cnrtError] [169052] [Card: 0] cnrtQueueSync: MLU queue sync failed.
+2026-11-07 08:36:39.755766: [cnrtError] [169052] [Card: 0] Error occurred during calling 'cnQueueEndCapture' in CNDrv interface.
+2026-11-07 08:36:39.755770: [cnrtError] [169052] [Card: 0] Return value is 100361, CN_ERROR_QUEUE_CAPTURE_INVALIDATED.

@@ -1,0 +1,82 @@
+[
+  {
+    "symbol": "capture_relocated",
+    "image_size": 2256,
+    "fingerprint": "0x6bc2f2e60572a7eb",
+    "parameters": [
+      {
+        "size": 56,
+        "kind": "aggregate",
+        "layout": {
+          "type": "struct",
+          "size": 56,
+          "alignment": 8,
+          "fields": [
+            {
+              "offset": 0,
+              "layout": {
+                "type": "array",
+                "count": 2,
+                "size": 48,
+                "alignment": 8,
+                "element": {
+                  "type": "struct",
+                  "size": 24,
+                  "alignment": 8,
+                  "fields": [
+                    {
+                      "offset": 0,
+                      "layout": {
+                        "type": "pointer",
+                        "size": 8,
+                        "alignment": 8
+                      }
+                    },
+                    {
+                      "offset": 8,
+                      "layout": {
+                        "type": "pointer",
+                        "size": 8,
+                        "alignment": 8
+                      }
+                    },
+                    {
+                      "offset": 16,
+                      "layout": {
+                        "type": "i32",
+                        "size": 4,
+                        "alignment": 4
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "offset": 48,
+              "layout": {
+                "type": "i64",
+                "size": 8,
+                "alignment": 8
+              }
+            }
+          ]
+        },
+        "pointer_offsets": [
+          0,
+          8,
+          24,
+          32
+        ]
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      }
+    ]
+  }
+]

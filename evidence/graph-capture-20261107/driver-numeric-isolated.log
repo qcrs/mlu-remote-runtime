@@ -1,0 +1,10 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50259
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_graph_capture_driver
+PASS captured H2D/kernel/D2H, aggregate relocations, identity/snapshot and current-input replay
+PASS EntityInvoke during capture executes normally and adds no captured node
+PASS notifier fork/join accepts branch ancestors after the root frontier advances

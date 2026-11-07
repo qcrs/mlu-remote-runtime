@@ -106,7 +106,7 @@ static int parse_hello(int fd, const struct mlu_remote_wire_header *h, const uns
   unsigned char out[16]; put32(out, MLU_REMOTE_VERSION); put32(out + 4, (uint32_t)count);
   /* Capability bits: device, allocation, copies, queue, notifier, preset
    * module, generic operators, and TransferID completion. */
-  put32(out + 8, 0xffu | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API | MLU_CAP_DEFERRED_D2H | MLU_CAP_ARGUMENT_RELOCATIONS);
+  put32(out + 8, 0xffu | MLU_CAP_GRAPH_CAPTURE | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API | MLU_CAP_DEFERRED_D2H | MLU_CAP_ARGUMENT_RELOCATIONS);
   put32(out + 12, MLU_REMOTE_KERNEL_ABI);
   int sent = send_response(fd, MLU_OP_HELLO, ntohll_u(h->request_id), (uint32_t)st, out, sizeof(out));
   return st ? -1 : sent;
@@ -117,6 +117,8 @@ static int handle_request(int fd, mlu_backend_session *s, const struct mlu_remot
   uint16_t op = ntohs(h->opcode); uint64_t req = ntohll_u(h->request_id);
   uint64_t tid, outid; int st = 0;
   unsigned char out[512];
+  st=mlu_backend_capture_guard(s,op,p,n);
+  if(st) return send_response(fd,op,req,(uint32_t)st,NULL,0);
   switch (op) {
 #include "simple_rpc_server.inc"
 #include "typed_rpc_server.inc"

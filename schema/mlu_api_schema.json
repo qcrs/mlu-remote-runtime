@@ -103,7 +103,8 @@
     "API_GRAPH_MEMCPY": 86,
     "API_GRAPH_KERNEL": 87,
     "API_GRAPH_KERNEL_ATTR": 88,
-    "API_GRAPH_HOST": 89
+    "API_GRAPH_HOST": 89,
+    "API_GRAPH_CAPTURE": 90
   },
   "hello": {
     "request": [
@@ -3652,7 +3653,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueBeginCapture(cnrtQueue_t queue, enum cnrtQueueCaptureMode mode);",
       "parameters": [
@@ -3662,7 +3663,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "mode",
@@ -3670,16 +3671,32 @@
           "kind": "enum",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-capture.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+      "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": false,
+        "required": [],
+        "prepare": [
+          "object *capture_q=get_queue(queue);",
+          "if(!capture_q) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t qid=capture_q->id;"
+        ],
+        "call": [
+          "RETURN(status(mlu_remote_capture(ctx,1,qid,mode,NULL,0,NULL,NULL,NULL,NULL,NULL)));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnrtQueueCopyAttributes",
@@ -3871,7 +3888,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueEndCapture(cnrtQueue_t queue, cnrtTaskTopo_t *pTaskTopo);",
       "parameters": [
@@ -3881,24 +3898,45 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pTaskTopo",
           "c_type": "cnrtTaskTopo_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "opaque_session_identity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-capture.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected. Global wrong-thread End returns 100362, preserves output and ends capture; unjoined returns 100364 and ends capture; wrong-root End returns 100366, preserves output and invalidates the root capture. Admission/query failures retain the capture for retry.",
+      "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": false,
+        "required": [
+          "pTaskTopo"
+        ],
+        "prepare": [
+          "object *capture_q=get_queue(queue);",
+          "if(!capture_q) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t qid=capture_q->id;"
+        ],
+        "call": [
+          "uint64_t graph=0;",
+          "int st=mlu_remote_capture(ctx,2,qid,0,NULL,0,NULL,NULL,&graph,NULL,NULL);",
+          "if(!st || st==100361 || st==100364) *pTaskTopo=(cnrtTaskTopo_t)(uintptr_t)graph;",
+          "RETURN(status(st));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnrtQueueGetAttribute",
@@ -3989,7 +4027,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueGetCaptureInfo(cnrtQueue_t queue, enum cnrtQueueCaptureStatus *pStatus, uint64_t *idOut, cnrtTaskTopo_t *pTaskTopo, const cnrtTaskTopoNode_t **pDependenciesOut, size_t *pNumDependencies);",
       "parameters": [
@@ -3999,56 +4037,83 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pStatus",
           "c_type": "enum cnrtQueueCaptureStatus *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         },
         {
           "name": "idOut",
           "c_type": "uint64_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         },
         {
           "name": "pTaskTopo",
           "c_type": "cnrtTaskTopo_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pDependenciesOut",
           "c_type": "const cnrtTaskTopoNode_t **",
           "kind": "object_handle",
-          "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pNumDependencies",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected. NONE/INVALID write only status; ACTIVE returns stable opaque graph/node identities and borrowed frontier storage until End/reset/disconnect.",
+      "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": false,
+        "required": [
+          "pStatus"
+        ],
+        "prepare": [
+          "object *capture_q=get_queue(queue);",
+          "if(!capture_q) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t qid=capture_q->id;"
+        ],
+        "call": [
+          "unsigned state=0;uint64_t id=0,graph=0;const uint64_t *ids=NULL;size_t count=0;",
+          "int st=mlu_remote_capture(ctx,3,qid,0,NULL,0,&state,&id,&graph,pDependenciesOut ? &ids : NULL,&count);",
+          "if(!st) *pStatus=(enum cnrtQueueCaptureStatus)state;",
+          "if(!st && state==1) {",
+          "  if(idOut) *idOut=id;",
+          "  if(pTaskTopo) *pTaskTopo=(cnrtTaskTopo_t)(uintptr_t)graph;",
+          "  if(pDependenciesOut) *pDependenciesOut=(const cnrtTaskTopoNode_t *)ids;",
+          "  if(pNumDependencies) *pNumDependencies=count;",
+          "}",
+          "RETURN(status(st));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnrtQueueGetPriority",
@@ -4121,7 +4186,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueIsCapturing(cnrtQueue_t queue, enum cnrtQueueCaptureStatus *pStatus);",
       "parameters": [
@@ -4131,24 +4196,45 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pStatus",
           "c_type": "enum cnrtQueueCaptureStatus *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-capture.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+      "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": false,
+        "required": [
+          "pStatus"
+        ],
+        "prepare": [
+          "object *capture_q=get_queue(queue);",
+          "if(!capture_q) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t qid=capture_q->id;"
+        ],
+        "call": [
+          "unsigned state=0;uint64_t id=0,graph=0;size_t count=0;",
+          "int st=mlu_remote_capture(ctx,3,qid,0,NULL,0,&state,&id,&graph,NULL,&count);",
+          "if(!st) *pStatus=(enum cnrtQueueCaptureStatus)state;",
+          "RETURN(status(st));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnrtQueueQuery",
@@ -4308,7 +4394,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtQueueUpdateCaptureDependencies(cnrtQueue_t queue, cnrtTaskTopoNode_t *dependencies, size_t numDependencies, unsigned int flags);",
       "parameters": [
@@ -4318,15 +4404,15 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "dependencies",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "in",
+          "length": "numDependencies",
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "numDependencies",
@@ -4345,13 +4431,32 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+      "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": false,
+        "required": [],
+        "prepare": [
+          "object *capture_q=get_queue(queue);",
+          "if(!capture_q) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t qid=capture_q->id;"
+        ],
+        "call": [
+          "if(numDependencies>MLU_GRAPH_MAX_NODES || (numDependencies && !dependencies)) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t ids[MLU_GRAPH_MAX_NODES];",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];",
+          "RETURN(status(mlu_remote_capture(ctx,4,qid,flags,ids,numDependencies,NULL,NULL,NULL,NULL,NULL)));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnrtQueueWaitNotifier",
@@ -13081,7 +13186,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueBeginCapture(CNqueue hQueue, CNqueueCaptureMode mode);",
       "parameters": [
@@ -13091,7 +13196,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "mode",
@@ -13099,16 +13204,30 @@
           "kind": "enum",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-capture.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+      "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": true,
+        "required": [],
+        "prepare": [
+          "uint64_t qid;if(queue_id(c,hQueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "call": [
+          "RETURN(result(mlu_remote_capture(c->remote,1,qid,mode,NULL,0,NULL,NULL,NULL,NULL,NULL)));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnQueueCopyAttributes",
@@ -13183,7 +13302,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueEndCapture(CNqueue hQueue, CNtaskTopo *pTaskTopo);",
       "parameters": [
@@ -13193,24 +13312,43 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pTaskTopo",
           "c_type": "CNtaskTopo *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "opaque_session_identity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-capture.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected. Global wrong-thread End returns 100362, preserves output and ends capture; unjoined returns 100364 and ends capture; wrong-root End returns 100366, preserves output and invalidates the root capture. Admission/query failures retain the capture for retry.",
+      "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": true,
+        "required": [
+          "pTaskTopo"
+        ],
+        "prepare": [
+          "uint64_t qid;if(queue_id(c,hQueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "call": [
+          "uint64_t graph=0;",
+          "int st=mlu_remote_capture(c->remote,2,qid,0,NULL,0,NULL,NULL,&graph,NULL,NULL);",
+          "if(!st || st==100361 || st==100364) *pTaskTopo=(CNtaskTopo)(uintptr_t)graph;",
+          "RETURN(result(st));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnQueueGetAttribute",
@@ -13301,7 +13439,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueGetCaptureInfo(CNqueue hQueue, CNqueueCaptureStatus *pCaptureStatus, cn_uint64_t *idOut, CNtaskTopo *pTaskTopo, const CNtaskTopoNode **pDependenciesOut, size_t *pNumDependenciesOut);",
       "parameters": [
@@ -13311,56 +13449,81 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pCaptureStatus",
           "c_type": "CNqueueCaptureStatus *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         },
         {
           "name": "idOut",
           "c_type": "cn_uint64_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         },
         {
           "name": "pTaskTopo",
           "c_type": "CNtaskTopo *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pDependenciesOut",
           "c_type": "const CNtaskTopoNode **",
           "kind": "object_handle",
-          "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pNumDependenciesOut",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected. NONE/INVALID write only status; ACTIVE returns stable opaque graph/node identities and borrowed frontier storage until End/reset/disconnect.",
+      "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": true,
+        "required": [
+          "pCaptureStatus"
+        ],
+        "prepare": [
+          "uint64_t qid;if(queue_id(c,hQueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "call": [
+          "unsigned state=0;uint64_t id=0,graph=0;const uint64_t *ids=NULL;size_t count=0;",
+          "int st=mlu_remote_capture(c->remote,3,qid,0,NULL,0,&state,&id,&graph,pDependenciesOut ? &ids : NULL,&count);",
+          "if(!st) *pCaptureStatus=(CNqueueCaptureStatus)state;",
+          "if(!st && state==1) {",
+          "  if(idOut) *idOut=id;",
+          "  if(pTaskTopo) *pTaskTopo=(CNtaskTopo)(uintptr_t)graph;",
+          "  if(pDependenciesOut) *pDependenciesOut=(const CNtaskTopoNode *)ids;",
+          "  if(pNumDependenciesOut) *pNumDependenciesOut=count;",
+          "}",
+          "RETURN(result(st));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnQueueGetContext",
@@ -13492,7 +13655,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueIsCapturing(CNqueue hQueue, CNqueueCaptureStatus *pCaptureStatus);",
       "parameters": [
@@ -13502,24 +13665,43 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "pCaptureStatus",
           "c_type": "CNqueueCaptureStatus *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-capture.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+      "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": true,
+        "required": [
+          "pCaptureStatus"
+        ],
+        "prepare": [
+          "uint64_t qid;if(queue_id(c,hQueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "call": [
+          "unsigned state=0;uint64_t id=0,graph=0;size_t count=0;",
+          "int st=mlu_remote_capture(c->remote,3,qid,0,NULL,0,&state,&id,&graph,NULL,&count);",
+          "if(!st) *pCaptureStatus=(CNqueueCaptureStatus)state;",
+          "RETURN(result(st));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnQueueSetAttribute",
@@ -13647,7 +13829,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1; G2",
-      "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnQueueUpdateCaptureDependencies(CNqueue hQueue, CNtaskTopoNode *dependencies, size_t numDependencies, unsigned int flags);",
       "parameters": [
@@ -13657,15 +13839,15 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "dependencies",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "in",
+          "length": "numDependencies",
+          "mapping": "opaque_session_identity"
         },
         {
           "name": "numDependencies",
@@ -13684,13 +13866,30 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-      "contract_stage": "G3"
+      "implementation": "generated_adapter",
+      "status": "IMPLEMENTED",
+      "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+      "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+      "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+      "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+      "contract_stage": "G3",
+      "wrapper": {
+        "rpc": "graph_capture",
+        "current": true,
+        "required": [],
+        "prepare": [
+          "uint64_t qid;if(queue_id(c,hQueue,&qid)) RETURN(CN_QUEUE_ERROR_INVALID);"
+        ],
+        "call": [
+          "if(numDependencies>MLU_GRAPH_MAX_NODES || (numDependencies && !dependencies)) RETURN(CN_ERROR_INVALID_VALUE);",
+          "uint64_t ids[MLU_GRAPH_MAX_NODES];",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];",
+          "RETURN(result(mlu_remote_capture(c->remote,4,qid,flags,ids,numDependencies,NULL,NULL,NULL,NULL,NULL)));"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CAPTURE"
+      ]
     },
     {
       "name": "cnQueueWaitNotifier",
@@ -19297,6 +19496,76 @@
       "backend_binding": [
         "return graph_host(s,in,out);"
       ]
+    },
+    {
+      "name": "graph_capture",
+      "operation": "API_GRAPH_CAPTURE",
+      "opcode": 90,
+      "request": [
+        {
+          "name": "action",
+          "type": "u32"
+        },
+        {
+          "name": "queue",
+          "type": "u64"
+        },
+        {
+          "name": "thread",
+          "type": "u64"
+        },
+        {
+          "name": "mode",
+          "type": "u32"
+        },
+        {
+          "name": "opcode",
+          "type": "u32"
+        },
+        {
+          "name": "input_bytes",
+          "type": "u64"
+        },
+        {
+          "name": "capacity",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "handled",
+          "type": "u32"
+        },
+        {
+          "name": "state",
+          "type": "u32"
+        },
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "graph",
+          "type": "u64"
+        },
+        {
+          "name": "count",
+          "type": "u64"
+        }
+      ],
+      "request_buffer": {
+        "name": "data",
+        "size_from": "input_bytes",
+        "max_bytes": 2097152
+      },
+      "response_buffer": {
+        "name": "data",
+        "size_from": "capacity",
+        "max_bytes": 32768
+      },
+      "backend_binding": [
+        "return graph_capture(s,in,out);"
+      ]
     }
   ],
   "extra_exports": {
@@ -19334,7 +19603,7 @@
     "queue_union": "AccessPolicyWindow uses allocation,offset,bytes,f32 ratio,hit,miss. NULL attribute queue rejected. Freed window allocation cannot be reverse-relocated."
   },
   "graph_ipc_plan": {
-    "phase": "g1_g2_host_replay_complete_capture_pending",
+    "phase": "g1_g2_g3_complete_callbacks_ipc_pending",
     "evidence": "graph-ipc-contracts-20261107/README.md",
     "design": "docs/GRAPH_IPC.md",
     "object_models": [
@@ -19412,8 +19681,10 @@
           "G1",
           "G2"
         ],
-        "missing": "Logical client-thread capture state and captured-operation interception are absent. Explicit graph Host replay staging/publication is implemented in G2; capture must reuse it without executing operations during capture.",
-        "acceptance": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions."
+        "missing": "No remaining G3 gap within the declared 1D memset/H2D/D2H/D2D and generic-kernel boundary. Session-owned capture DAGs track logical client threads, all three SDK modes, notifier fork/join and ADD/SET frontiers; captured Host copies reuse G2 per-invocation replay/publication. Host callback nodes remain G4; 2D/3D capture is explicitly rejected.",
+        "acceptance": "Both libraries: Native contract differentials across modes/threads/contexts, captured operations execute nothing before invoke, inaccessible H2D input during capture, current-input numerical kernel replay, deferred D2H publication, notifier fork/join, ADD/SET dependencies, borrowed handles, raw dispatch guards, quota/reset/EOF and clean drain; replacement/preload/driverless clients.",
+        "status": "IMPLEMENTED",
+        "evidence": "graph-capture-20261107/README.md"
       },
       {
         "id": "G4",

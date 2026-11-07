@@ -40,6 +40,9 @@ struct mlu_remote_context {
   uint32_t rpc_timeout_ms;
   mlu_remote_error error;
   pending_writeback *pending, **pending_tail;
+  struct mlu_client_capture *captures;
+  struct mlu_capture_cache *capture_cache;
+  uint64_t capture_epoch;
 };
 
 static uint64_t ntohll_u(uint64_t x) {
@@ -61,10 +64,12 @@ static void set_local_error(mlu_remote_context *ctx, uint32_t code, const char *
 
 /* A failed exchange leaves execution/completion uncertain. Never reuse or
  * transparently replay that session, even if the peer sends more bytes. */
+static void capture_client_cleanup(mlu_remote_context *ctx);
 static int break_connection(mlu_remote_context *ctx, uint32_t code,
                             const char *name, const char *message) {
   set_local_error(ctx, code, name, message);
   if (ctx->fd >= 0) { close(ctx->fd); ctx->fd = -1; }
+  capture_client_cleanup(ctx);
   return (int)code;
 }
 
@@ -107,7 +112,7 @@ static int valid_success(uint16_t op, const unsigned char *request,
 
 /* Caller owns *extra and must free it. The returned extra excludes the common
  * error name/message prefix. */
-static int rpc_locked(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len,
+static int wire_rpc_locked(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len,
                       unsigned char **extra, uint32_t *extra_len) {
   if (extra) *extra = NULL;
   if (extra_len) *extra_len = 0;
@@ -139,6 +144,8 @@ static int rpc_locked(mlu_remote_context *ctx, uint16_t opcode, const void *payl
   else { ctx->error.code = 0; ctx->error.name[0] = 0; ctx->error.message[0] = 0; }
   if (extra) { *extra_len = rest; *extra = rest ? (unsigned char *)malloc(rest) : NULL; if (rest && !*extra) { free(p); return break_connection(ctx, CN_ERROR_SYSTEM_OUT_OF_MEMORY, "HOST_OUT_OF_MEMORY", "response allocation failed"); } if (rest) memcpy(*extra, p + 8 + nl + ml, rest); } free(p); return (int)status;
 }
+
+#include "graph_capture_client.inc"
 
 static void writeback_free(pending_writeback *w) {
   mlu_host_release(w->lease);
@@ -204,8 +211,7 @@ static int completion_frontier(uint16_t op) {
     default: return 0;
   }
 }
-static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
-  pthread_mutex_lock(&ctx->lock);
+static int rpc_with_completion_locked(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
   int r=0;
   /* Resolve pending destinations before the server invalidates transfer IDs.
    * Failure preserves them for retry or disconnect, without replaying work. */
@@ -221,16 +227,22 @@ static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, ui
       else memset(&ctx->error,0,sizeof(ctx->error));
       if(extra) *extra=NULL;
       if(extra_len) *extra_len=0;
-      pthread_mutex_unlock(&ctx->lock); return r;
+      return r;
     }
   }
   if(!r) r=rpc_locked(ctx,opcode,payload,payload_len,extra,extra_len);
+  if(!r && (opcode==MLU_OP_SESSION_RESET || opcode==MLU_OP_SESSION_CLOSE)) capture_client_cleanup(ctx);
   if(!r && ctx->pending && completion_frontier(opcode)) {
     mlu_remote_error saved=ctx->error;
     r=complete_writebacks(ctx);
     if(!r) ctx->error=saved;
   }
-  pthread_mutex_unlock(&ctx->lock); return r;
+  return r;
+}
+static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
+  pthread_mutex_lock(&ctx->lock);
+  int r=rpc_with_completion_locked(ctx,opcode,payload,payload_len,extra,extra_len);
+  pthread_mutex_unlock(&ctx->lock);return r;
 }
 
 static _Thread_local mlu_remote_error connect_error;
@@ -348,6 +360,7 @@ void mlu_remote_disconnect(mlu_remote_context *ctx) {
   if (ctx->fd >= 0) close(ctx->fd);
   /* No writes after a poisoned exchange/EOF. Server owns its separate pages. */
   while(ctx->pending) { pending_writeback *w=ctx->pending; ctx->pending=w->next; writeback_free(w); }
+  capture_client_cleanup(ctx);
   pthread_mutex_destroy(&ctx->lock); free(ctx);
 }
 const mlu_remote_error *mlu_remote_last_error(const mlu_remote_context *ctx) { return ctx ? &ctx->error : NULL; }
@@ -361,15 +374,18 @@ int mlu_remote_free(mlu_remote_context *ctx, uint64_t allocation) { unsigned cha
 
 static int memcpy_call(mlu_remote_context *ctx, uint32_t dir, uint64_t dst, uint64_t dstoff, uint64_t src, uint64_t srcoff, const void *in, void *outbuf, uint64_t bytes, uint64_t queue, int asynchronous, uint64_t *transfer) {
   if (bytes > MLU_REMOTE_MAX_PAYLOAD - 60 || (dir == MLU_MEMCPY_H2D && !in) || (dir == MLU_MEMCPY_D2H && !outbuf)) return MLU_REMOTE_BAD_LENGTH;
+  pthread_mutex_lock(&ctx->lock);
+  int handled=0;int captured=capture_copy(ctx,dir,dst,dstoff,src,srcoff,in,outbuf,bytes,queue,asynchronous,&handled);
+  if(captured || handled) {if(!captured && transfer) *transfer=0;pthread_mutex_unlock(&ctx->lock);return captured;}
   uint32_t n = 60 + (dir == MLU_MEMCPY_H2D ? (uint32_t)bytes : 0);
-  unsigned char *p = (unsigned char *)calloc(1, n); if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  unsigned char *p = (unsigned char *)calloc(1, n); if (!p) {pthread_mutex_unlock(&ctx->lock);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
   put32(p, dir); put64(p + 4, queue); put64(p + 12, dst); put64(p + 20, dstoff); put64(p + 28, src); put64(p + 36, srcoff); put64(p + 44, bytes);
   put32(p + 52, dir == MLU_MEMCPY_H2D ? (uint32_t)bytes : 0); put32(p + 56, asynchronous ? 1u : 0u);
   if (dir == MLU_MEMCPY_H2D) memcpy(p + 60, in, (size_t)bytes);
-  unsigned char *e = NULL; uint32_t en = 0; int st = rpc(ctx, MLU_OP_MEMCPY, p, n, &e, &en); free(p);
+  unsigned char *e = NULL; uint32_t en = 0; int st = rpc_with_completion_locked(ctx, MLU_OP_MEMCPY, p, n, &e, &en); free(p);
   if (!st && en >= 8 && transfer) *transfer = get64(e);
   if (!st && dir == MLU_MEMCPY_D2H && en >= 16 + bytes && get64(e + 8) == bytes) memcpy(outbuf, e + 16, (size_t)bytes);
-  free(e); return st;
+  free(e);pthread_mutex_unlock(&ctx->lock);return st;
 }
 int mlu_remote_memcpy_h2d(mlu_remote_context *ctx, uint64_t dst, uint64_t off, const void *src, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_H2D, dst, off, 0, 0, src, NULL, bytes, q, 0, t); }
 int mlu_remote_memcpy_h2d_async(mlu_remote_context *ctx, uint64_t dst, uint64_t off, const void *src, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_H2D, dst, off, 0, 0, src, NULL, bytes, q, 1, t); }
@@ -382,11 +398,13 @@ int mlu_remote_memcpy_d2h_async(mlu_remote_context *ctx,void *dst,uint64_t src,
     uint64_t offset,uint64_t bytes,uint64_t queue,uint64_t *transfer) {
   if(!ctx || !dst || !transfer || !bytes || bytes>MLU_REMOTE_MAX_PAYLOAD-128) return MLU_REMOTE_BAD_LENGTH;
   if(!(ctx->capabilities & MLU_CAP_DEFERRED_D2H)) return MLU_REMOTE_UNSUPPORTED;
-  pending_writeback *w=calloc(1,sizeof(*w)); if(!w) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
-  if(mlu_host_acquire(dst,(size_t)bytes,&w->lease)<0) { free(w); return MLU_REMOTE_BAD_LENGTH; }
+  pthread_mutex_lock(&ctx->lock);
+  int handled=0;int captured=capture_copy(ctx,MLU_MEMCPY_D2H,0,0,src,offset,NULL,dst,bytes,queue,1,&handled);
+  if(captured || handled) {if(!captured) *transfer=0;pthread_mutex_unlock(&ctx->lock);return captured;}
+  pending_writeback *w=calloc(1,sizeof(*w)); if(!w) {pthread_mutex_unlock(&ctx->lock);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
+  if(mlu_host_acquire(dst,(size_t)bytes,&w->lease)<0) { free(w);pthread_mutex_unlock(&ctx->lock);return MLU_REMOTE_BAD_LENGTH; }
   unsigned char request[32],*out=NULL; uint32_t n=0;
   put64(request,src); put64(request+8,offset); put64(request+16,bytes); put64(request+24,queue);
-  pthread_mutex_lock(&ctx->lock);
   int st=rpc_locked(ctx,MLU_OP_API_D2H_SUBMIT,request,32,&out,&n);
   if(!st) {
     w->transfer=get64(out); w->dst=dst; w->bytes=bytes; w->queue=queue; *transfer=w->transfer;

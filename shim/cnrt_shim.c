@@ -5,6 +5,7 @@
 #include "bang_image.h"
 #include "bang_args.h"
 static void graph_kernel_cache_drop(mlu_remote_context *,uint64_t);
+static int graph_kernel_remember(mlu_remote_context *,uint64_t,uintptr_t);
 #include "fake_va.h"
 #include "host_memory.h"
 #include <dlfcn.h>
@@ -37,7 +38,9 @@ static cnrtRet_t status(int st) {
     case 0: case 1: case 100002: case 100004: case 100005: case 100006:
     case 100007: case 100010: case 100014: case 100015: case 100050:
     case 100051: case 100060: case 100100: case 100128: case 100132:
-    case 100133: case 100301: case 100302: case 100400: return (cnrtRet_t)st;
+    case 100133: case 100301: case 100302: case 100400:
+    case 100360: case 100361: case 100362: case 100363:
+    case 100364: case 100365: case 100366: return (cnrtRet_t)st;
     case MLU_REMOTE_UNSUPPORTED: return cnrtErrorNotSupport;
     case MLU_REMOTE_BAD_LENGTH: return cnrtErrorArgsInvalid;
     case MLU_REMOTE_BAD_OBJECT: return cnrtErrorInvalidResourceHandle;
@@ -108,7 +111,7 @@ static object *get_queue(cnrtQueue_t handle) {
   return get_object(queues,token);
 }
 static cnrtRet_t release_transfer(uint64_t id) {
-  return status(mlu_remote_transfer_release(ctx,id));
+  return id ? status(mlu_remote_transfer_release(ctx,id)) : cnrtSuccess;
 }
 
 typedef struct variable {
@@ -408,6 +411,8 @@ cnrtRet_t cnrtInvokeKernel(const void *host,cnrtDim3_t dim,cnrtFunctionType_t ty
     int st=mlu_remote_module_get_kernel(ctx,k->reg->mid,k->name,&k->kid);
     if(st) RETURN(status(st));
   }
+  int remember=graph_kernel_remember(ctx,k->kid,(uintptr_t)k->host);
+  if(remember) RETURN(status(remember));
   uint64_t transfer=0;
   int st=mlu_remote_kernel_launch_generic(ctx,k->reg->mid,k->kid,q->id,dim.x,dim.y,dim.z,(uint32_t)type,wire,k->layout.count,&transfer);
   if(st) RETURN(status(st));

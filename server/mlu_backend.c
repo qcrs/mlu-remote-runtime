@@ -1236,5 +1236,6 @@ static int mlu_backend_copy3d(mlu_backend_session *s,const mlu_api_copy3d_reques
   return (int)cnMemcpyDtoD3D(&p);
 }
 #include "graph_backend.inc"
+#include "graph_capture_backend.inc"
 #include "api_queries.inc"
 #include "typed_backend.inc"

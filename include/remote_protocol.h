@@ -48,6 +48,7 @@ enum mlu_remote_opcode {
 #include "generated/typed_opcodes.inc"
 };
 
+#define MLU_CAP_GRAPH_CAPTURE 0x10000u
 #define MLU_CAP_MODULE_IMAGE 0x100u
 #define MLU_CAP_GENERIC_LAUNCH 0x200u
 #define MLU_CAP_TRANSFER_RELEASE 0x400u

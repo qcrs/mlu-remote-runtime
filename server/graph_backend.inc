@@ -163,7 +163,10 @@ static int graph_destroy(mlu_backend_session *s,unsigned i) {
   CNresult st=cnTaskTopoDestroy(s->graphs[i].handle); if(st) return (int)st;
   graph_forget_graph(s,i); return 0;
 }
+static void graph_capture_cleanup(mlu_backend_session *s);
+static int graph_capture_owns(mlu_backend_session *s,uint64_t graph);
 static int graph_cleanup(mlu_backend_session *s) {
+  graph_capture_cleanup(s);
   int first=0; unsigned graphs=0,nodes=0;
   mlu_graph_entity *e=s->graph_entities;
   while(e) { mlu_graph_entity *next=e->next; int st=graph_entity_destroy(s,e); if(st && !first) first=st; e=next; }
@@ -250,7 +253,7 @@ static int graph_action(mlu_backend_session *s,const mlu_api_graph_action_reques
   switch(in->action) {
     case MLU_GRAPH_DESTROY: {
       if(g<0) return CN_ERROR_INVALID_VALUE;
-      if(s->graphs[g].owner_node) return CN_ERROR_INVALID_VALUE;
+      if(s->graphs[g].owner_node || graph_capture_owns(s,in->graph)) return CN_ERROR_INVALID_VALUE;
       int st=graph_destroy(s,g); (void)graph_views_reap(s); (void)graph_reap_allocations(s); return st;
     }
     case MLU_GRAPH_DESTROY_NODE: {

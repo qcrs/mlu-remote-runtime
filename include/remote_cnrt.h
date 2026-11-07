@@ -50,6 +50,9 @@ mlu_remote_context *mlu_remote_connect_driver(const char *host, uint16_t port,
 int mlu_remote_context_sync(mlu_remote_context *ctx);
 /* Deferred D2H owns a Host lease until a successful completion frontier.
  * Queue/Notifier/Transfer/context waits and queries publish ready results. */
+int mlu_remote_capture(mlu_remote_context *,unsigned action,uint64_t queue,unsigned mode,
+    const uint64_t *deps,size_t count,unsigned *state,uint64_t *id,uint64_t *graph,
+    const uint64_t **frontier,size_t *frontier_count);
 int mlu_remote_graph_invoke(mlu_remote_context *ctx, uint64_t entity, uint64_t queue);
 int mlu_remote_memcpy_d2h_async(mlu_remote_context *ctx, void *dst,
     uint64_t src, uint64_t offset, uint64_t bytes, uint64_t queue, uint64_t *transfer);

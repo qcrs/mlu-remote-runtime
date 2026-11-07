@@ -1,0 +1,10 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50261
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_graph_kernel_driver
+attribute_status=100006
+PASS Host H2D/kernel/D2H graph mixed with ordinary async copies and overlapping publication
+PASS kernel graph scalar/pointer/aggregate relocation, snapshot, clone, entity set/update, child, attributes and completion leases

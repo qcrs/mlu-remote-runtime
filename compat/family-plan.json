@@ -66,60 +66,10 @@
     "family": "graph",
     "priority": 5,
     "counts": {
-      "NOT_IMPLEMENTED": 30,
-      "IMPLEMENTED": 72
+      "IMPLEMENTED": 82,
+      "NOT_IMPLEMENTED": 20
     },
     "remaining": [
-      {
-        "api": "cnrtQueueBeginCapture",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
-      {
-        "api": "cnrtQueueEndCapture",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
-      {
-        "api": "cnrtQueueGetCaptureInfo",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
-      {
-        "api": "cnrtQueueIsCapturing",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
-      {
-        "api": "cnrtQueueUpdateCaptureDependencies",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
       {
         "api": "cnrtTaskTopoAcquireUserObject",
         "status": "NOT_IMPLEMENTED",
@@ -219,56 +169,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnQueueBeginCapture",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
-      {
-        "api": "cnQueueEndCapture",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
-      {
-        "api": "cnQueueGetCaptureInfo",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
-      {
-        "api": "cnQueueIsCapturing",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
-      },
-      {
-        "api": "cnQueueUpdateCaptureDependencies",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1; G2",
-        "blocker": "Logical client-thread capture state, captured-operation interception and persistent Host replay payloads are absent.",
-        "next_step": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions.",
-        "closure": {},
-        "contract_stage": "G3"
       },
       {
         "api": "cnTaskTopoAcquireUserObject",
@@ -402,8 +302,10 @@
           "G1",
           "G2"
         ],
-        "missing": "Logical client-thread capture state and captured-operation interception are absent. Explicit graph Host replay staging/publication is implemented in G2; capture must reuse it without executing operations during capture.",
-        "acceptance": "Both libraries: capture executes nothing before invoke, replays current Host source bytes, publishes each D2H at completion and respects capture/thread/dependency transitions."
+        "missing": "No remaining G3 gap within the declared 1D memset/H2D/D2H/D2D and generic-kernel boundary. Session-owned capture DAGs track logical client threads, all three SDK modes, notifier fork/join and ADD/SET frontiers; captured Host copies reuse G2 per-invocation replay/publication. Host callback nodes remain G4; 2D/3D capture is explicitly rejected.",
+        "acceptance": "Both libraries: Native contract differentials across modes/threads/contexts, captured operations execute nothing before invoke, inaccessible H2D input during capture, current-input numerical kernel replay, deferred D2H publication, notifier fork/join, ADD/SET dependencies, borrowed handles, raw dispatch guards, quota/reset/EOF and clean drain; replacement/preload/driverless clients.",
+        "status": "IMPLEMENTED",
+        "evidence": "graph-capture-20261107/README.md"
       },
       {
         "id": "G4",

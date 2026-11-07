@@ -1,0 +1,2 @@
+PASS D2H Transfer owner, exact variable-buffer fetch, release retirement
+PASS pending kernel/D2H connection EOF delegates native buffer cleanup to Server

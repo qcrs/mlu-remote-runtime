@@ -1,6 +1,6 @@
 # Graph / IPC 原生契约与实现计划
 
-更新：2026-11-07。范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64 LP64。G1 的 28 个及 G2 的 44 个 Graph API 已按声明边界实现，合计 72/102；其余 30 个 Graph API、8 个普通 memory/VMM IPC API 仍为 NOT_IMPLEMENTED，4 个 IPC notifier API 因本机原生前提缺失为 BLOCKED。G2 已补齐声明范围内的 1D Host memcpy 重放与完成写回；capture、callback 和 IPC 仍按后续状态机计划实现。
+更新：2026-11-07。范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64 LP64。G1 的 28 个、G2 的 44 个和 G3 的 10 个 Graph API 已按声明边界实现，合计 82/102；G4 的 20 个 Graph API、8 个普通 memory/VMM IPC API 仍为 NOT_IMPLEMENTED，4 个 IPC notifier API 因本机原生前提缺失为 BLOCKED。G3 已接入逻辑线程 capture、依赖前沿和 G2 的逐次 Host 重放/完成写回；callback/user objects 与 IPC 仍按后续状态机计划实现。
 
 分批归属、依赖和验收以 [Schema 的 graph_ipc_plan](../schema/mlu_api_schema.json) 为准，生成到 [family plan](../compat/family-plan.md)。原始运行和复现方式见 [本批证据](../evidence/graph-ipc-contracts-20261107/README.md)。
 
@@ -19,7 +19,7 @@
 | IPC notifier 前提 | IPCNOTIFIER_SUPPORTED（0x10a）为 0；两库合法 interprocess \| disable_timing_all（12）创建返回 100050 / NotSupported。未生成有效 notifier IPC handle，未运行四个 get/open 入口的成功路径。 |
 | VMM POSIX FD | VMM/FD 支持属性均为 1，granularity 为 33,554,432 bytes；create/reserve/map/access/export → SCM_RIGHTS → 独立 importer/import/map/access/write → unmap/release 成功。 |
 
-初始探针覆盖数值 DAG、relaxed capture 与正常 close-before-free 的共享路径。G2 后续另补 child、kernel、entity update 与 pending entity destroy 的两库 Native 数值基线。Host callback nodes、其他 capture 模式/线程交互、user objects、重复 importer 和源进程提前退出尚无完整认证。
+初始探针覆盖数值 DAG、relaxed capture 与正常 close-before-free 的共享路径。G2 后续另补 child、kernel、entity update 与 pending entity destroy 的两库 Native 数值基线。G3 后续补齐三种 capture 模式、线程/Context 交互和依赖前沿；Host callback nodes、user objects、重复 importer 和源进程提前退出尚无完整认证。
 
 ## G1 已实现：owned DAG 与节点身份
 
@@ -37,7 +37,7 @@ GraphID/NodeID 复用 session owner/generation/type registry，NodeID 带 parent
 
 双库各 15 个入口由 Schema 生成 wrapper，共享 `graph_memset`、`graph_entity`、`graph_child`、`graph_memcpy` RPC（83～86）。memset 使用 AllocationID+offset 与有界依赖数组；按本 SDK 仅认证 height=1、elementSize=1/2/4。GetParams 反向恢复客户端 fake VA，已退役地址使用仍保留的 tombstone。诊断 buffer 上限 65536 bytes；当前 instantiate 失败节点映射覆盖顶层，嵌套失败诊断尚未认证。
 
-D2D memcpy 首批支持 1..1048576 bytes、extent height=depth=1、两端 pitch=width/ysize=1。`src`/`dst` 各自编码为 owned live AllocationID+offset，分别校验 range；Host 后续扩展见下节，peer/capture 仍未实现。SDK 忽略的 position、ptr aliases、xsize 规范化；`dir` 保留 Native 判定（本机 0/4/5 成功，1/2/3/6 返回无效参数），不能用 CNRT 枚举名称推断该图入口的实际行为。GetParams 恢复两端客户端 VA，公开 free 后仍能使用 graph payload 持有的 tombstone。每个 payload 各持有源、目标一个 lease；即使同一 allocation 占据两端也分别增减，clone/child/entity/invocation 复用相同引用机制。
+D2D memcpy 首批支持 1..1048576 bytes、extent height=depth=1、两端 pitch=width/ysize=1。`src`/`dst` 各自编码为 owned live AllocationID+offset，分别校验 range；Host 扩展见下节，capture 见 G3，peer 仍受单设备范围限制。SDK 忽略的 position、ptr aliases、xsize 规范化；`dir` 保留 Native 判定（本机 0/4/5 成功，1/2/3/6 返回无效参数），不能用 CNRT 枚举名称推断该图入口的实际行为。GetParams 恢复两端客户端 VA，公开 free 后仍能使用 graph payload 持有的 tombstone。每个 payload 各持有源、目标一个 lease；即使同一 allocation 占据两端也分别增减，clone/child/entity/invocation 复用相同引用机制。
 
 Native AddChildTopoNode 复制源图；embedded 图随 child node 所有，GetTopo 返回独立 GraphID/NodeID 树，修改它会影响该 child。clone 递归通过 Native NodeFindInClone 建立新身份，保留 immutable payload；源图销毁不影响 child 或 entity。所有 embedded graph 计入原有 1024 graph / 4096 node 配额，递归深度小于 64。Remote 拒绝直接 destroy node-owned borrowed 图；删除 child node 或销毁父图递归撤销 IDs，由 native 所有者统一释放。
 
@@ -79,19 +79,33 @@ EntityUpdate 保持最初 instantiate-time 的 setter NodeID。Host 重放中的
 
 [Host 重放证据](../evidence/graph-host-20261107/README.md) 包含两库 Native/replacement/preload/隔离客户端、pageable/pinned、当前输入、clone/update/原 setter 身份、nested child/replacement、Host alias、default Queue、pending destroy、Host retirement/reset/EOF、协议/配额/故障回滚及资源归零。kernel 回归另验证 H2D→kernel→D2H 与普通异步 copy 的重叠目标写回顺序；提前 Host free 与多个在途 invocation 间修改输入单列 Remote 安全策略，不称为 Native 相同调用顺序差分。
 
-## 后续 Graph 对象模型
+## G3 已实现：Capture、依赖前沿与重放
 
-GraphID/NodeID/EntityID 与 allocation/module/Host invocation leases 已落地；G3 需新增 session generation / Queue / 逻辑客户端线程 / mode 范围的 CaptureID，G4 再接 callback 与 user-object refs。图/公开 ID 销毁与 backing 最终释放分开处理；失败清理保持可重试。
+双库各 5 个入口由 Schema 生成，共享 `graph_capture` RPC（opcode 90，capability `MLU_CAP_GRAPH_CAPTURE`）。Server session 持有 capture DAG、root Queue、mode、逻辑客户端线程、invalid 状态、参与 Queue 与 Notifier 的 frontier。所有元数据计入 staging 配额，DAG/NodeID 继续使用 G1 registry；捕获中的 GraphID 是借用句柄，不能直接 Destroy。End 成功将图转交给调用者，reset/close/EOF 统一清理。
 
-## Capture 与每次回放的 Host 数据
+Server worker TLS 不能代表应用线程。客户端进程分配稳定逻辑线程 ID，在三个模式下按 Native 状态转换操作；共享 Global count/epoch 也覆盖同一 Driver 进程的多个 Context/session。另一个客户端 session 的操作不影响本 session。客户端在同一锁内完成 capture 判断与普通 Host 采样/submit，服务端 dispatch guard 拒绝绕过 capture RPC 的普通入队请求。
 
-Server worker TLS 不能代表应用线程。一个 RPC session 可以承载多个客户端线程，Driver shim 又可能因当前 Context 选择不同 session；capture 请求须带逻辑线程 identity，按 session generation、Queue、mode 和 capture ID 校验。正常 capture、invalidated、end 和跨 Queue frontier 使用显式状态，不根据当前 RPC 所在线程推断。
+声明边界为显式 owned Queue、1D async memset（1/2/4 bytes）、H2D/D2H/D2D memcpy，以及已有 metadata 支持的 generic kernel（含 nested struct/array pointer relocation）。捕获只创建 immutable DAG payload，不提交这些操作；H2D 只保留客户端地址，既不读取也不上传 bytes，D2H 不创建普通 pending writeback。End 后复用 G2 private graph/每次 invocation staging、当前 Host 输入、allocation/module/Host leases 和成功完成边界的 publication。单 copy <=1 MiB，Host endpoint 总和 <=16 MiB；pageable 地址仍须由调用者保持有效。2D/3D capture 和 callback nodes 尚无 adapter，明确拒绝，未纳入当前认证。
 
-捕获期间的 copy/kernel/依赖操作构建 DAG，不提交普通异步工作。end 返回完整图后，instantiate 才建立可执行资源；失败捕获需要统一回滚。已有 Host async 的 submit/completion/fetch 可作为执行基础，但不能直接把捕获操作当成普通 copy 提交。
+Notifier record 保存 Queue frontier，wait 将其他 Queue 加入同一 capture 并合并依赖；独立 capture 的 merge 返回 100363 且两边仍 ACTIVE。UpdateCaptureDependencies 的 flags=0 ADD 保留现有 frontier，flags=1 SET 替换，逐个校验同图 NodeID。下一个 captured node 依赖完整 frontier。End 从 root frontier 沿本 SDK 的 GetDependentNodes（前驱）遍历，允许分支 join 后 root 继续前进，未汇合分支返回 100364。
 
-Native 回放读取当前 Host source，因而 H2D 不能在 capture 时固定成 bytes 快照。显式图重放已在每次 invoke 读取该次输入并上传至独立 pinned staging；capture 后续复用该实现，staging 与对应 entity revision / invocation 保持关联。在途回放完成前，不能用下一次 invoke 的输入覆盖其 staging。D2H 同样需要每次 invocation 的 TransferID、输出目标、Host lease 和 publication record；仅在成功完成边界向客户端写回，end capture 或 instantiate 不得提前 fetch。
+本机 Native 严格差分保留以下状态，不按其他 SDK 推断：
 
-module/allocation 的内部 leases 不赋予调用者任意提前释放 Host 地址的权利。pageable Host 内存仍需由调用者保持有效；注册/分配 Host buffer 可复用现有 registry lease。队列、Notifier、Context 完成操作需要汇集 Graph invocation 的输出，EOF 时清理 Server 资源而不再写客户端地址。显式图与普通异步 copy 混排的写回顺序已有专项验证；capture 仍须补齐其状态转换与依赖前沿。
+| 操作 | Native 与 Remote 行为 |
+|---|---|
+| Begin / IsCapturing / GetCaptureInfo | NONE → ACTIVE；NONE/INVALID 只写 status，其他输出保留；ACTIVE 返回稳定 graph/node 身份和 borrowed frontier |
+| Global 异线程 End | 100362，保留 graph 输出并结束整个 capture；原线程再 End 返回 100015；mode 1/2 允许异线程 End |
+| captured QueueSync / Query | 100360 并转 INVALID，End 返回 100361 并清理 |
+| Global 中 malloc、其他/default QueueSync | 100360 并失效；包括异线程、既有其他 Driver Context。mode 1/2 的这些操作正常执行 |
+| ContextSync / SyncDevice | 三种 mode 均成功，capture 保持 ACTIVE，即使已有 captured nodes |
+| EntityInvoke | 正常执行既有 entity，不加入 capture 图；Native 数值测试同时确认执行值与零新增节点 |
+| captured Queue wait 外部普通 Notifier | 100365，capture 保持 ACTIVE |
+| 从参与分支 Queue End | 100366，保留输出并将整个 capture 置 INVALID；root End 返回 100361 |
+| End 配额/native 查询失败 | 保留 capture 可重试；空图无需遍历临时缓冲即可 End |
+
+Frontier 返回存储由客户端 capture session 持有，至 End/reset/disconnect 释放；其他 capture 的 cache 独立。捕获 payload 的持久配额、module/allocation leases、clone/snapshot 和 invocation 回收沿用 G2，失败 Native destroy 保留 registry ownership 待 cleanup 重试。Reset/close 先同步并 publish 普通 pending Host 输出，再丢弃 active capture；EOF 仅清理服务端资源。
+
+[G3 证据](../evidence/graph-capture-20261107/README.md) 专项 97/97，含双库 Native/replacement/preload/隐藏 SDK 与设备的客户端、不可读 H2D 源页、两次当前输入 kernel 回放、参数 identity/snapshot、Notifier fork/join 与 ADD/SET、模式/线程/Context、raw dispatch owner/type、两档配额及 reset/EOF。G1/G2、Host async、功能族与完整核心回归记录保存在同目录。
 
 ## Callback、user object 与文件路径
 
@@ -137,10 +151,10 @@ SCM_RIGHTS 只在本机 Unix socket 中传递 descriptor；本批 Python runner 
 |---|---:|---|
 | G1 | 28 | 已完成；owned DAG、node identities、父图校验、clone remap、有界 node/edge arrays；两库 Native/Remote 查询、编辑、reset/EOF 和隔离客户端 |
 | G2 | 44 | 边界内 44/44：memset/D2D/H2D/D2H memcpy/kernel/child/entity snapshot/update、allocation/module/Host invocation leases 与完成写回 |
-| G3 | 10 | 逻辑线程 capture 状态、frontier、每次 Host 输入与 D2H publication；多次 replay、模式/线程与依赖转移 |
+| G3 | 10 | 已完成；逻辑线程/三种 mode、跨 Context Global invalidation、Notifier fork/join、ADD/SET frontier、当前 Host 输入与完成写回 |
 | G4 | 20 | 客户端 callback/destructor、user refs、客户端 DOT 路径；顺序与恰好一次析构 |
 | I1 | 6 | 跨 session backing broker、兼容 Context 执行、imported identities、同 client-host 域共享；独立双客户端与多 importer、close/EOF/reset、计量 |
 | I2 | 2 | VMM backing/VA/handle/FD refs 及客户端 OS transport；依赖的 memory family API 另计，不包含在本行的 2 项中 |
 | I3 | 4 | 当前 BLOCKED；先换至 IPCNOTIFIER_SUPPORTED=1 且合法创建成功的设备/SDK，再做跨进程 record/wait 基线和 Remote refs |
 
-G1→G2→G3→G4；I1→I2。I3 的 native 前提独立检查。每批均需相关 Native 语义、独立 Remote Server/Client、replacement/preload、无本地 SDK/设备客户端与必要 ownership/资源回收证据，才按逐 API boundary 升级；当前 memset/D2D/H2D/D2H memcpy/kernel/child typed graph 执行已验证，capture、客户端 callback/user objects 与 IPC 仍未实现。7 个 Peer API 仍单独因缺第二设备 BLOCKED。
+G1→G2→G3→G4；I1→I2。I3 的 native 前提独立检查。每批均需相关 Native 语义、独立 Remote Server/Client、replacement/preload、无本地 SDK/设备客户端与必要 ownership/资源回收证据，才按逐 API boundary 升级；当前 G1/G2/G3 的 typed graph 执行与声明边界内 capture 已验证，客户端 callback/user objects 与 IPC 仍未实现。7 个 Peer API 仍单独因缺第二设备 BLOCKED。

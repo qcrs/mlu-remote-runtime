@@ -407,6 +407,14 @@
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
     "blocker": ""
   },
+  "cnrtQueueBeginCapture": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+    "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+    "blocker": ""
+  },
   "cnrtQueueCopyAttributes": {
     "status": "IMPLEMENTED",
     "boundary": "Copies native queue attributes between owned explicit queues; access-policy allocation fields relocate in both directions.",
@@ -439,6 +447,14 @@
     "next_step": "Complete within the declared single-device scope; no background collector or bounded native cancellation is claimed.",
     "blocker": ""
   },
+  "cnrtQueueEndCapture": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected. Global wrong-thread End returns 100362, preserves output and ends capture; unjoined returns 100364 and ends capture; wrong-root End returns 100366, preserves output and invalidates the root capture. Admission/query failures retain the capture for retry.",
+    "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+    "blocker": ""
+  },
   "cnrtQueueGetAttribute": {
     "status": "IMPLEMENTED",
     "boundary": "Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected.",
@@ -447,12 +463,28 @@
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
     "blocker": ""
   },
+  "cnrtQueueGetCaptureInfo": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected. NONE/INVALID write only status; ACTIVE returns stable opaque graph/node identities and borrowed frontier storage until End/reset/disconnect.",
+    "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+    "blocker": ""
+  },
   "cnrtQueueGetPriority": {
     "status": "IMPLEMENTED",
     "boundary": "Returns native priority for an owned queue, including priorities clamped at creation.",
     "native_test": "api-expansion-20261102/runtime-native.log",
     "remote_test": "api-expansion-20261102/runtime-remote.log",
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnrtQueueIsCapturing": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+    "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
     "blocker": ""
   },
   "cnrtQueueQuery": {
@@ -477,6 +509,14 @@
     "native_test": "native_bang_abi-native.log",
     "remote_test": "native_bang_abi-replacement.log",
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnrtQueueUpdateCaptureDependencies": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+    "native_test": "graph-capture-20261107/runtime-deps-2-native.log;graph-capture-20261107/runtime-numeric-native.log;graph-capture-20261107/runtime-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/runtime-deps-2-remote.log;graph-capture-20261107/runtime-numeric-remote.log;graph-capture-20261107/runtime-numeric-preload.log;graph-capture-20261107/runtime-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
     "blocker": ""
   },
   "cnrtQueueWaitNotifier": {
@@ -1471,6 +1511,14 @@
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
     "blocker": ""
   },
+  "cnQueueBeginCapture": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+    "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+    "blocker": ""
+  },
   "cnQueueCopyAttributes": {
     "status": "IMPLEMENTED",
     "boundary": "Copies native queue attributes between owned explicit queues; access-policy allocation fields relocate in both directions.",
@@ -1479,12 +1527,28 @@
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
     "blocker": ""
   },
+  "cnQueueEndCapture": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected. Global wrong-thread End returns 100362, preserves output and ends capture; unjoined returns 100364 and ends capture; wrong-root End returns 100366, preserves output and invalidates the root capture. Admission/query failures retain the capture for retry.",
+    "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+    "blocker": ""
+  },
   "cnQueueGetAttribute": {
     "status": "IMPLEMENTED",
     "boundary": "Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected.",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnQueueGetCaptureInfo": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected. NONE/INVALID write only status; ACTIVE returns stable opaque graph/node identities and borrowed frontier storage until End/reset/disconnect.",
+    "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
     "blocker": ""
   },
   "cnQueueGetContext": {
@@ -1503,6 +1567,14 @@
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
     "blocker": ""
   },
+  "cnQueueIsCapturing": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+    "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
+    "blocker": ""
+  },
   "cnQueueSetAttribute": {
     "status": "IMPLEMENTED",
     "boundary": "Owned explicit queue attribute union with access-policy address relocation; MLU370 rejects nonzero persisting windows, and native-crashing NULL handle is safely rejected.",
@@ -1517,6 +1589,14 @@
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnQueueUpdateCaptureDependencies": {
+    "status": "IMPLEMENTED",
+    "boundary": "Explicit owned queues; SDK modes Global/ThreadLocal/Relaxed, logical application-thread identity and process-wide Global invalidation across Driver contexts. Captured async 1D memset, H2D/D2H/D2D memcpy and metadata-supported generic kernels build owned DAG payloads without submitting or reading Host input. Notifier fork/join and ADD/SET frontiers retain native transitions; Host replay/publication and leases reuse G2. ContextSync and EntityInvoke preserve the native capture behavior. 2D/3D and Host callback capture are outside this boundary; default queue Begin is rejected.",
+    "native_test": "graph-capture-20261107/driver-deps-2-native.log;graph-capture-20261107/driver-numeric-native.log;graph-capture-20261107/driver-thread-0-native.log",
+    "remote_test": "graph-capture-20261107/driver-deps-2-remote.log;graph-capture-20261107/driver-numeric-remote.log;graph-capture-20261107/driver-numeric-preload.log;graph-capture-20261107/driver-numeric-isolated.log;graph-capture-20261107/protocol.log",
+    "next_step": "No remaining G3 gap within the declared boundary; G4 adds client callbacks/user refs/DOT, and multi-dimensional capture needs a separately validated adapter.",
     "blocker": ""
   },
   "cnQueueWaitNotifier": {
