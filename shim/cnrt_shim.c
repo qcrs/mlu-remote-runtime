@@ -362,7 +362,16 @@ cnrtRet_t cnrtCastDataType(void *src,cnrtDataType_t srcType,void *dst,cnrtDataTy
   }
   return cnrtSuccess;
 }
-static int cast_v2_size(cnrtDataType_V2_t type) { if(type==cnrtFloat || type==cnrtInt) return 4; if(type==cnrtUchar) return 1; return 0; }
+static int cast_v2_size(cnrtDataType_V2_t type) { if(type==cnrtFloat || type==cnrtInt) return 4; if(type==cnrtHalf || type==cnrtBfloat) return 2; if(type==cnrtUchar) return 1; return 0; }
+static uint16_t float_to_bfloat(float value) { uint32_t bits; memcpy(&bits,&value,4); uint32_t lower=bits&0xffffu; uint16_t hi=(uint16_t)(bits>>16); if(lower>0x8000u || (lower==0x8000u && (hi&1))) ++hi; return hi; }
+static float bfloat_to_float(uint16_t value) { uint32_t bits=((uint32_t)value)<<16; float out; memcpy(&out,&bits,4); return out; }
+static uint16_t float_to_half(float value) {
+  uint32_t bits; memcpy(&bits,&value,4); unsigned sign=(bits>>16)&0x8000u; int exp=(int)((bits>>23)&0xff)-127+15; uint32_t mant=bits&0x7fffffu;
+  if(exp<=0) { if(exp<-10) return (uint16_t)sign; mant|=0x800000u; int shift=14-exp; uint32_t rounded=mant>>shift; uint32_t rem=mant&((1u<<shift)-1); if(rem>(1u<<(shift-1)) || (rem==(1u<<(shift-1))&&(rounded&1))) ++rounded; return (uint16_t)(sign|rounded); }
+  if(exp>=31) return (uint16_t)(sign|0x7c00u|(mant?0x200u:0));
+  uint32_t rounded=mant>>13, rem=mant&0x1fffu; if(rem>0x1000u || (rem==0x1000u&&(rounded&1))) ++rounded; if(rounded==0x400u){rounded=0; ++exp;} if(exp>=31)return (uint16_t)(sign|0x7c00u); return (uint16_t)(sign|((unsigned)exp<<10)|rounded);
+}
+static float half_to_float(uint16_t value) { unsigned sign=(value>>15)&1, exp=(value>>10)&31, mant=value&0x3ff; uint32_t bits; if(!exp){ if(!mant) bits=sign<<31; else { int e=-14; while(!(mant&0x400)){mant<<=1;--e;} mant&=0x3ff; bits=(sign<<31)|((uint32_t)(e+127)<<23)|(mant<<13); } } else if(exp==31) bits=(sign<<31)|0x7f800000u|(mant<<13); else bits=(sign<<31)|((uint32_t)(exp-15+127)<<23)|(mant<<13); float out; memcpy(&out,&bits,4); return out; }
 static int cast_round(float x,cnrtRoundingMode_t mode) {
   int y=(int)x;
   if(mode==cnrtRounding_rz) return y;
@@ -378,6 +387,10 @@ cnrtRet_t cnrtCastDataType_V2(const void *src,cnrtDataType_V2_t srcType,void *ds
   for(int i=0;i<count;++i) {
     if(srcType==cnrtFloat && dstType==cnrtInt) ((int *)dst)[i]=cast_round(((const float *)src)[i],mode);
     else if(srcType==cnrtFloat && dstType==cnrtUchar) { int v=cast_round(((const float *)src)[i],mode); if(v<0)v=0;if(v>255)v=255;((unsigned char *)dst)[i]=(unsigned char)v; }
+    else if(srcType==cnrtFloat && dstType==cnrtHalf) ((uint16_t *)dst)[i]=float_to_half(((const float *)src)[i]);
+    else if(srcType==cnrtFloat && dstType==cnrtBfloat) ((uint16_t *)dst)[i]=float_to_bfloat(((const float *)src)[i]);
+    else if(srcType==cnrtHalf && dstType==cnrtFloat) ((float *)dst)[i]=half_to_float(((const uint16_t *)src)[i]);
+    else if(srcType==cnrtBfloat && dstType==cnrtFloat) ((float *)dst)[i]=bfloat_to_float(((const uint16_t *)src)[i]);
     else if(srcType==cnrtInt && dstType==cnrtFloat) ((float *)dst)[i]=(float)((const int *)src)[i];
     else if(srcType==cnrtUchar && dstType==cnrtFloat) ((float *)dst)[i]=(float)((const unsigned char *)src)[i];
     else return cnrtErrorNotSupport;

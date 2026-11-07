@@ -8,10 +8,10 @@
   },
   "cnrtCastDataType_V2": {
     "status": "PARTIAL_IMPLEMENTED",
-    "boundary": "Host-local V2 FLOAT/INT/UCHAR conversion with rn/rz/rd/ru/ro/rm rounding modes and null quantization. No remote buffers.",
+    "boundary": "Host-local V2 FLOAT/INT/UCHAR/HALF/BFLOAT conversion with six rounding modes and null quantization. No remote buffers.",
     "native_test": "api-expansion-20261113/v2-cast-native.log",
     "remote_test": "api-expansion-20261113/v2-cast-remote.log",
-    "next_step": "Extend V2 type matrix after Native/Remote numeric comparison"
+    "next_step": "Validate 64-bit and quantized V2 types against SDK"
   },
   "cnrtCreateQuantizedParam": {
     "status": "PARTIAL_IMPLEMENTED",
