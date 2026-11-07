@@ -1,6 +1,6 @@
-# Graph / IPC 原生契约与实现计划
+# Graph / IPC 原生契约与实现
 
-更新：2026-11-07。范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64 LP64。G1 的 28 个、G2 的 44 个、G3 的 10 个和 G4 的 20 个 Graph API 已按声明边界实现，合计 102/102。8 个普通 memory/VMM IPC API 仍为 NOT_IMPLEMENTED，4 个 IPC notifier API 因本机原生前提缺失为 BLOCKED。G4 已接入客户端 callback executor、逐节点 Host 数据顺序、user-object refs 和客户端 DOT 输出。
+更新：2026-11-07。范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64 LP64。Graph G1～G4 共 102/102，普通 memory/Host/VMM IPC I1/I2 共 8/8，均已按逐 API 声明边界实现；4 个 IPC notifier API 因本机原生前提缺失为 BLOCKED。最新 [IPC 证据](../evidence/remaining-ipc-20261107/README.md) 覆盖独立进程、跨库、隔离客户端、引用/Context 生命周期、真实客户端 FD 和一次物理计量。
 
 分批归属、依赖和验收以 [Schema 的 graph_ipc_plan](../schema/mlu_api_schema.json) 为准，生成到 [family plan](../compat/family-plan.md)。原始运行和复现方式见 [本批证据](../evidence/graph-ipc-contracts-20261107/README.md)。
 
@@ -19,7 +19,7 @@
 | IPC notifier 前提 | IPCNOTIFIER_SUPPORTED（0x10a）为 0；两库合法 interprocess \| disable_timing_all（12）创建返回 100050 / NotSupported。未生成有效 notifier IPC handle，未运行四个 get/open 入口的成功路径。 |
 | VMM POSIX FD | VMM/FD 支持属性均为 1，granularity 为 33,554,432 bytes；create/reserve/map/access/export → SCM_RIGHTS → 独立 importer/import/map/access/write → unmap/release 成功。 |
 
-初始探针覆盖数值 DAG、relaxed capture 与正常 close-before-free 的共享路径。G2 后续另补 child、kernel、entity update 与 pending entity destroy 的两库 Native 数值基线。G3 后续补齐三种 capture 模式、线程/Context 交互和依赖前沿；G4 后续补齐 Host callback nodes、user objects 和 DOT。重复 importer 和源进程提前退出仍属 IPC 后续工作。
+初始探针覆盖数值 DAG、relaxed capture 与正常 close-before-free 的共享路径。G2 后续另补 child、kernel、entity update 与 pending entity destroy 的两库 Native 数值基线。G3 后续补齐三种 capture 模式、线程/Context 交互和依赖前沿；G4 后续补齐 Host callback nodes、user objects 和 DOT。最新 IPC 批次补齐多 importer、源 free/reset/EOF、Graph leases 与 FD retirement；源提前退役的保留属于 Remote 安全策略，未称为 Native 定义行为。
 
 ## G1 已实现：owned DAG 与节点身份
 
@@ -127,39 +127,39 @@ DOT 使用 Server 临时文件取得 native 内容，有界读回至客户端，
 
 [G4 证据](../evidence/graph-callbacks-20261107/README.md) 专项 20/20：两库 Native/replacement/preload/隔离客户端、数值顺序/PID、clone/setter/update/nested child、无 wait 推进、在途销毁/user refs、DOT、重入/reset/EOF/Host retirement、raw plan/owner/type、staging 配额回滚和提交断线。既有 Capture、G1/G2、Host async、功能族和核心回归记录保存在同目录。
 
-## 计划中的 memory IPC broker
+## I1 已实现：memory IPC broker
 
 Native 的独立进程共享成功，同一进程跨 Context 的 IPC open 失败。当前 Server 是一个进程中的多个 session workers，不能直接照搬 native handle open。后续 [Context 探针](../evidence/ipc-context-20261107/README.md) 7/7、202 个检查通过：另一 Context 可以直接用 owner allocation 地址进行显式 H2D/D2H/D2D、D32 memset，并在自己的 queue/module 中执行混用 owner/local 指针的 kernel；另线程新 Context 也成功。owner allocation/Context 全程存活，importer 销毁后 owner 数值仍正确。
 
-I1 因而优先采用进程级 device backing broker：导入会话在 Server 内引用同一 native backing，通过自己的 Context 执行实测路径，无须 native IPC open。该执行依据只覆盖本设备/SDK 的上述操作；尚未实现 broker、引用与计量，不能提升 API 状态。
+I1 使用进程级 device backing broker：导入会话在 Server 内引用同一 native backing，通过自己的 Context 执行实测路径，无须 native IPC open。`server/ipc_lifetime.inc` / `ipc_control.inc` 管理 backing 与源 Context；两库 IPC adapter 共享导入身份和 copy/kernel/Graph lease 路径。该执行依据限本设备/SDK 的已验证操作。
 
-计划将以下身份分开：
+实现将以下身份分开：
 
-- IpcExportToken：server instance 内跨 session 可解析的 opaque token，绑定 backing 与 kind；ABI 为 8-byte opaque memory handle，不泄露 native 地址，也不能与 64-byte notifier handle 混用。
+- IpcExportToken：8-byte opaque handle；device token 绑定 server instance、backing 与 kind，不泄露 native 地址；Host token 在客户端域解析。不能与 64-byte notifier handle 混用。
 - Backing record：实际 native storage、拥有它的 Context/执行器、allocation size/kind、export/open/operation refs，以及计量 owner。
 - ImportedAllocationID：importer session 内独立 identity 与 fake VA，借用 backing lease；其 offset/range 检查复用现有共享内存路径。
 
 普通未导出的 allocation 继续受原 session owner 限制；只有合法 broker token 才能建立 imported mapping。close 撤销该 importer 的公开 mapping，完成它自己的在途操作后减 ref，不可对 exporter storage 调普通 free，也不能影响其他 importer。
 
-source free/reset/EOF 后，计划撤销新 opens，同时由既有 importer 和在途操作 refs 延后 backing 及源 Context 的释放，最终一个 ref 释放后回收。Native 文档对 import 未关闭就 free 源内存的行为未定义；这里的保留是 Remote 内部安全回收策略，不能宣称已证明 Native 在源退出后仍可继续使用。正常兼容性验收仍使用 close-before-free，提前断连只验证资源安全与回收。
+device source free/reset/EOF 后撤销新 opens，同时由既有 importer、Graph 和在途操作 refs 延后 backing 及源 Context 的释放，最终一个 ref 释放后回收。Graph 可在 imported identity 已关闭后继续持有 backing。Native 文档对 import 未关闭就 free 源内存的行为未定义；这里的保留是 Remote 内部安全回收策略。正常兼容性验收使用 close-before-free，提前退役另列 Remote 生命周期验证。
 
-Native 探针已证明混合本地与共享指针的有限 kernel 可以在 importer Context 执行；没有证明所有 API、跨 Context Queue/Notifier handles 或 owner Context 销毁后的访问。broker 必须显式保留原 backing Context，source worker 消失不能触发普通 session cleanup 提前销毁它；需要将 backing/Context 释放与 session 公开身份退役分开。跨 Queue ordering 仍须遵守应用的同步边界，不能靠共享指针替代同步。若其他操作不接受跨 Context 地址，需单独 adapter/兼容执行路由；隔离 worker 进程仍是备用架构。
+Native 探针证明混合本地与共享指针的有限 kernel 可以在 importer Context 执行；没有认证跨 Context Queue/Notifier handles。broker 保留原 backing Context，将 source session 公开身份退役与 native Context 最终销毁分开。跨 Queue ordering 仍遵守应用的同步边界。
 
-并发 open/revoke/ref 更新应受 broker 锁或统一执行器保护，耗时 native 调用不得在全局锁内阻塞其他 session。device bytes 对 backing 只计一次；importer 单独计 mapping/object 配额，不重复计物理分配。失败导入、partial launch、close、EOF 和 reset 均需恰好释放本次取得的 refs，保持核心现有 quota 与 drain 可观测性。
+并发 open/revoke/ref 更新受 broker 锁保护。device bytes 对 backing 只计一次；importer 使用独立 mapping/object identity，不重复计物理分配。源分配退役将计量转给 detached backing；最后一个 ref 才归还额度。双库各以 4096-byte global/session 上限、3 个 importer 验证存活期间无法多分配、源 free 后额度保留、最后 close 后可重新分配完整 4096 bytes。Server 最终 resources/workers/cleanup errors 归零。
 
 ### CNRT Host IPC 的客户端域
 
-本机 Native HostMalloc IPC 是两个进程的 CPU 共享内存，不能用一次 H2D/D2H 快照模拟。当前 Host registry 是进程内 malloc/lease；它没有跨客户端进程的 OS backing 或共同映射。
+本机 Native HostMalloc IPC 是两个进程的 CPU 共享内存。`client/host_memory.c` 使用 memfd、MAP_SHARED 和 mlock，为同客户端主机的进程建立共同 OS backing，保留原 guard/tombstone/pending lease。抽象 Unix socket broker 校验 SO_PEERCRED 的 UID，以 SCM_RIGHTS 传 FD；两端直接 CPU 读写可见同一内容，未经过一次性 copy 快照。
 
-I1 需定义 client host domain 并提供同主机客户端可传递的共享 OS backing、map/unmap 与 lease。不同客户端机器之间的裸 CPU load/store 没有当前 TCP 协议可表达的共享语义，必须明确部署边界和返回行为，不能声称透明跨主机 CPU coherence。客户端域与 backing transport 属于尚未实现的架构工作，Native 已成功的普通 Host/device IPC 继续列 NOT_IMPLEMENTED，不因当前模型缺失而标硬件 BLOCKED。
+Host IPC 限同客户端主机、UID 与 Unix namespace；不同客户端机器没有裸 CPU load/store 一致性。进程级 Host allocation 不属于某一 Context，Context reset 不撤销仍存活的 Host 源；free/进程退出撤销新 opens，既有映射可继续使用直至 unmap。tombstone 使用 private PROT_NONE 替换旧共享映射，使退役地址不可访问并释放 backing 引用。重复 export 保留 Native 100102 / Runtime 632015。
 
-## VMM / OS descriptor
+## I2 已实现：VMM / OS descriptor
 
-I2 的两个 IPC API 还依赖 memory family 中的 create/release/retain、granularity/properties、VA reserve/free、map/unmap、access set/get。需拆开 VmmBackingID、generic handle ref、VA reservation、mapping 和 exported descriptor ref；释放 generic handle 不自动销毁已有映射，最后的 backing 回收须等待相应 refs。offset、granularity 与映射 range 不能沿用普通 Malloc 的单一对象模型。
+I2 与 memory family 的 11 个 VMM API 已完成。generic handle ref、VA reservation、mapping 和 exported descriptor ref 分开；释放 generic handle 不销毁已有映射，backing 等待最后引用才回收。native granularity/access descriptors、aligned guarded 客户端 reservation、offset-zero aliases、retain/release/remap 与 Context cleanup 已差分。非零 backing offset 在本 SDK 为 Native 100050，Remote 保留该结果。
 
-本机 `cnMemExportToShareableHandle(void *)` 在 POSIX FD 模式向输出位置写入 **8 bytes**。探针用前后 guard 与预填 `0xa5a5a5a5a5a5a5a5` 的 uint64 槽观察到 `000000000000000a`，高 4 bytes 也被写零；仅分配 4-byte int 会覆盖邻近对象。后续 ABI adapter 须按本 SDK 实测宽度处理，并将该边界与一般 POSIX FD 的 int 宽度分开记录。Import 的 `void *osHandle` 则按头文件接口传递 FD 数值，不解引用为输出槽。
+本机 `cnMemExportToShareableHandle(void *)` 在 POSIX FD 模式向输出位置写入 **8 bytes**。探针用前后 guard 与预填 `0xa5a5a5a5a5a5a5a5` 的 uint64 槽观察到 `000000000000000a`，高 4 bytes 也被写零；仅分配 4-byte int 会覆盖邻近对象。Remote adapter 按该宽度写入。Import 的 `void *osHandle` 按头文件接口传递 FD 数值，不解引用为输出槽。
 
-SCM_RIGHTS 只在本机 Unix socket 中传递 descriptor；本批 Python runner 将收到的真实 FD 传入独立 exec importer。Server 上的 FD 整数经 TCP 发送后不会在客户端变成 FD。Remote 需要客户端 OS handle proxy/共享 descriptor transport、dup/close 生命周期及 server restart 失效策略，且客户端仍不能依赖本地 MLU Driver。尚未选定并验证该方案，不能先返回 Server FD 或任意整数宣称实现。
+`client/ipc_descriptor.inc` 返回真实可传递的客户端 TCP socket FD，连接 Server 的 descriptor broker；其中未消费的 8-byte capability 通过 MSG_PEEK 读取。dup/SCM_RIGHTS 共享 socket 生命周期，最后一个 close 让 Server 释放 Native FD/backing lease，源 Context 同时保活。Server 重启断开 descriptor，旧 capability 失效。由于 Native 同进程 FD import 拒绝，broker 在源 backing 上临时 map+RetainAllocationHandle 建立可用引用。独立 importer、源 handle/map/Context 退役后经 dup FD 导入与数值访问已通过，客户端无本地 Driver 依赖。
 
 ## 分批验收
 
@@ -169,8 +169,8 @@ SCM_RIGHTS 只在本机 Unix socket 中传递 descriptor；本批 Python runner 
 | G2 | 44 | 边界内 44/44：memset/D2D/H2D/D2H memcpy/kernel/child/entity snapshot/update、allocation/module/Host invocation leases 与完成写回 |
 | G3 | 10 | 已完成；逻辑线程/三种 mode、跨 Context Global invalidation、Notifier fork/join、ADD/SET frontier、当前 Host 输入与完成写回 |
 | G4 | 20 | 已完成；客户端 executor、逐 copy Host 顺序、callback snapshots、native user refs/唯一析构、客户端 DOT、reset/EOF 与失败回滚 |
-| I1 | 6 | 未完成；Native 已验证跨 Context 显式 copy/memset/混合 kernel；仍需 backing/Context refs、imported identities、计量及同 client-host 域共享 |
-| I2 | 2 | VMM backing/VA/handle/FD refs 及客户端 OS transport；依赖的 memory family API 另计，不包含在本行的 2 项中 |
+| I1 | 6 | 已完成；跨 session device backing/Context refs、imported identities、一次物理计量，以及同客户端主机/UID/namespace 的 Host CPU 共享 |
+| I2 | 2 | 已完成；VMM backing/VA/handle/FD refs、真实客户端 descriptor/dup/SCM_RIGHTS；11 个 memory family 前提入口另计 |
 | I3 | 4 | 当前 BLOCKED；先换至 IPCNOTIFIER_SUPPORTED=1 且合法创建成功的设备/SDK，再做跨进程 record/wait 基线和 Remote refs |
 
-G1→G2→G3→G4；I1→I2。I3 的 native 前提独立检查。每批均需相关 Native 语义、独立 Remote Server/Client、replacement/preload、无本地 SDK/设备客户端与必要 ownership/资源回收证据，才按逐 API boundary 升级；当前 G1～G4 的 typed graph、声明边界内 capture、客户端 callback/user objects/DOT 已验证；IPC broker/Context/domain/VMM 仍未实现。7 个 Peer API 仍单独因缺第二设备 BLOCKED。
+G1→G2→G3→G4、I1→I2 均已完成。最新 IPC 正常四模式 24/24、生命周期 12/12、配额 2/2 通过，见 [证据与复现](../evidence/remaining-ipc-20261107/README.md)。普通队列 Host callback 另保证此前普通/Graph deferred D2H 在回调前发布，见 [剩余功能族证据](../evidence/remaining-closure-20261107/README.md)。I3 需要可成功创建 interprocess notifier 的硬件/SDK 后继续；7 个 Peer API 因缺第二设备单独 BLOCKED。

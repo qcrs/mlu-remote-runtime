@@ -1,0 +1,3 @@
+2026-11-07 10:55:01.565836: [cnrtError] [264507] [Card: 0] Error occurred during calling 'cnIpcGetMemHandle' in CNDrv interface.
+2026-11-07 10:55:01.565935: [cnrtError] [264507] [Card: 0] Return value is 200000, CN_ERROR_UNKNOWN.
+2026-11-07 10:55:01.565945: [cnrtError] [264507] [Card: 0] cnrtAcquireMemHandle: Failed to get ipc memory handle.

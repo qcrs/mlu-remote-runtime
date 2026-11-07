@@ -1,0 +1,108 @@
+[
+  {
+    "name": "runtime-native-pending-observation",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-retirement-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-retirement-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-retirement-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-retirement-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-native-pending-observation",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-retirement-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-retirement-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-retirement-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-retirement-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_retirement",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "backend-retirement-rollback",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/backend-resources-test",
+      "/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "backend-retirement-quarantine",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/backend-resources-test",
+      "/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin",
+      "quarantine"
+    ],
+    "returncode": 0
+  }
+]

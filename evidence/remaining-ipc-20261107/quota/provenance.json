@@ -1,0 +1,76 @@
+{
+  "packaged_at_utc": "2026-11-07T11:28:04.385446+00:00",
+  "record_kind": "post-run packaging snapshot",
+  "note": "Quota runner compiles the recorded current test source. Implementation and test files were unchanged between this run and packaging; documentation/evidence packaging followed. This is not a replacement for original lifetime or normal-mode provenance.",
+  "source_base_commit": "68e163dbb9d94fcda3dfc8cfcbf437a051328e49",
+  "working_tree_has_changes": true,
+  "command": [
+    "python3",
+    "scripts/verify-ipc-quota.py",
+    "--port",
+    "50346"
+  ],
+  "server_environment": {
+    "MLU_REMOTE_BIND": "127.0.0.1",
+    "MLU_REMOTE_PORT": "50346",
+    "MLU_REMOTE_SESSION_DEVICE_BYTES": "4096",
+    "MLU_REMOTE_TOTAL_DEVICE_BYTES": "4096",
+    "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+  },
+  "client_environment": {
+    "MLU_REMOTE_HOST": "127.0.0.1",
+    "MLU_REMOTE_PORT": "50346",
+    "MLU_TEST_SHIM": "1",
+    "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build"
+  },
+  "uname": {
+    "system": "Linux",
+    "node": "server310p",
+    "release": "5.15.0-185-generic",
+    "version": "#195-Ubuntu SMP Fri Jun 19 17:16:34 UTC 2026",
+    "machine": "aarch64",
+    "processor": "aarch64"
+  },
+  "files_sha256": {
+    "build/driver-shim/libcndrv.so": "294c399528c093cc8b2c7c3b31c1e5ea9474dc005feefca7ac786905bee4d8a9",
+    "build/libremote_cnrt.so": "b08b1cf7f8e33acdd259d63ad621cebba1edd4f54999e2b66ecd1feef73407e8",
+    "build/mlu-remote-server": "70c62899808ae18984a55a3d0078cc23296537bae2701be2f578490224f3cfc2",
+    "build/probes/ipc-lifetime-cndrv": "2f10eb4e54359365f4e51ad6601bc0677b723d9e39ed8391b3d9194ee0115bd2",
+    "build/probes/ipc-lifetime-cnrt": "890d9d7f2f66e848673672d106b585c114d9f2645cbc9620e352eabcda2a47e5",
+    "build/shim/libcnrt.so": "888fcde406160655fbec7fe4af803a8c428e860fd8770da3ef18ccdca99beb8c",
+    "client/host_memory.c": "b07c9af6dac84dea870530db99d5dabedd4bfb25f59edbc63aa1cce70c17dce2",
+    "client/ipc_descriptor.inc": "92e714fa248f33f436cc379810a612b30094ffb2061e819cd3e934ee388ad69f",
+    "probes/probe_graph_ipc.c": "223636c63e2f560393a77270ac1d783a444cf0807043963769b87aef84caa4b1",
+    "scripts/verify-ipc-quota.py": "b3a660e4d0782450df059b2ecc4087e2afd3cacb43547b8186f417e043679164",
+    "server/ipc_control.inc": "afe4b359860d14e932e475a2c08c6b2d0e46d7ba85d6ebfeda18995f504ccfdf",
+    "server/ipc_lifetime.inc": "5b948ca911e32199a843aad02739da83b12f233c0653920be1f0faf7ef096e87",
+    "server/queue_host_backend.inc": "d7eee8fc2511d47dfbdce8ab4c2168682d7c0dfd64dac0736220b7823b1d1df0",
+    "server/resource_limits.c": "01499b451384565ab581ef122e2457d188522c7fd9efcb7b5f7590a3b561426e",
+    "shim/driver_ipc.inc": "2a6521c1cba98597309ef837cd4094b928d227b4b260146754a855e72a584d29",
+    "shim/runtime_ipc.inc": "f933c32c2d75350e72231fcb77aeeb23ffcf977fc3c65f9fc3bdaade91428506",
+    "tests/native_ipc_lifetime.c": "c8c81c831e9976fe7a5b75839b7944d80cd95f441096f2c668ee308ab2df042c"
+  },
+  "sdk": {
+    "/usr/local/neuware/include/cnrt.h": {
+      "resolved_path": "/usr/local/neuware-3.5.2/include/cnrt.h",
+      "sha256": "d29d66084ab522bd42a7a3515c95b8ee4eee89512ae45e74012d51aa86bbf614"
+    },
+    "/usr/local/neuware/include/cn_api.h": {
+      "resolved_path": "/usr/local/neuware-3.5.2/include/cn_api.h",
+      "sha256": "3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6"
+    },
+    "/usr/local/neuware/lib64/libcnrt.so": {
+      "resolved_path": "/usr/local/neuware-3.5.2/lib64/libcnrt.so.6.5.2",
+      "sha256": "292ee5817ade82f82740a2c47dfdbf4d4dbcd25b6549d48cff87b8690eda5972"
+    },
+    "/usr/local/neuware/lib64/libcndrv.so": {
+      "resolved_path": "/usr/local/neuware-3.5.2/lib64/libcndrv.so.2.5.2",
+      "sha256": "87716936c75d066a75c7ceba2c916f77f1ac9550ee2244d4c416710196083ac8"
+    }
+  },
+  "evidence_sha256": {
+    "evidence/remaining-ipc-20261107/quota/results.json": "c63978540b39468e3956333140e2ceedc8f2bef2ac2435929090f3a1e358f64e",
+    "evidence/remaining-ipc-20261107/quota/runner.log": "2b686840c99a8a00dc14d9ab01fb763a5c2a916c870de10d17b4e7a767850d57",
+    "evidence/remaining-ipc-20261107/quota/server.log": "09ab4eb76722db4bd397d52a781cce27d9bf9a8d2c27150686a792e7afed2cdd"
+  }
+}

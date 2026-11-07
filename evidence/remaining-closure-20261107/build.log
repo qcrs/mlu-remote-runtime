@@ -1,0 +1,128 @@
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 61 RPC codecs/dispatch/bindings, 146 public wrappers
+/home/lvtong/mlu-remote-runtime/shim/cnrt_shim.c: In function ‘cnrtQueueCreate’:
+/home/lvtong/mlu-remote-runtime/shim/cnrt_shim.c:261:156: warning: ‘t’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+  261 | cnrtRet_t cnrtQueueCreate(cnrtQueue_t *q) { ENTER(); if(!q) RETURN(cnrtErrorArgsInvalid); CONNECT(); uint64_t t; cnrtRet_t st=create_queue(&t); if(!st) *q=(cnrtQueue_t)(uintptr_t)t; RETURN(st); }
+      |                                                                                                                                                            ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:431:
+/home/lvtong/mlu-remote-runtime/server/ipc_lifetime.inc: In function ‘ipc_backing_drop’:
+/home/lvtong/mlu-remote-runtime/server/ipc_lifetime.inc:65:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   65 |   if(saved)cnCtxSetCurrent(saved);return st;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/ipc_lifetime.inc:65:35: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   65 |   if(saved)cnCtxSetCurrent(saved);return st;
+      |                                   ^~~~~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:1330:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc: In function ‘vmm_handle’:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:4:3: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+    4 |   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->vmm_handles[i].live && s->vmm_handles[i].id==id)return &s->vmm_handles[i];return NULL;
+      |   ^~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:1330:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:4:130: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+    4 |   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->vmm_handles[i].live && s->vmm_handles[i].id==id)return &s->vmm_handles[i];return NULL;
+      |                                                                                                                                  ^~~~~~
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc: In function ‘vmm_range’:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:7:3: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+    7 |   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->vmm_ranges[i].live && s->vmm_ranges[i].id==id)return &s->vmm_ranges[i];return NULL;
+      |   ^~~
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:7:127: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+    7 |   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->vmm_ranges[i].live && s->vmm_ranges[i].id==id)return &s->vmm_ranges[i];return NULL;
+      |                                                                                                                               ^~~~~~
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc: In function ‘vmm_control’:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:64:7: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   64 |       if(!slot)return CN_ERROR_SYSTEM_OUT_OF_MEMORY;CNaddr address=0;
+      |       ^~
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:64:53: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   64 |       if(!slot)return CN_ERROR_SYSTEM_OUT_OF_MEMORY;CNaddr address=0;
+      |                                                     ^~~~~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:1334:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc: In function ‘mlu_backend_api_driver_error_text’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:21: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |                     ^~
+/home/lvtong/mlu-remote-runtime/tests/client_cnnl.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/tests/client_cnnl.c:10:73: warning: comparison of integer expressions of different signedness: ‘int’ and ‘enum mlu_remote_protocol_status’ [-Wsign-compare]
+   10 |   printf("CNNL_STATUS=%d\n", st); mlu_remote_disconnect(ctx); return st == MLU_REMOTE_UNSUPPORTED ? 0 : 1;
+      |                                                                         ^~
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c: In function ‘connect_to’:
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c:23:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   23 |   if (getaddrinfo(host, service, &hints, &list)) return -1; int fd = -1;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/tests/protocol_errors.c:23:61: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   23 |   if (getaddrinfo(host, service, &hints, &list)) return -1; int fd = -1;
+      |                                                             ^~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:431:
+/home/lvtong/mlu-remote-runtime/server/ipc_lifetime.inc: In function ‘ipc_backing_drop’:
+/home/lvtong/mlu-remote-runtime/server/ipc_lifetime.inc:65:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   65 |   if(saved)cnCtxSetCurrent(saved);return st;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/server/ipc_lifetime.inc:65:35: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   65 |   if(saved)cnCtxSetCurrent(saved);return st;
+      |                                   ^~~~~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:1330:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc: In function ‘vmm_handle’:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:4:3: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+    4 |   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->vmm_handles[i].live && s->vmm_handles[i].id==id)return &s->vmm_handles[i];return NULL;
+      |   ^~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:1330:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:4:130: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+    4 |   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->vmm_handles[i].live && s->vmm_handles[i].id==id)return &s->vmm_handles[i];return NULL;
+      |                                                                                                                                  ^~~~~~
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc: In function ‘vmm_range’:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:7:3: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+    7 |   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->vmm_ranges[i].live && s->vmm_ranges[i].id==id)return &s->vmm_ranges[i];return NULL;
+      |   ^~~
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:7:127: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+    7 |   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->vmm_ranges[i].live && s->vmm_ranges[i].id==id)return &s->vmm_ranges[i];return NULL;
+      |                                                                                                                               ^~~~~~
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc: In function ‘vmm_control’:
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:64:7: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   64 |       if(!slot)return CN_ERROR_SYSTEM_OUT_OF_MEMORY;CNaddr address=0;
+      |       ^~
+/home/lvtong/mlu-remote-runtime/server/vmm_backend.inc:64:53: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   64 |       if(!slot)return CN_ERROR_SYSTEM_OUT_OF_MEMORY;CNaddr address=0;
+      |                                                     ^~~~~~
+In file included from /home/lvtong/mlu-remote-runtime/server/mlu_backend.c:1334:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc: In function ‘mlu_backend_api_driver_error_text’:
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |   ^~
+/home/lvtong/mlu-remote-runtime/build/generated/typed_backend.inc:132:21: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  132 |   if(st) return st; if(!text) return CN_ERROR_INVALID_VALUE;
+      |                     ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_queue.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/probes/probe_queue.c:4:273: warning: operand of ‘?:’ changes signedness from ‘int’ to ‘cnrtRet_t’ due to unsignedness of other operand [-Wsign-compare]
+    4 | int main(void) { cnrtQueue_t q=NULL; cnrtNotifier_t n=NULL; cnrtRet_t r=cnrtSetDevice(0); if(!r)r=cnrtQueueCreate(&q); if(!r)r=cnrtNotifierCreate(&n); if(!r)r=cnrtPlaceNotifier(n,q); if(!r)r=cnrtQueueSync(q); printf("queue/notifier=%d query=%d\n",r,n?cnrtQueryNotifier(n):-1); if(n)cnrtNotifierDestroy(n);if(q)cnrtQueueDestroy(q);return r != cnrtSuccess; }
+      |                                                                                                                                                                                                                                                                                 ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_remaining.c: In function ‘main’:
+/home/lvtong/mlu-remote-runtime/probes/probe_remaining.c:13:3: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   13 |   if(argc!=2)return 2;setbuf(stdout,NULL);
+      |   ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_remaining.c:13:23: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   13 |   if(argc!=2)return 2;setbuf(stdout,NULL);
+      |                       ^~~~~~
+/home/lvtong/mlu-remote-runtime/probes/probe_remaining.c:40:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   40 |     if(!g)g=2*1024*1024; CNaddr a=0; CNmemGenericAllocationHandle h=0;
+      |     ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_remaining.c:40:26: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   40 |     if(!g)g=2*1024*1024; CNaddr a=0; CNmemGenericAllocationHandle h=0;
+      |                          ^~~~~~
+/home/lvtong/mlu-remote-runtime/probes/probe_remaining.c:44:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   44 |     if(a)OBS(cnMemAddressFree(a,g)); OBS(cnCtxDestroy(c));return 0;
+      |     ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_remaining.c:7:19: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+    7 | #define OBS(call) do { int st=(call); printf("%s = %d\n",#call,st); fflush(stdout); } while(0)
+      |                   ^~
+/home/lvtong/mlu-remote-runtime/probes/probe_remaining.c:44:38: note: in expansion of macro ‘OBS’
+   44 |     if(a)OBS(cnMemAddressFree(a,g)); OBS(cnCtxDestroy(c));return 0;
+      |                                      ^~~
+BANG metadata: 4 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_bang_metadata
+BANG metadata: 2 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_bang_relocations
+BANG metadata: 2 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_graph_kernel_runtime
+BANG metadata: 2 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_graph_kernel_driver
+BANG metadata: 1 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_graph_capture_runtime
+BANG metadata: 1 kernels attached to /home/lvtong/mlu-remote-runtime/build/native_graph_capture_driver
+built in /home/lvtong/mlu-remote-runtime/build

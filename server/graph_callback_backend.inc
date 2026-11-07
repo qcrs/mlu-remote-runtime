@@ -112,7 +112,7 @@ static int graph_callbacks(mlu_backend_session *s,const mlu_api_graph_control_re
   if(!st) {if(!in->graph)s->default_queue_used=1;submitted=1;st=cnTaskTopoEntityInvoke(run->private_entity,q ? q->handle : NULL);}
   if(!st)st=record_transfer(s,in->graph,1,&out->id);
   if(!st) {find_transfer(s,out->id)->graph_hold=run;out->bytes=0;}
-  else if(!submitted || !cnQueueSync(q ? q->handle : NULL))graph_run_discard(s,run);
+  else if(!submitted || !backend_queue_wait(s,q ? q->handle : NULL))graph_run_discard(s,run);
   else {mlu_callback_abort(s->callbacks,1);run->next=s->graph_orphans;s->graph_orphans=run;}
   (void)graph_views_reap(s);return st;
 }

@@ -334,7 +334,7 @@ static void *session_worker(void *arg) {
     if (!request_id || request_id <= last_request) { send_response(fd, ntohs(h.opcode), request_id, MLU_REMOTE_PROTOCOL_ERROR, NULL, 0); break; }
     last_request = request_id;
     uint16_t op = ntohs(h.opcode);
-    if ((!ready && op != MLU_OP_HELLO && op != MLU_OP_CALLBACK_ATTACH) || (ready && op == MLU_OP_HELLO)) {
+    if ((!ready && op != MLU_OP_HELLO && op != MLU_OP_CALLBACK_ATTACH && op != MLU_OP_IPC_ATTACH) || (ready && op == MLU_OP_HELLO)) {
       send_response(fd, op, request_id, MLU_REMOTE_PROTOCOL_ERROR, NULL, 0); break;
     }
     if (!ready && op==MLU_OP_HELLO && n != 8 && n != 12 && n != 16) {
@@ -347,6 +347,10 @@ static void *session_worker(void *arg) {
       free(p); break;
     }
     if (stop_server) { free(p); break; }
+    if(!ready && op==MLU_OP_IPC_ATTACH) {
+      if(n==8)(void)mlu_backend_ipc_attach(fd,get64(p));
+      free(p);break;
+    }
     if(!ready && op==MLU_OP_CALLBACK_ATTACH) {
       (void)mlu_callback_attach(fd,p,n,request_id,io_timeout_ms);free(p);break;
     }

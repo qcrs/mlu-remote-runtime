@@ -250,7 +250,7 @@ static CNaddr vmm_map(CNmemGenericAllocationHandle handle, cn_uint64_t bytes) {
 static void vmm_cleanup(CNaddr a, CNmemGenericAllocationHandle h, cn_uint64_t bytes) {
   CHECK(cnMemUnmap(a,bytes)); CHECK(cnMemAddressFree(a,bytes)); CHECK(cnMemRelease(h));
 }
-static void vmm_export(int sock) {
+static void vmm_export(int sock,int retire) {
   CNmemAllocationProp p=vmm_props(); cn_uint64_t grain=0; CNmemGenericAllocationHandle h=0;
   CHECK(cnMemGetAllocationGranularity(&grain,&p,CN_MEM_ALLOC_GRANULARITY_MINIMUM));
   expect("vmm_granularity_bounded",grain>=N && grain<=64*1024*1024);
@@ -271,6 +271,7 @@ static void vmm_export(int sock) {
   c->cmsg_len=CMSG_LEN(sizeof(int)); memcpy(CMSG_DATA(c),&fd,sizeof(fd));
   expect("vmm_fd_sent_with_scm_rights",sendmsg(sock,&msg,0)==len);
   close(fd); close(sock);
+  if(retire){vmm_cleanup(a,h,grain);finish();return;}
   char command[32]; expect("vmm_exporter_waited_for_importer",fgets(command,sizeof(command),stdin) && !strcmp(command,"done\n"));
   unsigned char result[N]; CHECK(readback(result,a,N));
   expect("vmm_shared_write_visible",bytes_are(result,64,17) && bytes_are(result+64,N-128,85) && bytes_are(result+N-64,64,17));
@@ -296,7 +297,7 @@ int main(int argc,char **argv) {
   else if(!strcmp(argv[1],"ipc-import") && argc>2) ipc_import(argv[2],argc>3 && !strcmp(argv[3],"host"));
 #ifndef USE_CNRT
   else if(!strcmp(argv[1],"ipc-same-process")) ipc_same_process();
-  else if(!strcmp(argv[1],"vmm-export") && argc>2) vmm_export(atoi(argv[2]));
+  else if(!strcmp(argv[1],"vmm-export") && argc>2) {vmm_export(atoi(argv[2]),argc>3);if(argc>3)return 0;}
   else if(!strcmp(argv[1],"vmm-import") && argc>3) vmm_import(atoi(argv[2]),strtoull(argv[3],NULL,10));
 #endif
   else return 1;

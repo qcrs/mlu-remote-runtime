@@ -1,0 +1,1 @@
+PASS CNDrv retirement; notifier wait/query, context/free/module and cross-queue completion preserve kernel and H2D/D2D; 1200 retirements and pending teardown

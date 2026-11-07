@@ -1,0 +1,3 @@
+2026-11-07 10:57:41.948768: [cnrtError] [265832] [Card: 0] Error occurred during calling 'cnTaskTopoDebugDotPrint' in CNDrv interface.
+2026-11-07 10:57:41.948822: [cnrtError] [265832] [Card: 0] Return value is 100007, CN_ERROR_OPERATING_SYSTEM.
+2026-11-07 10:57:41.948828: [cnrtError] [265832] [Card: 0] cnrtTaskTopoDebugDotPrint: Failed to Print dot

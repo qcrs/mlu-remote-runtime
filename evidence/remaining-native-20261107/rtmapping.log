@@ -1,0 +1,13 @@
+cnInit(0) = 0
+cnCtxCreate(&c,0,0) = 0
+cnrtSetDevice(0) = 0
+cnrtMalloc(&p,1048576) = 0
+2026-11-07 09:47:20.790472: [cnrtError] [229438] [Card: 0] Error occurred during calling 'cnMmap' in CNDrv interface.
+2026-11-07 09:47:20.790543: [cnrtError] [229438] [Card: 0] Return value is 100050, CN_OPS_ERROR_NOT_SUPPORTED.
+2026-11-07 09:47:20.790548: [cnrtError] [229438] [Card: 0] cnrtMmap: Map device address to host address failed.
+cnrtMmap=100050
+2026-11-07 09:47:20.790555: [cnrtError] [229438] [Card: 0] Error occurred during calling 'cnMmapCached' in CNDrv interface.
+2026-11-07 09:47:20.790559: [cnrtError] [229438] [Card: 0] Return value is 100050, CN_OPS_ERROR_NOT_SUPPORTED.
+2026-11-07 09:47:20.790563: [cnrtError] [229438] [Card: 0] cnrtMmapCached: Map device address to host address failed.
+cnrtMmapCached=100050
+cnrtFree(p) = 0

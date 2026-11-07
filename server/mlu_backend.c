@@ -10,6 +10,53 @@
 #include <arpa/inet.h>
 #include <limits.h>
 #include <unistd.h>
+#include <poll.h>
+#include <sys/socket.h>
+#include <time.h>
+#include <errno.h>
+
+/* Waits involving host atomics must notice primary EOF; an unsatisfied compare
+ * otherwise prevents session teardown forever. Neuware's private QueueAbort
+ * is used only inside the server, with its verified CNresult(CNqueue) ABI. */
+static int atomic_cancel_queues(mlu_backend_session *s) {
+  if(s->atomic_aborted)return 0;
+  const void *entry=NULL;int st=cnGetExportFunction("cnQueueAbort",&entry);if(st || !entry)return st ? st : CN_OPS_ERROR_NOT_SUPPORTED;
+  CNresult (*abort_queue)(CNqueue)=(CNresult (*)(CNqueue))entry;
+  for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->queues[i].live){st=abort_queue(s->queues[i].handle);if(st)return st;}
+  if(s->default_queue_used){st=abort_queue(NULL);if(st)return st;}
+  s->atomic_aborted=1;fprintf(stderr,"[server] ATOMIC_EOF_CANCEL owner=%llu\n",(unsigned long long)s->owner_token);return 0;
+}
+static CNresult backend_queue_wait(mlu_backend_session *s,CNqueue q) {
+  if(!s->atomic_used || s->transport_fd<0)return cnQueueSync(q);
+  while(!s->atomic_aborted) {
+    CNresult st=cnQueryQueue(q);if(st!=CN_ERROR_NOT_READY)return st;
+    struct pollfd p={.fd=s->transport_fd,.events=POLLRDHUP};
+    int n=poll(&p,1,10);
+    if(n>0 && (p.revents&(POLLRDHUP|POLLHUP|POLLERR|POLLNVAL))) {
+      int canceled=atomic_cancel_queues(s);if(canceled)return (CNresult)canceled;
+    }
+  }
+  CNresult st=cnQueueSync(q);return st==CN_QUEUE_ERROR_INVALID ? CN_SUCCESS : st;
+}
+static CNresult backend_context_wait(mlu_backend_session *s) {
+  if(s->atomic_used){
+    for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->queues[i].live){CNresult st=backend_queue_wait(s,s->queues[i].handle);if(st)return st;}
+    if(s->default_queue_used){CNresult st=backend_queue_wait(s,NULL);if(st)return st;}
+    if(s->atomic_aborted)return CN_SUCCESS;
+  }
+  return cnCtxSync();
+}
+static CNresult backend_notifier_wait(mlu_backend_session *s,CNnotifier n) {
+  if(!s->atomic_used || s->transport_fd<0)return cnWaitNotifier(n);
+  while(!s->atomic_aborted) {
+    CNresult st=cnQueryNotifier(n);if(st!=CN_ERROR_NOT_READY)return st;
+    struct pollfd p={.fd=s->transport_fd,.events=POLLRDHUP};
+    if(poll(&p,1,10)>0 && (p.revents&(POLLRDHUP|POLLHUP|POLLERR|POLLNVAL))) {
+      int canceled=atomic_cancel_queues(s);if(canceled)return (CNresult)canceled;
+    }
+  }
+  return backend_context_wait(s);
+}
 
 static int backend_ready;
 static uint64_t next_session_owner;
@@ -175,7 +222,7 @@ static int graph_host_fetch(mlu_backend_session *,mlu_backend_transfer *,void *,
 static void reap_transfers(mlu_backend_session *s) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
     mlu_backend_transfer *t = &s->transfers[i];
-    if (!t->live || !t->release_requested) continue;
+    if (!t->live || !t->release_requested || __atomic_load_n(&t->host_readers,__ATOMIC_ACQUIRE)) continue;
     if (t->notifier_live && cnQueryNotifier(t->notifier) != CN_SUCCESS) continue;
     graph_transfer_release(s,t);
     if(t->graph_hold) continue;
@@ -318,6 +365,7 @@ int mlu_backend_session_init(mlu_backend_session *s, int ordinal) {
 }
 int mlu_backend_session_init_flags(mlu_backend_session *s, int ordinal, unsigned flags) {
   memset(s, 0, sizeof(*s));
+  s->transport_fd=-1;
   s->device_ordinal = ordinal;
   s->owner_token = __sync_add_and_fetch(&next_session_owner, 1);
   if (mlu_object_registry_init(&s->objects, s->owner_token))
@@ -346,7 +394,7 @@ static int session_has_resources(const mlu_backend_session *s) {
 }
 
 int mlu_backend_context_sync(mlu_backend_session *s) {
-  CNresult r=cnCtxSync();
+  CNresult r=backend_context_wait(s);
   if (r==CN_SUCCESS) {
     release_staging(s,0); reap_transfers(s);
     /* Only a confirmed context barrier permits reclaiming submissions whose
@@ -380,8 +428,28 @@ int mlu_backend_session_reset(mlu_backend_session *s) {
   return mlu_backend_session_init(s, ordinal);
 }
 
+#include "ipc_lifetime.inc"
+
 static int graph_cleanup(mlu_backend_session *s);
 static int graph_users_cleanup(mlu_backend_session *s);
+static int vmm_unmap_allocation(mlu_backend_session *,mlu_backend_allocation *);
+static int vmm_cleanup(mlu_backend_session *);
+static void atomic_cleanup(mlu_backend_session *);
+static void symbol_release(mlu_backend_session *s,mlu_backend_allocation *a) {
+  for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)
+    if(s->modules[i].live && s->modules[i].module_id==a->symbol_module && s->modules[i].graph_refs) {s->modules[i].graph_refs--;break;}
+  mlu_object_registry_release(&s->objects,MLU_OBJECT_ALLOCATION,a->id);
+  memset(a,0,sizeof(*a));
+}
+static void symbol_retire(mlu_backend_session *s,uint64_t module) {
+  for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) {
+    mlu_backend_allocation *a=&s->allocations[i];
+    if(a->live && a->symbol_module && (!module || a->symbol_module==module)) {
+      a->retired=1;mlu_object_registry_release(&s->objects,MLU_OBJECT_ALLOCATION,a->id);
+      if(!a->graph_refs)symbol_release(s,a);
+    }
+  }
+}
 int mlu_backend_session_cleanup(mlu_backend_session *s) {
   if (!s) return 0;
   int first = 0, synchronized = 1;
@@ -389,9 +457,9 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     synchronized = 0;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
     if (s->queues[i].live && cleanup_result(&first, "cnQueueSync", s->queues[i].id,
-                                           cnQueueSync(s->queues[i].handle))) synchronized = 0;
+                                           backend_queue_wait(s,s->queues[i].handle))) synchronized = 0;
   }
-  if (s->default_queue_used && cleanup_result(&first,"cnQueueSync(NULL)",0,cnQueueSync(NULL))) synchronized=0;
+  if (s->default_queue_used && cleanup_result(&first,"backend_queue_wait(s,NULL)",0,backend_queue_wait(s,NULL))) synchronized=0;
   /* On a synchronization error, retain host memory until context destruction
    * confirms no native operation can access it. Never free in-flight staging. */
   if (synchronized) {
@@ -408,6 +476,9 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     fprintf(stderr,"[server] CLEANUP_QUARANTINED owner=%llu Graph release failed\n",(unsigned long long)s->owner_token);
     return s->cleanup_failed;
   }
+  if(synchronized)atomic_cleanup(s);
+  int vmm_st=vmm_cleanup(s);if(vmm_st)return (s->cleanup_failed=vmm_st);
+  symbol_retire(s,0);
   int user_status=graph_users_cleanup(s);if(user_status && !first) first=user_status;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->modules[i].live && !s->modules[i].graph_refs && !cleanup_result(&first, "cnModuleUnload", s->modules[i].module_id,
@@ -422,10 +493,11 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     if (s->queues[i].live) cleanup_result(&first, "cnDestroyQueue", s->queues[i].id, cnDestroyQueue(s->queues[i].handle));
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->allocations[i].live && !s->allocations[i].graph_refs &&
-        !cleanup_result(&first, "cnFree", s->allocations[i].id, cnFree(s->allocations[i].address))) {
+        !cleanup_result(&first, "cnFree", s->allocations[i].id, s->allocations[i].ipc ? ipc_release_allocation(s,&s->allocations[i]) : (int)cnFree(s->allocations[i].address))) {
       mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, s->allocations[i].bytes);
       s->allocations[i].live = 0;
     }
+  int ipc_st=ipc_session_detach(s);if(ipc_st)return (s->cleanup_failed=ipc_st);
   int destroyed = !s->context || !cleanup_result(&first, "cnCtxDestroy", 0, cnCtxDestroy(s->context));
   if (!destroyed) {
     /* Quarantine unconfirmed native charges and retained host memory until
@@ -435,6 +507,11 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     return first;
   }
   s->context = NULL;
+  atomic_cleanup(s);
+  for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++)if(s->atomics[i]) {
+    s->cleanup_failed=first ? first : (int)CN_ERROR_OPERATING_SYSTEM;
+    fprintf(stderr,"[server] CLEANUP_QUARANTINED owner=%llu atomic Host release failed\n",(unsigned long long)s->owner_token);return s->cleanup_failed;
+  }
   for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) graph_transfer_release(s,&s->transfers[i]);
   graph_orphans_release(s);
   release_staging(s, 0);
@@ -500,6 +577,9 @@ int mlu_backend_alloc(mlu_backend_session *s, uint64_t bytes, uint64_t *id) {
  * Failed native release remains charged and owned for retry during cleanup. */
 static int graph_release_allocation(mlu_backend_session *s, mlu_backend_allocation *a) {
   if(!a || !a->live || !a->retired || a->graph_refs) return 0;
+  if(a->vmm_handle)return vmm_unmap_allocation(s,a);
+  if(a->symbol_module) {symbol_release(s,a);return 0;}
+  if(a->ipc)return ipc_release_allocation(s,a);
   int st=cnFree(a->address);
   if(!st) {
     mlu_resource_release(&s->usage,MLU_RESOURCE_DEVICE,a->bytes);
@@ -531,17 +611,21 @@ static int graph_reap_allocations(mlu_backend_session *s) {
 int mlu_backend_free(mlu_backend_session *s, uint64_t id) {
   mlu_backend_allocation *a = find_alloc(s, id);
   if (!a) return (int)CN_ERROR_INVALID_HANDLE;
+  if(a->symbol_module || a->vmm_handle)return CN_MEMORY_ERROR_INVALID_ADDRESS;
+  if(a->ipc_imported)return CN_MEMORY_ERROR_INVALID_ADDRESS;
+  ipc_revoke_allocation(a);
   if(a->graph_refs) {
     a->retired=1;
     mlu_object_registry_release(&s->objects,MLU_OBJECT_ALLOCATION,id);
     return 0;
   }
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->queues[i].live) { CNresult qr = cnQueueSync(s->queues[i].handle); if (qr != CN_SUCCESS) return (int)qr; }
-  if (s->default_queue_used) { CNresult qr=cnQueueSync(NULL); if(qr) return (int)qr; }
+    if (s->queues[i].live) { CNresult qr = backend_queue_wait(s,s->queues[i].handle); if (qr != CN_SUCCESS) return (int)qr; }
+  if (s->default_queue_used) { CNresult qr=backend_queue_wait(s,NULL); if(qr) return (int)qr; }
   release_staging(s, 0);
   int retired_status = reap_retired_queues(s);
   if (retired_status) return retired_status;
+  if(a->ipc)return ipc_release_allocation(s,a);
   CNresult r = cnFree(a->address);
   if (r == CN_SUCCESS) {
     mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, a->bytes);
@@ -581,7 +665,7 @@ static int backend_d2h_submit(mlu_backend_session *s,uint64_t allocation,uint64_
   if(st) {
     /* A submission error does not authorize freeing a possibly referenced
      * page. The staging registry retains it if this wait also fails. */
-    if(cnQueueSync(q ? q->handle : NULL)==CN_SUCCESS) {
+    if(backend_queue_wait(s,q ? q->handle : NULL)==CN_SUCCESS) {
       if(queue_id) release_staging(s,queue_id); else release_staging_default(s);
     }
     return st;
@@ -647,7 +731,7 @@ int mlu_backend_memcpy_ex(mlu_backend_session *s, int direction,
     /* This protocol returns D2H bytes in the response. Wait before using a
      * synchronous native copy: a failed queue wait must never leave an async
      * writer referencing the response buffer that the dispatcher will free. */
-    r = q ? cnQueueSync(q->handle) : (queued ? cnQueueSync(NULL) : CN_SUCCESS);
+    r = q ? backend_queue_wait(s,q->handle) : (queued ? backend_queue_wait(s,NULL) : CN_SUCCESS);
     if (r == CN_SUCCESS && q) release_staging(s, queue_id);
     if (r == CN_SUCCESS && queued && !q) release_staging_default(s);
     if (r == CN_SUCCESS) r = cnMemcpyDtoH(host_dst, src, bytes);
@@ -659,8 +743,8 @@ int mlu_backend_memcpy_ex(mlu_backend_session *s, int direction,
   if (transfer_id && r == CN_SUCCESS) {
     int tr = record_transfer(s, queue_id, queued, transfer_id);
     if (tr != 0) {
-      if (q && cnQueueSync(q->handle) == CN_SUCCESS) release_staging(s, queue_id);
-      if (!q && queued && cnQueueSync(NULL) == CN_SUCCESS) release_staging_default(s);
+      if (q && backend_queue_wait(s,q->handle) == CN_SUCCESS) release_staging(s, queue_id);
+      if (!q && queued && backend_queue_wait(s,NULL) == CN_SUCCESS) release_staging_default(s);
       return tr;
     }
   }
@@ -701,9 +785,9 @@ int mlu_backend_queue_destroy(mlu_backend_session *s, uint64_t id) {
 int mlu_backend_queue_sync(mlu_backend_session *s, uint64_t id) {
   /* Driver NULL queue is passed through to CNDrv. It must not become a
    * context-wide barrier or release staging owned by explicit queues. */
-  if (!id) { CNresult r=cnQueueSync(NULL); if(!r) { release_staging_default(s); reap_transfers(s); return reap_retired_queues(s); } return (int)r; }
+  if (!id) { CNresult r=backend_queue_wait(s,NULL); if(!r) { release_staging_default(s); reap_transfers(s); return reap_retired_queues(s); } return (int)r; }
   mlu_backend_queue *q = find_queue(s, id); if (!q) return (int)CN_ERROR_INVALID_HANDLE;
-  CNresult r = cnQueueSync(q->handle); if (r == CN_SUCCESS) { release_staging(s, id); reap_transfers(s); return reap_retired_queues(s); } return (int)r;
+  CNresult r = backend_queue_wait(s,q->handle); if (r == CN_SUCCESS) { release_staging(s, id); reap_transfers(s); return reap_retired_queues(s); } return (int)r;
 }
 int mlu_backend_queue_query(mlu_backend_session *s, uint64_t id) {
   mlu_backend_queue *q = id ? find_queue(s, id) : NULL;
@@ -746,7 +830,7 @@ int mlu_backend_notifier_query(mlu_backend_session *s, uint64_t id) {
 }
 int mlu_backend_notifier_sync(mlu_backend_session *s, uint64_t id) {
   mlu_backend_notifier *n = find_notifier(s, id); if (!n) return (int)CN_ERROR_INVALID_HANDLE;
-  CNresult r = cnWaitNotifier(n->handle);
+  CNresult r = backend_notifier_wait(s,n->handle);
   return r == CN_SUCCESS ? reap_retired_queues(s) : (int)r;
 }
 int mlu_backend_transfer_query(mlu_backend_session *s, uint64_t id) {
@@ -761,7 +845,7 @@ int mlu_backend_transfer_sync(mlu_backend_session *s, uint64_t id) {
   mlu_backend_transfer *t = find_transfer(s, id);
   if (!t) return (int)CN_ERROR_INVALID_HANDLE;
   if (!t->notifier_live) { t->state = MLU_BACKEND_OPERATION_COMPLETE; return 0; }
-  int st = (int)cnWaitNotifier(t->notifier);
+  int st = (int)backend_notifier_wait(s,t->notifier);
   if (st == CN_SUCCESS) { t->state = MLU_BACKEND_OPERATION_COMPLETE; return reap_retired_queues(s); }
   else t->state = MLU_BACKEND_OPERATION_FAILED;
   return st;
@@ -950,13 +1034,14 @@ int mlu_backend_module_unload(mlu_backend_session *s, uint64_t module_id) {
   if (!m) return (int)CN_ERROR_INVALID_HANDLE;
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->queues[i].live) {
-      CNresult r = cnQueueSync(s->queues[i].handle);
+      CNresult r = backend_queue_wait(s,s->queues[i].handle);
       if (r != CN_SUCCESS) return (int)r;
     }
-  if (s->default_queue_used) { CNresult r=cnQueueSync(NULL); if(r) return (int)r; }
+  if (s->default_queue_used) { CNresult r=backend_queue_wait(s,NULL); if(r) return (int)r; }
   release_staging(s, 0);
   int retired_status = reap_retired_queues(s);
   if (retired_status) return retired_status;
+  symbol_retire(s,module_id);
   if(m->graph_refs) {
     m->retired=1;
     invalidate_module_kernels(s,module_id);
@@ -1071,7 +1156,7 @@ int mlu_backend_operator_launch(mlu_backend_session *s,
   if (r != CN_SUCCESS) return (int)r;
   int tr = record_transfer(s, request->queue_id, 1, transfer_id);
   if (tr != 0) {
-    if (cnQueueSync(q->handle) == CN_SUCCESS) release_staging(s, request->queue_id);
+    if (backend_queue_wait(s,q->handle) == CN_SUCCESS) release_staging(s, request->queue_id);
     return tr;
   }
   return 0;
@@ -1161,7 +1246,7 @@ int mlu_backend_kernel_launch_generic(mlu_backend_session *s,
   if (r != CN_SUCCESS) return (int)r;
   int st = record_transfer(s, queue_id, 1, transfer_id);
   if (st != 0) {
-    if (cnQueueSync(q ? q->handle : NULL) == CN_SUCCESS && queue_id) release_staging(s, queue_id);
+    if (backend_queue_wait(s,q ? q->handle : NULL) == CN_SUCCESS && queue_id) release_staging(s, queue_id);
     return st;
   }
   return 0;
@@ -1242,4 +1327,8 @@ static int mlu_backend_copy3d(mlu_backend_session *s,const mlu_api_copy3d_reques
 #include "graph_backend.inc"
 #include "graph_capture_backend.inc"
 #include "api_queries.inc"
+#include "vmm_backend.inc"
+#include "ipc_control.inc"
+#include "symbol_backend.inc"
+#include "queue_host_backend.inc"
 #include "typed_backend.inc"

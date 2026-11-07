@@ -1,0 +1,38 @@
+[
+  {
+    "name": "ipc-cnrt-to-cnrt-device",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "ipc-cndrv-to-cndrv-device",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "ipc-cnrt-to-cndrv-device",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "ipc-cndrv-to-cnrt-device",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "ipc-cnrt-to-cnrt-host",
+    "returncode": 0,
+    "passed": true,
+    "checks": 5
+  },
+  {
+    "name": "vmm-cndrv-posix-fd",
+    "returncode": 0,
+    "passed": true,
+    "checks": 7
+  }
+]

@@ -1,0 +1,9 @@
+cnrtSetDevice(0) = 0
+reshape n=64 h=3 w=3 c=64 type=18 buffer_bytes=1196032
+InternalError: Get device information failed.
+InternalError: failed to get cnrtAttrClusterCount.
+InternalError: failed to get cnrtAttrMcorePerCluster.
+cnrtFilterReshape(dst,src,n,3,3,c,(cnrtDataType_t)type) = 100006
+2026-11-07 10:50:42.006799: [cnrtError] [262411] [Card: 0] cnrtGetDeviceProperties: Can't find device -1
+2026-11-07 10:50:42.006852: [cnrtError] [262411] [Card: 0] cnrtDeviceGetAttribute: Can't find device -1.
+2026-11-07 10:50:42.006857: [cnrtError] [262411] [Card: 0] cnrtDeviceGetAttribute: Can't find device -1.

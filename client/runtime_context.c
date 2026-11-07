@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "remote_cnrt.h"
 #include "remote_operator.h"
 #include "remote_io.h"
@@ -30,7 +31,7 @@ typedef struct pending_writeback {
   mlu_host_allocation *lease;
   size_t target_count;
   graph_writeback_target *targets;
-  int release_requested, published;
+  int release_requested, published, callback_pending;
 } pending_writeback;
 struct mlu_remote_context {
   int fd;
@@ -185,7 +186,8 @@ static int complete_writebacks(mlu_remote_context *ctx) {
     unsigned char request[16], *data=NULL; uint32_t n=0;
     put64(request,w->transfer);
     int st=0;
-    if(!w->published) {
+    if(w->callback_pending && !__atomic_load_n(&w->published,__ATOMIC_ACQUIRE)){link=&w->next;continue;}
+    if(!__atomic_load_n(&w->published,__ATOMIC_ACQUIRE)) {
       st=rpc_locked(ctx,MLU_OP_TRANSFER_QUERY,request,8,NULL,&n);
       if(st==1) { link=&w->next; continue; } /* CN_ERROR_NOT_READY */
       if(st) return st;
@@ -617,3 +619,5 @@ int mlu_remote_cnnl_request(mlu_remote_context *ctx, uint64_t queue, uint64_t ds
   put64(p + 24, b); put64(p + 32, elements);
   return rpc(ctx, MLU_OP_CNNL_OPERATION, p, sizeof(p), NULL, &(uint32_t){0});
 }
+
+#include "ipc_descriptor.inc"

@@ -1,0 +1,25 @@
+cnInit(0) = 0
+state initial status=0 flags=3 active=0
+cnSharedContextSetFlags(0,1) = 0
+state flags status=0 flags=1 active=0
+cnSharedContextAcquire(&a,0) = 0
+cnCtxGetCurrent(&c) = 0
+acquire changes current=0
+state one status=0 flags=1 active=1
+cnSharedContextAcquire(&b,0) = 0
+same=1
+cnSharedContextSetFlags(0,2) = 100201
+cnSharedContextRelease(0) = 0
+state release-one status=0 flags=1 active=1
+cnSharedContextRelease(0) = 0
+state release-two status=0 flags=3 active=0
+cnSharedContextRelease(0) = 0
+cnSharedContextAcquire(&a,0) = 0
+cnCtxSetCurrent(a) = 0
+cnSharedContextReset(0) = 0
+state reset status=0 flags=0 active=0
+cnCtxGetCurrent(&c) = 0
+current null=0
+cnSharedContextAcquire(&b,0) = 0
+reacquire same=1
+cnSharedContextRelease(0) = 0

@@ -1,0 +1,3 @@
+2026-11-07 10:55:01.525178: [cnrtError] [264495] [Card: 0] Error occurred during calling 'cnIpcGetMemHandle' in CNDrv interface.
+2026-11-07 10:55:01.525279: [cnrtError] [264495] [Card: 0] Return value is 100102, CN_MEMORY_ERROR_INVALID_ADDRESS.
+2026-11-07 10:55:01.525289: [cnrtError] [264495] [Card: 0] cnrtAcquireMemHandle: Failed to get ipc memory handle.

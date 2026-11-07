@@ -1,4 +1,12 @@
 {
+  "cnrtAcquireMemHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "Independent client processes share Native device backing through random server-instance tokens and importer-owned AllocationIDs; CNRT/CNDrv cross-library copy/write, multiple importers and Graph-held refs supported. Physical device bytes charged once. Source free/reset/EOF revokes new device opens while existing refs retain backing and owner Context (Remote safety policy; Native source-free behavior undefined). CNRT Host IPC uses real memfd/MAP_SHARED, same-UID abstract Unix broker and SCM_RIGHTS; CPU coherence is limited to one client host/UID/Unix namespace. Existing Host imports survive source free/exit; Host allocation is process-domain across Context reset.",
+    "native_test": "remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-host-importer.jsonl",
+    "remote_test": "remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/lifetime/cnrt-device-free-import-0.jsonl;remaining-ipc-20261107/quota/cnrt-quota.jsonl",
+    "next_step": "Maintain independent-process Native/Remote numerics, multi-importer lifetime, single-charge accounting and descriptor final-close regression.",
+    "blocker": ""
+  },
   "cnrtCastDataType": {
     "status": "IMPLEMENTED",
     "boundary": "Host-only CNRT 6.5.2 AArch64 conversion for observed supported pairs: 24 plain and 13 scalar-quantized legacy pairs, half and 64-bit outputs; both support full-shape by-channel float32->int8/int16 with owned parameters. Pair masks, rounding, saturation and SDK quirks are documented in docs/HOST_CAST.md. Unsupported enum/pairs return ArgsInvalid. Host buffers must be valid and sized; no device pointers, general overlap or exhaustive IEEE special-value certification. Legacy int16 -32768->half SDK hang is not reproduced.",
@@ -119,6 +127,14 @@
     "next_step": "Retain Native/Remote family regression when extending SDK/device scope",
     "blocker": ""
   },
+  "cnrtFilterReshape": {
+    "status": "BLOCKED",
+    "boundary": "No substitute reshape is supplied; Native buffers and documented padded shapes were tested, but this SDK cannot execute its feature prerequisite.",
+    "native_test": "remaining-native-20261107/focused-reshape-64-64-18.log;remaining-native-20261107/focused-reshape-128-64-19.log;remaining-native-20261107/focused-reshape-64-128-33.log",
+    "remote_test": "not_run",
+    "next_step": "Use a CNRT build whose reshape topology helper succeeds, capture Native transformed bytes, then implement the verified Host reshape semantics.",
+    "blocker": "Valid padded FP16/FP32/INT8 shapes all fail inside installed CNRT with 100006: its topology helper queries device -1 and cannot obtain ClusterCount/McorePerCluster."
+  },
   "cnrtFree": {
     "status": "IMPLEMENTED",
     "boundary": "Synchronizes session queues; NULL succeeds; stale and interior pointers rejected; VA tombstones retained until exit",
@@ -207,6 +223,14 @@
     "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
     "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
   },
+  "cnrtGetSymbolAddress": {
+    "status": "IMPLEMENTED",
+    "boundary": "Module-owned symbol AllocationID and guarded fake VA with stable lookup; synchronous/asynchronous H2D/D2H/D2D byte-offset copies reuse transfer/completion engine; real kernel observes symbol mutation. Public unload/reset revokes identities, existing Graph leases retain module backing; current CNCC registration/image ABI.",
+    "native_test": "remaining-closure-20261107/symbol-runtime-native.log",
+    "remote_test": "remaining-closure-20261107/symbol-runtime-remote.log;remaining-closure-20261107/symbol-runtime-preload.log;remaining-closure-20261107/symbol-runtime-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
   "cnrtGetSymbolSize": {
     "status": "IMPLEMENTED",
     "boundary": "Returns host registration byte size for current CNCC ordinary uninitialized, initialized and const __mlu_device__ globals after bounded device ELF OBJECT/section validation. Unknown symbol and NULL output reject. External variables and symbol address/copy APIs are outside this entry point.",
@@ -221,6 +245,14 @@
     "native_test": "host-async-20261107/runtime-host-async-native.log",
     "remote_test": "host-async-20261107/runtime-host-async-remote.log; host-async-20261107/runtime-host-async-preload.log; host-async-20261107/runtime-host-async-isolated.log",
     "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary.",
+    "blocker": ""
+  },
+  "cnrtInvokeHostFunc": {
+    "status": "IMPLEMENTED",
+    "boundary": "Native queue boundary executes original function/userData in the client through paired callback channel; prior ordinary and Graph D2H publishes before callback and successor work. Explicit/default Queue, client PID, ordering, completion and teardown verified. Callbacks must return before deadline; Runtime/Driver reentry is rejected.",
+    "native_test": "remaining-closure-20261107/queue-runtime-native.log",
+    "remote_test": "remaining-closure-20261107/queue-runtime-remote.log;remaining-closure-20261107/queue-runtime-preload.log;remaining-closure-20261107/queue-runtime-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
     "blocker": ""
   },
   "cnrtInvokeKernel": {
@@ -263,6 +295,22 @@
     "next_step": "Probe and implement this functional family",
     "blocker": "VMM, pools and special allocations require separate ownership policies"
   },
+  "cnrtMapMemHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "Independent client processes share Native device backing through random server-instance tokens and importer-owned AllocationIDs; CNRT/CNDrv cross-library copy/write, multiple importers and Graph-held refs supported. Physical device bytes charged once. Source free/reset/EOF revokes new device opens while existing refs retain backing and owner Context (Remote safety policy; Native source-free behavior undefined). CNRT Host IPC uses real memfd/MAP_SHARED, same-UID abstract Unix broker and SCM_RIGHTS; CPU coherence is limited to one client host/UID/Unix namespace. Existing Host imports survive source free/exit; Host allocation is process-domain across Context reset.",
+    "native_test": "remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-host-importer.jsonl",
+    "remote_test": "remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/lifetime/cnrt-device-free-import-0.jsonl;remaining-ipc-20261107/quota/cnrt-quota.jsonl",
+    "next_step": "Maintain independent-process Native/Remote numerics, multi-importer lifetime, single-charge accounting and descriptor final-close regression.",
+    "blocker": ""
+  },
+  "cnrtMcacheOperation": {
+    "status": "BLOCKED",
+    "boundary": "No Remote mapping/cache implementation is claimed. Native mapping prerequisites fail; cache and unmap success paths cannot be tested without a valid Native mapping.",
+    "native_test": "remaining-native-20261107/rtmapping.log",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
+    "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance."
+  },
   "cnrtMemGetInfo": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
@@ -303,6 +351,22 @@
     "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary.",
     "blocker": ""
   },
+  "cnrtMemcpyFromSymbol": {
+    "status": "IMPLEMENTED",
+    "boundary": "Module-owned symbol AllocationID and guarded fake VA with stable lookup; synchronous/asynchronous H2D/D2H/D2D byte-offset copies reuse transfer/completion engine; real kernel observes symbol mutation. Public unload/reset revokes identities, existing Graph leases retain module backing; current CNCC registration/image ABI.",
+    "native_test": "remaining-closure-20261107/symbol-runtime-native.log",
+    "remote_test": "remaining-closure-20261107/symbol-runtime-remote.log;remaining-closure-20261107/symbol-runtime-preload.log;remaining-closure-20261107/symbol-runtime-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnrtMemcpyFromSymbolAsync": {
+    "status": "IMPLEMENTED",
+    "boundary": "Module-owned symbol AllocationID and guarded fake VA with stable lookup; synchronous/asynchronous H2D/D2H/D2D byte-offset copies reuse transfer/completion engine; real kernel observes symbol mutation. Public unload/reset revokes identities, existing Graph leases retain module backing; current CNCC registration/image ABI.",
+    "native_test": "remaining-closure-20261107/symbol-runtime-native.log",
+    "remote_test": "remaining-closure-20261107/symbol-runtime-remote.log;remaining-closure-20261107/symbol-runtime-preload.log;remaining-closure-20261107/symbol-runtime-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
   "cnrtMemcpyPeer": {
     "status": "BLOCKED",
     "boundary": "No client export; cross-device Peer is blocked by the second-device prerequisite. Self-device behavior does not prove Peer support.",
@@ -319,6 +383,22 @@
     "next_step": "With a second supported MLU, establish Native two-device access/copy and context ownership baseline before implementation.",
     "blocker": "Only one physical MLU370-S4 is available; genuine two-device peer accessibility, peer allocation and transfer/ordering cannot be accepted."
   },
+  "cnrtMemcpyToSymbol": {
+    "status": "IMPLEMENTED",
+    "boundary": "Module-owned symbol AllocationID and guarded fake VA with stable lookup; synchronous/asynchronous H2D/D2H/D2D byte-offset copies reuse transfer/completion engine; real kernel observes symbol mutation. Public unload/reset revokes identities, existing Graph leases retain module backing; current CNCC registration/image ABI.",
+    "native_test": "remaining-closure-20261107/symbol-runtime-native.log",
+    "remote_test": "remaining-closure-20261107/symbol-runtime-remote.log;remaining-closure-20261107/symbol-runtime-preload.log;remaining-closure-20261107/symbol-runtime-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnrtMemcpyToSymbolAsync": {
+    "status": "IMPLEMENTED",
+    "boundary": "Module-owned symbol AllocationID and guarded fake VA with stable lookup; synchronous/asynchronous H2D/D2H/D2D byte-offset copies reuse transfer/completion engine; real kernel observes symbol mutation. Public unload/reset revokes identities, existing Graph leases retain module backing; current CNCC registration/image ABI.",
+    "native_test": "remaining-closure-20261107/symbol-runtime-native.log",
+    "remote_test": "remaining-closure-20261107/symbol-runtime-remote.log;remaining-closure-20261107/symbol-runtime-preload.log;remaining-closure-20261107/symbol-runtime-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
   "cnrtMemset": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
@@ -334,6 +414,30 @@
     "remote_test": "api-expansion-20261102/runtime-remote.log",
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
     "blocker": ""
+  },
+  "cnrtMmap": {
+    "status": "BLOCKED",
+    "boundary": "No Remote mapping/cache implementation is claimed. Native mapping prerequisites fail; cache and unmap success paths cannot be tested without a valid Native mapping.",
+    "native_test": "remaining-native-20261107/rtmapping.log",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
+    "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance."
+  },
+  "cnrtMmapCached": {
+    "status": "BLOCKED",
+    "boundary": "No Remote mapping/cache implementation is claimed. Native mapping prerequisites fail; cache and unmap success paths cannot be tested without a valid Native mapping.",
+    "native_test": "remaining-native-20261107/rtmapping.log",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
+    "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance."
+  },
+  "cnrtMunmap": {
+    "status": "BLOCKED",
+    "boundary": "No Remote mapping/cache implementation is claimed. Native mapping prerequisites fail; cache and unmap success paths cannot be tested without a valid Native mapping.",
+    "native_test": "remaining-native-20261107/rtmapping.log",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
+    "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance."
   },
   "cnrtNotifierCreate": {
     "status": "IMPLEMENTED",
@@ -895,6 +999,14 @@
     "next_step": "G1/G2 typed nodes and 1D Host replay complete within boundary; capture and client callbacks/user objects remain.",
     "blocker": ""
   },
+  "cnrtUnMapMemHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "Independent client processes share Native device backing through random server-instance tokens and importer-owned AllocationIDs; CNRT/CNDrv cross-library copy/write, multiple importers and Graph-held refs supported. Physical device bytes charged once. Source free/reset/EOF revokes new device opens while existing refs retain backing and owner Context (Remote safety policy; Native source-free behavior undefined). CNRT Host IPC uses real memfd/MAP_SHARED, same-UID abstract Unix broker and SCM_RIGHTS; CPU coherence is limited to one client host/UID/Unix namespace. Existing Host imports survive source free/exit; Host allocation is process-domain across Context reset.",
+    "native_test": "remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/native/ipc-cnrt-to-cnrt-host-importer.jsonl",
+    "remote_test": "remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-device-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-device-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-host-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cnrt-to-cnrt-host-importer.jsonl;remaining-ipc-20261107/lifetime/cnrt-device-free-import-0.jsonl;remaining-ipc-20261107/quota/cnrt-quota.jsonl",
+    "next_step": "Maintain independent-process Native/Remote numerics, multi-importer lifetime, single-charge accounting and descriptor final-close regression.",
+    "blocker": ""
+  },
   "cnrtUserObjectAcquire": {
     "status": "IMPLEMENTED",
     "boundary": "Session-typed native user object with client-only destructor identity, nonzero counts <= INT_MAX, creation flag 1 and graph acquire flags 0/MOVE. Native graph/clone/entity/in-flight references govern final destruction; one asynchronous client executor delivers the destructor once without requiring a later wait API. Callback/destructor runtime reentry is rejected before shim locks; caller data must stay valid until destruction.",
@@ -926,6 +1038,30 @@
     "remote_test": "native_bang_abi-replacement.log",
     "next_step": "Probe and implement this functional family",
     "blocker": ""
+  },
+  "cnAtomicOperation": {
+    "status": "IMPLEMENTED",
+    "boundary": "Aligned registered pinned Host 64-bit cells are mirrored into Native server pinned cells; Native compare/request/read and cross-queue wakeup, independent side RPC per Context, 40 distinct cells and pending-compare EOF cancellation verified. CPU updates must use these atomic APIs after binding; mirrored bytes publish on atomic read/Queue/Context completion. Raw CPU load/store coherence across hosts and sharing one cell across Contexts are outside this boundary.",
+    "native_test": "remaining-closure-20261107/queue-driver-native.log",
+    "remote_test": "remaining-closure-20261107/queue-driver-remote.log;remaining-closure-20261107/queue-driver-preload.log;remaining-closure-20261107/queue-driver-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnAtomicReadOps": {
+    "status": "IMPLEMENTED",
+    "boundary": "Aligned registered pinned Host 64-bit cells are mirrored into Native server pinned cells; Native compare/request/read and cross-queue wakeup, independent side RPC per Context, 40 distinct cells and pending-compare EOF cancellation verified. CPU updates must use these atomic APIs after binding; mirrored bytes publish on atomic read/Queue/Context completion. Raw CPU load/store coherence across hosts and sharing one cell across Contexts are outside this boundary.",
+    "native_test": "remaining-closure-20261107/queue-driver-native.log",
+    "remote_test": "remaining-closure-20261107/queue-driver-remote.log;remaining-closure-20261107/queue-driver-preload.log;remaining-closure-20261107/queue-driver-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnCacheOperation": {
+    "status": "BLOCKED",
+    "boundary": "No Remote mapping/cache implementation is claimed. Native mapping prerequisites fail; cache and unmap success paths cannot be tested without a valid Native mapping.",
+    "native_test": "remaining-native-20261107/mapping.log",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
+    "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance."
   },
   "cnCreateNotifier": {
     "status": "IMPLEMENTED",
@@ -1191,6 +1327,14 @@
     "next_step": "Complete within the pinned SDK scope; explicitly recapture and review catalogue when changing SDK.",
     "blocker": ""
   },
+  "cnGetExportFunction": {
+    "status": "OUT_OF_SCOPE",
+    "boundary": "No generic private-extension forwarding. Native lookup of real cnQueueAbort succeeds; server uses only its separately verified local ABI for atomic EOF cleanup, without exposing function addresses across RPC.",
+    "native_test": "remaining-native-20261107/focused-export.log",
+    "remote_test": "not_run",
+    "next_step": "Reopen only for an explicit private extension workload; specify and implement that extension ABI and lifetime instead of returning a Server pointer.",
+    "blocker": "Installed cn_api.h declares this under Group Impl Private / @cond impl_private. It resolves heterogeneous undocumented extension ABIs; generic native Server function pointers cannot be callable client functions. Private profiler/debug/transport extension forwarding is outside ordinary BANG compute scope."
+  },
   "cnGetLibVersion": {
     "status": "IMPLEMENTED",
     "boundary": "Neuware 3.5.2 / MLU370-S4, session selected device; Native/Remote numerical and semantic family comparison",
@@ -1223,12 +1367,36 @@
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
     "blocker": ""
   },
+  "cnInvokeHostFunc": {
+    "status": "IMPLEMENTED",
+    "boundary": "Native queue boundary executes original function/userData in the client through paired callback channel; prior ordinary and Graph D2H publishes before callback and successor work. Explicit/default Queue, client PID, ordering, completion and teardown verified. Callbacks must return before deadline; Runtime/Driver reentry is rejected.",
+    "native_test": "remaining-closure-20261107/queue-driver-native.log",
+    "remote_test": "remaining-closure-20261107/queue-driver-remote.log;remaining-closure-20261107/queue-driver-preload.log;remaining-closure-20261107/queue-driver-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
   "cnInvokeKernel": {
     "status": "IMPLEMENTED",
     "boundary": "Driver image compiler metadata supports extern-C/zero args and natural LP64 byval nested struct/array pointer fields through shared AllocationID+offset relocation. Legacy primitive fallback remains; stale module/kernel and foreign-context pointers reject. Explicit/native NULL Queue; reserved=0, extra=NULL. Block verified; Union forwarded without numerical certification. Device pointer graphs, packed/opaque and unknown ABIs remain outside scope.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log; module-accounting-20261107/relocation-driver-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log; module-accounting-20261107/relocation-driver-remote.log; module-accounting-20261107/relocation-driver-preload.log; module-accounting-20261107/relocation-driver-isolated.log; module-accounting-20261107/relocation-protocol.log; module-accounting-20261107/metadata-validation.log",
     "next_step": "",
+    "blocker": ""
+  },
+  "cnIpcCloseMemHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "Independent client processes share Native device backing through random server-instance tokens and importer-owned AllocationIDs; CNRT/CNDrv cross-library copy/write, multiple importers and Graph-held refs supported. Physical device bytes charged once. Source free/reset/EOF revokes new device opens while existing refs retain backing and owner Context (Remote safety policy; Native source-free behavior undefined).",
+    "native_test": "remaining-ipc-20261107/native/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/native/ipc-cndrv-to-cndrv-device-importer.jsonl",
+    "remote_test": "remaining-ipc-20261107/remote/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/preload/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/lifetime/cndrv-device-free-import-0.jsonl;remaining-ipc-20261107/quota/cndrv-quota.jsonl",
+    "next_step": "Maintain independent-process Native/Remote numerics, multi-importer lifetime, single-charge accounting and descriptor final-close regression.",
+    "blocker": ""
+  },
+  "cnIpcGetMemHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "Independent client processes share Native device backing through random server-instance tokens and importer-owned AllocationIDs; CNRT/CNDrv cross-library copy/write, multiple importers and Graph-held refs supported. Physical device bytes charged once. Source free/reset/EOF revokes new device opens while existing refs retain backing and owner Context (Remote safety policy; Native source-free behavior undefined).",
+    "native_test": "remaining-ipc-20261107/native/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/native/ipc-cndrv-to-cndrv-device-importer.jsonl",
+    "remote_test": "remaining-ipc-20261107/remote/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/preload/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/lifetime/cndrv-device-free-import-0.jsonl;remaining-ipc-20261107/quota/cndrv-quota.jsonl",
+    "next_step": "Maintain independent-process Native/Remote numerics, multi-importer lifetime, single-charge accounting and descriptor final-close regression.",
     "blocker": ""
   },
   "cnIpcGetNotifierHandle": {
@@ -1238,6 +1406,14 @@
     "remote_test": "not_run",
     "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
     "blocker": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK."
+  },
+  "cnIpcOpenMemHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "Independent client processes share Native device backing through random server-instance tokens and importer-owned AllocationIDs; CNRT/CNDrv cross-library copy/write, multiple importers and Graph-held refs supported. Physical device bytes charged once. Source free/reset/EOF revokes new device opens while existing refs retain backing and owner Context (Remote safety policy; Native source-free behavior undefined).",
+    "native_test": "remaining-ipc-20261107/native/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/native/ipc-cndrv-to-cndrv-device-importer.jsonl",
+    "remote_test": "remaining-ipc-20261107/remote/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/remote/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/preload/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/preload/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/isolated/ipc-cndrv-to-cndrv-device-exporter.jsonl;remaining-ipc-20261107/isolated/ipc-cndrv-to-cndrv-device-importer.jsonl;remaining-ipc-20261107/lifetime/cndrv-device-free-import-0.jsonl;remaining-ipc-20261107/quota/cndrv-quota.jsonl",
+    "next_step": "Maintain independent-process Native/Remote numerics, multi-importer lifetime, single-charge accounting and descriptor final-close regression.",
+    "blocker": ""
   },
   "cnIpcOpenNotifierHandle": {
     "status": "BLOCKED",
@@ -1319,12 +1495,68 @@
     "next_step": "Reopen only with an explicit security/codec workload and its Native consumer baseline.",
     "blocker": "Security/codec-framebuffer consumers are outside the ordinary BANG compute target; allocation and ordinary copies were tested, dedicated consumer semantics are not claimed."
   },
+  "cnMemAddressFree": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnMemAddressReserve": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnMemCreate": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnMemExportToShareableHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "POSIX FD only: a real transferable client TCP socket holds an unread random capability; dup/SCM_RIGHTS/final-close retain/release Native exported FD and VMM backing. Broker retains owner Context and independent Native generic-handle refs because same-process Native import is rejected. Export writes the observed SDK 8-byte output slot; server restart invalidates descriptors.",
+    "native_test": "remaining-ipc-20261107/native/vmm-cndrv-posix-fd-exporter.jsonl;remaining-ipc-20261107/native/vmm-cndrv-posix-fd-importer.jsonl",
+    "remote_test": "remaining-ipc-20261107/remote/vmm-cndrv-posix-fd-exporter.jsonl;remaining-ipc-20261107/remote/vmm-cndrv-posix-fd-importer.jsonl;remaining-ipc-20261107/preload/vmm-cndrv-posix-fd-exporter.jsonl;remaining-ipc-20261107/preload/vmm-cndrv-posix-fd-importer.jsonl;remaining-ipc-20261107/isolated/vmm-cndrv-posix-fd-exporter.jsonl;remaining-ipc-20261107/isolated/vmm-cndrv-posix-fd-importer.jsonl;remaining-ipc-20261107/lifetime/vmm-retire-import.jsonl",
+    "next_step": "Maintain independent-process Native/Remote numerics, multi-importer lifetime, single-charge accounting and descriptor final-close regression.",
+    "blocker": ""
+  },
+  "cnMemGetAccess": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
   "cnMemGetAddressRange": {
     "status": "IMPLEMENTED",
     "boundary": "Returns owned device allocation base and size for interior addresses using fake-VA relocation; Host/VMM query paths are separate capabilities.",
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnMemGetAllocationGranularity": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnMemGetAllocationPropertiesFromHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
     "blocker": ""
   },
   "cnMemGetInfo": {
@@ -1341,6 +1573,62 @@
     "native_test": "query-boundaries-20261102/driver-native.log",
     "remote_test": "query-boundaries-20261102/driver-remote.log",
     "next_step": "Retain Native/Remote boundary regression",
+    "blocker": ""
+  },
+  "cnMemImportFromShareableHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "POSIX FD only: a real transferable client TCP socket holds an unread random capability; dup/SCM_RIGHTS/final-close retain/release Native exported FD and VMM backing. Broker retains owner Context and independent Native generic-handle refs because same-process Native import is rejected. Export writes the observed SDK 8-byte output slot; server restart invalidates descriptors.",
+    "native_test": "remaining-ipc-20261107/native/vmm-cndrv-posix-fd-exporter.jsonl;remaining-ipc-20261107/native/vmm-cndrv-posix-fd-importer.jsonl",
+    "remote_test": "remaining-ipc-20261107/remote/vmm-cndrv-posix-fd-exporter.jsonl;remaining-ipc-20261107/remote/vmm-cndrv-posix-fd-importer.jsonl;remaining-ipc-20261107/preload/vmm-cndrv-posix-fd-exporter.jsonl;remaining-ipc-20261107/preload/vmm-cndrv-posix-fd-importer.jsonl;remaining-ipc-20261107/isolated/vmm-cndrv-posix-fd-exporter.jsonl;remaining-ipc-20261107/isolated/vmm-cndrv-posix-fd-importer.jsonl;remaining-ipc-20261107/lifetime/vmm-retire-import.jsonl",
+    "next_step": "Maintain independent-process Native/Remote numerics, multi-importer lifetime, single-charge accounting and descriptor final-close regression.",
+    "blocker": ""
+  },
+  "cnMemMap": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnMemMerge": {
+    "status": "BLOCKED",
+    "boundary": "No Remote merge is claimed; valid Native allocations succeed but their merge does not.",
+    "native_test": "remaining-native-20261107/mapping.log",
+    "remote_test": "not_run",
+    "next_step": "Establish a successful Native merge and constituent lifetime baseline on supported hardware before adding merged allocation ownership.",
+    "blocker": "Native merge of two valid device allocations returns 100050 NotSupported; installed SDK documents no support on MLU300 and later."
+  },
+  "cnMemRelease": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnMemRetainAllocationHandle": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnMemSetAccess": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnMemUnmap": {
+    "status": "IMPLEMENTED",
+    "boundary": "Separate generic-handle refs, VA reservations and map identities; aligned guarded client VA, Native access descriptors, offset-zero aliases, retain/release/remap and Context cleanup. Nonzero backing offset returns Native 100050 on this SDK; mapped views reuse AllocationID copy/kernel paths and Graph leases. POSIX sharing uses the IPC descriptor broker.",
+    "native_test": "remaining-closure-20261107/vmm-native.log",
+    "remote_test": "remaining-closure-20261107/vmm-remote.log;remaining-closure-20261107/vmm-preload.log;remaining-closure-20261107/vmm-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
     "blocker": ""
   },
   "cnMemcpy": {
@@ -1503,12 +1791,36 @@
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
     "blocker": ""
   },
+  "cnMmap": {
+    "status": "BLOCKED",
+    "boundary": "No Remote mapping/cache implementation is claimed. Native mapping prerequisites fail; cache and unmap success paths cannot be tested without a valid Native mapping.",
+    "native_test": "remaining-native-20261107/mapping.log",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
+    "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance."
+  },
+  "cnMmapCached": {
+    "status": "BLOCKED",
+    "boundary": "No Remote mapping/cache implementation is claimed. Native mapping prerequisites fail; cache and unmap success paths cannot be tested without a valid Native mapping.",
+    "native_test": "remaining-native-20261107/mapping.log",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
+    "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance."
+  },
   "cnModuleGetKernel": {
     "status": "IMPLEMENTED",
     "boundary": "Native exact-symbol lookup first; missing symbol clears output as measured. Stable owner/parent-bound kernel handles. Compiler metadata attached to CNFB ELF enables extern-C/zero args and natural LP64 byval aggregates with pointer fields; invalid/stale metadata rejects. Legacy mangled primitives remain supported; unsupported ABIs require reviewed metadata.",
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log; module-accounting-20261107/relocation-driver-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log; module-accounting-20261107/relocation-driver-remote.log; module-accounting-20261107/relocation-driver-preload.log; module-accounting-20261107/relocation-driver-isolated.log; module-accounting-20261107/metadata-validation.log",
     "next_step": "",
+    "blocker": ""
+  },
+  "cnModuleGetSymbol": {
+    "status": "IMPLEMENTED",
+    "boundary": "Module-owned symbol AllocationID and guarded fake VA with stable lookup; synchronous/asynchronous H2D/D2H/D2D byte-offset copies reuse transfer/completion engine; real kernel observes symbol mutation. Public unload/reset revokes identities, existing Graph leases retain module backing; current CNCC registration/image ABI.",
+    "native_test": "remaining-closure-20261107/symbol-driver-native.log",
+    "remote_test": "remaining-closure-20261107/symbol-driver-remote.log;remaining-closure-20261107/symbol-driver-preload.log;remaining-closure-20261107/symbol-driver-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
     "blocker": ""
   },
   "cnModuleLoad": {
@@ -1551,6 +1863,14 @@
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
     "blocker": ""
   },
+  "cnMunmap": {
+    "status": "BLOCKED",
+    "boundary": "No Remote mapping/cache implementation is claimed. Native mapping prerequisites fail; cache and unmap success paths cannot be tested without a valid Native mapping.",
+    "native_test": "remaining-native-20261107/mapping.log",
+    "remote_test": "not_run",
+    "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
+    "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance."
+  },
   "cnNotifierElapsedExecTime": {
     "status": "IMPLEMENTED",
     "boundary": "Native execution-duration timing for recorded owned notifiers; compares validity/status and nonnegative finite durations.",
@@ -1589,6 +1909,22 @@
     "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
     "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnQueueAddCallback": {
+    "status": "IMPLEMENTED",
+    "boundary": "Native queue boundary executes original function/userData in the client through paired callback channel; prior ordinary and Graph D2H publishes before callback and successor work. Explicit/default Queue, client PID, ordering, completion and teardown verified. Callbacks must return before deadline; Runtime/Driver reentry is rejected.",
+    "native_test": "remaining-closure-20261107/queue-driver-native.log",
+    "remote_test": "remaining-closure-20261107/queue-driver-remote.log;remaining-closure-20261107/queue-driver-preload.log;remaining-closure-20261107/queue-driver-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnQueueAtomicOperation": {
+    "status": "IMPLEMENTED",
+    "boundary": "Aligned registered pinned Host 64-bit cells are mirrored into Native server pinned cells; Native compare/request/read and cross-queue wakeup, independent side RPC per Context, 40 distinct cells and pending-compare EOF cancellation verified. CPU updates must use these atomic APIs after binding; mirrored bytes publish on atomic read/Queue/Context completion. Raw CPU load/store coherence across hosts and sharing one cell across Contexts are outside this boundary.",
+    "native_test": "remaining-closure-20261107/queue-driver-native.log",
+    "remote_test": "remaining-closure-20261107/queue-driver-remote.log;remaining-closure-20261107/queue-driver-preload.log;remaining-closure-20261107/queue-driver-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
     "blocker": ""
   },
   "cnQueueBeginCapture": {
@@ -1693,6 +2029,62 @@
     "native_test": "api-expansion-20261107/context-config-native.log",
     "remote_test": "api-expansion-20261107/context-config-remote.log",
     "next_step": "Closed in the declared single-device scope; reopen only for a demonstrated semantic gap.",
+    "blocker": ""
+  },
+  "cnSetMemAttribute": {
+    "status": "BLOCKED",
+    "boundary": "Typed adapter preserves tested Native device/VMM error results only; no successful attribute-setting semantics are certified. Range cache setting is Native NotSupported.",
+    "native_test": "remaining-native-20261107/focused-attributes.log;remaining-native-20261107/vmm.log",
+    "remote_test": "not_run",
+    "next_step": "Find a supported device/SDK allocation and documented attribute/value combination with successful Native mutation and observation, then complete the adapter and differential.",
+    "blocker": "No successful Native attribute-setting prerequisite on device, pinned Host or mapped VMM storage: documented cache operations return 100006/100050, access/cache-config values return 100102 on this device/SDK."
+  },
+  "cnSetMemRangeAttribute": {
+    "status": "BLOCKED",
+    "boundary": "Typed adapter preserves tested Native device/VMM error results only; no successful attribute-setting semantics are certified. Range cache setting is Native NotSupported.",
+    "native_test": "remaining-native-20261107/focused-attributes.log;remaining-native-20261107/vmm.log",
+    "remote_test": "not_run",
+    "next_step": "Find a supported device/SDK allocation and documented attribute/value combination with successful Native mutation and observation, then complete the adapter and differential.",
+    "blocker": "No successful Native attribute-setting prerequisite on device, pinned Host or mapped VMM storage: documented cache operations return 100006/100050, access/cache-config values return 100102 on this device/SDK."
+  },
+  "cnSharedContextAcquire": {
+    "status": "IMPLEMENTED",
+    "boundary": "Process/device shared identity with counted acquisition; last release/reset drains and revokes resources while retaining TLS identity; inactive flags and reacquisition match Native. Single physical device and process domain.",
+    "native_test": "remaining-closure-20261107/shared-native.log;remaining-closure-20261107/shared-life-native.log",
+    "remote_test": "remaining-closure-20261107/shared-remote.log;remaining-closure-20261107/shared-preload.log;remaining-closure-20261107/shared-isolated.log;remaining-closure-20261107/shared-life-remote.log;remaining-closure-20261107/shared-life-preload.log;remaining-closure-20261107/shared-life-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnSharedContextGetState": {
+    "status": "IMPLEMENTED",
+    "boundary": "Process/device shared identity with counted acquisition; last release/reset drains and revokes resources while retaining TLS identity; inactive flags and reacquisition match Native. Single physical device and process domain.",
+    "native_test": "remaining-closure-20261107/shared-native.log;remaining-closure-20261107/shared-life-native.log",
+    "remote_test": "remaining-closure-20261107/shared-remote.log;remaining-closure-20261107/shared-preload.log;remaining-closure-20261107/shared-isolated.log;remaining-closure-20261107/shared-life-remote.log;remaining-closure-20261107/shared-life-preload.log;remaining-closure-20261107/shared-life-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnSharedContextRelease": {
+    "status": "IMPLEMENTED",
+    "boundary": "Process/device shared identity with counted acquisition; last release/reset drains and revokes resources while retaining TLS identity; inactive flags and reacquisition match Native. Single physical device and process domain.",
+    "native_test": "remaining-closure-20261107/shared-native.log;remaining-closure-20261107/shared-life-native.log",
+    "remote_test": "remaining-closure-20261107/shared-remote.log;remaining-closure-20261107/shared-preload.log;remaining-closure-20261107/shared-isolated.log;remaining-closure-20261107/shared-life-remote.log;remaining-closure-20261107/shared-life-preload.log;remaining-closure-20261107/shared-life-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnSharedContextReset": {
+    "status": "IMPLEMENTED",
+    "boundary": "Process/device shared identity with counted acquisition; last release/reset drains and revokes resources while retaining TLS identity; inactive flags and reacquisition match Native. Single physical device and process domain.",
+    "native_test": "remaining-closure-20261107/shared-native.log;remaining-closure-20261107/shared-life-native.log",
+    "remote_test": "remaining-closure-20261107/shared-remote.log;remaining-closure-20261107/shared-preload.log;remaining-closure-20261107/shared-isolated.log;remaining-closure-20261107/shared-life-remote.log;remaining-closure-20261107/shared-life-preload.log;remaining-closure-20261107/shared-life-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
+    "blocker": ""
+  },
+  "cnSharedContextSetFlags": {
+    "status": "IMPLEMENTED",
+    "boundary": "Process/device shared identity with counted acquisition; last release/reset drains and revokes resources while retaining TLS identity; inactive flags and reacquisition match Native. Single physical device and process domain.",
+    "native_test": "remaining-closure-20261107/shared-native.log;remaining-closure-20261107/shared-life-native.log",
+    "remote_test": "remaining-closure-20261107/shared-remote.log;remaining-closure-20261107/shared-preload.log;remaining-closure-20261107/shared-isolated.log;remaining-closure-20261107/shared-life-remote.log;remaining-closure-20261107/shared-life-preload.log;remaining-closure-20261107/shared-life-isolated.log",
+    "next_step": "Maintain Native/Remote differential and resource-lifetime regression within this boundary.",
     "blocker": ""
   },
   "cnTaskTopoAcquireUserObject": {

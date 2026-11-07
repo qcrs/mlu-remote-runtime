@@ -1,0 +1,14 @@
+[
+  {
+    "library": "cnrt",
+    "passed": true,
+    "importers": 3,
+    "total_device_limit": 4096
+  },
+  {
+    "library": "cndrv",
+    "passed": true,
+    "importers": 3,
+    "total_device_limit": 4096
+  }
+]

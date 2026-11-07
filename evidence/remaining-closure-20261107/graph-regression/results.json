@@ -1,0 +1,176 @@
+[
+  {
+    "name": "runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/runtime.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/runtime.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/runtime.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/runtime.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-reentry",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime",
+      "reentry"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-reset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime",
+      "reset"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-abrupt",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime",
+      "abrupt"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-lease",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_runtime",
+      "lease"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/driver.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/driver.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/driver.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/driver.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-reentry",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "reentry"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-reset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "reset"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-abrupt",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "abrupt"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-lease",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "lease"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "protocol",
+    "command": [
+      "python3",
+      "tests/graph_callbacks_protocol.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "submit-disconnect",
+    "command": [
+      "python3",
+      "tests/graph_callbacks_disconnect.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "after-cleanup",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_callbacks_driver",
+      "all",
+      "/home/lvtong/mlu-remote-runtime/evidence/remaining-closure-20261107/graph-regression/after.dot"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "quota",
+    "command": [
+      "python3",
+      "tests/graph_callbacks_protocol.py",
+      "--quota"
+    ],
+    "returncode": 0
+  }
+]

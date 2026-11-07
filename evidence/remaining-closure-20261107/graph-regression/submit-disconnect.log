@@ -1,0 +1,1 @@
+PASS callback submit EOF returns an API error and releases client run leases without a signal

@@ -1,0 +1,11 @@
+cnInit(0) = 0
+cnCtxCreate(&c,0,0) = 0
+cnCreateQueue(&q,0) = 0
+cnMallocHost((void**)&p,8) = 0
+cnQueueAtomicOperation(q,(uintptr_t)p,99,0,CN_ATOMIC_OP_COMPARE,CN_ATOMIC_COMPARE_EQUAL) = 0
+cnGetExportFunction("cnQueueAbort",&fn) = 0
+((CNresult(*)(CNqueue))fn)(q) = 0
+sync=100060
+cnDestroyQueue(q) = 0
+cnFreeHost(p) = 0
+cnCtxDestroy(c) = 0

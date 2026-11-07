@@ -19,6 +19,7 @@ typedef cnrtQueue_t Queue;
 #define WRITE(a,p,n) cnrtMemcpy(a,p,n,cnrtMemcpyHostToDev)
 #define QCREATE(p) cnrtQueueCreate(p)
 #define QSYNC(q) cnrtQueueSync(q)
+#define HOSTFN(q,f,p) cnrtInvokeHostFunc(q,f,p)
 #define QDESTROY(q) cnrtQueueDestroy(q)
 #else
 #include <cn_api.h>
@@ -37,6 +38,7 @@ typedef CNqueue Queue;
 #define WRITE(a,p,n) cnMemcpyHtoD(a,p,n)
 #define QCREATE(p) cnCreateQueue(p,0)
 #define QSYNC(q) cnQueueSync(q)
+#define HOSTFN(q,f,p) cnInvokeHostFunc(q,f,p)
 #define QDESTROY(q) cnDestroyQueue(q)
 #endif
 #define OK(c) do { int s=(int)(c); if(s) { fprintf(stderr,"%s=%d line=%d\n",#c,s,__LINE__); exit(1); } } while(0)
@@ -68,6 +70,7 @@ static CopyParams cp(void *dst,void *src,int direction) {
 static void check(const unsigned char *out,unsigned value) {
   for(unsigned i=0;i<128;i++) CHECK(out[i]==(i>=16 && i<80 ? value : 0xa5));
 }
+static void observe_output(void *out) { check(out,42); }
 static void graph(Graph *g,Node n[2],Address d,unsigned char *src,unsigned char *dst) {
   OK(F(Create)(g,0));CopyParams p=cp((void *)(uintptr_t)d,src+16,2);
   OK(F(AddMemcpyNode)(n,*g,NULL,0,&p));p=cp(dst+16,(void *)(uintptr_t)d,3);
@@ -84,7 +87,7 @@ static void test(Address d,Queue q,int pinned,int remote) {
   OK(F(MemcpyNodeGetParams)(mapped,&got));CHECK(got.dst==out+16);
   OK(F(Instantiate)(&e,g,NULL,NULL,0));OK(F(Instantiate)(&ec,clone,NULL,NULL,0));
   for(unsigned i=0;i<128;i++) CHECK(out[i]==0xa5);
-  memset(in,42,128);OK(F(EntityInvoke)(e,q));OK(QSYNC(q));check(out,42);
+  memset(in,42,128);OK(F(EntityInvoke)(e,q));OK(HOSTFN(q,observe_output,out));OK(QSYNC(q));check(out,42);
   memset(in,43,128);OK(F(EntityInvoke)(e,q));Notifier mark;OK(NCREATE(&mark));OK(NPLACE(mark,q));OK(NSYNC(mark));check(out,43);OK(NFREE(mark));
   CopyParams p=cp(alternate+16,(void *)(uintptr_t)d,3);OK(F(EntityMemcpyNodeSetParams)(e,n[1],&p));
   memset(in,44,128);OK(F(EntityInvoke)(e,q));OK(CSYNC());check(alternate,44);check(out,43);

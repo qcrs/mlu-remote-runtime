@@ -1,0 +1,13 @@
+{"library":"CNRT","pid":266959,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnrtSetDevice(0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"6.5.2"}
+{"call":"alloc(&a,N)","status":0}
+{"call":"fill(a,17,N)","status":0}
+{"call":"export_mem(&handle,a)","status":0}
+{"ready":"export","handle":"44569f4ea502e760"}
+{"check":"coordinator_signal","pass":true}
+{"call":"release(a)","status":0}
+{"ready":"freed"}
+{"check":"coordinator_signal","pass":true}
+{"call":"cnrtDeviceReset()","status":0}

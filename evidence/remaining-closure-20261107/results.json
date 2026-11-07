@@ -1,0 +1,305 @@
+[
+  {
+    "name": "shared-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_shared",
+      "shared"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "shared-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_shared",
+      "shared"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "shared-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_shared",
+      "shared"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "shared-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_shared",
+      "shared"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "shared-life-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_shared",
+      "shared-life"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "shared-life-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_shared",
+      "shared-life"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "shared-life-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_shared",
+      "shared-life"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "shared-life-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_shared",
+      "shared-life"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "vmm-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_vmm"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "vmm-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_vmm"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "vmm-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_vmm"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "vmm-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_vmm"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "queue-driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "queue-driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "queue-driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "queue-driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "queue-runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "queue-runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "queue-runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "queue-runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "symbol-runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_symbols"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "symbol-runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_symbols"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "symbol-runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_symbols"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "symbol-runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_symbols"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "symbol-driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_symbols",
+      "/home/lvtong/mlu-remote-runtime/build/symbol-audit/native_symbols-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "symbol-driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_symbols",
+      "/home/lvtong/mlu-remote-runtime/build/symbol-audit/native_symbols-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "symbol-driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_symbols",
+      "/home/lvtong/mlu-remote-runtime/build/symbol-audit/native_symbols-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "symbol-driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_symbols",
+      "/home/lvtong/mlu-remote-runtime/build/symbol-audit/native_symbols-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "graph-host-driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "graph-host-driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "graph-host-driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "graph-host-driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "graph-host-runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "graph-host-runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "graph-host-runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "graph-host-runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_host_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "atomic-abrupt",
+    "returncode": 0,
+    "passed": true
+  },
+  {
+    "name": "atomic-blocked-sync",
+    "returncode": -9,
+    "passed": true
+  },
+  {
+    "name": "after-eof",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_queue_host"
+    ],
+    "returncode": 0
+  }
+]

@@ -1,0 +1,22 @@
+cnInit(0) = 0
+cnCtxCreate(&c,0,0) = 0
+cnDeviceGetAttribute(&supported,CN_DEVICE_ATTRIBUTE_VIRTUAL_ADDRESS_MANAGEMENT_SUPPORTED,0) = 0
+vmm-supported=1
+cnDeviceGetAttribute(&supported,CN_DEVICE_ATTRIBUTE_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR_SUPPORTED,0) = 0
+fd-supported=1
+granularity status=0 value=33554432
+cnMemAddressReserve(&a,g,0,0,0) = 0
+create=0
+cnMemGetAllocationPropertiesFromHandle(&got,h) = 0
+cnMemMap(a,g,0,h,0) = 0
+cnMemSetAccess(a,g,&d,1) = 0
+cnMemGetAccess(&d,&prop.location,a) = 0
+cnSetMemAttribute(1,CN_MEM_ATTRIBUTE_ACCESS_FLAGS,a) = 100102
+cnSetMemAttribute(0,CN_MEM_ATTRIBUTE_CACHE_CONFIG,a) = 100102
+cnSetMemRangeAttribute(0,CN_MEM_ATTRIBUTE_CACHE_OPS,a,g) = 100050
+cnMemRetainAllocationHandle(&hold,(void*)(uintptr_t)a) = 0
+cnMemRelease(hold) = 0
+cnMemUnmap(a,g) = 0
+cnMemRelease(h) = 0
+cnMemAddressFree(a,g) = 0
+cnCtxDestroy(c) = 0

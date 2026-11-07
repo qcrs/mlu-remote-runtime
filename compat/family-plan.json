@@ -3,56 +3,9 @@
     "family": "device_context",
     "priority": 0,
     "counts": {
-      "IMPLEMENTED": 40,
-      "NOT_IMPLEMENTED": 5
+      "IMPLEMENTED": 45
     },
-    "remaining": [
-      {
-        "api": "cnSharedContextAcquire",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnSharedContextGetState",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnSharedContextRelease",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnSharedContextReset",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnSharedContextSetFlags",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 0,
-        "depends_on": "native context",
-        "blocker": "Setters and multi-device TLS require explicit state rules",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      }
-    ]
+    "remaining": []
   },
   {
     "family": "error",
@@ -125,98 +78,80 @@
     "family": "host_memory",
     "priority": 2,
     "counts": {
-      "IMPLEMENTED": 4,
-      "NOT_IMPLEMENTED": 10
+      "IMPLEMENTED": 6,
+      "BLOCKED": 8
     },
     "remaining": [
       {
-        "api": "cnrtInvokeHostFunc",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation/deferred D2H is available; queue-ordered Client callback dispatch, failure and teardown semantics are not implemented.",
-        "next_step": "Probe native callback ordering, then add a shared callback completion node and Client dispatch lifetime.",
-        "closure": {}
-      },
-      {
         "api": "cnrtMcacheOperation",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
-        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
+        "depends_on": "Working Native CPU mapping/cache-coherence prerequisite",
+        "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance.",
+        "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
         "closure": {}
       },
       {
         "api": "cnrtMmap",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
-        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
+        "depends_on": "Working Native CPU mapping/cache-coherence prerequisite",
+        "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance.",
+        "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
         "closure": {}
       },
       {
         "api": "cnrtMmapCached",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
-        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
+        "depends_on": "Working Native CPU mapping/cache-coherence prerequisite",
+        "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance.",
+        "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
         "closure": {}
       },
       {
         "api": "cnrtMunmap",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
-        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
+        "depends_on": "Working Native CPU mapping/cache-coherence prerequisite",
+        "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance.",
+        "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
         "closure": {}
       },
       {
         "api": "cnCacheOperation",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
-        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
-        "closure": {}
-      },
-      {
-        "api": "cnInvokeHostFunc",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation/deferred D2H is available; queue-ordered Client callback dispatch, failure and teardown semantics are not implemented.",
-        "next_step": "Probe native callback ordering, then add a shared callback completion node and Client dispatch lifetime.",
+        "depends_on": "Working Native CPU mapping/cache-coherence prerequisite",
+        "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance.",
+        "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
         "closure": {}
       },
       {
         "api": "cnMmap",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
-        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
+        "depends_on": "Working Native CPU mapping/cache-coherence prerequisite",
+        "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance.",
+        "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
         "closure": {}
       },
       {
         "api": "cnMmapCached",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
-        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
+        "depends_on": "Working Native CPU mapping/cache-coherence prerequisite",
+        "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance.",
+        "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
         "closure": {}
       },
       {
         "api": "cnMunmap",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
-        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
+        "depends_on": "Working Native CPU mapping/cache-coherence prerequisite",
+        "blocker": "Native device-to-CPU Mmap and MmapCached both return 100050 NotSupported for valid allocations on MLU370-S4 / Neuware 3.5.2; no valid mapped address is available for cache/unmap success acceptance.",
+        "next_step": "On a device/SDK with successful Native map, establish CPU read/write/cache/unmap baseline, then implement local view, backing ownership and coherence policy.",
         "closure": {}
       }
     ]
@@ -225,44 +160,27 @@
     "family": "host_utilities",
     "priority": 3,
     "counts": {
-      "IMPLEMENTED": 5,
-      "NOT_IMPLEMENTED": 4
+      "IMPLEMENTED": 7,
+      "BLOCKED": 1,
+      "OUT_OF_SCOPE": 1
     },
     "remaining": [
       {
         "api": "cnrtFilterReshape",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnAtomicOperation",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnAtomicReadOps",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family",
+        "depends_on": "CNRT topology query/helper fix in vendor SDK",
+        "blocker": "Valid padded FP16/FP32/INT8 shapes all fail inside installed CNRT with 100006: its topology helper queries device -1 and cannot obtain ClusterCount/McorePerCluster.",
+        "next_step": "Use a CNRT build whose reshape topology helper succeeds, capture Native transformed bytes, then implement the verified Host reshape semantics.",
         "closure": {}
       },
       {
         "api": "cnGetExportFunction",
-        "status": "NOT_IMPLEMENTED",
+        "status": "OUT_OF_SCOPE",
         "priority": 3,
-        "depends_on": "typed buffers/structs",
-        "blocker": "Host numerical/quantization implementation needs independent comparison",
-        "next_step": "Probe and implement this functional family",
+        "depends_on": "Explicit private extension consumer and per-extension ABI contract",
+        "blocker": "Installed cn_api.h declares this under Group Impl Private / @cond impl_private. It resolves heterogeneous undocumented extension ABIs; generic native Server function pointers cannot be callable client functions. Private profiler/debug/transport extension forwarding is outside ordinary BANG compute scope.",
+        "next_step": "Reopen only for an explicit private extension workload; specify and implement that extension ABI and lifetime instead of returning a Server pointer.",
         "closure": {}
       }
     ]
@@ -271,20 +189,10 @@
     "family": "ipc",
     "priority": 5,
     "counts": {
-      "NOT_IMPLEMENTED": 8,
+      "IMPLEMENTED": 8,
       "BLOCKED": 4
     },
     "remaining": [
-      {
-        "api": "cnrtAcquireMemHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Process-wide memory sharing broker",
-        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
-        "closure": {},
-        "contract_stage": "I1"
-      },
       {
         "api": "cnrtIpcGetNotifierHandle",
         "status": "BLOCKED",
@@ -306,46 +214,6 @@
         "contract_stage": "I3"
       },
       {
-        "api": "cnrtMapMemHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Process-wide memory sharing broker",
-        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
-        "closure": {},
-        "contract_stage": "I1"
-      },
-      {
-        "api": "cnrtUnMapMemHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Process-wide memory sharing broker",
-        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
-        "closure": {},
-        "contract_stage": "I1"
-      },
-      {
-        "api": "cnIpcCloseMemHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Process-wide memory sharing broker",
-        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
-        "closure": {},
-        "contract_stage": "I1"
-      },
-      {
-        "api": "cnIpcGetMemHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Process-wide memory sharing broker",
-        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
-        "closure": {},
-        "contract_stage": "I1"
-      },
-      {
         "api": "cnIpcGetNotifierHandle",
         "status": "BLOCKED",
         "priority": 5,
@@ -356,16 +224,6 @@
         "contract_stage": "I3"
       },
       {
-        "api": "cnIpcOpenMemHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Process-wide memory sharing broker",
-        "blocker": "Cross-session backing refs/imported AllocationIDs, compatible native-context execution and same-client-host CPU mapping domains are absent; native same-process cross-context IPC open is rejected.",
-        "next_step": "Implement broker token/imported IDs and backing/owner-Context refs using verified process-local cross-Context device access; add single-charge quotas, source revocation and same-client-host CPU backing. Then certify independent clients, multiple importers, close/reset/EOF and driverless replacement/preload.",
-        "closure": {},
-        "contract_stage": "I1"
-      },
-      {
         "api": "cnIpcOpenNotifierHandle",
         "status": "BLOCKED",
         "priority": 5,
@@ -374,26 +232,6 @@
         "next_step": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
         "closure": {},
         "contract_stage": "I3"
-      },
-      {
-        "api": "cnMemExportToShareableHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "I1",
-        "blocker": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
-        "next_step": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
-        "closure": {},
-        "contract_stage": "I2"
-      },
-      {
-        "api": "cnMemImportFromShareableHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "I1",
-        "blocker": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
-        "next_step": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
-        "closure": {},
-        "contract_stage": "I2"
       }
     ],
     "implementation_stages": [
@@ -402,9 +240,11 @@
         "family": "ipc",
         "title": "Process-wide memory sharing broker",
         "depends_on": [],
-        "missing": "Cross-session backing refs/imported AllocationIDs, retained owner Contexts, single-charge accounting and same-client-host CPU mapping domains are absent. Native same-process IPC open is rejected, but explicit copy/memset and mixed-pointer kernels from another Context/thread are now verified while owner backing/Context remain alive.",
+        "missing": "No remaining gap within independent client process/device broker and same-client-host/UID/Unix-namespace Host IPC boundary: backing and owner Context refs, imported identities, single physical charge, real memfd sharing, source retirement and Graph leases implemented.",
         "acceptance": "Two independently execed clients: CNRT/CNDrv device round trips and cross-library writes, CNRT Host CPU visibility, multiple importers, close-before-free, owner EOF/reset cleanup, quotas and driverless replacement/preload.",
-        "native_context_evidence": "ipc-context-20261107/README.md"
+        "native_context_evidence": "ipc-context-20261107/README.md",
+        "status": "IMPLEMENTED",
+        "evidence": "remaining-ipc-20261107/README.md"
       },
       {
         "id": "I2",
@@ -413,7 +253,7 @@
         "depends_on": [
           "I1"
         ],
-        "missing": "Generic allocation/reservation/map/access refs and client OS-handle proxy/transfer are absent; a server FD integer is not a client FD.",
+        "missing": "No remaining gap within POSIX FD mode: VMM handle/reservation/map/access refs and real transferable TCP descriptor proxy with dup/final-close backing ownership implemented; export output uses the observed 8-byte SDK ABI.",
         "acceptance": "Native/Remote VMM create/export/FD-transfer/import/map/access/copy/unmap/release numerics, independent mapping lifetimes and complete cleanup; preserve observed 8-byte export output.",
         "prerequisite_apis": [
           "cnMemAddressFree",
@@ -427,7 +267,9 @@
           "cnMemRetainAllocationHandle",
           "cnMemSetAccess",
           "cnMemUnmap"
-        ]
+        ],
+        "status": "IMPLEMENTED",
+        "evidence": "remaining-ipc-20261107/README.md"
       },
       {
         "id": "I3",
@@ -435,7 +277,8 @@
         "title": "IPC notifier native prerequisite",
         "depends_on": [],
         "missing": "Native IPCNOTIFIER_SUPPORTED=0 and interprocess|disable-timing creation returns NotSupported on this device/SDK.",
-        "acceptance": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs."
+        "acceptance": "On a device/SDK with IPCNOTIFIER_SUPPORTED=1, first establish a valid native cross-process record/wait baseline, then implement exported notifier refs.",
+        "status": "BLOCKED"
       }
     ]
   },
@@ -443,56 +286,18 @@
     "family": "memcpy",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 16,
-      "NOT_IMPLEMENTED": 4
+      "IMPLEMENTED": 20
     },
-    "remaining": [
-      {
-        "api": "cnrtMemcpyFromSymbol",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnrtMemcpyFromSymbolAsync",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnrtMemcpyToSymbol",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnrtMemcpyToSymbolAsync",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      }
-    ]
+    "remaining": []
   },
   {
     "family": "memory",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 25,
+      "IMPLEMENTED": 36,
       "UNSUPPORTED": 1,
       "OUT_OF_SCOPE": 2,
-      "NOT_IMPLEMENTED": 14
+      "BLOCKED": 3
     },
     "remaining": [
       {
@@ -523,129 +328,30 @@
         "closure": {}
       },
       {
-        "api": "cnMemAddressFree",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemAddressReserve",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemCreate",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemGetAccess",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemGetAllocationGranularity",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemGetAllocationPropertiesFromHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemMap",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
         "api": "cnMemMerge",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemRelease",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemRetainAllocationHandle",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemSetAccess",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMemUnmap",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
+        "depends_on": "Native hardware/SDK supporting memory merge",
+        "blocker": "Native merge of two valid device allocations returns 100050 NotSupported; installed SDK documents no support on MLU300 and later.",
+        "next_step": "Establish a successful Native merge and constituent lifetime baseline on supported hardware before adding merged allocation ownership.",
         "closure": {}
       },
       {
         "api": "cnSetMemAttribute",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
+        "depends_on": "Working Native writable memory-attribute domain",
+        "blocker": "No successful Native attribute-setting prerequisite on device, pinned Host or mapped VMM storage: documented cache operations return 100006/100050, access/cache-config values return 100102 on this device/SDK.",
+        "next_step": "Find a supported device/SDK allocation and documented attribute/value combination with successful Native mutation and observation, then complete the adapter and differential.",
         "closure": {}
       },
       {
         "api": "cnSetMemRangeAttribute",
-        "status": "NOT_IMPLEMENTED",
+        "status": "BLOCKED",
         "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "VMM, pools and special allocations require separate ownership policies",
-        "next_step": "Probe and implement this functional family",
+        "depends_on": "Working Native writable memory-attribute domain",
+        "blocker": "No successful Native attribute-setting prerequisite on device, pinned Host or mapped VMM storage: documented cache operations return 100006/100050, access/cache-config values return 100102 on this device/SDK.",
+        "next_step": "Find a supported device/SDK allocation and documented attribute/value combination with successful Native mutation and observation, then complete the adapter and differential.",
         "closure": {}
       }
     ]
@@ -654,29 +360,9 @@
     "family": "module_kernel",
     "priority": 2,
     "counts": {
-      "IMPLEMENTED": 11,
-      "NOT_IMPLEMENTED": 2
+      "IMPLEMENTED": 13
     },
-    "remaining": [
-      {
-        "api": "cnrtGetSymbolAddress",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnModuleGetSymbol",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      }
-    ]
+    "remaining": []
   },
   {
     "family": "peer",
@@ -754,28 +440,8 @@
     "family": "queue_notifier",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 38,
-      "NOT_IMPLEMENTED": 2
+      "IMPLEMENTED": 40
     },
-    "remaining": [
-      {
-        "api": "cnQueueAddCallback",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnQueueAtomicOperation",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/object registry",
-        "blocker": "Advanced attributes/callback/capture require lifecycle semantics",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      }
-    ]
+    "remaining": []
   }
 ]

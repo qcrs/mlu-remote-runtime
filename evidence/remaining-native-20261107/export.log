@@ -1,0 +1,6 @@
+cnInit(0) = 0
+cnCtxCreate(&c,0,0) = 0
+cnGetExportFunction("cnMalloc",&f) = 100301
+function=0
+cnGetExportFunction("no_such_function",&f) = 100301
+cnCtxDestroy(c) = 0

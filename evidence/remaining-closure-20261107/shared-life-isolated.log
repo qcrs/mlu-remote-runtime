@@ -1,0 +1,32 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50341
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_shared
+cnInit(0) = 0
+cnSharedContextAcquire(&a,0) = 0
+cnCtxSetCurrent(a) = 0
+cnMalloc(&p,4096) = 0
+cnSharedContextRelease(0) = 0
+cnCtxGetCurrent(&b) = 0
+inactive current same=1
+cnCtxGetDevice(&d) = 0
+device=0
+cnMemsetD8(p,1,32) = 100201
+cnMalloc(&p,4096) = 100201
+state after-malloc status=0 flags=3 active=0
+cnCtxDestroy(a) = 100201
+state after-destroy status=0 flags=3 active=0
+cnSharedContextAcquire(&b,0) = 0
+destroy-acquire same=1
+cnCtxSetCurrent(b) = 0
+cnMalloc(&p,4096) = 0
+cnCtxDestroy(b) = 100201
+state active-destroy status=0 flags=3 active=1
+cnSharedContextReset(0) = 0
+cnMemsetD8(p,2,32) = 100201
+cnCtxGetCurrent(&a) = 0
+after-reset current same=1
+cnSharedContextRelease(0) = 0

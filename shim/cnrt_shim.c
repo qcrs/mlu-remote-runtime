@@ -66,8 +66,8 @@ typedef struct allocation {
   struct allocation *next;
   void *base;
   size_t bytes, mapped;
-  uint64_t id;
-  int live;
+  uint64_t id, symbol_module;
+  int live, imported;
 } allocation;
 static allocation *allocations;
 static allocation *lookup(const void *p, uint64_t *off) {
@@ -212,7 +212,7 @@ cnrtRet_t cnrtMalloc(void **ptr,size_t bytes) {
 }
 cnrtRet_t cnrtFree(void *p) {
   ENTER(); if(!p) RETURN(cnrtSuccess); CONNECT(); uint64_t off=0; allocation *a=lookup(p,&off);
-  if(!a || off) RETURN(cnrtErrorInvalidResourceHandle);
+  if(!a || off || a->symbol_module || a->imported) RETURN(cnrtErrorInvalidResourceHandle);
   int st=mlu_remote_free(ctx,a->id); if(!st) a->live=0;
   /* Keep a PROT_NONE tombstone until process exit: no stale VA alias. */
   RETURN(status(st));
@@ -379,6 +379,7 @@ void __bangUnregisterFatBinary(void **handle) {
       int st=mlu_remote_module_unload_preset(ctx,r->mid);
       if(st) last_error=status(st);
     }
+    for(allocation *a=allocations;a;a=a->next) if(a->symbol_module && a->symbol_module==r->mid)a->live=0;
     r->mid=0;
     variable *v=r->variables; while(v) { variable *next=v->next; free(v->name); free(v); v=next; } r->variables=NULL;
     kernel **link=&kernels;
@@ -491,3 +492,12 @@ cnrtRet_t cnrtMemcpy3D(const cnrtMemcpy3dParam_t *p) {
   if(!d || !s) RETURN(cnrtErrorArgsInvalid);
   in.dst=d->id; in.src=s->id; RETURN(status(mlu_remote_api_copy3d(ctx,&in,&out)));
 }
+
+#include "runtime_symbols.inc"
+
+cnrtRet_t cnrtInvokeHostFunc(cnrtQueue_t queue,cnrtHostFn_t fn,void *data) {
+  ENTER();CONNECT();uint64_t q;cnrtRet_t e=api_queue(queue,&q);if(e || !fn)RETURN(e ? e : cnrtErrorArgsInvalid);
+  RETURN(status(mlu_remote_queue_host_fn(ctx,q,fn,data)));
+}
+
+#include "runtime_ipc.inc"

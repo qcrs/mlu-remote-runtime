@@ -1,0 +1,10 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542186]
+mnt mnt:[4026542189]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50341
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_vmm
+granularity=33554432
+nonzero_backing_offset=100050
+PASS VMM aliases, access, copies, retain, remap and context cleanup

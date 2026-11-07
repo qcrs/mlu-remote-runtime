@@ -665,4 +665,56 @@ typedef struct {
   unsigned char *data;
 } mlu_api_graph_control_response;
 int mlu_remote_api_graph_control(mlu_remote_context *, const mlu_api_graph_control_request *, mlu_api_graph_control_response *);
+typedef struct {
+  uint64_t module;
+  char name[256];
+} mlu_api_module_symbol_request;
+typedef struct {
+  uint64_t allocation;
+  uint64_t bytes;
+} mlu_api_module_symbol_response;
+int mlu_remote_api_module_symbol(mlu_remote_context *, const mlu_api_module_symbol_request *, mlu_api_module_symbol_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t object;
+  uint64_t other;
+  uint64_t offset;
+  uint64_t bytes;
+  uint64_t alignment;
+  uint64_t flags;
+  uint32_t values[8];
+} mlu_api_vmm_request;
+typedef struct {
+  uint64_t id;
+  uint64_t bytes;
+  uint32_t values[8];
+} mlu_api_vmm_response;
+int mlu_remote_api_vmm(mlu_remote_context *, const mlu_api_vmm_request *, mlu_api_vmm_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t queue;
+  uint64_t object;
+  uint64_t token;
+  uint64_t value1;
+  uint64_t value2;
+  uint32_t type;
+  uint64_t flag;
+} mlu_api_queue_host_request;
+typedef struct {
+  uint64_t id;
+  uint64_t value;
+} mlu_api_queue_host_response;
+int mlu_remote_api_queue_host(mlu_remote_context *, const mlu_api_queue_host_request *, mlu_api_queue_host_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t object;
+  uint64_t token;
+  uint64_t flags;
+} mlu_api_ipc_request;
+typedef struct {
+  uint64_t id;
+  uint64_t bytes;
+  uint64_t token;
+} mlu_api_ipc_response;
+int mlu_remote_api_ipc(mlu_remote_context *, const mlu_api_ipc_request *, mlu_api_ipc_response *);
 #endif

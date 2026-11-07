@@ -1,0 +1,21 @@
+{
+  "scripts/verify-remaining.py": "d6334ff2da8dab98bd1dbd971d0797aa1590abc286133bf7c750396e2ea19a1b",
+  "tests/native_shared.c": "ebc7fae8f63a32e7e50e2e3b0c5b82876648a49e219bcadd9c691aa628497c8c",
+  "tests/native_vmm.c": "2c1ecacdab5b02d262fec16fb76ed75ca1d603975855245575588f172e12015f",
+  "tests/native_symbols.mlu": "fb10326a5a758c0955937e4e86dc6212345ff952f7684cac7e4082dc7419332f",
+  "tests/native_queue_host.c": "3498c536d9918fd1266aef0ec423267b8f992a94a2c244c934ed312a84b34f93",
+  "tests/native_graph_host.c": "ead2e0561747bcf0379ad56116187d690db08a20fbd9dbdcfa1038a2d45f5108",
+  "server/mlu_backend.c": "2023aa39810ac863b909129b69a36b8b6cc5ab21db746da9cd61d8abfab40988",
+  "server/queue_host_backend.inc": "d7eee8fc2511d47dfbdce8ab4c2168682d7c0dfd64dac0736220b7823b1d1df0",
+  "server/vmm_backend.inc": "e0750b6ad63e1ca4d154716e7dd057575a5050e3ce0c4860595a5f499b0f383b",
+  "server/symbol_backend.inc": "efa2280184da2c50e1cfc8dd06f1a35f9960f2f4bda0b6aaf2c4fb060963203e",
+  "shim/shared_context.inc": "ec80c709b1ac8af1673ef03b313c06d7e139dba60a35fee8a33deaddb030d3a7",
+  "shim/driver_atomics.inc": "46eaa5e8ba89cc06f75fe2ef9986b33db8fff36489c0e781423bd915002c5a61",
+  "shim/driver_vmm.inc": "100b7222a68ef52d827f773803cc7add9527e225a738ff646080e87785a62c73",
+  "shim/driver_symbols.inc": "5e0513a539fd6f24bc708bde86c79f1940a9a2cc52ea24e69d9002ed67008b32",
+  "shim/runtime_symbols.inc": "4ebfab7607d3287a52c1d564e6ced60bb13a01f1cd58ebf5d810010ba8a6c09c",
+  "build/mlu-remote-server": "70c62899808ae18984a55a3d0078cc23296537bae2701be2f578490224f3cfc2",
+  "build/libremote_cnrt.so": "b08b1cf7f8e33acdd259d63ad621cebba1edd4f54999e2b66ecd1feef73407e8",
+  "build/shim/libcnrt.so": "888fcde406160655fbec7fe4af803a8c428e860fd8770da3ef18ccdca99beb8c",
+  "build/driver-shim/libcndrv.so": "294c399528c093cc8b2c7c3b31c1e5ea9474dc005feefca7ac786905bee4d8a9"
+}

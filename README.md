@@ -50,7 +50,7 @@ LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/native_bang_generic
 
 ## API 自动化扩展（2026-11-02）
 
-首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；后续查询边界、Driver error、allocation/context、quantization 和 V2 conversion 批次继续复用同一 Schema。当前 Schema 覆盖 310 个公共声明，生成 57 个 typed RPC、146 个公共 RPC wrapper 和 4 个本地 error API；状态及各入口的支持边界以 [compatibility summary](compat/summary.json) 和 [closure audit](docs/API_COMPATIBILITY_CLOSURE.md) 为准。两库共享 Host 分配/属性和真异步 D2H 已接通 pinned Transfer、completion fetch 与延后写回，证据见 [Host 阶段](evidence/host-async-20261107/README.md)；publication 边界与失败资源所有权见 [生命周期](docs/RESOURCE_LIFECYCLE.md)。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)。
+首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；后续批次继续复用同一 Schema。当前 Schema 覆盖 310 个公共声明，生成 61 个 typed RPC、146 个公共 RPC wrapper 和 4 个本地 error API。当前为 283 IMPLEMENTED、23 BLOCKED、3 OUT_OF_SCOPE、1 UNSUPPORTED，PARTIAL 和 NOT_IMPLEMENTED 均为 0；逐项支持边界见 [compatibility summary](compat/summary.json) 和 [closure audit](docs/API_COMPATIBILITY_CLOSURE.md)。最新完成 Shared Context、VMM、Symbol、普通队列 Host/callback/atomics 和普通 memory/Host/VMM IPC，见 [收口证据](evidence/remaining-closure-20261107/README.md) 与 [IPC 证据](evidence/remaining-ipc-20261107/README.md)。Host IPC 限同客户端主机/UID/Unix namespace，原子单元限 API 更新的 pinned cells；其他边界和原生阻塞见 [工程状态](docs/PROJECT_STATE.md)。两库真异步 D2H 已接通 pinned Transfer、completion fetch 与延后写回，publication 边界与失败资源所有权见 [生命周期](docs/RESOURCE_LIFECYCLE.md)。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)。
 
 ## Application Workloads
 

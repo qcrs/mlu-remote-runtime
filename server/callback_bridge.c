@@ -98,7 +98,7 @@ int mlu_callback_attach(int fd,const unsigned char *secret,uint32_t bytes,uint64
     if(!e || s->aborted) {pthread_mutex_unlock(&s->lock);break;}
     s->head=e->next;if(!s->head)s->tail=&s->head;pthread_mutex_unlock(&s->lock);
     unsigned char event[32]={0};cb_put64(event,e->kind);cb_put64(event+8,e->run);cb_put64(event+16,e->token);cb_put64(event+24,e->bytes);
-    uint32_t send_bytes=e->kind==MLU_CALLBACK_D2H ? e->bytes : 0;
+    uint32_t send_bytes=(e->kind==MLU_CALLBACK_D2H || e->kind==MLU_CALLBACK_QUEUE) ? e->bytes : 0;
     h=cb_header(++seq,32+send_bytes,0);deadline=mlu_deadline_after(s->timeout_ms);
     ok=mlu_io_full(fd,&h,sizeof(h),1,deadline)==1 && mlu_io_full(fd,event,32,1,deadline)==1 &&
       (!send_bytes || mlu_io_full(fd,e->data,send_bytes,1,deadline)==1) && mlu_io_full(fd,&h,sizeof(h),0,deadline)==1;

@@ -1,0 +1,7 @@
+{"library":"CNRT","pid":264935,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnrtSetDevice(0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"6.5.2"}
+{"call":"reopen_retired_export","status":100050}
+{"check":"retired_export_rejects_new_import","pass":true}
+{"call":"cnrtDeviceReset()","status":0}

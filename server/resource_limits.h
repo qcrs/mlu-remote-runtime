@@ -17,5 +17,7 @@ void mlu_resource_release(mlu_resource_usage *usage, enum mlu_resource_kind kind
 uint32_t mlu_resource_max_connections(void);
 uint32_t mlu_resource_max_transfers(void);
 void mlu_resource_report(void);
+void mlu_resource_transfer(mlu_resource_usage *from,mlu_resource_usage *to,
+                           enum mlu_resource_kind kind,uint64_t bytes);
 
 #endif

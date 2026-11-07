@@ -1,0 +1,8 @@
+{"library":"CNDrv","pid":264852,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnInit(0)","status":0}
+{"call":"cnCtxCreate(&context,0,0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"2.5.2"}
+{"call":"reopen_retired_export","status":100014}
+{"check":"retired_export_rejects_new_import","pass":true}
+{"call":"cnCtxDestroy(context)","status":0}

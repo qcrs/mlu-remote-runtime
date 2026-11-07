@@ -1,0 +1,1708 @@
+{
+  "status": "PASS",
+  "endpoint": "127.0.0.1:50345",
+  "external_server": false,
+  "baseline_commit": "68e163dbb9d94fcda3dfc8cfcbf437a051328e49",
+  "workloads": [
+    "matrix_add",
+    "naive_gemm",
+    "image_threshold",
+    "image_blur",
+    "queue_notifier",
+    "image_sobel",
+    "row_center",
+    "heat_diffusion"
+  ],
+  "runtime_artifacts": {
+    "build/mlu-remote-server": "70c62899808ae18984a55a3d0078cc23296537bae2701be2f578490224f3cfc2",
+    "build/shim/libcnrt.so": "888fcde406160655fbec7fe4af803a8c428e860fd8770da3ef18ccdca99beb8c",
+    "build/libremote_cnrt.so": "b08b1cf7f8e33acdd259d63ad621cebba1edd4f54999e2b66ecd1feef73407e8"
+  },
+  "results": [
+    {
+      "name": "matrix_add-default-native",
+      "workload": "matrix_add",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/matrix_add"
+      ],
+      "sha256": "a2d73491b6d6bfaa1046be1751572c76f33465f244d14bb914044a5964fedcb7",
+      "elements": 65536,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "matrix_add",
+        "SHAPE": "256x256",
+        "CPU_CHECKSUM": -6.75,
+        "MLU_CHECKSUM": -6.75,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "matrix_add-default-replacement",
+      "workload": "matrix_add",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/matrix_add"
+      ],
+      "sha256": "a2d73491b6d6bfaa1046be1751572c76f33465f244d14bb914044a5964fedcb7",
+      "elements": 65536,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "matrix_add",
+        "SHAPE": "256x256",
+        "CPU_CHECKSUM": -6.75,
+        "MLU_CHECKSUM": -6.75,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "matrix_add-default-preload",
+      "workload": "matrix_add",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/matrix_add"
+      ],
+      "sha256": "a2d73491b6d6bfaa1046be1751572c76f33465f244d14bb914044a5964fedcb7",
+      "elements": 65536,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "matrix_add",
+        "SHAPE": "256x256",
+        "CPU_CHECKSUM": -6.75,
+        "MLU_CHECKSUM": -6.75,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "matrix_add-17x31-native",
+      "workload": "matrix_add",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/matrix_add",
+        "17",
+        "31"
+      ],
+      "sha256": "a2d73491b6d6bfaa1046be1751572c76f33465f244d14bb914044a5964fedcb7",
+      "elements": 527,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "matrix_add",
+        "SHAPE": "17x31",
+        "CPU_CHECKSUM": -7.5,
+        "MLU_CHECKSUM": -7.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "matrix_add-17x31-replacement",
+      "workload": "matrix_add",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/matrix_add",
+        "17",
+        "31"
+      ],
+      "sha256": "a2d73491b6d6bfaa1046be1751572c76f33465f244d14bb914044a5964fedcb7",
+      "elements": 527,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "matrix_add",
+        "SHAPE": "17x31",
+        "CPU_CHECKSUM": -7.5,
+        "MLU_CHECKSUM": -7.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "matrix_add-17x31-preload",
+      "workload": "matrix_add",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/matrix_add",
+        "17",
+        "31"
+      ],
+      "sha256": "a2d73491b6d6bfaa1046be1751572c76f33465f244d14bb914044a5964fedcb7",
+      "elements": 527,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "matrix_add",
+        "SHAPE": "17x31",
+        "CPU_CHECKSUM": -7.5,
+        "MLU_CHECKSUM": -7.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "naive_gemm-default-native",
+      "workload": "naive_gemm",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/naive_gemm"
+      ],
+      "sha256": "c3f5ba3cc5bb68c52205fc5209f4a75648efaa0397faa90ab9221b3ec2df34a9",
+      "elements": 4096,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "naive_gemm",
+        "SHAPE": "64x64x64",
+        "CPU_CHECKSUM": 1.0209729671478271,
+        "MLU_CHECKSUM": 1.0207783877849579,
+        "MAX_ABS_ERROR": 9.53674316e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "naive_gemm-default-replacement",
+      "workload": "naive_gemm",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/naive_gemm"
+      ],
+      "sha256": "c3f5ba3cc5bb68c52205fc5209f4a75648efaa0397faa90ab9221b3ec2df34a9",
+      "elements": 4096,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "naive_gemm",
+        "SHAPE": "64x64x64",
+        "CPU_CHECKSUM": 1.0209729671478271,
+        "MLU_CHECKSUM": 1.0207783877849579,
+        "MAX_ABS_ERROR": 9.53674316e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "naive_gemm-default-preload",
+      "workload": "naive_gemm",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/naive_gemm"
+      ],
+      "sha256": "c3f5ba3cc5bb68c52205fc5209f4a75648efaa0397faa90ab9221b3ec2df34a9",
+      "elements": 4096,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "naive_gemm",
+        "SHAPE": "64x64x64",
+        "CPU_CHECKSUM": 1.0209729671478271,
+        "MLU_CHECKSUM": 1.0207783877849579,
+        "MAX_ABS_ERROR": 9.53674316e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "naive_gemm-17x23x19-native",
+      "workload": "naive_gemm",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/naive_gemm",
+        "17",
+        "23",
+        "19"
+      ],
+      "sha256": "c3f5ba3cc5bb68c52205fc5209f4a75648efaa0397faa90ab9221b3ec2df34a9",
+      "elements": 391,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "naive_gemm",
+        "SHAPE": "17x23x19",
+        "CPU_CHECKSUM": -7.489511617150004,
+        "MLU_CHECKSUM": -7.489506348967552,
+        "MAX_ABS_ERROR": 2.38418579e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "naive_gemm-17x23x19-replacement",
+      "workload": "naive_gemm",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/naive_gemm",
+        "17",
+        "23",
+        "19"
+      ],
+      "sha256": "c3f5ba3cc5bb68c52205fc5209f4a75648efaa0397faa90ab9221b3ec2df34a9",
+      "elements": 391,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "naive_gemm",
+        "SHAPE": "17x23x19",
+        "CPU_CHECKSUM": -7.489511617150004,
+        "MLU_CHECKSUM": -7.489506348967552,
+        "MAX_ABS_ERROR": 2.38418579e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "naive_gemm-17x23x19-preload",
+      "workload": "naive_gemm",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/naive_gemm",
+        "17",
+        "23",
+        "19"
+      ],
+      "sha256": "c3f5ba3cc5bb68c52205fc5209f4a75648efaa0397faa90ab9221b3ec2df34a9",
+      "elements": 391,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "naive_gemm",
+        "SHAPE": "17x23x19",
+        "CPU_CHECKSUM": -7.489511617150004,
+        "MLU_CHECKSUM": -7.489506348967552,
+        "MAX_ABS_ERROR": 2.38418579e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-default-native",
+      "workload": "image_threshold",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 33226500.0,
+        "MLU_CHECKSUM": 33226500.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-default-replacement",
+      "workload": "image_threshold",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 33226500.0,
+        "MLU_CHECKSUM": 33226500.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-default-preload",
+      "workload": "image_threshold",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 33226500.0,
+        "MLU_CHECKSUM": 33226500.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-19x13-native",
+      "workload": "image_threshold",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold",
+        "19",
+        "13"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 247,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "19",
+        "HEIGHT": "13",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "19x13",
+        "CPU_CHECKSUM": 32640.0,
+        "MLU_CHECKSUM": 32640.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-19x13-replacement",
+      "workload": "image_threshold",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold",
+        "19",
+        "13"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 247,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "19",
+        "HEIGHT": "13",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "19x13",
+        "CPU_CHECKSUM": 32640.0,
+        "MLU_CHECKSUM": 32640.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-19x13-preload",
+      "workload": "image_threshold",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold",
+        "19",
+        "13"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 247,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "19",
+        "HEIGHT": "13",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "19x13",
+        "CPU_CHECKSUM": 32640.0,
+        "MLU_CHECKSUM": 32640.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-1x1-native",
+      "workload": "image_threshold",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold",
+        "1",
+        "1"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 1,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "1",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "1x1",
+        "CPU_CHECKSUM": 0.0,
+        "MLU_CHECKSUM": 0.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-1x1-replacement",
+      "workload": "image_threshold",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold",
+        "1",
+        "1"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 1,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "1",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "1x1",
+        "CPU_CHECKSUM": 0.0,
+        "MLU_CHECKSUM": 0.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_threshold-1x1-preload",
+      "workload": "image_threshold",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_threshold",
+        "1",
+        "1"
+      ],
+      "sha256": "8b12aeab30b58edf2372313a69999b3f2a918a9a30cded7e328403f069c621c8",
+      "elements": 1,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "1",
+        "BOUNDARY": "pointwise-threshold-127",
+        "WORKLOAD": "image_threshold",
+        "SHAPE": "1x1",
+        "CPU_CHECKSUM": 0.0,
+        "MLU_CHECKSUM": 0.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-default-native",
+      "workload": "image_blur",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 33339130.378650665,
+        "MLU_CHECKSUM": 33339130.378650665,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-default-replacement",
+      "workload": "image_blur",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 33339130.378650665,
+        "MLU_CHECKSUM": 33339130.378650665,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-default-preload",
+      "workload": "image_blur",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 33339130.378650665,
+        "MLU_CHECKSUM": 33339130.378650665,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-13x9-native",
+      "workload": "image_blur",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur",
+        "13",
+        "9"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 117,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "13",
+        "HEIGHT": "9",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "13x9",
+        "CPU_CHECKSUM": 14654.66675567627,
+        "MLU_CHECKSUM": 14654.66675567627,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-13x9-replacement",
+      "workload": "image_blur",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur",
+        "13",
+        "9"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 117,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "13",
+        "HEIGHT": "9",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "13x9",
+        "CPU_CHECKSUM": 14654.66675567627,
+        "MLU_CHECKSUM": 14654.66675567627,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-13x9-preload",
+      "workload": "image_blur",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur",
+        "13",
+        "9"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 117,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "13",
+        "HEIGHT": "9",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "13x9",
+        "CPU_CHECKSUM": 14654.66675567627,
+        "MLU_CHECKSUM": 14654.66675567627,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-1x7-native",
+      "workload": "image_blur",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur",
+        "1",
+        "7"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "1x7",
+        "CPU_CHECKSUM": 727.0,
+        "MLU_CHECKSUM": 727.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-1x7-replacement",
+      "workload": "image_blur",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur",
+        "1",
+        "7"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "1x7",
+        "CPU_CHECKSUM": 727.0,
+        "MLU_CHECKSUM": 727.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_blur-1x7-preload",
+      "workload": "image_blur",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_blur",
+        "1",
+        "7"
+      ],
+      "sha256": "90f321040a339ea24b7490fbf0b7d8632f54d2cc6c5206dcbba836f1df41e45c",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "BOUNDARY": "copy-input",
+        "WORKLOAD": "image_blur",
+        "SHAPE": "1x7",
+        "CPU_CHECKSUM": 727.0,
+        "MLU_CHECKSUM": 727.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "queue_notifier-default-native",
+      "workload": "queue_notifier",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/queue_notifier"
+      ],
+      "sha256": "2947fff42696f7a91d901950d21a2f51ae112d0bac10b2b9ff467085c16f9d48",
+      "elements": 4096,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "queue_notifier",
+        "SHAPE": "4096-f32-cross-queue",
+        "CPU_CHECKSUM": 4082.5,
+        "MLU_CHECKSUM": 4082.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999997e-07,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "queue_notifier-default-replacement",
+      "workload": "queue_notifier",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/queue_notifier"
+      ],
+      "sha256": "2947fff42696f7a91d901950d21a2f51ae112d0bac10b2b9ff467085c16f9d48",
+      "elements": 4096,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "queue_notifier",
+        "SHAPE": "4096-f32-cross-queue",
+        "CPU_CHECKSUM": 4082.5,
+        "MLU_CHECKSUM": 4082.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999997e-07,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "queue_notifier-default-preload",
+      "workload": "queue_notifier",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/queue_notifier"
+      ],
+      "sha256": "2947fff42696f7a91d901950d21a2f51ae112d0bac10b2b9ff467085c16f9d48",
+      "elements": 4096,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "queue_notifier",
+        "SHAPE": "4096-f32-cross-queue",
+        "CPU_CHECKSUM": 4082.5,
+        "MLU_CHECKSUM": 4082.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999997e-07,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-default-native",
+      "workload": "image_sobel",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 62846678.0,
+        "MLU_CHECKSUM": 62846678.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-default-replacement",
+      "workload": "image_sobel",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 62846678.0,
+        "MLU_CHECKSUM": 62846678.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-default-preload",
+      "workload": "image_sobel",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 262144,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "512",
+        "HEIGHT": "512",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "512x512",
+        "CPU_CHECKSUM": 62846678.0,
+        "MLU_CHECKSUM": 62846678.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-17x11-native",
+      "workload": "image_sobel",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel",
+        "17",
+        "11"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 187,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "17",
+        "HEIGHT": "11",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "17x11",
+        "CPU_CHECKSUM": 33866.0,
+        "MLU_CHECKSUM": 33866.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-17x11-replacement",
+      "workload": "image_sobel",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel",
+        "17",
+        "11"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 187,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "17",
+        "HEIGHT": "11",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "17x11",
+        "CPU_CHECKSUM": 33866.0,
+        "MLU_CHECKSUM": 33866.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-17x11-preload",
+      "workload": "image_sobel",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel",
+        "17",
+        "11"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 187,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "17",
+        "HEIGHT": "11",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "17x11",
+        "CPU_CHECKSUM": 33866.0,
+        "MLU_CHECKSUM": 33866.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-1x7-native",
+      "workload": "image_sobel",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel",
+        "1",
+        "7"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "1x7",
+        "CPU_CHECKSUM": 0.0,
+        "MLU_CHECKSUM": 0.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-1x7-replacement",
+      "workload": "image_sobel",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel",
+        "1",
+        "7"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "1x7",
+        "CPU_CHECKSUM": 0.0,
+        "MLU_CHECKSUM": 0.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "image_sobel-1x7-preload",
+      "workload": "image_sobel",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/image_sobel",
+        "1",
+        "7"
+      ],
+      "sha256": "0fb4695e61a8e4f22bb7e4e33da3320ce9e79ed73b72cc6f90d2b2c19fa445a3",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "BOUNDARY": "zero",
+        "WORKLOAD": "image_sobel",
+        "SHAPE": "1x7",
+        "CPU_CHECKSUM": 0.0,
+        "MLU_CHECKSUM": 0.0,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "row_center-default-native",
+      "workload": "row_center",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/row_center"
+      ],
+      "sha256": "6820f7ac5da47dc6f68dc1c3a8b830e6c4c91505939348737065e2283d3c1569",
+      "elements": 8255,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "GUARD_MISMATCH": 0,
+        "MEAN_MAX_ABS_ERROR": 5.21540642e-08,
+        "WORKLOAD": "row_center",
+        "SHAPE": "65x127",
+        "CPU_CHECKSUM": -4127.499997317791,
+        "MLU_CHECKSUM": -4127.500041157007,
+        "MAX_ABS_ERROR": 9.53674316e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "row_center-default-replacement",
+      "workload": "row_center",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/row_center"
+      ],
+      "sha256": "6820f7ac5da47dc6f68dc1c3a8b830e6c4c91505939348737065e2283d3c1569",
+      "elements": 8255,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "GUARD_MISMATCH": 0,
+        "MEAN_MAX_ABS_ERROR": 5.21540642e-08,
+        "WORKLOAD": "row_center",
+        "SHAPE": "65x127",
+        "CPU_CHECKSUM": -4127.499997317791,
+        "MLU_CHECKSUM": -4127.500041157007,
+        "MAX_ABS_ERROR": 9.53674316e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "row_center-default-preload",
+      "workload": "row_center",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/row_center"
+      ],
+      "sha256": "6820f7ac5da47dc6f68dc1c3a8b830e6c4c91505939348737065e2283d3c1569",
+      "elements": 8255,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "GUARD_MISMATCH": 0,
+        "MEAN_MAX_ABS_ERROR": 5.21540642e-08,
+        "WORKLOAD": "row_center",
+        "SHAPE": "65x127",
+        "CPU_CHECKSUM": -4127.499997317791,
+        "MLU_CHECKSUM": -4127.500041157007,
+        "MAX_ABS_ERROR": 9.53674316e-07,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "row_center-3x1-native",
+      "workload": "row_center",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/row_center",
+        "3",
+        "1"
+      ],
+      "sha256": "6820f7ac5da47dc6f68dc1c3a8b830e6c4c91505939348737065e2283d3c1569",
+      "elements": 3,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "GUARD_MISMATCH": 0,
+        "MEAN_MAX_ABS_ERROR": 0.0,
+        "WORKLOAD": "row_center",
+        "SHAPE": "3x1",
+        "CPU_CHECKSUM": -1.5,
+        "MLU_CHECKSUM": -1.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "row_center-3x1-replacement",
+      "workload": "row_center",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/row_center",
+        "3",
+        "1"
+      ],
+      "sha256": "6820f7ac5da47dc6f68dc1c3a8b830e6c4c91505939348737065e2283d3c1569",
+      "elements": 3,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "GUARD_MISMATCH": 0,
+        "MEAN_MAX_ABS_ERROR": 0.0,
+        "WORKLOAD": "row_center",
+        "SHAPE": "3x1",
+        "CPU_CHECKSUM": -1.5,
+        "MLU_CHECKSUM": -1.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "row_center-3x1-preload",
+      "workload": "row_center",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/row_center",
+        "3",
+        "1"
+      ],
+      "sha256": "6820f7ac5da47dc6f68dc1c3a8b830e6c4c91505939348737065e2283d3c1569",
+      "elements": 3,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "GUARD_MISMATCH": 0,
+        "MEAN_MAX_ABS_ERROR": 0.0,
+        "WORKLOAD": "row_center",
+        "SHAPE": "3x1",
+        "CPU_CHECKSUM": -1.5,
+        "MLU_CHECKSUM": -1.5,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-05,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-default-native",
+      "workload": "heat_diffusion",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 24897,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "193",
+        "HEIGHT": "129",
+        "STEPS": "32",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "193x129x32",
+        "CPU_CHECKSUM": 134.6609818916428,
+        "MLU_CHECKSUM": 134.6609796390403,
+        "MAX_ABS_ERROR": 5.96046448e-08,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-default-replacement",
+      "workload": "heat_diffusion",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 24897,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "193",
+        "HEIGHT": "129",
+        "STEPS": "32",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "193x129x32",
+        "CPU_CHECKSUM": 134.6609818916428,
+        "MLU_CHECKSUM": 134.6609796390403,
+        "MAX_ABS_ERROR": 5.96046448e-08,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-default-preload",
+      "workload": "heat_diffusion",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 24897,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "193",
+        "HEIGHT": "129",
+        "STEPS": "32",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "193x129x32",
+        "CPU_CHECKSUM": 134.6609818916428,
+        "MLU_CHECKSUM": 134.6609796390403,
+        "MAX_ABS_ERROR": 5.96046448e-08,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-23x17x5-native",
+      "workload": "heat_diffusion",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion",
+        "23",
+        "17",
+        "5"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 391,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "23",
+        "HEIGHT": "17",
+        "STEPS": "5",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "23x17x5",
+        "CPU_CHECKSUM": 0.7789558331714943,
+        "MLU_CHECKSUM": 0.7789559718221426,
+        "MAX_ABS_ERROR": 2.98023224e-08,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-23x17x5-replacement",
+      "workload": "heat_diffusion",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion",
+        "23",
+        "17",
+        "5"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 391,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "23",
+        "HEIGHT": "17",
+        "STEPS": "5",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "23x17x5",
+        "CPU_CHECKSUM": 0.7789558331714943,
+        "MLU_CHECKSUM": 0.7789559718221426,
+        "MAX_ABS_ERROR": 2.98023224e-08,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-23x17x5-preload",
+      "workload": "heat_diffusion",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion",
+        "23",
+        "17",
+        "5"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 391,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "23",
+        "HEIGHT": "17",
+        "STEPS": "5",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "23x17x5",
+        "CPU_CHECKSUM": 0.7789558331714943,
+        "MLU_CHECKSUM": 0.7789559718221426,
+        "MAX_ABS_ERROR": 2.98023224e-08,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-1x7x1-native",
+      "workload": "heat_diffusion",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion",
+        "1",
+        "7",
+        "1"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "STEPS": "1",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "1x7x1",
+        "CPU_CHECKSUM": -2.451612800359726,
+        "MLU_CHECKSUM": -2.451612800359726,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-1x7x1-replacement",
+      "workload": "heat_diffusion",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion",
+        "1",
+        "7",
+        "1"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "STEPS": "1",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "1x7x1",
+        "CPU_CHECKSUM": -2.451612800359726,
+        "MLU_CHECKSUM": -2.451612800359726,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "heat_diffusion-1x7x1-preload",
+      "workload": "heat_diffusion",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion",
+        "1",
+        "7",
+        "1"
+      ],
+      "sha256": "4827468975d9c02f92f8407e4c0363d6c80de7ffb708a9559158eae62e0cffa7",
+      "elements": 7,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50345"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WIDTH": "1",
+        "HEIGHT": "7",
+        "STEPS": "1",
+        "BOUNDARY": "fixed-input",
+        "GUARD_MISMATCH": 0,
+        "WORKLOAD": "heat_diffusion",
+        "SHAPE": "1x7x1",
+        "CPU_CHECKSUM": -2.451612800359726,
+        "MLU_CHECKSUM": -2.451612800359726,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 9.99999975e-06,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    }
+  ],
+  "core_smoke": [
+    {
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/native_bang_generic"
+      ],
+      "returncode": 0,
+      "sha256": "1f80f8d637e0e73263454605f3b94782eb9574b3d2b360ea3a5b347e9159d84b"
+    }
+  ]
+}

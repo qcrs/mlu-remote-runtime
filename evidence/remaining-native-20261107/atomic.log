@@ -1,0 +1,14 @@
+cnInit(0) = 0
+cnCtxCreate(&c,0,0) = 0
+cnMallocHost(&h,4096) = 0
+cnCreateQueue(&q,0) = 0
+cnAtomicReadOps((uintptr_t)h,&v) = 0
+value=7
+cnAtomicOperation((uintptr_t)h,19,0,CN_ATOMIC_OP_REQUEST,CN_ATOMIC_REQUEST_SET) = 0
+cnQueueAtomicOperation(q,(uintptr_t)h,3,0,CN_ATOMIC_OP_REQUEST,CN_ATOMIC_REQUEST_ADD) = 0
+cnQueueSync(q) = 0
+cnAtomicReadOps((uintptr_t)h,&v) = 0
+value=22
+cnDestroyQueue(q) = 0
+cnFreeHost(h) = 0
+cnCtxDestroy(c) = 0

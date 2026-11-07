@@ -1,0 +1,17 @@
+{"library":"CNDrv","pid":259451,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnInit(0)","status":0}
+{"call":"cnCtxCreate(&context,0,0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"2.5.2"}
+{"import_mapping_bytes":33554432}
+{"call":"cnMemImportFromShareableHandle(&h,(void *)(uintptr_t)fd,CN_MEM_HANDLE_TYPE_POSIX_FILE_DESCRIPTOR)","status":0}
+{"call":"cnMemAddressReserve(&a,bytes,0,0,0)","status":0}
+{"call":"cnMemMap(a,bytes,0,handle,0)","status":0}
+{"call":"cnMemSetAccess(a,bytes,&desc,1)","status":0}
+{"call":"readback(before,a,N)","status":0}
+{"check":"vmm_import_sees_exported_bytes","pass":true}
+{"call":"fill(a+64,85,N-128)","status":0}
+{"call":"cnMemUnmap(a,bytes)","status":0}
+{"call":"cnMemAddressFree(a,bytes)","status":0}
+{"call":"cnMemRelease(h)","status":0}
+{"call":"cnCtxDestroy(context)","status":0}

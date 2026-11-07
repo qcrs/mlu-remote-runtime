@@ -67,6 +67,12 @@ void mlu_resource_release(mlu_resource_usage *usage, enum mlu_resource_kind kind
   pthread_mutex_unlock(&resource_lock);
 }
 uint32_t mlu_resource_max_connections(void) { return connections; }
+void mlu_resource_transfer(mlu_resource_usage *from,mlu_resource_usage *to,enum mlu_resource_kind kind,uint64_t bytes) {
+  pthread_mutex_lock(&resource_lock);
+  if(bytes>from->bytes[kind] || bytes>UINT64_MAX-to->bytes[kind])abort();
+  from->bytes[kind]-=bytes;to->bytes[kind]+=bytes;
+  pthread_mutex_unlock(&resource_lock);
+}
 uint32_t mlu_resource_max_transfers(void) { return transfers; }
 void mlu_resource_report(void) {
   pthread_mutex_lock(&resource_lock);

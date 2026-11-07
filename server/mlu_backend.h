@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <pthread.h>
 #include <cn_api.h>
 #include "remote_protocol.h"
 #include "object_registry.h"
@@ -22,6 +23,10 @@ typedef struct {
   uint64_t bytes;
   uint64_t owner;
   uint32_t generation;
+  uint64_t vmm_handle; /* cnMemMap storage, never cnFree */
+  uint64_t symbol_module; /* borrowed module storage, never cnFree */
+  struct mlu_ipc_backing *ipc;
+  int ipc_imported;
   unsigned graph_refs;
   int retired;
   int live;
@@ -127,12 +132,24 @@ typedef struct {
   uint64_t bytes;
   int notifier_live;
   int release_requested;
+  unsigned host_readers;
   struct mlu_graph_invocation *graph_hold;
   int live;
 } mlu_backend_transfer;
 
+typedef struct {
+  uint64_t id,bytes;CNmemGenericAllocationHandle handle;
+  struct mlu_ipc_backing *ipc;
+  unsigned references,mappings;int live;
+} mlu_vmm_handle;
+typedef struct {uint64_t id,bytes;CNaddr address;int live;} mlu_vmm_range;
+typedef struct mlu_backend_atomic {
+  struct mlu_backend_atomic *next;
+  uint64_t id;cn_uint64_t *address;
+} mlu_backend_atomic;
 typedef struct mlu_backend_session {
   int transport_fd;
+  int atomic_used,atomic_aborted;
   uint32_t transport_timeout_ms;
   mlu_callback_service *callbacks;
   struct mlu_graph_user *graph_users;
@@ -145,7 +162,11 @@ typedef struct mlu_backend_session {
   uint32_t generation;
   uint64_t next_operation_sequence;
   mlu_resource_usage usage;
+  struct mlu_ipc_context *ipc_context;
   mlu_object_registry objects;
+  mlu_vmm_handle vmm_handles[MLU_BACKEND_MAX_OBJECTS];
+  mlu_vmm_range vmm_ranges[MLU_BACKEND_MAX_OBJECTS];
+  mlu_backend_atomic *atomics[MLU_BACKEND_MAX_OBJECTS];
   mlu_backend_allocation allocations[MLU_BACKEND_MAX_OBJECTS];
   mlu_backend_queue queues[MLU_BACKEND_MAX_OBJECTS];
   mlu_backend_notifier notifiers[MLU_BACKEND_MAX_OBJECTS];
@@ -173,6 +194,7 @@ int mlu_backend_context_sync(mlu_backend_session *s);
 int mlu_backend_session_select_device(mlu_backend_session *s, int ordinal);
 int mlu_backend_session_reset(mlu_backend_session *s);
 int mlu_backend_session_cleanup(mlu_backend_session *s);
+int mlu_backend_ipc_attach(int fd,uint64_t token);
 
 int mlu_backend_alloc(mlu_backend_session *s, uint64_t bytes, uint64_t *id);
 int mlu_backend_free(mlu_backend_session *s, uint64_t id);

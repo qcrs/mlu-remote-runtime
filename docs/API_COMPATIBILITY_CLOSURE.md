@@ -2,6 +2,8 @@
 
 范围：MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64→AArch64。`IMPLEMENTED` 限于逐 API boundary，不代表其他架构、SDK 或未声明的 API。
 
+最新状态：**283 IMPLEMENTED、0 PARTIAL、23 BLOCKED、3 OUT_OF_SCOPE、1 UNSUPPORTED、0 NOT_IMPLEMENTED**。原剩余 49 项已完成 36 项、确认 12 项 Native 前提阻塞、1 项范围外。最新决策、支持边界和验证见本文末节及 [本批证据](../evidence/remaining-closure-20261107/README.md)。下面保留初始审计和后续各批次的历史状态，不将当时的未实现项视为当前缺口。
+
 冻结基线 `dbf958a` 的 97 个 PARTIAL，逐项对照 SDK、实现和既有 Native/Remote 证据：77 项提升为 IMPLEMENTED、18 项保留 PARTIAL、2 项 OUT_OF_SCOPE。另将原先错误标完整的 `cnrtQueueDestroy` 降为 PARTIAL，7 个 Peer 入口由 NOT_IMPLEMENTED 改为 BLOCKED。审计提交时总数：121 完整、19 部分、7 阻塞、2 范围外、4 明确不支持、157 未实现。
 
 [baseline.json](../evidence/closure-20261107/baseline.json) 保存原条目及源 commit，[review.json](../evidence/closure-20261107/review.json) 保存每项初始决策；Schema 的 `closure_review` 保留旧 boundary 和判定。后续修复用 `closure_resolution` 记录新的证据，不改写审计历史。`verify-closure-audit.py` 对照 git 中原始 Schema，检查无遗漏、重复、理由漂移和无证据提升。`api_codegen.validate` 强制每个 PARTIAL 有 gap/fix/acceptance，BLOCKED/OOS 有理由。
@@ -95,3 +97,15 @@ G2 的 44 个 typed payload/entity 入口、G3 的 10 个 capture 入口和 G4 �
 共享能力包括 recursive child ownership、immutable kernel/Host/callback snapshots、allocation/module/invocation leases、逻辑线程 capture/frontier，以及客户端执行的 callback/destructor。callback 图在每个 Host copy 边界采样或写回再放行后继；native user refs 保活至最后引用并触发唯一析构。DOT 在客户端路径写入。callback 每 session 串行、须在 RPC deadline 内返回，Runtime/Driver 重入拒绝；歧义 entity setter、Host size 和 pageable lifetime 等边界见 [Graph/IPC](GRAPH_IPC.md)。
 
 [G4 专项](../evidence/graph-callbacks-20261107/README.md) 20/20 与既有 269/269 回归通过，包含两库 Native/replacement/preload/隐藏 SDK 和设备的客户端、顺序/数值/PID、clone/update/child、无 wait 推进、refs/在途销毁、reset/EOF、配额回滚及提交断线。Server resources/workers/cleanup errors 清零，codegen、ledger、API contracts 和 closure audit 通过。普通 memory/Host/VMM IPC 仍属 NOT_IMPLEMENTED，需完成跨 session backing/Context 执行、同 client-host 域 CPU 共享和真实客户端 descriptor transport；11 个 BLOCKED 原因不变。
+
+## 2026-11-07 剩余 49 项收口
+
+原 49 项中，Shared Context 5、VMM 11、Symbol 地址/拷贝 6、普通队列 Host/callback/atomics 6、memory/Host/VMM IPC 8，共 **36 项 IMPLEMENTED**。支持边界记录在 Schema 并生成至台账；原 97 项 audit/resolution 历史不变。
+
+新增共享基础包括 generic-handle/backing/reservation/map refs、module-owned symbol identities、客户端普通队列 executor、每 Context 原子侧通道与 EOF compare 取消、跨 session device backing/源 Context broker、memfd Host IPC，以及真实客户端 descriptor/dup/SCM_RIGHTS。原子单元限经 API 更新的 aligned pinned 64-bit cells，Host CPU IPC 限同客户端主机/UID/Unix namespace；VMM 非零 backing offset 保留 Native NotSupported。源退役后已导入/Graph backing 保留属于 Remote 安全策略，未声称 Native 对提前 free 的未定义流程有相同行为。
+
+新增 **12 项 BLOCKED**：CPU mapping/cache 8（两库 Mmap/MmapCached 无成功映射前提）、cnMemMerge 1（本设备/SDK NotSupported）、memory attribute setters 2（device/pinned Host/VMM 未取得成功的合法 mutation）、cnrtFilterReshape 1（合法 padded 输入在 Native topology helper 的 device -1 查询失败）。逐项 Native 日志、解除条件与“不把 probe 退出码当作 API 成功”的判定见 [阻塞证据](../evidence/remaining-native-20261107/README.md)。通用 `cnGetExportFunction` 属 SDK Impl Private 的异构私有扩展 ABI，新增 **1 项 OUT_OF_SCOPE**；Server 内部仅使用单独验证的 cnQueueAbort，未跨 RPC 返回函数指针。
+
+加上原 Peer 7、notifier IPC 4，当前 23 项 BLOCKED；security/framebuffer 加私有扩展共 3 项 OUT_OF_SCOPE，cnrtMallocConstant 仍 UNSUPPORTED。没有可继续推进却仅因实现困难挂起的 PARTIAL/NOT_IMPLEMENTED。Graph 102/102 和 I1/I2 的 8 项 IPC 已完成，I3 需可成功创建 interprocess notifier 的硬件/SDK 后重开。
+
+必要验证全部通过：[功能族 39/39](../evidence/remaining-closure-20261107/results.json)，[IPC 正常 24/24、生命周期 12/12、配额 2/2](../evidence/remaining-ipc-20261107/README.md)，Graph callback 20/20，Queue retirement 12/12，核心 76/76，以及 8 个 workload 的 19 组输入/57 次运行。Server resources/workers/cleanup errors 归零；最终 build/codegen/ledger/contracts/closure audit 检查记录见 [本批证据](../evidence/remaining-closure-20261107/README.md)。

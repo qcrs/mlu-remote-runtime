@@ -1,0 +1,11 @@
+{
+  "scripts/verify-ipc-lifetime.py": "61554942c15c5622609278b5c7a0113311975abc3ca8b969e99476046ed9c6ca",
+  "tests/native_ipc_lifetime.c": "77e9f675b755f0a88c420e2699c8a1f7731b0eed0b5aa7b4f092b5ee37777b97",
+  "probes/probe_graph_ipc.c": "223636c63e2f560393a77270ac1d783a444cf0807043963769b87aef84caa4b1",
+  "server/ipc_lifetime.inc": "5b948ca911e32199a843aad02739da83b12f233c0653920be1f0faf7ef096e87",
+  "server/ipc_control.inc": "afe4b359860d14e932e475a2c08c6b2d0e46d7ba85d6ebfeda18995f504ccfdf",
+  "client/ipc_descriptor.inc": "92e714fa248f33f436cc379810a612b30094ffb2061e819cd3e934ee388ad69f",
+  "client/host_memory.c": "b07c9af6dac84dea870530db99d5dabedd4bfb25f59edbc63aa1cce70c17dce2",
+  "shim/driver_ipc.inc": "2a6521c1cba98597309ef837cd4094b928d227b4b260146754a855e72a584d29",
+  "shim/runtime_ipc.inc": "f933c32c2d75350e72231fcb77aeeb23ffcf977fc3c65f9fc3bdaade91428506"
+}

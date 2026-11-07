@@ -1,0 +1,8 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542186]
+mnt mnt:[4026542189]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50344
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_queue_retirement
+PASS CNRT retirement; notifier wait/query, context/free and cross-queue completion preserve kernel and H2D/D2D; 1200 retirements and pending reset

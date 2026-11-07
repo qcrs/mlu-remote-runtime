@@ -1,0 +1,251 @@
+
+/usr/local/neuware/lib64/libcnrt.so:     file format elf64-littleaarch64
+
+
+Disassembly of section .text:
+
+0000000000039870 <__gnu_h2f_ieee@@Base+0x233f0>:
+   39870:	f100001f 	cmp	x0, #0x0
+   39874:	fa401824 	ccmp	x1, #0x0, #0x4, ne  // ne = any
+   39878:	54000fc0 	b.eq	39a70 <__gnu_h2f_ieee@@Base+0x235f0>  // b.none
+   3987c:	a9b77bfd 	stp	x29, x30, [sp, #-144]!
+   39880:	71004cdf 	cmp	w6, #0x13
+   39884:	910003fd 	mov	x29, sp
+   39888:	f9000bf3 	str	x19, [sp, #16]
+   3988c:	aa0103f3 	mov	x19, x1
+   39890:	f90013f5 	str	x21, [sp, #32]
+   39894:	2a0503f5 	mov	w21, w5
+   39898:	b9006fa2 	str	w2, [x29, #108]
+   3989c:	b9007ba3 	str	w3, [x29, #120]
+   398a0:	f90043a0 	str	x0, [x29, #128]
+   398a4:	b9008fa4 	str	w4, [x29, #140]
+   398a8:	54000ea0 	b.eq	39a7c <__gnu_h2f_ieee@@Base+0x235fc>  // b.none
+   398ac:	710048df 	cmp	w6, #0x12
+   398b0:	54001860 	b.eq	39bbc <__gnu_h2f_ieee@@Base+0x2373c>  // b.none
+   398b4:	710084df 	cmp	w6, #0x21
+   398b8:	54000140 	b.eq	398e0 <__gnu_h2f_ieee@@Base+0x23460>  // b.none
+   398bc:	90000180 	adrp	x0, 69000 <__gnu_h2f_ieee@@Base+0x52b80>
+   398c0:	91216000 	add	x0, x0, #0x858
+   398c4:	97ff37c3 	bl	77d0 <puts@plt>
+   398c8:	5290da40 	mov	w0, #0x86d2                	// #34514
+   398cc:	f9400bf3 	ldr	x19, [sp, #16]
+   398d0:	72a00020 	movk	w0, #0x1, lsl #16
+   398d4:	f94013f5 	ldr	x21, [sp, #32]
+   398d8:	a8c97bfd 	ldp	x29, x30, [sp], #144
+   398dc:	14000e7d 	b	3d2d0 <__gnu_h2f_ieee@@Base+0x26e50>
+   398e0:	97fff850 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   398e4:	b9406fa2 	ldr	w2, [x29, #108]
+   398e8:	1ac00c41 	sdiv	w1, w2, w0
+   398ec:	1b008820 	msub	w0, w1, w0, w2
+   398f0:	35000bc0 	cbnz	w0, 39a68 <__gnu_h2f_ieee@@Base+0x235e8>
+   398f4:	a904efba 	stp	x26, x27, [x29, #72]
+   398f8:	5280001b 	mov	w27, #0x0                   	// #0
+   398fc:	a903e7b8 	stp	x24, x25, [x29, #56]
+   39900:	a902dfb6 	stp	x22, x23, [x29, #40]
+   39904:	f9000fb4 	str	x20, [x29, #24]
+   39908:	f9002fbc 	str	x28, [x29, #88]
+   3990c:	97fff845 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39910:	b9406fa4 	ldr	w4, [x29, #108]
+   39914:	510006a2 	sub	w2, w21, #0x1
+   39918:	b9408fa3 	ldr	w3, [x29, #140]
+   3991c:	9100045a 	add	x26, x2, #0x1
+   39920:	b9407ba1 	ldr	w1, [x29, #120]
+   39924:	b9008bbf 	str	wzr, [x29, #136]
+   39928:	1ac00c80 	sdiv	w0, w4, w0
+   3992c:	1b037c21 	mul	w1, w1, w3
+   39930:	b9006ba0 	str	w0, [x29, #104]
+   39934:	1b157c60 	mul	w0, w3, w21
+   39938:	b90073a0 	str	w0, [x29, #112]
+   3993c:	1b157c39 	mul	w25, w1, w21
+   39940:	97fff838 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39944:	6b1b001f 	cmp	w0, w27
+   39948:	5400070d 	b.le	39a28 <__gnu_h2f_ieee@@Base+0x235a8>
+   3994c:	b9406ba0 	ldr	w0, [x29, #104]
+   39950:	7100001f 	cmp	w0, #0x0
+   39954:	5400062d 	b.le	39a18 <__gnu_h2f_ieee@@Base+0x23598>
+   39958:	52800018 	mov	w24, #0x0                   	// #0
+   3995c:	b9407ba0 	ldr	w0, [x29, #120]
+   39960:	7100001f 	cmp	w0, #0x0
+   39964:	5400052d 	b.le	39a08 <__gnu_h2f_ieee@@Base+0x23588>
+   39968:	52800017 	mov	w23, #0x0                   	// #0
+   3996c:	b90077bf 	str	wzr, [x29, #116]
+   39970:	b9408fa0 	ldr	w0, [x29, #140]
+   39974:	7100001f 	cmp	w0, #0x0
+   39978:	540003ad 	b.le	399ec <__gnu_h2f_ieee@@Base+0x2356c>
+   3997c:	52800014 	mov	w20, #0x0                   	// #0
+   39980:	b9007fbf 	str	wzr, [x29, #124]
+   39984:	710002bf 	cmp	w21, #0x0
+   39988:	5400024d 	b.le	399d0 <__gnu_h2f_ieee@@Base+0x23550>
+   3998c:	b9408ba0 	ldr	w0, [x29, #136]
+   39990:	d280001c 	mov	x28, #0x0                   	// #0
+   39994:	f94043a1 	ldr	x1, [x29, #128]
+   39998:	8b20c036 	add	x22, x1, w0, sxtw
+   3999c:	97fff821 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   399a0:	1b186c00 	madd	w0, w0, w24, w27
+   399a4:	1b195c00 	madd	w0, w0, w25, w23
+   399a8:	0b140000 	add	w0, w0, w20
+   399ac:	0b1c0000 	add	w0, w0, w28
+   399b0:	38e0ca60 	ldrsb	w0, [x19, w0, sxtw]
+   399b4:	383c6ac0 	strb	w0, [x22, x28]
+   399b8:	9100079c 	add	x28, x28, #0x1
+   399bc:	eb1c035f 	cmp	x26, x28
+   399c0:	54fffee1 	b.ne	3999c <__gnu_h2f_ieee@@Base+0x2351c>  // b.any
+   399c4:	b9408ba0 	ldr	w0, [x29, #136]
+   399c8:	0b150000 	add	w0, w0, w21
+   399cc:	b9008ba0 	str	w0, [x29, #136]
+   399d0:	b9407fa0 	ldr	w0, [x29, #124]
+   399d4:	0b150294 	add	w20, w20, w21
+   399d8:	b9408fa1 	ldr	w1, [x29, #140]
+   399dc:	11000400 	add	w0, w0, #0x1
+   399e0:	b9007fa0 	str	w0, [x29, #124]
+   399e4:	6b00003f 	cmp	w1, w0
+   399e8:	54fffce1 	b.ne	39984 <__gnu_h2f_ieee@@Base+0x23504>  // b.any
+   399ec:	294e03a1 	ldp	w1, w0, [x29, #112]
+   399f0:	11000400 	add	w0, w0, #0x1
+   399f4:	0b0102f7 	add	w23, w23, w1
+   399f8:	b90077a0 	str	w0, [x29, #116]
+   399fc:	b9407ba1 	ldr	w1, [x29, #120]
+   39a00:	6b00003f 	cmp	w1, w0
+   39a04:	54fffb61 	b.ne	39970 <__gnu_h2f_ieee@@Base+0x234f0>  // b.any
+   39a08:	b9406ba0 	ldr	w0, [x29, #104]
+   39a0c:	11000718 	add	w24, w24, #0x1
+   39a10:	6b18001f 	cmp	w0, w24
+   39a14:	54fffa41 	b.ne	3995c <__gnu_h2f_ieee@@Base+0x234dc>  // b.any
+   39a18:	1100077b 	add	w27, w27, #0x1
+   39a1c:	97fff801 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39a20:	6b1b001f 	cmp	w0, w27
+   39a24:	54fff94c 	b.gt	3994c <__gnu_h2f_ieee@@Base+0x234cc>
+   39a28:	b9406fa0 	ldr	w0, [x29, #108]
+   39a2c:	1b197c19 	mul	w25, w0, w25
+   39a30:	b9408ba0 	ldr	w0, [x29, #136]
+   39a34:	6b00033f 	cmp	w25, w0
+   39a38:	54001620 	b.eq	39cfc <__gnu_h2f_ieee@@Base+0x2387c>  // b.none
+   39a3c:	5290d4c0 	mov	w0, #0x86a6                	// #34470
+   39a40:	72a00020 	movk	w0, #0x1, lsl #16
+   39a44:	a942dfb6 	ldp	x22, x23, [x29, #40]
+   39a48:	a943e7b8 	ldp	x24, x25, [x29, #56]
+   39a4c:	a944efba 	ldp	x26, x27, [x29, #72]
+   39a50:	f9400fb4 	ldr	x20, [x29, #24]
+   39a54:	f9402fbc 	ldr	x28, [x29, #88]
+   39a58:	f9400bf3 	ldr	x19, [sp, #16]
+   39a5c:	f94013f5 	ldr	x21, [sp, #32]
+   39a60:	a8c97bfd 	ldp	x29, x30, [sp], #144
+   39a64:	14000e1b 	b	3d2d0 <__gnu_h2f_ieee@@Base+0x26e50>
+   39a68:	5290d4c0 	mov	w0, #0x86a6                	// #34470
+   39a6c:	17ffff98 	b	398cc <__gnu_h2f_ieee@@Base+0x2344c>
+   39a70:	5290d4c0 	mov	w0, #0x86a6                	// #34470
+   39a74:	72a00020 	movk	w0, #0x1, lsl #16
+   39a78:	14000e16 	b	3d2d0 <__gnu_h2f_ieee@@Base+0x26e50>
+   39a7c:	97fff7e9 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39a80:	b9406fa2 	ldr	w2, [x29, #108]
+   39a84:	1ac00c41 	sdiv	w1, w2, w0
+   39a88:	1b008820 	msub	w0, w1, w0, w2
+   39a8c:	35fffee0 	cbnz	w0, 39a68 <__gnu_h2f_ieee@@Base+0x235e8>
+   39a90:	a904efba 	stp	x26, x27, [x29, #72]
+   39a94:	5280001b 	mov	w27, #0x0                   	// #0
+   39a98:	a903e7b8 	stp	x24, x25, [x29, #56]
+   39a9c:	a902dfb6 	stp	x22, x23, [x29, #40]
+   39aa0:	f9000fb4 	str	x20, [x29, #24]
+   39aa4:	f9002fbc 	str	x28, [x29, #88]
+   39aa8:	97fff7de 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39aac:	b9408fa3 	ldr	w3, [x29, #140]
+   39ab0:	510006a2 	sub	w2, w21, #0x1
+   39ab4:	b9407ba1 	ldr	w1, [x29, #120]
+   39ab8:	9100045a 	add	x26, x2, #0x1
+   39abc:	b9406fa4 	ldr	w4, [x29, #108]
+   39ac0:	b9008bbf 	str	wzr, [x29, #136]
+   39ac4:	1b037c21 	mul	w1, w1, w3
+   39ac8:	1ac00c80 	sdiv	w0, w4, w0
+   39acc:	1b157c39 	mul	w25, w1, w21
+   39ad0:	b9006ba0 	str	w0, [x29, #104]
+   39ad4:	1b157c60 	mul	w0, w3, w21
+   39ad8:	b90073a0 	str	w0, [x29, #112]
+   39adc:	97fff7d1 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39ae0:	6b1b001f 	cmp	w0, w27
+   39ae4:	54fffa2d 	b.le	39a28 <__gnu_h2f_ieee@@Base+0x235a8>
+   39ae8:	b9406ba0 	ldr	w0, [x29, #104]
+   39aec:	7100001f 	cmp	w0, #0x0
+   39af0:	5400062d 	b.le	39bb4 <__gnu_h2f_ieee@@Base+0x23734>
+   39af4:	52800018 	mov	w24, #0x0                   	// #0
+   39af8:	b9407ba0 	ldr	w0, [x29, #120]
+   39afc:	7100001f 	cmp	w0, #0x0
+   39b00:	5400052d 	b.le	39ba4 <__gnu_h2f_ieee@@Base+0x23724>
+   39b04:	52800017 	mov	w23, #0x0                   	// #0
+   39b08:	b90077bf 	str	wzr, [x29, #116]
+   39b0c:	b9408fa0 	ldr	w0, [x29, #140]
+   39b10:	7100001f 	cmp	w0, #0x0
+   39b14:	540003ad 	b.le	39b88 <__gnu_h2f_ieee@@Base+0x23708>
+   39b18:	52800014 	mov	w20, #0x0                   	// #0
+   39b1c:	b9007fbf 	str	wzr, [x29, #124]
+   39b20:	710002bf 	cmp	w21, #0x0
+   39b24:	5400024d 	b.le	39b6c <__gnu_h2f_ieee@@Base+0x236ec>
+   39b28:	b9408ba0 	ldr	w0, [x29, #136]
+   39b2c:	d280001c 	mov	x28, #0x0                   	// #0
+   39b30:	f94043a1 	ldr	x1, [x29, #128]
+   39b34:	8b20c836 	add	x22, x1, w0, sxtw #2
+   39b38:	97fff7ba 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39b3c:	1b186c00 	madd	w0, w0, w24, w27
+   39b40:	1b195c00 	madd	w0, w0, w25, w23
+   39b44:	0b140000 	add	w0, w0, w20
+   39b48:	0b1c0000 	add	w0, w0, w28
+   39b4c:	bc60da60 	ldr	s0, [x19, w0, sxtw #2]
+   39b50:	bc3c7ac0 	str	s0, [x22, x28, lsl #2]
+   39b54:	9100079c 	add	x28, x28, #0x1
+   39b58:	eb1a039f 	cmp	x28, x26
+   39b5c:	54fffee1 	b.ne	39b38 <__gnu_h2f_ieee@@Base+0x236b8>  // b.any
+   39b60:	b9408ba0 	ldr	w0, [x29, #136]
+   39b64:	0b150000 	add	w0, w0, w21
+   39b68:	b9008ba0 	str	w0, [x29, #136]
+   39b6c:	b9407fa0 	ldr	w0, [x29, #124]
+   39b70:	0b150294 	add	w20, w20, w21
+   39b74:	b9408fa1 	ldr	w1, [x29, #140]
+   39b78:	11000400 	add	w0, w0, #0x1
+   39b7c:	b9007fa0 	str	w0, [x29, #124]
+   39b80:	6b00003f 	cmp	w1, w0
+   39b84:	54fffce1 	b.ne	39b20 <__gnu_h2f_ieee@@Base+0x236a0>  // b.any
+   39b88:	294e03a1 	ldp	w1, w0, [x29, #112]
+   39b8c:	11000400 	add	w0, w0, #0x1
+   39b90:	0b0102f7 	add	w23, w23, w1
+   39b94:	b90077a0 	str	w0, [x29, #116]
+   39b98:	b9407ba1 	ldr	w1, [x29, #120]
+   39b9c:	6b00003f 	cmp	w1, w0
+   39ba0:	54fffb61 	b.ne	39b0c <__gnu_h2f_ieee@@Base+0x2368c>  // b.any
+   39ba4:	b9406ba0 	ldr	w0, [x29, #104]
+   39ba8:	11000718 	add	w24, w24, #0x1
+   39bac:	6b18001f 	cmp	w0, w24
+   39bb0:	54fffa41 	b.ne	39af8 <__gnu_h2f_ieee@@Base+0x23678>  // b.any
+   39bb4:	1100077b 	add	w27, w27, #0x1
+   39bb8:	17ffffc9 	b	39adc <__gnu_h2f_ieee@@Base+0x2365c>
+   39bbc:	97fff799 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39bc0:	b9406fa2 	ldr	w2, [x29, #108]
+   39bc4:	1ac00c41 	sdiv	w1, w2, w0
+   39bc8:	1b008820 	msub	w0, w1, w0, w2
+   39bcc:	35fff4e0 	cbnz	w0, 39a68 <__gnu_h2f_ieee@@Base+0x235e8>
+   39bd0:	a904efba 	stp	x26, x27, [x29, #72]
+   39bd4:	5280001b 	mov	w27, #0x0                   	// #0
+   39bd8:	a903e7b8 	stp	x24, x25, [x29, #56]
+   39bdc:	a902dfb6 	stp	x22, x23, [x29, #40]
+   39be0:	f9000fb4 	str	x20, [x29, #24]
+   39be4:	f9002fbc 	str	x28, [x29, #88]
+   39be8:	97fff78e 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39bec:	b9408fa3 	ldr	w3, [x29, #140]
+   39bf0:	510006a2 	sub	w2, w21, #0x1
+   39bf4:	b9407ba1 	ldr	w1, [x29, #120]
+   39bf8:	9100045a 	add	x26, x2, #0x1
+   39bfc:	b9406fa4 	ldr	w4, [x29, #108]
+   39c00:	b9008bbf 	str	wzr, [x29, #136]
+   39c04:	1b037c21 	mul	w1, w1, w3
+   39c08:	1ac00c80 	sdiv	w0, w4, w0
+   39c0c:	1b157c39 	mul	w25, w1, w21
+   39c10:	b9006ba0 	str	w0, [x29, #104]
+   39c14:	1b157c60 	mul	w0, w3, w21
+   39c18:	b90073a0 	str	w0, [x29, #112]
+   39c1c:	97fff781 	bl	37a20 <__gnu_h2f_ieee@@Base+0x215a0>
+   39c20:	6b1b001f 	cmp	w0, w27
+   39c24:	54fff02d 	b.le	39a28 <__gnu_h2f_ieee@@Base+0x235a8>
+   39c28:	b9406ba0 	ldr	w0, [x29, #104]
+   39c2c:	7100001f 	cmp	w0, #0x0
+   39c30:	5400062d 	b.le	39cf4 <__gnu_h2f_ieee@@Base+0x23874>
+   39c34:	52800018 	mov	w24, #0x0                   	// #0
+   39c38:	b9407ba0 	ldr	w0, [x29, #120]
+   39c3c:	7100001f 	cmp	w0, #0x0

@@ -1,0 +1,54 @@
+{
+  "timestamp_utc": "2026-11-07T10:53:28.052579+00:00",
+  "sdk": "/usr/local/neuware-3.5.2",
+  "source_base_commit": "68e163dbb9d94fcda3dfc8cfcbf437a051328e49",
+  "uname": "Linux server310p 5.15.0-185-generic #195-Ubuntu SMP Fri Jun 19 17:16:34 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux",
+  "source_sha256": "8a9d15292df0550cbbd18e210e910d73e69193d93836a8e1e8de3c86694b0f03",
+  "runner_sha256": "aef1ceb02a6d593905442ef0efa67baf07c10591145b937a4d2019ec8e00dfcc",
+  "headers_sha256": {
+    "cnrt.h": "d29d66084ab522bd42a7a3515c95b8ee4eee89512ae45e74012d51aa86bbf614",
+    "cn_api.h": "3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6"
+  },
+  "builds": [
+    {
+      "command": [
+        "gcc",
+        "-DUSE_CNRT",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/usr/local/neuware-3.5.2/include",
+        "/home/lvtong/mlu-remote-runtime/probes/probe_graph_ipc.c",
+        "-L/usr/local/neuware-3.5.2/lib64",
+        "-Wl,-rpath,/usr/local/neuware-3.5.2/lib64",
+        "-lcnrt",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/probes/probe-graph-ipc-cnrt"
+      ],
+      "binary_sha256": "f849f5b1d58ff27361b97a525b4d06f3d0d7b6dc1abe64d3752ddffeabdc8373"
+    },
+    {
+      "command": [
+        "gcc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/usr/local/neuware-3.5.2/include",
+        "/home/lvtong/mlu-remote-runtime/probes/probe_graph_ipc.c",
+        "-L/usr/local/neuware-3.5.2/lib64",
+        "-Wl,-rpath,/usr/local/neuware-3.5.2/lib64",
+        "-lcndrv",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/probes/probe-graph-ipc-cndrv"
+      ],
+      "binary_sha256": "8a05073b5a94e56e03d266f2b4877bf9ee69201aea6a98ed9a28d47c9c577e17"
+    }
+  ],
+  "remote": true,
+  "mode": "remote",
+  "ipc_peers": "separate exec processes"
+}

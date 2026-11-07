@@ -77,16 +77,19 @@ static int graph_host_pack_aliases(mlu_graph_invocation *run) {
   }
   run->host_bytes=total;free(order);return 0;
 }
-static int graph_host_fetch(mlu_backend_session *s,mlu_backend_transfer *t,void *out,uint64_t bytes) {
+static void graph_host_pack_output(mlu_backend_transfer *t,void *out) {
   mlu_graph_invocation *run=t->graph_hold;
-  if(t->release_requested || !run || !run->host || bytes!=t->bytes) return CN_ERROR_INVALID_HANDLE;
-  int st=mlu_backend_transfer_query(s,t->id);if(st) return st;
   size_t offset=0;
   for(size_t i=0;i<run->host_count;i++) if(run->endpoints[i].payload->host_kind==2) {
     mlu_graph_host_endpoint *ep=&run->endpoints[i];size_t n=ep->payload->memcpy.extent.width;
     memcpy((char *)out+offset,(char *)run->host+ep->offset,n);offset+=n;
   }
-  return 0;
+}
+static int graph_host_fetch(mlu_backend_session *s,mlu_backend_transfer *t,void *out,uint64_t bytes) {
+  mlu_graph_invocation *run=t->graph_hold;
+  if(t->release_requested || !run || !run->host || bytes!=t->bytes) return CN_ERROR_INVALID_HANDLE;
+  int st=mlu_backend_transfer_query(s,t->id);if(st) return st;
+  graph_host_pack_output(t,out);return 0;
 }
 /* Describe returns opaque client endpoint tokens, lengths and directions.
  * Execute echoes that descriptor and adds current H2D bytes, so a stale plan
@@ -149,7 +152,7 @@ static int graph_host(mlu_backend_session *s,const mlu_api_graph_host_request *i
   if(!st) {if(!in->queue) s->default_queue_used=1;submitted=1;st=cnTaskTopoEntityInvoke(run->private_entity,q ? q->handle : NULL);}
   if(!st) st=record_transfer(s,in->queue,1,&out->id);
   if(!st) {mlu_backend_transfer *t=find_transfer(s,out->id);t->graph_hold=run;t->bytes=output;out->count=run->host_count;out->output_bytes=output;}
-  else if(!submitted || !cnQueueSync(q ? q->handle : NULL)) graph_run_discard(s,run);
+  else if(!submitted || !backend_queue_wait(s,q ? q->handle : NULL)) graph_run_discard(s,run);
   else {run->next=s->graph_orphans;s->graph_orphans=run;}
   (void)graph_views_reap(s);return st;
 }

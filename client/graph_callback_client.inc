@@ -1,10 +1,10 @@
 #include "remote_callback.h"
 typedef struct client_callback {
-  struct client_callback *next;uint64_t id;void (*fn)(void *);void *data;int destructor;
+  struct client_callback *next;uint64_t id;void (*fn)(void *);void (*queue_fn)(void *,int,void *);void *data;int destructor;
 } client_callback;
 typedef struct client_callback_run {
   struct client_callback_run *next;uint64_t cookie;size_t count;
-  unsigned char *plan;mlu_host_allocation **leases;
+  unsigned char *plan;mlu_host_allocation **leases;void *queue_handle;pending_writeback *writeback;
 } client_callback_run;
 typedef struct mlu_client_callbacks {
   pthread_mutex_t lock;pthread_t thread;int fd,primary_fd,started,stopping;
@@ -39,31 +39,38 @@ static void *callback_reader(void *opaque) {
     unsigned char *event=malloc(length);if(!event)break;
     if(mlu_io_full(cb->fd,event,length,0,deadline)!=1){free(event);break;}
     uint64_t kind=cb_get64(event),cookie=cb_get64(event+8),token=cb_get64(event+16),bytes=cb_get64(event+24);
-    int valid=bytes<=MLU_GRAPH_MAX_COPY_BYTES && length==32+(kind==MLU_CALLBACK_D2H ? bytes : 0);
-    void (*fn)(void *)=NULL;void *data=NULL;unsigned char *input=NULL;
+    int valid=bytes<=MLU_GRAPH_MAX_COPY_BYTES && length==32+((kind==MLU_CALLBACK_D2H || kind==MLU_CALLBACK_QUEUE) ? bytes : 0);
+    void (*fn)(void *)=NULL;void (*queue_fn)(void *,int,void *)=NULL;void *data=NULL,*queue_handle=NULL;int queue_status=0;unsigned char *input=NULL;
     pthread_mutex_lock(&cb->lock);
     if(cb->stopping)valid=0;
     client_callback_run *run=cb->runs;while(run && run->cookie!=cookie)run=run->next;
     if(kind==MLU_CALLBACK_DESTROY || kind==MLU_CALLBACK_CLOSE) {if(cookie || bytes)valid=0;}
     else if(!run)valid=0;
-    if(valid && (kind==MLU_CALLBACK_H2D || kind==MLU_CALLBACK_D2H || kind==MLU_CALLBACK_CALL)) {
-      size_t i=0;uint64_t expected=kind==MLU_CALLBACK_CALL ? 3 : kind==MLU_CALLBACK_H2D ? 1 : 2;
+    if(valid && (kind==MLU_CALLBACK_H2D || kind==MLU_CALLBACK_D2H || kind==MLU_CALLBACK_CALL || kind==MLU_CALLBACK_QUEUE)) {
+      size_t i=0;uint64_t expected=kind==MLU_CALLBACK_CALL ? 3 : kind==MLU_CALLBACK_H2D ? 1 : kind==MLU_CALLBACK_QUEUE ? 5 : 2;
       while(i<run->count && !(cb_get64(run->plan+24*i)==token && cb_get64(run->plan+24*i+8)==bytes && cb_get64(run->plan+24*i+16)==expected))i++;
       if(i==run->count)valid=0;
     }
-    if(valid && (kind==MLU_CALLBACK_CALL || kind==MLU_CALLBACK_DESTROY)) {
+    if(valid && (kind==MLU_CALLBACK_CALL || kind==MLU_CALLBACK_DESTROY || kind==MLU_CALLBACK_QUEUE)) {
       client_callback **p=&cb->identities_head;while(*p && (*p)->id!=token)p=&(*p)->next;
       client_callback *identity=*p;
-      if(!identity || identity->destructor!=(kind==MLU_CALLBACK_DESTROY) || bytes)valid=0;
+      if(!identity || identity->destructor!=(kind==MLU_CALLBACK_DESTROY) || (kind==MLU_CALLBACK_QUEUE && (!identity->queue_fn || bytes!=sizeof(int))) || (kind!=MLU_CALLBACK_QUEUE && bytes))valid=0;
+      else if(kind==MLU_CALLBACK_QUEUE) {queue_fn=identity->queue_fn;data=identity->data;queue_handle=run->queue_handle;uint32_t encoded;memcpy(&encoded,event+32,4);queue_status=(int)ntohl(encoded);}
       else {fn=identity->fn;data=identity->data;if(identity->destructor){*p=identity->next;cb->identities--;free(identity);}}
     } else if(valid && kind==MLU_CALLBACK_H2D) {
       input=malloc(bytes ? bytes : 1);if(!input)valid=0;else memcpy(input,(void *)(uintptr_t)token,bytes);
-    } else if(valid && kind==MLU_CALLBACK_D2H)memcpy((void *)(uintptr_t)token,event+32,bytes);
-    else if(kind!=MLU_CALLBACK_DONE && kind!=MLU_CALLBACK_CALL && kind!=MLU_CALLBACK_DESTROY && kind!=MLU_CALLBACK_CLOSE)valid=0;
+    } else if(valid && kind==MLU_CALLBACK_D2H){
+      pending_writeback *w=run->writeback;
+      if(w && w->targets){for(size_t i=0;i<w->target_count;i++)memcpy(w->targets[i].dst,event+32+w->targets[i].offset,w->targets[i].bytes);}
+      else memcpy((void *)(uintptr_t)token,event+32,bytes);
+      if(w)__atomic_store_n(&w->published,1,__ATOMIC_RELEASE);
+    }
+    else if(kind!=MLU_CALLBACK_DONE && kind!=MLU_CALLBACK_CALL && kind!=MLU_CALLBACK_DESTROY && kind!=MLU_CALLBACK_CLOSE && kind!=MLU_CALLBACK_QUEUE)valid=0;
     if(kind==MLU_CALLBACK_DONE && (bytes || token))valid=0;
     if(valid && kind==MLU_CALLBACK_CLOSE)cb->stopping=1;
     pthread_mutex_unlock(&cb->lock);
     if(valid && fn){callback_active=1;fn(data);callback_active=0;}
+    if(valid && queue_fn){callback_active=1;queue_fn(queue_handle,queue_status,data);callback_active=0;}
     if(valid && kind==MLU_CALLBACK_DONE)callback_run_remove(cb,cookie);
     h=cb_header(seq,valid && kind==MLU_CALLBACK_H2D ? (uint32_t)bytes : 0,valid ? 0 : MLU_REMOTE_BAD_OBJECT);
     int sent=mlu_io_full(cb->fd,&h,sizeof(h),1,deadline)==1 && (!valid || kind!=MLU_CALLBACK_H2D || mlu_io_full(cb->fd,input,bytes,1,deadline)==1);
@@ -122,8 +129,61 @@ static int callback_register_locked(mlu_remote_context *ctx,void (*fn)(void *),v
   if(!destructor)for(client_callback *p=cb->identities_head;p;p=p->next)if(!p->destructor && p->fn==fn && p->data==data){*token=p->id;pthread_mutex_unlock(&cb->lock);return 0;}
   if(cb->identities==MLU_CALLBACK_MAX_IDENTITIES){pthread_mutex_unlock(&cb->lock);return MLU_REMOTE_RESOURCE_LIMIT;}
   client_callback *p=calloc(1,sizeof(*p));if(!p){pthread_mutex_unlock(&cb->lock);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
-  *p=(client_callback){cb->identities_head,++cb->next_token,fn,data,destructor};cb->identities_head=p;cb->identities++;*token=p->id;
+  *p=(client_callback){.next=cb->identities_head,.id=++cb->next_token,.fn=fn,.data=data,.destructor=destructor};cb->identities_head=p;cb->identities++;*token=p->id;
   pthread_mutex_unlock(&cb->lock);return 0;
+}
+static int callback_register_queue_locked(mlu_remote_context *ctx,void (*fn)(void *,int,void *),void *data,uint64_t *token) {
+  if(!fn)return MLU_REMOTE_BAD_LENGTH;int st=callback_ensure_locked(ctx);if(st)return st;mlu_client_callbacks *cb=ctx->callbacks;
+  pthread_mutex_lock(&cb->lock);
+  for(client_callback *p=cb->identities_head;p;p=p->next)if(p->queue_fn==fn && p->data==data){*token=p->id;pthread_mutex_unlock(&cb->lock);return 0;}
+  if(cb->identities==MLU_CALLBACK_MAX_IDENTITIES){pthread_mutex_unlock(&cb->lock);return MLU_REMOTE_RESOURCE_LIMIT;}
+  client_callback *p=calloc(1,sizeof(*p));if(!p){pthread_mutex_unlock(&cb->lock);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
+  *p=(client_callback){.next=cb->identities_head,.id=++cb->next_token,.queue_fn=fn,.data=data};cb->identities_head=p;cb->identities++;*token=p->id;
+  pthread_mutex_unlock(&cb->lock);return 0;
+}
+static int callback_run_add(mlu_client_callbacks *cb,uint64_t token,uint64_t expected,void *queue_handle,uint64_t *cookie) {
+  pthread_mutex_lock(&cb->lock);
+  if(cb->run_count>=MLU_CALLBACK_MAX_RUNS){pthread_mutex_unlock(&cb->lock);return MLU_REMOTE_RESOURCE_LIMIT;}
+  client_callback_run *run=calloc(1,sizeof(*run));if(!run){pthread_mutex_unlock(&cb->lock);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
+  run->plan=calloc(24,1);if(!run->plan){free(run);pthread_mutex_unlock(&cb->lock);return CN_ERROR_SYSTEM_OUT_OF_MEMORY;}
+  run->cookie=++cb->next_run;run->count=1;run->queue_handle=queue_handle;
+  cb_put64(run->plan,token);cb_put64(run->plan+8,expected==5 ? 4 : 0);cb_put64(run->plan+16,expected);
+  run->next=cb->runs;cb->runs=run;cb->run_count++;*cookie=run->cookie;pthread_mutex_unlock(&cb->lock);return 0;
+}
+static int remote_queue_host_submit(mlu_remote_context *ctx,uint64_t queue,void *queue_handle,void (*fn)(void *),void (*queue_fn)(void *,int,void *),void *data,int callback) {
+  if(!ctx || callback_active)return MLU_REMOTE_UNSUPPORTED;
+  pthread_mutex_lock(&ctx->lock);uint64_t identity=0,cookie=0;
+  int st=callback ? callback_register_queue_locked(ctx,queue_fn,data,&identity) : callback_register_locked(ctx,fn,data,0,&identity);
+  mlu_client_callbacks *cb=ctx->callbacks;
+  for(pending_writeback *w=ctx->pending;!st && w;w=w->next)if(w->queue==queue && !w->callback_pending && !w->published) {
+    uint64_t target=w->targets ? w->transfer : (uintptr_t)w->dst;
+    uint64_t copy_cookie=0;st=callback_run_add(cb,target,2,NULL,&copy_cookie);
+    if(st)break;
+    pthread_mutex_lock(&cb->lock);client_callback_run *r=cb->runs;
+    cb_put64(r->plan+8,w->bytes);r->writeback=w;
+    r->leases=calloc(1,sizeof(*r->leases));
+    if(!r->leases || (!w->targets && mlu_host_acquire(w->dst,w->bytes,&r->leases[0])<0))st=MLU_REMOTE_BAD_LENGTH;
+    pthread_mutex_unlock(&cb->lock);
+    if(!st){mlu_api_queue_host_request ci={.action=8,.queue=queue,.object=w->transfer,.token=copy_cookie,.value1=target};
+      unsigned char request[56]={0},*reply=NULL;uint32_t n=0;
+      put32(request,ci.action);put64(request+4,ci.queue);put64(request+12,ci.object);put64(request+20,ci.token);put64(request+28,ci.value1);
+      w->callback_pending=1;st=rpc_locked(ctx,MLU_OP_API_QUEUE_HOST,request,sizeof(request),&reply,&n);free(reply);
+    }
+    if(st){w->callback_pending=0;callback_run_remove(cb,copy_cookie);}
+  }
+  if(!st)st=callback_run_add(cb,identity,callback ? 5 : 3,queue_handle,&cookie);
+  pthread_mutex_unlock(&ctx->lock);
+  if(st)return st;
+  mlu_api_queue_host_request in={.action=callback ? 7u : 6u,.queue=queue,.object=identity,.token=cookie};
+  mlu_api_queue_host_response out={0};st=mlu_remote_api_queue_host(ctx,&in,&out);
+  if(st)callback_run_remove(cb,cookie);
+  return st;
+}
+int mlu_remote_queue_host_fn(mlu_remote_context *ctx,uint64_t queue,void (*fn)(void *),void *data) {
+  return remote_queue_host_submit(ctx,queue,NULL,fn,NULL,data,0);
+}
+int mlu_remote_queue_callback(mlu_remote_context *ctx,uint64_t queue,void *queue_handle,void (*fn)(void *,int,void *),void *data) {
+  return remote_queue_host_submit(ctx,queue,queue_handle,NULL,fn,data,1);
 }
 int mlu_remote_graph_host_node(mlu_remote_context *ctx,unsigned action,uint64_t graph,uint64_t node,uint64_t entity,const uint64_t *deps,size_t count,void (**fn)(void *),void **data,uint64_t *id) {
   if(!ctx || !fn || !data || count>MLU_GRAPH_MAX_NODES || (count && !deps))return MLU_REMOTE_BAD_LENGTH;

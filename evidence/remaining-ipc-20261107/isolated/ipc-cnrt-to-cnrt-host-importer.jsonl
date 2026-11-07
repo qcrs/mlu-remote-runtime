@@ -1,0 +1,15 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542193]
+mnt mnt:[4026542196]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50342
+CLIENT /home/lvtong/mlu-remote-runtime/build/probes/probe-graph-ipc-cnrt
+{"library":"CNRT","pid":264726,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnrtSetDevice(0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"6.5.2"}
+{"call":"import_mem(&a,handle)","status":0}
+{"check":"import_sees_exported_bytes","pass":true}
+{"call":"close_mem(a)","status":0}
+{"call":"cnrtDeviceReset()","status":0}

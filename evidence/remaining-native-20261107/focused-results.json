@@ -1,0 +1,45 @@
+[
+  {
+    "command": [
+      "build/probes/probe_remaining_blockers"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "build/probes/probe_remaining_blockers",
+      "export"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "build/probes/probe_remaining_blockers",
+      "reshape",
+      "64",
+      "64",
+      "18"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "build/probes/probe_remaining_blockers",
+      "reshape",
+      "128",
+      "64",
+      "19"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "build/probes/probe_remaining_blockers",
+      "reshape",
+      "64",
+      "128",
+      "33"
+    ],
+    "returncode": 0
+  }
+]

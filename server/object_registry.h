@@ -17,6 +17,9 @@ enum mlu_object_type {
   MLU_OBJECT_GRAPH_NODE = 8,
   MLU_OBJECT_GRAPH_ENTITY = 9,
   MLU_OBJECT_USER_OBJECT = 10,
+  MLU_OBJECT_VMM_HANDLE = 11,
+  MLU_OBJECT_VMM_RANGE = 12,
+  MLU_OBJECT_ATOMIC = 13,
 };
 
 typedef struct {

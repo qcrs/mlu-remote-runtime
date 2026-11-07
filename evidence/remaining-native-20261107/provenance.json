@@ -1,0 +1,30 @@
+{
+  "packaged_at_utc": "2026-11-07T11:28:04.385446+00:00",
+  "record_kind": "current probe and SDK packaging snapshot",
+  "note": "Native logs retain actual API statuses. A successful probe process is not an API success. The snapshot records current files and does not claim a new probe execution.",
+  "files_sha256": {
+    "build/probes/probe_remaining": "94ab2dfbe1f7f8f66df4bcc1a14a65ebdc33f173ab56e9bf011e3ac46659cea1",
+    "build/probes/probe_remaining_blockers": "15f399056dd4c800dc4ebddb21d7f514e5929c1f0e1e0d0747a3b1ea55e54741",
+    "evidence/remaining-native-20261107/probe-queue-abort.c": "e7930c89289d45ce33b687703f96af5a9abfb2c6784c8ad9a8639af34d93fd01",
+    "probes/probe_remaining.c": "5aabf69596d59d9a73f180b48895b8380ed97b87348edb95a3d16c9af8dbfc0a",
+    "probes/probe_remaining_blockers.c": "ef6e541f3c8876bd15708effd028ea6fbe551c6a15da3e5f9ab5f69582d914de"
+  },
+  "sdk": {
+    "/usr/local/neuware/include/cnrt.h": {
+      "resolved_path": "/usr/local/neuware-3.5.2/include/cnrt.h",
+      "sha256": "d29d66084ab522bd42a7a3515c95b8ee4eee89512ae45e74012d51aa86bbf614"
+    },
+    "/usr/local/neuware/include/cn_api.h": {
+      "resolved_path": "/usr/local/neuware-3.5.2/include/cn_api.h",
+      "sha256": "3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6"
+    },
+    "/usr/local/neuware/lib64/libcnrt.so": {
+      "resolved_path": "/usr/local/neuware-3.5.2/lib64/libcnrt.so.6.5.2",
+      "sha256": "292ee5817ade82f82740a2c47dfdbf4d4dbcd25b6549d48cff87b8690eda5972"
+    },
+    "/usr/local/neuware/lib64/libcndrv.so": {
+      "resolved_path": "/usr/local/neuware-3.5.2/lib64/libcndrv.so.2.5.2",
+      "sha256": "87716936c75d066a75c7ceba2c916f77f1ac9550ee2244d4c416710196083ac8"
+    }
+  }
+}

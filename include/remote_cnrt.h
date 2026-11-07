@@ -54,6 +54,8 @@ int mlu_remote_capture(mlu_remote_context *,unsigned action,uint64_t queue,unsig
     const uint64_t *deps,size_t count,unsigned *state,uint64_t *id,uint64_t *graph,
     const uint64_t **frontier,size_t *frontier_count);
 int mlu_remote_in_callback(void);
+int mlu_remote_queue_host_fn(mlu_remote_context *,uint64_t,void (*)(void *),void *);
+int mlu_remote_queue_callback(mlu_remote_context *,uint64_t,void *,void (*)(void *,int,void *),void *);
 int mlu_remote_graph_host_node(mlu_remote_context *,unsigned,uint64_t,uint64_t,uint64_t,const uint64_t *,size_t,void (**)(void *),void **,uint64_t *);
 int mlu_remote_graph_user(mlu_remote_context *,unsigned,uint64_t,uint64_t,void (*)(void *),void *,unsigned,unsigned,uint64_t *);
 int mlu_remote_graph_dot(mlu_remote_context *,uint64_t,const char *,unsigned);
@@ -79,6 +81,8 @@ int mlu_remote_select_device(mlu_remote_context *ctx, uint32_t device);
 
 int mlu_remote_alloc(mlu_remote_context *ctx, uint64_t bytes,
                      mlu_remote_allocation_id *allocation);
+int mlu_remote_ipc_export_fd(mlu_remote_context *ctx,uint64_t token);
+int mlu_remote_ipc_fd_token(int fd,uint64_t *token);
 int mlu_remote_free(mlu_remote_context *ctx, mlu_remote_allocation_id allocation);
 int mlu_remote_memcpy_h2d(mlu_remote_context *ctx, mlu_remote_allocation_id dst,
                           uint64_t dst_offset, const void *src, uint64_t bytes,

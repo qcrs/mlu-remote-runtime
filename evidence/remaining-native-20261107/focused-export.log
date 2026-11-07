@@ -1,0 +1,5 @@
+cnInit(0) = 0
+cnCtxCreate(&context,0,0) = 0
+cnGetExportFunction("cnQueueAbort",&function) = 0
+valid private extension present=1
+cnCtxDestroy(context) = 0

@@ -618,7 +618,7 @@ static int graph_entity(mlu_backend_session *s,const mlu_api_graph_entity_reques
     else {
       /* Submission succeeded but no completion identity could be published.
        * Preserve every lease until a confirmed queue/context completion. */
-      if(!cnQueueSync(q ? q->handle : NULL)) graph_run_discard(s,run);
+      if(!backend_queue_wait(s,q ? q->handle : NULL)) graph_run_discard(s,run);
       else { run->next=s->graph_orphans; s->graph_orphans=run; }
     }
     return st;

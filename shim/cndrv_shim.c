@@ -8,6 +8,7 @@ static int graph_kernel_remember(mlu_remote_context *,uint64_t,uintptr_t);
 #include "fake_va.h"
 #include "host_memory.h"
 #include <errno.h>
+#include <unistd.h>
 #include <limits.h>
 #include <pthread.h>
 #include <stdint.h>
@@ -36,22 +37,28 @@ struct context {
   context *next;
   uint64_t token;
   mlu_remote_context *remote;
+  mlu_remote_context *atomic_side;
   CNdev device;
   unsigned flags;
-  int live;
+  int live, shared;
+  unsigned references;
 };
 typedef struct allocation {
   struct allocation *next;
   context *owner;
   void *base;
   size_t bytes,mapped;
-  uint64_t id;
-  int live;
+  uint64_t id, symbol_module;
+  int live, vmm, imported;
 } allocation;
 static pthread_mutex_t lock=PTHREAD_MUTEX_INITIALIZER;
 static context *contexts;
+static int atomic_publish(context *);
+static void atomic_retire(context *);
 static object *objects;
 static allocation *allocations;
+static void vmm_invalidate(context *);
+static int vmm_reserved(CNaddr,uint64_t);
 static mlu_remote_context *control;
 static uint64_t next_token=0x10000000;
 static _Thread_local uint64_t current;
@@ -85,7 +92,7 @@ static context *find_context(uint64_t token) {
   for (context *c=contexts;c;c=c->next) if (c->live && c->token==token) return c;
   return NULL;
 }
-#define CURRENT() INIT(); context *c=find_context(current); if(!c) RETURN(CN_CONTEXT_ERROR_INVALID)
+#define CURRENT() INIT(); context *c=find_context(current); if(!c || !c->remote) RETURN(CN_CONTEXT_ERROR_INVALID)
 static object *find_object(context *c,unsigned kind,uint64_t token) {
   for (object *o=objects;o;o=o->next)
     if (o->live && o->owner==c && o->kind==kind && o->token==token) return o;
@@ -105,8 +112,14 @@ static void discard_object(object *o) {
 }
 static allocation *lookup(context *c,CNaddr value,uint64_t *offset) {
   for (allocation *a=allocations;a;a=a->next)
-    if (a->live && a->owner==c && value>=(uintptr_t)a->base && value-(uintptr_t)a->base<=a->bytes) {
+    if (a->live && a->owner==c && value>=(uintptr_t)a->base && value-(uintptr_t)a->base<a->bytes) {
       *offset=value-(uintptr_t)a->base; return a;
+    }
+  /* Preserve native one-past acceptance for zero-byte queries, after preferring
+   * a real adjacent mapping that starts at the same address. */
+  for (allocation *a=allocations;a;a=a->next)
+    if (a->live && a->owner==c && value>=(uintptr_t)a->base && value-(uintptr_t)a->base==a->bytes) {
+      *offset=a->bytes; return a;
     }
   return NULL;
 }
@@ -177,15 +190,17 @@ CNresult cnCtxSetCurrent(CNcontext handle) {
   if(token && !find_context(token)) RETURN(CN_CONTEXT_ERROR_INVALID);
   current=token; RETURN(CN_SUCCESS);
 }
-CNresult cnCtxGetDevice(CNdev *dev) { ENTER(); CURRENT(); if(!dev) RETURN(CN_ERROR_INVALID_VALUE); *dev=c->device; RETURN(CN_SUCCESS); }
-CNresult cnCtxGetFlags(unsigned *flags) { ENTER(); CURRENT(); if(!flags) RETURN(CN_ERROR_INVALID_VALUE); *flags=c->flags; RETURN(CN_SUCCESS); }
-CNresult cnCtxSync(void) { ENTER(); CURRENT(); RETURN(result(mlu_remote_context_sync(c->remote))); }
+CNresult cnCtxGetDevice(CNdev *dev) { ENTER(); INIT(); context *c=find_context(current); if(!c) RETURN(CN_CONTEXT_ERROR_INVALID); if(!dev) RETURN(CN_ERROR_INVALID_VALUE); *dev=c->device; RETURN(CN_SUCCESS); }
+CNresult cnCtxGetFlags(unsigned *flags) { ENTER(); INIT(); context *c=find_context(current); if(!c) RETURN(CN_CONTEXT_ERROR_INVALID); if(!flags) RETURN(CN_ERROR_INVALID_VALUE); *flags=c->flags; RETURN(CN_SUCCESS); }
+CNresult cnCtxSync(void) { ENTER(); CURRENT(); int st=mlu_remote_context_sync(c->remote);if(!st)st=atomic_publish(c);RETURN(result(st)); }
 CNresult cnCtxDestroy(CNcontext handle) {
   ENTER(); INIT(); context *c=find_context((uintptr_t)handle); if(!c) RETURN(CN_CONTEXT_ERROR_INVALID);
+  if(c->shared) RETURN(CN_CONTEXT_ERROR_INVALID);
   int st=mlu_remote_session_close(c->remote);
   /* Even on transport failure the old context can never be reused/replayed. */
   graph_kernel_cache_drop(c->remote,0);
-  mlu_remote_disconnect(c->remote); c->remote=NULL; c->live=0;
+  atomic_retire(c);
+  mlu_remote_disconnect(c->remote); c->remote=NULL; c->live=0; vmm_invalidate(c);
   for (object *o=objects;o;o=o->next) if(o->owner==c) { o->live=0; free(o->image); o->image=NULL; }
   for (allocation *a=allocations;a;a=a->next) if(a->owner==c) a->live=0;
   if(current==c->token) current=0;
@@ -242,7 +257,7 @@ CNresult cnMallocFrameBuffer(CNaddr *out,cn_uint64_t bytes,int node) {
 CNresult cnFree(CNaddr value) {
   ENTER(); CURRENT(); if(!value) RETURN(CN_SUCCESS);
   uint64_t off; allocation *a=lookup(c,value,&off);
-  if(!a || off) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);
+  if(!a || off || a->symbol_module || a->vmm || a->imported) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);
   int st=mlu_remote_free(c->remote,a->id); if(!st) a->live=0;
   RETURN(result(st));
 }
@@ -271,10 +286,14 @@ static CNresult copy(context *c,int direction,CNaddr dst,CNaddr src,const void *
 /* Unified-copy direction comes from registry ownership, never native device
  * pointer bits. Tombstones/guard pages must not be treated as host memory. */
 static int unified_device(context *c,CNaddr p,cn_uint64_t bytes) {
+  uint64_t off;allocation *live=lookup(c,p,&off);
+  if(live)return bytes<=live->bytes-off ? MLU_ENDPOINT_DEVICE : MLU_ENDPOINT_INVALID;
   for(allocation *a=allocations;a;a=a->next) {
+    if(a->vmm && !a->live)continue;
     int kind=mlu_fake_va_endpoint(p,bytes,(uintptr_t)a->base,a->bytes,a->mapped,a->live,a->owner==c);
     if(kind!=MLU_ENDPOINT_HOST) return kind;
   }
+  if(vmm_reserved(p,bytes))return MLU_ENDPOINT_INVALID;
   return mlu_host_range((void *)(uintptr_t)p,bytes)<0 ? MLU_ENDPOINT_INVALID : 0;
 }
 CNresult cnMemcpy(CNaddr dst,CNaddr src,cn_uint64_t bytes) {
@@ -321,8 +340,8 @@ CNresult cnDestroyQueue(CNqueue handle) {
   int st=mlu_remote_queue_destroy(c->remote,o->id); if(!st) o->live=0; RETURN(result(st));
 }
 CNresult cnQueueSync(CNqueue handle) {
-  ENTER(); CURRENT(); if(!handle) RETURN(result(mlu_remote_queue_sync(c->remote,0)));
-  object *o=find_object(c,QUEUE,(uintptr_t)handle); RETURN(o ? result(mlu_remote_queue_sync(c->remote,o->id)) : CN_QUEUE_ERROR_INVALID);
+  ENTER();CURRENT();uint64_t q;if(queue_id(c,handle,&q))RETURN(CN_QUEUE_ERROR_INVALID);
+  int st=mlu_remote_queue_sync(c->remote,q);if(!st)st=atomic_publish(c);RETURN(result(st));
 }
 CNresult cnQueryQueue(CNqueue handle) {
   ENTER(); CURRENT(); if(!handle) RETURN(result(mlu_remote_queue_query(c->remote,0)));
@@ -414,6 +433,7 @@ CNresult cnModuleUnload(CNmodule handle) {
   ENTER(); CURRENT(); object *m=find_object(c,MODULE,(uintptr_t)handle); if(!m) RETURN(CN_ERROR_INVALID_HANDLE);
   int st=mlu_remote_module_unload_preset(c->remote,m->id);
   if(!st) { m->live=0; free(m->image); m->image=NULL;
+    for(allocation *a=allocations;a;a=a->next) if(a->owner==c && a->symbol_module==m->id)a->live=0;
     for(object *o=objects;o;o=o->next) if(o->owner==c && o->kind==KERNEL && o->parent==m->token) o->live=0;
   }
   RETURN(result(st));
@@ -455,7 +475,7 @@ CNresult cnInvokeKernel(CNkernel handle,unsigned x,unsigned y,unsigned z,KernelC
 }
 __attribute__((destructor)) static void finish(void) {
   if(mlu_remote_in_callback()) return;
-  pthread_mutex_lock(&lock); for(context *c=contexts;c;c=c->next) if(c->remote) { graph_kernel_cache_drop(c->remote,0); mlu_remote_disconnect(c->remote); }
+  pthread_mutex_lock(&lock); for(context *c=contexts;c;c=c->next) if(c->remote) { atomic_retire(c);graph_kernel_cache_drop(c->remote,0); mlu_remote_disconnect(c->remote); }
   if(control) mlu_remote_disconnect(control);
   pthread_mutex_unlock(&lock);
 }
@@ -519,3 +539,32 @@ CNresult cnSetCtxConfigParam_pt(CNcontext handle,CNctxConfigParamType type,CNctx
   mlu_api_ctx_config_request in={.type=(uint32_t)type,.value=param->visibleCluster,.set=1}; mlu_api_ctx_config_response out={0};
   RETURN(result(mlu_remote_api_ctx_config(c->remote,&in,&out)));
 }
+
+#include "shared_context.inc"
+
+#include "driver_symbols.inc"
+
+#include "driver_vmm.inc"
+
+CNresult cnInvokeHostFunc(CNqueue queue,CNhostFn fn,void *data) {
+  ENTER();CURRENT();uint64_t q;if(!fn || queue_id(c,queue,&q))RETURN(CN_ERROR_INVALID_VALUE);
+  RETURN(result(mlu_remote_queue_host_fn(c->remote,q,fn,data)));
+}
+CNresult cnQueueAddCallback(CNqueue queue,CNqueueCallback fn,void *data,unsigned flags) {
+  ENTER();CURRENT();uint64_t q;if(!fn || flags || queue_id(c,queue,&q))RETURN(CN_ERROR_INVALID_VALUE);
+  RETURN(result(mlu_remote_queue_callback(c->remote,q,queue,(void (*)(void *,int,void *))fn,data)));
+}
+CNresult cnSetMemAttribute(cn_uint64_t value,CNmem_attribute attr,CNaddr ptr) {
+  ENTER();CURRENT();mlu_api_vmm_request in={.action=12,.flags=value};mlu_api_vmm_response out={0};in.values[0]=attr;
+  if(bounds(c,ptr,1,&in.object,&in.offset))RETURN(CN_ERROR_INVALID_VALUE);
+  RETURN(result(mlu_remote_api_vmm(c->remote,&in,&out)));
+}
+CNresult cnSetMemRangeAttribute(cn_uint64_t value,CNmem_attribute attr,CNaddr ptr,cn_uint64_t bytes) {
+  ENTER();CURRENT();mlu_api_vmm_request in={.action=13,.flags=value,.bytes=bytes};mlu_api_vmm_response out={0};in.values[0]=attr;
+  if(bounds(c,ptr,bytes,&in.object,&in.offset))RETURN(CN_ERROR_INVALID_VALUE);
+  RETURN(result(mlu_remote_api_vmm(c->remote,&in,&out)));
+}
+
+#include "driver_atomics.inc"
+
+#include "driver_ipc.inc"

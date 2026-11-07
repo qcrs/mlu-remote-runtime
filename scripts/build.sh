@@ -35,6 +35,10 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/native_api_families.c" -o "$ROOT/build/native_api_families" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_memory_allocations.c" -o "$ROOT/build/native_memory_allocations" $LDFLAGS -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_cast.c" -o "$ROOT/build/native_cast" $LDFLAGS -lcnrt
+"$CC" $CFLAGS -pthread "$ROOT/tests/native_queue_host.c" -o "$ROOT/build/native_queue_host" $LDFLAGS -lcnrt -lcndrv
+"$CC" $CFLAGS "$ROOT/tests/native_shared.c" -o "$ROOT/build/native_shared" $LDFLAGS -lcndrv
+"$CC" $CFLAGS "$ROOT/tests/native_vmm.c" -o "$ROOT/build/native_vmm" $LDFLAGS -lcndrv
+"$CC" $CFLAGS "$ROOT/probes/probe_remaining.c" -o "$ROOT/build/probes/probe_remaining" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_graph.c" -o "$ROOT/build/native_graph_driver" $LDFLAGS -lcndrv
 "$CC" $CFLAGS -DTEST_CNRT "$ROOT/tests/native_graph.c" -o "$ROOT/build/native_graph_runtime" $LDFLAGS -lcnrt
 "$CC" $CFLAGS -pthread "$ROOT/tests/native_graph_callbacks.c" -o "$ROOT/build/native_graph_callbacks_driver" $LDFLAGS -lcndrv
@@ -58,6 +62,8 @@ if command -v cncc >/dev/null 2>&1 || [ -x "$NEUWARE_HOME/bin/cncc" ] || [ -x /u
   for OP in vector_add scalar_add relu tensor_add_strided scalar_mul tensor_mul_strided; do
     "$CNCC" --bang-fatbin-only --bang-mlu-arch=mtp_372 "$ROOT/kernels/$OP/$OP.mlu" -o "$ROOT/modules/$OP.fatbin"
   done
+  mkdir -p "$ROOT/build/symbol-audit"
+  (cd "$ROOT/build/symbol-audit" && "$CNCC" --bang-mlu-arch=mtp_372 -save-temps "$ROOT/tests/native_symbols.mlu" -lcndrv -o "$ROOT/build/native_symbols")
   for TEST in native_bang_remote native_bang_generic; do
     "$CNCC" --bang-mlu-arch=mtp_372 "$ROOT/tests/$TEST.mlu" -o "$ROOT/build/$TEST"
   done

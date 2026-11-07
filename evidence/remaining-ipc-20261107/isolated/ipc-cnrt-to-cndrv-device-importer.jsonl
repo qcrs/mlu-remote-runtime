@@ -1,0 +1,18 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542194]
+mnt mnt:[4026542195]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50342
+CLIENT /home/lvtong/mlu-remote-runtime/build/probes/probe-graph-ipc-cndrv
+{"library":"CNDrv","pid":264671,"pointer_bytes":8,"memory_handle_bytes":8}
+{"call":"cnInit(0)","status":0}
+{"call":"cnCtxCreate(&context,0,0)","status":0}
+{"call":"API(GetLibVersion)(&major,&minor,&patch)","status":0}
+{"sdk_library_version":"2.5.2"}
+{"call":"import_mem(&a,handle)","status":0}
+{"call":"readback(before,a,N)","status":0}
+{"check":"import_sees_exported_bytes","pass":true}
+{"call":"fill((Addr)((uintptr_t)a+64),85,N-128)","status":0}
+{"call":"close_mem(a)","status":0}
+{"call":"cnCtxDestroy(context)","status":0}

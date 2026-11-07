@@ -1,0 +1,30 @@
+Final verification; captured completed code checks plus packaging-time documentation check.
+Code-check outputs were retained from the completed validation run.
+
+$ python3 scripts/generate_rpc.py --check
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 61 RPC codecs/dispatch/bindings, 146 public wrappers
+exit_code=0
+
+$ python3 scripts/generate_compat.py --check
+{"CNRT": {"IMPLEMENTED": 119, "BLOCKED": 10, "UNSUPPORTED": 1}, "CNDrv": {"IMPLEMENTED": 164, "BLOCKED": 13, "OUT_OF_SCOPE": 3}}
+exit_code=0
+
+$ python3 scripts/verify-api-contracts.py
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 61 RPC codecs/dispatch/bindings, 146 public wrappers
+{"CNRT": {"IMPLEMENTED": 119, "BLOCKED": 10, "UNSUPPORTED": 1}, "CNDrv": {"IMPLEMENTED": 164, "BLOCKED": 13, "OUT_OF_SCOPE": 3}}
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'IMPLEMENTED': 283, 'BLOCKED': 23, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 3}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence
+exit_code=0
+
+$ python3 scripts/verify-closure-audit.py
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'IMPLEMENTED': 283, 'BLOCKED': 23, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 3}
+exit_code=0
+
+$ git diff --check
+
+
+exit_code=0

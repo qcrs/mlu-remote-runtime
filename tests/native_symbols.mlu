@@ -1,0 +1,29 @@
+#include <bang.h>
+#include <cn_api.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define OK(x) do {int st=(int)(x);if(st){fprintf(stderr,"%s=%d line %d\n",#x,st,__LINE__);exit(2);}}while(0)
+#define CHECK(x) do {if(!(x)){fprintf(stderr,"%s line %d\n",#x,__LINE__);exit(3);}}while(0)
+__mlu_device__ int values[4]={11,22,33,44};
+__mlu_entry__ void read_symbol(int *out) {out[0]=values[1]+values[3];}
+int main(int argc,char **argv) {
+  if(argc==2) {
+    OK(cnInit(0));CNcontext c;OK(cnCtxCreate(&c,0,0));CNmodule m;OK(cnModuleLoad(argv[1],&m));
+    CNaddr a=0,b=0;cn_uint64_t bytes=0;OK(cnModuleGetSymbol(m,"values",&a,&bytes));CHECK(bytes>=16);OK(cnModuleGetSymbol(m,"values",&b,&bytes));CHECK(a==b);
+    int h[4];OK(cnMemcpyDtoH(h,a,16));CHECK(h[0]==11 && h[3]==44);h[1]=70;OK(cnMemcpyHtoD(a+4,h+1,4));
+    CNkernel k;OK(cnModuleGetKernel(m,"_Z11read_symbolPi",&k));CNaddr output;OK(cnMalloc(&output,4));void *params[]={&output};OK(cnInvokeKernel(k,1,1,1,CN_KERNEL_CLASS_BLOCK,0,NULL,params,NULL));OK(cnCtxSync());OK(cnMemcpyDtoH(h,output,4));printf("kernel=%d\n",h[0]);CHECK(h[0]==114);
+    OK(cnFree(output));OK(cnModuleUnload(m));CHECK(cnMemcpyDtoH(h,a,4)!=0);OK(cnCtxDestroy(c));puts("PASS driver symbol identity, mutation, kernel and unload");return 0;
+  }
+  OK(cnrtSetDevice(0));void *address=NULL,*same=NULL;OK(cnrtGetSymbolAddress(&address,values));OK(cnrtGetSymbolAddress(&same,values));CHECK(address==same);
+  int h[4]={0};OK(cnrtMemcpyFromSymbol(h,values,16,0,cnrtMemcpyDevToHost));CHECK(h[0]==11 && h[3]==44);
+  int v=70;OK(cnrtMemcpyToSymbol(values,&v,4,4,cnrtMemcpyHostToDev));
+  cnrtQueue_t q;OK(cnrtQueueCreate(&q));void *d;OK(cnrtMalloc(&d,16));
+  OK(cnrtMemcpyFromSymbolAsync(d,values,16,0,cnrtMemcpyDevToDev,q));
+  v=99;OK(cnrtMemcpyToSymbolAsync(values,&v,4,12,cnrtMemcpyHostToDev,q));
+  OK(cnrtMemcpyFromSymbolAsync(h,values,16,0,cnrtMemcpyDevToHost,q));OK(cnrtQueueSync(q));CHECK(h[1]==70 && h[3]==99);
+  OK(cnrtMemcpyToSymbolAsync(values,d,16,0,cnrtMemcpyDevToDev,q));OK(cnrtQueueSync(q));
+  read_symbol<<<(cnrtDim3_t){1,1,1},cnrtFuncTypeBlock,q>>>((int*)d);OK(cnrtGetLastError());OK(cnrtQueueSync(q));OK(cnrtMemcpy(h,d,4,cnrtMemcpyDevToHost));printf("kernel=%d\n",h[0]);CHECK(h[0]==114);
+  OK(cnrtFree(d));OK(cnrtQueueDestroy(q));OK(cnrtDeviceReset());OK(cnrtGetSymbolAddress(&address,values));OK(cnrtMemcpyFromSymbol(h,values,16,0,cnrtMemcpyNoDirection));CHECK(h[0]==11 && h[1]==22 && h[3]==44);
+  puts("PASS runtime symbol sync/async offsets, D2D, kernel and reset");return 0;
+}
