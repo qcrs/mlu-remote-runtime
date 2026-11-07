@@ -1,0 +1,113 @@
+{
+  "baseline_commit": "49504c86c0210bf6f580957cbf8cbf7f15e2aacd",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnFreeHost",
+      "library": "CNDrv",
+      "family": "host_memory",
+      "status": "IMPLEMENTED",
+      "implementation": "manual"
+    },
+    {
+      "name": "cnMallocHost",
+      "library": "CNDrv",
+      "family": "host_memory",
+      "status": "IMPLEMENTED",
+      "implementation": "manual"
+    }
+  ],
+  "new_status_counts": {
+    "IMPLEMENTED": 2
+  },
+  "existing_status_changes": [
+    {
+      "name": "cnrtFreeHost",
+      "library": "CNRT",
+      "family": "host_memory",
+      "status": "IMPLEMENTED",
+      "implementation": "manual",
+      "previous_status": "UNSUPPORTED"
+    },
+    {
+      "name": "cnrtHostMalloc",
+      "library": "CNRT",
+      "family": "host_memory",
+      "status": "IMPLEMENTED",
+      "implementation": "manual",
+      "previous_status": "UNSUPPORTED"
+    },
+    {
+      "name": "cnrtMemcpyAsync",
+      "library": "CNRT",
+      "family": "memcpy",
+      "status": "IMPLEMENTED",
+      "implementation": "manual",
+      "previous_status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnrtPointerGetAttributes",
+      "library": "CNRT",
+      "family": "memory",
+      "status": "IMPLEMENTED",
+      "implementation": "generated",
+      "previous_status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnGetMemAttribute",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "IMPLEMENTED",
+      "implementation": "generated",
+      "previous_status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnGetMemAttributes",
+      "library": "CNDrv",
+      "family": "memory",
+      "status": "IMPLEMENTED",
+      "implementation": "manual",
+      "previous_status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnMemcpyAsync",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "status": "IMPLEMENTED",
+      "implementation": "manual",
+      "previous_status": "PARTIAL_IMPLEMENTED"
+    },
+    {
+      "name": "cnMemcpyDtoHAsync",
+      "library": "CNDrv",
+      "family": "memcpy",
+      "status": "IMPLEMENTED",
+      "implementation": "manual",
+      "previous_status": "UNSUPPORTED"
+    }
+  ],
+  "before": {
+    "NOT_IMPLEMENTED": 157,
+    "PARTIAL_IMPLEMENTED": 12,
+    "IMPLEMENTED": 128,
+    "UNSUPPORTED": 4,
+    "BLOCKED": 7,
+    "OUT_OF_SCOPE": 2
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 155,
+    "PARTIAL_IMPLEMENTED": 7,
+    "IMPLEMENTED": 138,
+    "BLOCKED": 7,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "generated_before": {
+    "typed_rpc": 43,
+    "public_wrappers": 45
+  },
+  "generated_after": {
+    "typed_rpc": 45,
+    "public_wrappers": 45
+  }
+}

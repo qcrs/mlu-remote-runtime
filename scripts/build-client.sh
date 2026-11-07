@@ -6,7 +6,7 @@ mkdir -p "$ROOT/build/generated" "$ROOT/build/shim"
 python3 "$ROOT/scripts/generate_rpc.py"
 FLAGS=(-std=c11 -D_POSIX_C_SOURCE=200112L -O2 -fPIC -Wall -Wextra -Wno-unused-parameter -Wno-misleading-indentation -Werror=incompatible-pointer-types -I"$ROOT/include" -I"$ROOT/build/generated")
 OBJECTS=()
-for SOURCE in runtime_context remote_cnrt transfer remote_operator remote_cnnl; do
+for SOURCE in runtime_context remote_cnrt transfer host_memory remote_operator remote_cnnl; do
   "$CC" "${FLAGS[@]}" -c "$ROOT/client/$SOURCE.c" -o "$ROOT/build/$SOURCE.o"
   OBJECTS+=("$ROOT/build/$SOURCE.o")
 done

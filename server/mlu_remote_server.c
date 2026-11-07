@@ -106,7 +106,7 @@ static int parse_hello(int fd, const struct mlu_remote_wire_header *h, const uns
   unsigned char out[16]; put32(out, MLU_REMOTE_VERSION); put32(out + 4, (uint32_t)count);
   /* Capability bits: device, allocation, copies, queue, notifier, preset
    * module, generic operators, and TransferID completion. */
-  put32(out + 8, 0xffu | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API);
+  put32(out + 8, 0xffu | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API | MLU_CAP_DEFERRED_D2H);
   put32(out + 12, MLU_REMOTE_KERNEL_ABI);
   int sent = send_response(fd, MLU_OP_HELLO, ntohll_u(h->request_id), (uint32_t)st, out, sizeof(out));
   return st ? -1 : sent;

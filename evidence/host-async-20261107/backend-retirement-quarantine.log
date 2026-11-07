@@ -1,0 +1,7 @@
+PASS injected native allocation failure rolls back reservation
+PASS injected async-copy failure rolls back; real completion releases staging
+PASS injected native module-load failure rolls back image reservation
+PASS queue retirement retains staging; failed deferred destroy is observable and retry retains native ownership
+PASS pinned D2H allocation/submission/notifier failures, retained staging, fetch and deferred Host free retry
+PASS failed D2H queue wait preserves host output and pending staging
+PASS failed synchronization and context destruction quarantine staging and its quota

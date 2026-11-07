@@ -37,6 +37,15 @@ try:
             [('module-audit','native_bang_module'),('audit','native_bang_abi'),('drain-audit','native_bang_drain')]]
     retirement=dict(remote,LD_LIBRARY_PATH=':'.join(str(root/d) for d in ('build/shim','build/driver-shim','build')))
     for family in ('runtime','driver'):
+        command=[str(root/'build/native_host_async'),family]+([images[2]] if family=='driver' else [])
+        run(family+'-host-async-native',command)
+        run(family+'-host-async-replacement',command,retirement)
+        run(family+'-host-async-preload',command,dict(base,MLU_REMOTE_HOST=remote['MLU_REMOTE_HOST'],MLU_REMOTE_PORT=str(args.port),
+            LD_PRELOAD=':'.join(str(root/d) for d in ('build/shim/libcnrt.so','build/driver-shim/libcndrv.so')),MLU_TEST_SHIM='1'))
+        if not args.host:
+            run(family+'-host-async-isolated',['bash','scripts/run-isolated-client.sh',*command],dict(retirement,MLU_REMOTE_SHIM='both'))
+    run('d2h-protocol',['python3','tests/host_async_protocol.py'],remote)
+    for family in ('runtime','driver'):
         command=[str(root/'build/native_queue_retirement'),family]+([images[2]] if family=='driver' else [])
         run(family+'-retirement-native',command)
         run(family+'-retirement-replacement',command,retirement)

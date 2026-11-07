@@ -1,0 +1,13 @@
+COMMAND ['python3', 'tests/generic_protocol.py']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50231', 'MLU_TEST_SHIM': '1'}
+PASS arg-count 100006
+PASS arg-size 100006
+PASS cross-module 100014
+PASS wrong-kernel 100014
+PASS cross-allocation 100006
+PASS bad-offset 100006
+PASS zero-dim 100006
+PASS bad-class 100006
+PASS trailing-bytes 2147483651
+PASS bad-image 2147483653
+PASS valid launch after rejection and stale kernel after unload

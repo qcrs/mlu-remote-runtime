@@ -427,4 +427,23 @@ typedef struct {
   uint64_t value;
 } mlu_api_ctx_config_response;
 int mlu_remote_api_ctx_config(mlu_remote_context *, const mlu_api_ctx_config_request *, mlu_api_ctx_config_response *);
+typedef struct {
+  uint64_t allocation;
+  uint64_t offset;
+  uint64_t bytes;
+  uint64_t queue;
+} mlu_api_d2h_submit_request;
+typedef struct {
+  uint64_t transfer;
+} mlu_api_d2h_submit_response;
+int mlu_remote_api_d2h_submit(mlu_remote_context *, const mlu_api_d2h_submit_request *, mlu_api_d2h_submit_response *);
+typedef struct {
+  uint64_t transfer;
+  uint64_t bytes;
+} mlu_api_transfer_fetch_request;
+typedef struct {
+  unsigned char unused;
+  unsigned char *data; /* caller-owned, request.bytes bytes */
+} mlu_api_transfer_fetch_response;
+int mlu_remote_api_transfer_fetch(mlu_remote_context *, const mlu_api_transfer_fetch_request *, mlu_api_transfer_fetch_response *);
 #endif

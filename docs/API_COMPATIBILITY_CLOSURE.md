@@ -8,7 +8,7 @@
 
 收口依据包括：默认 Queue 已经转发 native NULL，不再按旧文档认定为合成 Queue；Notifier flags、priority、跨 Queue wait 和 timing 已有真实对照；内存 node/zero-fill/kind、Context TLS/flags 和当前 CNCC image/module 生命周期的证据也已齐备。无需穷举的负例、多设备和其他 SDK 格式不再模糊阻塞当前单设备入口。
 
-同时保留真实缺口：不能把 `cnMemcpyAsync` 的 D2D 子集称为统一异步 copy；不能把等待完成后返回的 Queue destroy 称为异步回收。Host 属性、真异步 D2H、模块计量及参数 relocation 均继续有明确验收项。
+审计明确了统一异步 copy、立即 Queue destroy、Host 属性、模块计量和参数 relocation 的具体缺口。后续 Queue retirement 和 Host/deferred D2H 已按下面的 resolution 收口；模块计量及参数 relocation 等剩余项继续保留明确验收条件。
 
 ## 审计时的待修复项
 
@@ -42,6 +42,14 @@
 
 ## 2026-11-07 Queue retirement resolution
 
-`cnrtQueueDestroy` 与 `cnDestroyQueue` 已收口，当前 128 IMPLEMENTED、12 PARTIAL。公开 ID 立即失效，底层队列/staging 保留到完成；后续完成操作或创建队列触发收集，失败保留底层句柄并返回错误。CNRT `SyncDevice` 改为 Server context sync，包含已退役队列。
+`cnrtQueueDestroy` 与 `cnDestroyQueue` 已收口，该批为 128 IMPLEMENTED、12 PARTIAL。公开 ID 立即失效，底层队列/staging 保留到完成；后续完成操作或创建队列触发收集，失败保留底层句柄并返回错误。CNRT `SyncDevice` 改为 Server context sync，包含已退役队列。
 
 证据见 [Queue retirement](../evidence/queue-retirement-20261107/README.md)：两库 pending kernel/H2D/D2D、Notifier wait/query、context/free/module/cross-queue 完成，1200 次退役、pending reset/teardown 与 destroy 失败重试。Native pending destroy 在本 SDK 上可能使 Notifier 成功而输出仍是填充值；保留独立观测，Native 数值基线先等待，Remote 仍在 pending 状态调用 destroy 并验证最终数值。收口依据为 SDK 声明的延后释放契约及这些执行结果，不宣称复现该 SDK 的丢数据行为。收集发生在后续 API/teardown，没有后台回收时限或 native 取消保证。
+
+## 2026-11-07 Host / deferred D2H resolution
+
+5 个旧 PARTIAL（两库 unified async copy 和三个 pointer attribute 入口）已收口；新增完整实现 CNRT/CNDrv Host alloc/free 及 `cnMemcpyDtoHAsync`，当前为 138 IMPLEMENTED、7 PARTIAL、7 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、155 NOT_IMPLEMENTED。原审计 snapshot 不变，Schema 中逐项增加 `closure_resolution` 和本批证据。
+
+共享 Host registry/lease、Server pinned Transfer ownership 和两个生成 RPC 提供真实 submit/completion/fetch：pending kernel 后的 D2H 提交先返回，成功完成 API 发布数据；default/显式 Queue、interior/pageable Host、跨 Context 和两库交叉 free、动态 buffer、释放与失败配额均已验证。没有后台 Host publication，pageable 地址由调用者保持存活；mapped/VMM/cache coherence 属于其他未实现 family，不能推导为完成。Native 数值基线对 SDK 可能取消 D2H 的生命周期操作先等待，Remote 则验证 pending drain；两种顺序明确分开记录。详见 [Host evidence](../evidence/host-async-20261107/README.md)。
+
+真正剩余 PARTIAL 为 casts 两项、`cnrtDeviceQueryKernelMemoryUsage`、`cnrtGetSymbolSize`、`cnrtInvokeKernel`、`cnInvokeKernel`、`cnModuleGetKernel`。Graph/IPC 的共享状态机尚待核心阶段后推进；Peer 的 7 项仍需第二设备。

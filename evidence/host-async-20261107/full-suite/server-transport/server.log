@@ -1,0 +1,78 @@
+[server] limit DEVICE session=1073741824 total=8589934592 bytes
+[server] limit STAGING session=67108864 total=268435456 bytes
+[server] limit IMAGE session=67108864 total=268435456 bytes
+[server] MLU_REMOTE_BIND=127.0.0.1 PORT=50687 device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+[server] listening handshake_timeout_ms=250 io_timeout_ms=350 max_connections=32
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] receive failed fd=10 phase=header ready=0 errno=110 (Connection timed out)
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] receive failed fd=10 phase=header ready=0 errno=110 (Connection timed out)
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] receive failed fd=10 phase=payload ready=0 errno=110 (Connection timed out)
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] receive failed fd=10 phase=payload ready=0 errno=110 (Connection timed out)
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] session fd=10 disconnected; cleaning native resources
+[server] session start fd=11 awaiting HELLO
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] native context created fd=11 device=0 flags=1
+[server] session fd=11 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=11 status=0
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] session fd=10 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] session start fd=11 awaiting HELLO
+[server] native context created fd=11 device=0 flags=1
+[server] receive failed fd=11 phase=header ready=1 errno=110 (Connection timed out)
+[server] session fd=11 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=11 status=0
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] receive failed fd=10 phase=payload ready=1 errno=110 (Connection timed out)
+[server] session fd=10 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] session start fd=13 awaiting HELLO
+[server] native context created fd=13 device=0 flags=1
+[server] receive failed fd=13 phase=header ready=1 errno=110 (Connection timed out)
+[server] session fd=13 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=13 status=0
+[server] session start fd=13 awaiting HELLO
+[server] native context created fd=13 device=0 flags=1
+[server] receive failed fd=13 phase=payload ready=1 errno=110 (Connection timed out)
+[server] session fd=13 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=13 status=0
+[server] session start fd=13 awaiting HELLO
+[server] native context created fd=13 device=0 flags=1
+[server] response failed fd=13 opcode=5 request=3 errno=110 (Connection timed out)
+[server] session fd=13 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=13 status=0
+[server] session fd=10 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] DRAIN_BEGIN workers=0
+[server] DRAIN_COMPLETE workers=0 cleanup_errors=0
+[server] RESOURCE_TOTAL device=0 staging=0 image=0
+[server] stopped

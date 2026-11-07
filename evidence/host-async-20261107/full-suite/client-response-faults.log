@@ -1,0 +1,40 @@
+COMMAND ['python3', 'tests/client_response_faults.py']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+PASS allocation-short-success
+PASS allocation-oversized-result
+PASS queue-short-success
+PASS queue-oversized-result
+PASS notifier-short-success
+PASS notifier-oversized-result
+PASS preset-module-short-success
+PASS preset-module-oversized-result
+PASS uploaded-module-short-success
+PASS uploaded-module-oversized-result
+PASS binary-module-short-success
+PASS binary-module-oversized-result
+PASS module-kernel-short-success
+PASS module-kernel-oversized-result
+PASS operator-short-success
+PASS operator-oversized-result
+PASS generic-launch-short-success
+PASS generic-launch-oversized-result
+PASS h2d-short-success
+PASS h2d-oversized-result
+PASS d2h-missing-bytes
+PASS d2h-wrong-count
+PASS sync-unexpected-result
+PASS context-sync-unexpected-result
+PASS session-close-unexpected-result
+PASS device-query-invalid-name-length
+PASS bad-error-prefix
+PASS missing-error-prefix
+PASS wrong-response-sequence
+PASS truncated-payload
+PASS truncated-header
+PASS bad-hello-version
+PASS short-hello
+PASS native error keeps healthy session usable
+PASS old peer capability refuses lookup without sending or splitting module
+PASS generated-buffer-short
+PASS generated-buffer-extra
+PASS deferred D2H preserves queue write order, independent progress and newer synchronous copy output

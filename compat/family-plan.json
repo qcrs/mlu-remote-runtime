@@ -993,35 +993,17 @@
     "family": "host_memory",
     "priority": 2,
     "counts": {
-      "UNSUPPORTED": 2,
-      "NOT_IMPLEMENTED": 12
+      "IMPLEMENTED": 4,
+      "NOT_IMPLEMENTED": 10
     },
     "remaining": [
-      {
-        "api": "cnrtFreeHost",
-        "status": "UNSUPPORTED",
-        "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnrtHostMalloc",
-        "status": "UNSUPPORTED",
-        "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
       {
         "api": "cnrtInvokeHostFunc",
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation/deferred D2H is available; queue-ordered Client callback dispatch, failure and teardown semantics are not implemented.",
+        "next_step": "Probe native callback ordering, then add a shared callback completion node and Client dispatch lifetime.",
         "closure": {}
       },
       {
@@ -1029,8 +1011,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
+        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
         "closure": {}
       },
       {
@@ -1038,8 +1020,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
+        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
         "closure": {}
       },
       {
@@ -1047,8 +1029,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
+        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
         "closure": {}
       },
       {
@@ -1056,8 +1038,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
+        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
         "closure": {}
       },
       {
@@ -1065,17 +1047,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnFreeHost",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
+        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
         "closure": {}
       },
       {
@@ -1083,17 +1056,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
-        "closure": {}
-      },
-      {
-        "api": "cnMallocHost",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation/deferred D2H is available; queue-ordered Client callback dispatch, failure and teardown semantics are not implemented.",
+        "next_step": "Probe native callback ordering, then add a shared callback completion node and Client dispatch lifetime.",
         "closure": {}
       },
       {
@@ -1101,8 +1065,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
+        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
         "closure": {}
       },
       {
@@ -1110,8 +1074,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
+        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
         "closure": {}
       },
       {
@@ -1119,8 +1083,8 @@
         "status": "NOT_IMPLEMENTED",
         "priority": 2,
         "depends_on": "completion/writeback",
-        "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
-        "next_step": "Probe and implement this functional family",
+        "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
+        "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses.",
         "closure": {}
       }
     ]
@@ -1319,25 +1283,10 @@
     "family": "memcpy",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 13,
-      "PARTIAL_IMPLEMENTED": 2,
-      "NOT_IMPLEMENTED": 4,
-      "UNSUPPORTED": 1
+      "IMPLEMENTED": 16,
+      "NOT_IMPLEMENTED": 4
     },
     "remaining": [
-      {
-        "api": "cnrtMemcpyAsync",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "",
-        "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
-        "closure": {
-          "gap": "D2H blocks before returning bytes; deferred Host completion/writeback remains missing.",
-          "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
-          "acceptance": "Pinned Host D2H returns while a finite queued kernel is pending; queue, notifier and context waits/queries publish matching bytes, including cross-queue waits and release/reset."
-        }
-      },
       {
         "api": "cnrtMemcpyFromSymbol",
         "status": "NOT_IMPLEMENTED",
@@ -1373,28 +1322,6 @@
         "blocker": "3D/2D native platform capability; asynchronous completion",
         "next_step": "Probe and implement this functional family",
         "closure": {}
-      },
-      {
-        "api": "cnMemcpyAsync",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "",
-        "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
-        "closure": {
-          "gap": "D2H is explicitly rejected; deferred Host completion/writeback remains missing.",
-          "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
-          "acceptance": "Native/Remote unified async H2D/D2D/D2H with queue and context completion returns matching bytes; D2H submit returns while finite queued work remains."
-        }
-      },
-      {
-        "api": "cnMemcpyDtoHAsync",
-        "status": "UNSUPPORTED",
-        "priority": 1,
-        "depends_on": "allocation/queue",
-        "blocker": "3D/2D native platform capability; asynchronous completion",
-        "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion",
-        "closure": {}
       }
     ]
   },
@@ -1402,9 +1329,8 @@
     "family": "memory",
     "priority": 1,
     "counts": {
-      "IMPLEMENTED": 22,
+      "IMPLEMENTED": 25,
       "UNSUPPORTED": 1,
-      "PARTIAL_IMPLEMENTED": 3,
       "OUT_OF_SCOPE": 2,
       "NOT_IMPLEMENTED": 14
     },
@@ -1417,45 +1343,6 @@
         "blocker": "VMM, pools and special allocations require separate ownership policies",
         "next_step": "Probe and implement this functional family",
         "closure": {}
-      },
-      {
-        "api": "cnrtPointerGetAttributes",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "fake VA registry and host memory policy",
-        "blocker": "",
-        "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-        "closure": {
-          "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
-          "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-          "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
-        }
-      },
-      {
-        "api": "cnGetMemAttribute",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "",
-        "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-        "closure": {
-          "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
-          "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-          "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
-        }
-      },
-      {
-        "api": "cnGetMemAttributes",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 1,
-        "depends_on": "context/allocation",
-        "blocker": "",
-        "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-        "closure": {
-          "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
-          "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-          "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
-        }
       },
       {
         "api": "cnMallocFrameBuffer",

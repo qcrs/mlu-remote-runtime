@@ -1,6 +1,7 @@
 #include "remote_cnrt.h"
 #include "remote_operator.h"
 #include "remote_io.h"
+#include "host_memory.h"
 /* Wire value captured from CNDrv 2.5.2; the transport needs no SDK headers. */
 #define CN_ERROR_SYSTEM_OUT_OF_MEMORY 100010
 
@@ -16,6 +17,13 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+typedef struct pending_writeback {
+  struct pending_writeback *next;
+  uint64_t transfer, bytes, queue;
+  void *dst;
+  mlu_host_allocation *lease;
+  int release_requested, published;
+} pending_writeback;
 struct mlu_remote_context {
   int fd;
   uint64_t next_request;
@@ -23,6 +31,7 @@ struct mlu_remote_context {
   uint32_t capabilities, kernel_abi;
   uint32_t rpc_timeout_ms;
   mlu_remote_error error;
+  pending_writeback *pending, **pending_tail;
 };
 
 static uint64_t ntohll_u(uint64_t x) {
@@ -123,8 +132,79 @@ static int rpc_locked(mlu_remote_context *ctx, uint16_t opcode, const void *payl
   if (extra) { *extra_len = rest; *extra = rest ? (unsigned char *)malloc(rest) : NULL; if (rest && !*extra) { free(p); return break_connection(ctx, CN_ERROR_SYSTEM_OUT_OF_MEMORY, "HOST_OUT_OF_MEMORY", "response allocation failed"); } if (rest) memcpy(*extra, p + 8 + nl + ml, rest); } free(p); return (int)status;
 }
 
+static int complete_writebacks(mlu_remote_context *ctx) {
+  pending_writeback **link=&ctx->pending;
+  while(*link) {
+    pending_writeback *w=*link;
+    /* A query can race completion: never publish a later same-queue or
+     * overlapping write while an earlier result is still pending. Independent
+     * queues and destinations remain nonblocking. */
+    pending_writeback *prior=ctx->pending;
+    for(;prior!=w;prior=prior->next) {
+      uintptr_t a=(uintptr_t)prior->dst,b=(uintptr_t)w->dst;
+      if(prior->queue==w->queue || (a<=b ? b-a<prior->bytes : a-b<w->bytes)) break;
+    }
+    if(prior!=w) { link=&w->next; continue; }
+    unsigned char request[16], *data=NULL; uint32_t n=0;
+    put64(request,w->transfer);
+    int st=0;
+    if(!w->published) {
+      st=rpc_locked(ctx,MLU_OP_TRANSFER_QUERY,request,8,NULL,&n);
+      if(st==1) { link=&w->next; continue; } /* CN_ERROR_NOT_READY */
+      if(st) return st;
+      put64(request+8,w->bytes);
+      st=rpc_locked(ctx,MLU_OP_API_TRANSFER_FETCH,request,16,&data,&n);
+      if(st) { free(data); return st; }
+      memcpy(w->dst,data,(size_t)w->bytes); free(data);
+      w->published=1;
+    }
+    if(w->release_requested) st=rpc_locked(ctx,MLU_OP_TRANSFER_RELEASE,request,8,NULL,&n);
+    if(st) return st;
+    *link=w->next; mlu_host_release(w->lease); free(w);
+  }
+  ctx->pending_tail=link;
+  return 0;
+}
+static int completion_frontier(uint16_t op) {
+  switch(op) {
+    case MLU_OP_QUEUE_SYNC: case MLU_OP_QUEUE_QUERY:
+    case MLU_OP_NOTIFIER_SYNC: case MLU_OP_NOTIFIER_QUERY:
+    case MLU_OP_TRANSFER_SYNC: case MLU_OP_TRANSFER_QUERY:
+    case MLU_OP_CONTEXT_SYNC: case MLU_OP_FREE:
+    /* Publish older D2H results before memcpy_call copies a newer synchronous
+     * D2H response into the application's destination. Queries never wait. */
+    case MLU_OP_MEMCPY:
+    case MLU_OP_MODULE_UNLOAD_PRESET: return 1;
+    default: return 0;
+  }
+}
 static int rpc(mlu_remote_context *ctx, uint16_t opcode, const void *payload, uint32_t payload_len, unsigned char **extra, uint32_t *extra_len) {
-  pthread_mutex_lock(&ctx->lock); int r = rpc_locked(ctx, opcode, payload, payload_len, extra, extra_len); pthread_mutex_unlock(&ctx->lock); return r;
+  pthread_mutex_lock(&ctx->lock);
+  int r=0;
+  /* Resolve pending destinations before the server invalidates transfer IDs.
+   * Failure preserves them for retry or disconnect, without replaying work. */
+  if(ctx->pending && (opcode==MLU_OP_SESSION_RESET || opcode==MLU_OP_SESSION_CLOSE)) {
+    r=rpc_locked(ctx,MLU_OP_CONTEXT_SYNC,NULL,0,NULL,&(uint32_t){0});
+    if(!r) r=complete_writebacks(ctx);
+  }
+  if(!r && opcode==MLU_OP_TRANSFER_RELEASE && payload_len==8) {
+    for(pending_writeback *w=ctx->pending;w;w=w->next) if(w->transfer==get64(payload)) {
+      r=w->release_requested ? (int)MLU_REMOTE_BAD_OBJECT : 0;
+      w->release_requested=1;
+      if(r) set_local_error(ctx,(uint32_t)r,"REMOTE_BAD_OBJECT","transfer release already requested");
+      else memset(&ctx->error,0,sizeof(ctx->error));
+      if(extra) *extra=NULL;
+      if(extra_len) *extra_len=0;
+      pthread_mutex_unlock(&ctx->lock); return r;
+    }
+  }
+  if(!r) r=rpc_locked(ctx,opcode,payload,payload_len,extra,extra_len);
+  if(!r && ctx->pending && completion_frontier(opcode)) {
+    mlu_remote_error saved=ctx->error;
+    r=complete_writebacks(ctx);
+    if(!r) ctx->error=saved;
+  }
+  pthread_mutex_unlock(&ctx->lock); return r;
 }
 
 static _Thread_local mlu_remote_error connect_error;
@@ -237,7 +317,13 @@ int mlu_remote_module_query_fatbinary_memory(mlu_remote_context *ctx,const void 
   if (!st) *bytes=get64(extra);
   free(p); free(extra); return st;
 }
-void mlu_remote_disconnect(mlu_remote_context *ctx) { if (!ctx) return; if (ctx->fd >= 0) close(ctx->fd); pthread_mutex_destroy(&ctx->lock); free(ctx); }
+void mlu_remote_disconnect(mlu_remote_context *ctx) {
+  if (!ctx) return;
+  if (ctx->fd >= 0) close(ctx->fd);
+  /* No writes after a poisoned exchange/EOF. Server owns its separate pages. */
+  while(ctx->pending) { pending_writeback *w=ctx->pending; ctx->pending=w->next; mlu_host_release(w->lease); free(w); }
+  pthread_mutex_destroy(&ctx->lock); free(ctx);
+}
 const mlu_remote_error *mlu_remote_last_error(const mlu_remote_context *ctx) { return ctx ? &ctx->error : NULL; }
 
 int mlu_remote_device_count(mlu_remote_context *ctx, uint32_t *count) { unsigned char p[4]; put32(p, 0xffffffffu); unsigned char *e = NULL; uint32_t n = 0; int st = rpc(ctx, MLU_OP_DEVICE_QUERY, p, 4, &e, &n); if (!st && n >= 16) *count = get32(e); free(e); return st; }
@@ -266,6 +352,23 @@ int mlu_remote_memcpy_d2d(mlu_remote_context *ctx, uint64_t dst, uint64_t doff, 
 int mlu_remote_memcpy_d2d_async(mlu_remote_context *ctx, uint64_t dst, uint64_t doff, uint64_t src, uint64_t soff, uint64_t bytes, uint64_t q, uint64_t *t) { return memcpy_call(ctx, MLU_MEMCPY_D2D, dst, doff, src, soff, NULL, NULL, bytes, q, 1, t); }
 
 static int id_call(mlu_remote_context *ctx, uint16_t op, uint64_t id) { unsigned char p[8]; put64(p, id); return rpc(ctx, op, p, 8, NULL, &(uint32_t){0}); }
+int mlu_remote_memcpy_d2h_async(mlu_remote_context *ctx,void *dst,uint64_t src,
+    uint64_t offset,uint64_t bytes,uint64_t queue,uint64_t *transfer) {
+  if(!ctx || !dst || !transfer || !bytes || bytes>MLU_REMOTE_MAX_PAYLOAD-128) return MLU_REMOTE_BAD_LENGTH;
+  if(!(ctx->capabilities & MLU_CAP_DEFERRED_D2H)) return MLU_REMOTE_UNSUPPORTED;
+  pending_writeback *w=calloc(1,sizeof(*w)); if(!w) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
+  if(mlu_host_acquire(dst,(size_t)bytes,&w->lease)<0) { free(w); return MLU_REMOTE_BAD_LENGTH; }
+  unsigned char request[32],*out=NULL; uint32_t n=0;
+  put64(request,src); put64(request+8,offset); put64(request+16,bytes); put64(request+24,queue);
+  pthread_mutex_lock(&ctx->lock);
+  int st=rpc_locked(ctx,MLU_OP_API_D2H_SUBMIT,request,32,&out,&n);
+  if(!st) {
+    w->transfer=get64(out); w->dst=dst; w->bytes=bytes; w->queue=queue; *transfer=w->transfer;
+    if(ctx->pending_tail) *ctx->pending_tail=w; else ctx->pending=w;
+    ctx->pending_tail=&w->next;
+  } else { mlu_host_release(w->lease); free(w); }
+  pthread_mutex_unlock(&ctx->lock); free(out); return st;
+}
 #include "simple_rpc_client.inc"
 #include "typed_rpc_client.inc"
 int mlu_remote_queue_create(mlu_remote_context *ctx, uint64_t *q) { unsigned char *e = NULL; uint32_t n = 0; int st = rpc(ctx, MLU_OP_QUEUE_CREATE, NULL, 0, &e, &n); if (!st && n >= 8) *q = get64(e); free(e); return st; }

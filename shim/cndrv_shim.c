@@ -3,6 +3,7 @@
 #include "remote_cnrt.h"
 #include "bang_image.h"
 #include "fake_va.h"
+#include "host_memory.h"
 #include <errno.h>
 #include <limits.h>
 #include <pthread.h>
@@ -250,12 +251,14 @@ static CNresult copy(context *c,int direction,CNaddr dst,CNaddr src,const void *
      (direction!=MLU_MEMCPY_H2D && bounds(c,src,bytes,&si,&soff))) return CN_MEMORY_ERROR_INVALID_ADDRESS;
   int st;
   if(direction==MLU_MEMCPY_H2D) {
-    if(!in) return CN_ERROR_INVALID_VALUE;
+    if(!in || mlu_host_range(in,bytes)<0) return CN_ERROR_INVALID_VALUE;
     st=async ? mlu_remote_memcpy_h2d_async(c->remote,di,doff,in,bytes,q,&transfer)
              : mlu_remote_memcpy_h2d(c->remote,di,doff,in,bytes,q,&transfer);
   } else if(direction==MLU_MEMCPY_D2H) {
     if(!out) return CN_ERROR_INVALID_VALUE;
-    st=mlu_remote_memcpy_d2h(c->remote,out,si,soff,bytes,q,&transfer);
+    if(mlu_host_range(out,bytes)<0) return CN_ERROR_INVALID_VALUE;
+    st=async ? mlu_remote_memcpy_d2h_async(c->remote,out,si,soff,bytes,q,&transfer)
+             : mlu_remote_memcpy_d2h(c->remote,out,si,soff,bytes,q,&transfer);
   } else st=async ? mlu_remote_memcpy_d2d_async(c->remote,di,doff,si,soff,bytes,q,&transfer)
                   : mlu_remote_memcpy_d2d(c->remote,di,doff,si,soff,bytes,q,&transfer);
   if(!st && !async) st=mlu_remote_transfer_sync(c->remote,transfer);
@@ -268,7 +271,7 @@ static int unified_device(context *c,CNaddr p,cn_uint64_t bytes) {
     int kind=mlu_fake_va_endpoint(p,bytes,(uintptr_t)a->base,a->bytes,a->mapped,a->live,a->owner==c);
     if(kind!=MLU_ENDPOINT_HOST) return kind;
   }
-  return 0;
+  return mlu_host_range((void *)(uintptr_t)p,bytes)<0 ? MLU_ENDPOINT_INVALID : 0;
 }
 CNresult cnMemcpy(CNaddr dst,CNaddr src,cn_uint64_t bytes) {
   ENTER(); CURRENT(); if(!bytes) RETURN(CN_SUCCESS);
@@ -294,11 +297,12 @@ CNresult cnMemcpyAsync(CNaddr dst,CNaddr src,cn_uint64_t n,CNqueue q) {
   if(d<0 || s<0) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);
   if(d && s) RETURN(copy(c,MLU_MEMCPY_D2D,dst,src,NULL,NULL,n,q,1));
   if(d) RETURN(copy(c,MLU_MEMCPY_H2D,dst,0,(void *)(uintptr_t)src,NULL,n,q,1));
-  /* Async D2H needs deferred Host writeback; never disguise a blocking copy. */
+  if(s) RETURN(copy(c,MLU_MEMCPY_D2H,0,src,NULL,(void *)(uintptr_t)dst,n,q,1));
   RETURN(CN_OPS_ERROR_NOT_SUPPORTED);
 }
-/* Host completion/writeback cannot yet preserve the native async D2H API. */
-CNresult cnMemcpyDtoHAsync(void *dst,CNaddr src,cn_uint64_t n,CNqueue q) { (void)dst;(void)src;(void)n;(void)q; ENTER(); CURRENT(); (void)c; RETURN(CN_OPS_ERROR_NOT_SUPPORTED); }
+CNresult cnMemcpyDtoHAsync(void *dst,CNaddr src,cn_uint64_t n,CNqueue q) { ENTER(); CURRENT(); RETURN(copy(c,2,0,src,NULL,dst,n,q,1)); }
+CNresult cnMallocHost(void **p,cn_uint64_t n) { ENTER(); INIT(); RETURN(result(mlu_host_alloc(p,n))); }
+CNresult cnFreeHost(void *p) { ENTER(); INIT(); RETURN(result(mlu_host_free(p))); }
 
 CNresult cnCreateQueue(CNqueue *out,unsigned flags) {
   ENTER(); CURRENT(); if(!out) RETURN(CN_ERROR_INVALID_VALUE);

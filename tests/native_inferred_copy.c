@@ -55,8 +55,8 @@ static void driver(int ownership) {
     OK(cnMemcpyAsync(b,(CNaddr)input,N,queue)); memset(input,0,N); OK(cnQueueSync(queue));
     OK(cnMemcpy((CNaddr)output,b,N)); CHECK(output[OFFSET]==(unsigned char)((OFFSET*13+7)%251));
     CHECK(cnMemcpyAsync((CNaddr)host,(CNaddr)input,8,queue)==CN_OPS_ERROR_NOT_SUPPORTED);
-    CHECK(cnMemcpyAsync((CNaddr)host,b,8,queue)==CN_OPS_ERROR_NOT_SUPPORTED);
-    puts("PASS driver foreign/stale/guard rejection, H2D snapshot and explicit unsupported async D2H/H2H");
+    OK(cnMemcpyAsync((CNaddr)host,b,8,queue)); OK(cnQueueSync(queue)); CHECK(!memcmp(host,output,8));
+    puts("PASS driver foreign/stale/guard rejection, H2D snapshot and async D2H writeback and unsupported H2H");
   } else {
     OK(cnMemcpy((CNaddr)(host+OFFSET),(CNaddr)(input+OFFSET),COUNT));
     CHECK(!memcmp(host+OFFSET,input+OFFSET,COUNT));

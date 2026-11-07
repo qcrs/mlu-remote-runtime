@@ -72,6 +72,7 @@ typedef struct {
   uint64_t bytes;
   uint64_t owner;
   uint32_t generation;
+  int pinned;
   int live;
 } mlu_backend_staging;
 
@@ -114,6 +115,8 @@ typedef struct {
   uint64_t owner;
   uint32_t generation;
   uint32_t state;
+  void *host;
+  uint64_t bytes;
   int notifier_live;
   int release_requested;
   int live;

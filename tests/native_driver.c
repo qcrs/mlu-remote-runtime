@@ -82,7 +82,8 @@ static void abi(const char *path,state *s) {
     REQUIRE(cnModuleGetKernel(m,"plain_c",&untouched)==CN_OPS_ERROR_NOT_SUPPORTED);
     REQUIRE(untouched==(CNkernel)(uintptr_t)1234);
     REQUIRE(cnModuleGetKernel(m,"_Z9aggregatePi7Payload",&untouched)==CN_OPS_ERROR_NOT_SUPPORTED);
-    REQUIRE(cnMemcpyDtoHAsync(&copied,src,4,s->queue)==CN_OPS_ERROR_NOT_SUPPORTED);
+    CHECK(cnMemcpyDtoHAsync(&copied,src,4,s->queue));
+    CHECK(cnQueueSync(s->queue)); REQUIRE(copied==1199);
   }
   CHECK(cnFree(src)); CHECK(cnFree(dst)); CHECK(cnFree(copy)); CHECK(cnModuleUnload(m));
   puts("PASS Driver mixed primitive args, pointer offsets/NULL, xyz, 1200 launches, 1200 async H2D, D2D, notifier");

@@ -91,7 +91,9 @@
     "API_KERNEL_MEMORY_USAGE": 73,
     "API_ALLOCATION_KIND": 74,
     "API_CTX_CONFIG": 75,
-    "MODULE_QUERY_FATBINARY_MEMORY": 77
+    "MODULE_QUERY_FATBINARY_MEMORY": 77,
+    "API_D2H_SUBMIT": 78,
+    "API_TRANSFER_FETCH": 79
   },
   "hello": {
     "request": [
@@ -1406,7 +1408,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtFreeHost(void *ptr);",
       "parameters": [
@@ -1414,17 +1416,17 @@
           "name": "ptr",
           "c_type": "void *",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "in",
+          "length": "live allocation base or NULL",
+          "mapping": "shared process Host registry identity; native pointers never sent to Server"
         }
       ],
       "implementation": "manual",
-      "status": "UNSUPPORTED",
-      "boundary": "Explicit NotSupport; pinned host memory ownership not implemented",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; Shared process Host registry; NULL succeeds and only live allocation bases can free. Public identity retires immediately, pending D2H leases retain pages through publication; no remote connection needed.",
+      "native_test": "host-async-20261107/runtime-host-async-native.log",
+      "remote_test": "host-async-20261107/runtime-host-async-remote.log; host-async-20261107/runtime-host-async-preload.log; host-async-20261107/runtime-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary."
     },
     {
       "name": "cnrtGetDevice",
@@ -1922,7 +1924,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtHostMalloc(void **pPtr, size_t bytes);",
       "parameters": [
@@ -1930,9 +1932,9 @@
           "name": "pPtr",
           "c_type": "void **",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "client process Host allocation; never serialized to Server"
         },
         {
           "name": "bytes",
@@ -1944,11 +1946,11 @@
         }
       ],
       "implementation": "manual",
-      "status": "UNSUPPORTED",
-      "boundary": "Explicit NotSupport; pinned host memory ownership not implemented",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; Process-local mmap/mlock Host pages shared by both shims; no remote connection needed; zero bytes returns NULL. Independent of Context/reset. Guarded VA tombstones and deferred D2H leases preserve lifetime; not a native Client DMA mapping.",
+      "native_test": "host-async-20261107/runtime-host-async-native.log",
+      "remote_test": "host-async-20261107/runtime-host-async-remote.log; host-async-20261107/runtime-host-async-preload.log; host-async-20261107/runtime-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary."
     },
     {
       "name": "cnrtInvokeHostFunc",
@@ -1956,7 +1958,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation/deferred D2H is available; queue-ordered Client callback dispatch, failure and teardown semantics are not implemented.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtInvokeHostFunc(cnrtQueue_t queue, cnrtHostFn_t fn, void *userData);",
       "parameters": [
@@ -1990,7 +1992,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native callback ordering, then add a shared callback completion node and Client dispatch lifetime."
     },
     {
       "name": "cnrtInvokeKernel",
@@ -2253,7 +2255,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtMcacheOperation(void *ptr, void *hostPtr, size_t size, cnrtCacheOps_t ops);",
       "parameters": [
@@ -2295,7 +2297,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses."
     },
     {
       "name": "cnrtMemGetInfo",
@@ -2590,7 +2592,7 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "owned QueueID, NULL -> native default queue 0"
         },
         {
           "name": "dir",
@@ -2602,21 +2604,25 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Explicit and native NULL queue ordering; unified Host/device endpoint inference and H2D staging snapshot; D2H response remains blocking pending deferred Host completion.",
-      "native_test": "query-boundaries-next-20261102/runtime-native.log; native_bang_abi-native.log; core-copy-20261107/runtime-copy-native.log",
-      "remote_test": "query-boundaries-next-20261102/runtime-remote.log; native_bang_abi-replacement.log; core-copy-20261107/runtime-copy-remote.log; core-copy-20261107/runtime-ownership-isolated.log",
-      "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
-      "closure": {
-        "gap": "D2H blocks before returning bytes; deferred Host completion/writeback remains missing.",
-        "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
-        "acceptance": "Pinned Host D2H returns while a finite queued kernel is pending; queue, notifier and context waits/queries publish matching bytes, including cross-queue waits and release/reset."
-      },
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; Explicit/default queues and NoDirection H2H/H2D/D2D/D2H; H2D owns a snapshot, D2H enqueues into persistent Server pinned pages then fetches at successful completion APIs. Client destination must remain valid through completion; no autonomous background publication; pending reset/destroy drains before invalidation.",
+      "native_test": "query-boundaries-next-20261102/runtime-native.log; native_bang_abi-native.log; core-copy-20261107/runtime-copy-native.log; host-async-20261107/runtime-host-async-native.log",
+      "remote_test": "query-boundaries-next-20261102/runtime-remote.log; native_bang_abi-replacement.log; core-copy-20261107/runtime-copy-remote.log; core-copy-20261107/runtime-ownership-isolated.log; host-async-20261107/runtime-host-async-remote.log; host-async-20261107/runtime-host-async-preload.log; host-async-20261107/runtime-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary.",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "D2H blocks before returning bytes, and NoDirection endpoint inference is missing.",
         "baseline_boundary": "Explicit async bit preserves native NULL/default Queue ordering; explicit queues retain staging; D2H response remains blocking until Host completion work",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "rpc_operations": [
+        "API_D2H_SUBMIT",
+        "API_TRANSFER_FETCH"
+      ],
+      "closure_resolution": {
+        "summary": "Explicit/default queues and NoDirection H2H/H2D/D2D/D2H; H2D owns a snapshot, D2H enqueues into persistent Server pinned pages then fetches at successful completion APIs. Client destination must remain valid through completion; no autonomous background publication; pending reset/destroy drains before invalidation.",
+        "native_test": "host-async-20261107/runtime-host-async-native.log",
+        "remote_test": "host-async-20261107/runtime-host-async-remote.log; host-async-20261107/runtime-host-async-preload.log; host-async-20261107/runtime-host-async-isolated.log"
       }
     },
     {
@@ -3119,7 +3125,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtMmap(void *ptr, void **pHostPtr, size_t size);",
       "parameters": [
@@ -3153,7 +3159,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses."
     },
     {
       "name": "cnrtMmapCached",
@@ -3161,7 +3167,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtMmapCached(void *ptr, void **pHostPtr, size_t size);",
       "parameters": [
@@ -3195,7 +3201,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses."
     },
     {
       "name": "cnrtMunmap",
@@ -3203,7 +3209,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtMunmap(void *hostPtr, size_t size);",
       "parameters": [
@@ -3229,7 +3235,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses."
     },
     {
       "name": "cnrtNotifierCreate",
@@ -3558,15 +3564,15 @@
           "kind": "pointer",
           "direction": "in",
           "length": "1",
-          "mapping": "owned allocation -> AllocationID + checked offset"
+          "mapping": "local Host registry/pageable classification or device AllocationID + checked offset"
         }
       ],
       "implementation": "generated",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
-      "native_test": "query-boundaries-20261102/runtime-native.log",
-      "remote_test": "query-boundaries-20261102/runtime-remote.log",
-      "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; Owned device AllocationID/offset attributes plus process-local pinned Host/interior and pageable Unregistered fields; Host queries work before initialization/offline. Native Host fields and output widths; stale guarded ranges rejected. Mapped/UVA/VMM allocations are outside this allocation family.",
+      "native_test": "query-boundaries-20261102/runtime-native.log; host-async-20261107/runtime-host-async-native.log",
+      "remote_test": "query-boundaries-20261102/runtime-remote.log; host-async-20261107/runtime-host-async-remote.log; host-async-20261107/runtime-host-async-preload.log; host-async-20261107/runtime-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary.",
       "rpc": "pointer_attributes",
       "wrapper": {
         "rpc": "pointer_attributes",
@@ -3577,12 +3583,14 @@
         "outputs": [
           "cnrtPointerAttributes_t v={.type=out.type,.device=out.device,.size=out.bytes,.devicePointer=(void *)ptr,.hostPointer=NULL,.cacheMode=out.cache,.deviceBasePointer=a->base}; *attr=v;"
         ],
-        "prepare": [
-          "uint64_t off; allocation *a=lookup(ptr,&off); if(!a || off==a->bytes) RETURN(cnrtErrorArgsInvalid);"
-        ],
         "current": false,
         "required": [
           "attr"
+        ],
+        "local_prepare": [
+          "uint64_t off; allocation *a=lookup(ptr,&off);",
+          "if(!a) { int host=mlu_host_range(ptr,1); if(host<0 || copy_endpoint(ptr,1)<0) RETURN(cnrtErrorArgsInvalid); cnrtPointerAttributes_t v={.type=host ? cnrtMemTypeHost : cnrtMemTypeUnregistered,.device=-2,.cacheMode=cnrtUvaNotSupport,.hostPointer=host ? (void *)ptr : NULL}; *attr=v; RETURN(cnrtSuccess); }",
+          "if(off==a->bytes) RETURN(cnrtErrorArgsInvalid);"
         ]
       },
       "rpc_operations": [
@@ -3596,16 +3604,16 @@
         "server_handler": "mlu_backend_api_pointer_attributes",
         "backend_binding": "typed_rpc.pointer_attributes.backend_binding"
       },
-      "closure": {
-        "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
-        "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-        "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
-      },
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
         "baseline_boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned cnrtMalloc device pointers only; host/UVA/mapped memory pending",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Owned device AllocationID/offset attributes plus process-local pinned Host/interior and pageable Unregistered fields; Host queries work before initialization/offline. Native Host fields and output widths; stale guarded ranges rejected. Mapped/UVA/VMM allocations are outside this allocation family.",
+        "native_test": "host-async-20261107/runtime-host-async-native.log",
+        "remote_test": "host-async-20261107/runtime-host-async-remote.log; host-async-20261107/runtime-host-async-preload.log; host-async-20261107/runtime-host-async-isolated.log"
       }
     },
     {
@@ -6562,7 +6570,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
       "return_type": "CNresult",
       "signature": "CNresult cnCacheOperation(CNaddr mluAddr, void *hostAddr, cn_uint64_t size, CNCacheOps ops);",
       "parameters": [
@@ -6604,7 +6612,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses."
     },
     {
       "name": "cnCreateNotifier",
@@ -7809,7 +7817,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnFreeHost(void *addr);",
       "parameters": [
@@ -7817,17 +7825,17 @@
           "name": "addr",
           "c_type": "void *",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "in",
+          "length": "live allocation base or NULL",
+          "mapping": "shared process Host registry identity; native pointers never sent to Server"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; After cnInit, shared Host registry free without current Context; NULL succeeds, cross-library free works. Retires identity immediately and keeps pending D2H leases until writeback/disconnect.",
+      "native_test": "host-async-20261107/driver-host-async-native.log",
+      "remote_test": "host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary."
     },
     {
       "name": "cnGetCtxConfigParam_pt",
@@ -8276,15 +8284,15 @@
           "kind": "pointer",
           "direction": "in",
           "length": "1",
-          "mapping": "allocation_id + checked byte offset"
+          "mapping": "local Host registry/pageable classification or device AllocationID + checked offset"
         }
       ],
       "implementation": "generated",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
-      "native_test": "query-boundaries-20261102/driver-native.log",
-      "remote_test": "query-boundaries-20261102/driver-remote.log",
-      "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; Owned device attributes retain owner routing and relocated address/Context tokens; shared pinned Host/interior fields use native 1/4/8-byte widths, device=-2/cache=-1 and NULL device/context/range. Pageable queries return INVALID_VALUE without output writes. Initialized current Context required by native SDK.",
+      "native_test": "query-boundaries-20261102/driver-native.log; host-async-20261107/driver-host-async-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log; host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary.",
       "rpc": "memory_attribute",
       "wrapper": {
         "rpc": "memory_attribute",
@@ -8298,8 +8306,9 @@
         ],
         "prepare": [
           "if(!find_context(current)) RETURN(CN_CONTEXT_ERROR_INVALID);",
+          "if(mlu_host_range((void *)(uintptr_t)ptr,1)==1) RETURN(publish_host_attribute(pi,attr,ptr));",
           "uint64_t off; allocation *a=query_allocation(ptr,&off);",
-          "if(!a || off==a->bytes) { invalid_memory_attribute(pi,attr); RETURN(CN_ERROR_INVALID_VALUE); }"
+          "if(!a || off==a->bytes) { if(unified_device(find_context(current),ptr,1)!=MLU_ENDPOINT_HOST) invalid_memory_attribute(pi,attr); RETURN(CN_ERROR_INVALID_VALUE); }"
         ],
         "current": false,
         "required": [
@@ -8318,16 +8327,16 @@
         "server_handler": "mlu_backend_api_memory_attribute",
         "backend_binding": "typed_rpc.memory_attribute.backend_binding"
       },
-      "closure": {
-        "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
-        "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-        "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
-      },
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
         "baseline_boundary": "Neuware 3.5.2 / MLU370-S4; Native/Remote query-boundary comparison; Owned device allocations only; native output widths, Context token and address relocation; host/VMM pending",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Owned device attributes retain owner routing and relocated address/Context tokens; shared pinned Host/interior fields use native 1/4/8-byte widths, device=-2/cache=-1 and NULL device/context/range. Pageable queries return INVALID_VALUE without output writes. Initialized current Context required by native SDK.",
+        "native_test": "host-async-20261107/driver-host-async-native.log",
+        "remote_test": "host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log"
       }
     },
     {
@@ -8370,15 +8379,15 @@
           "kind": "pointer",
           "direction": "in",
           "length": "1",
-          "mapping": "owned allocation -> AllocationID + checked offset; owner session per entry"
+          "mapping": "local Host registry/pageable classification or device AllocationID + checked offset"
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Owned device pointers; SDK attempts all entries and returns final entry status; earlier and later successful outputs are published; bound current context required even when querying another owner",
-      "native_test": "query-boundaries-20261102/driver-native.log",
-      "remote_test": "query-boundaries-20261102/driver-remote.log",
-      "next_step": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; Shared Host and owned device queries; every entry attempted and final entry status returned, including mixed unsupported attributes with untouched failed outputs. Per-entry owner routing, native output widths and current Context validation. Mapped/VMM APIs remain separate unimplemented families.",
+      "native_test": "query-boundaries-20261102/driver-native.log; host-async-20261107/driver-host-async-native.log",
+      "remote_test": "query-boundaries-20261102/driver-remote.log; host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary.",
       "rpc_operations": [
         "API_MEMORY_ATTRIBUTE"
       ],
@@ -8390,16 +8399,16 @@
         "server_handler": "mlu_backend_api_memory_attribute",
         "backend_binding": "typed_rpc.memory_attribute.backend_binding"
       },
-      "closure": {
-        "gap": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
-        "fix": "Route Host addresses to a client Host registry and publish native-equivalent memory type, range, owner and address fields; retain the existing device query adapter.",
-        "acceptance": "Native/Remote Host and device pointer attributes, interior pointers, mixed batch results and free/reset lifecycle agree without sending native host addresses."
-      },
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Queries relocate owned device allocations only; locally allocated/registered Host memory has no ownership/attribute representation.",
         "baseline_boundary": "Owned device pointers; SDK attempts all entries and returns final entry status; earlier and later successful outputs are published; bound current context required even when querying another owner",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Shared Host and owned device queries; every entry attempted and final entry status returned, including mixed unsupported attributes with untouched failed outputs. Per-entry owner routing, native output widths and current Context validation. Mapped/VMM APIs remain separate unimplemented families.",
+        "native_test": "host-async-20261107/driver-host-async-native.log",
+        "remote_test": "host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log"
       }
     },
     {
@@ -8440,7 +8449,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation/deferred D2H is available; queue-ordered Client callback dispatch, failure and teardown semantics are not implemented.",
       "return_type": "CNresult",
       "signature": "CNresult cnInvokeHostFunc(CNqueue queue, CNhostFn fn, void *userData);",
       "parameters": [
@@ -8474,7 +8483,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native callback ordering, then add a shared callback completion node and Client dispatch lifetime."
     },
     {
       "name": "cnInvokeKernel",
@@ -8973,7 +8982,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnMallocHost(void **paddr, cn_uint64_t bytes);",
       "parameters": [
@@ -8981,9 +8990,9 @@
           "name": "paddr",
           "c_type": "void **",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "client process Host allocation; never serialized to Server"
         },
         {
           "name": "bytes",
@@ -8994,12 +9003,12 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; loader may reject this API",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "implementation": "manual",
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; After cnInit, process-local Host allocation without a current Context; shares pinned mmap/mlock registry with CNRT, zero returns NULL and survives Context destruction/reset; never exposes a Server Host pointer.",
+      "native_test": "host-async-20261107/driver-host-async-native.log",
+      "remote_test": "host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary."
     },
     {
       "name": "cnMallocNode",
@@ -10196,7 +10205,7 @@
           "kind": "pointer",
           "direction": "in",
           "length": "1",
-          "mapping": "allocation_id + checked byte offset"
+          "mapping": "classify local Host address or owned device AllocationID + checked offset"
         },
         {
           "name": "srcAddr",
@@ -10204,7 +10213,7 @@
           "kind": "pointer",
           "direction": "in",
           "length": "1",
-          "mapping": "allocation_id + checked byte offset"
+          "mapping": "classify local Host address or owned device AllocationID + checked offset"
         },
         {
           "name": "bytes",
@@ -10220,25 +10229,29 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "owned QueueID, NULL -> native default queue 0"
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Explicit and native NULL queue ordering; unified Host/device endpoint inference and H2D staging snapshot; H2D/D2D enqueue correctly; D2H and asynchronous H2H explicitly return NOT_SUPPORTED pending Host completion work.",
-      "native_test": "query-boundaries-next-20261102/driver-native.log; core-copy-20261107/driver-copy-native.log",
-      "remote_test": "query-boundaries-next-20261102/driver-remote.log; core-copy-20261107/driver-copy-remote.log; core-copy-20261107/driver-ownership-isolated.log",
-      "next_step": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; Explicit/default queues infer H2D/D2D/D2H with checked device ownership; H2D snapshot and true queued D2H submit/fetch. Client Host data publishes at successful queue/notifier/transfer/context/copy/free/module completion operations; no background publication. Async H2H returns native NOT_SUPPORTED.",
+      "native_test": "query-boundaries-next-20261102/driver-native.log; core-copy-20261107/driver-copy-native.log; host-async-20261107/driver-host-async-native.log",
+      "remote_test": "query-boundaries-next-20261102/driver-remote.log; core-copy-20261107/driver-copy-remote.log; core-copy-20261107/driver-ownership-isolated.log; host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary.",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Unified asynchronous copy is implemented as D2D only; Host endpoint inference and deferred D2H writeback are missing.",
         "baseline_boundary": "Generic device-to-device async copy supports explicit and native NULL queues with checked owned allocation offsets; multi-context and completion matrix remains partial",
         "audit_status": "PARTIAL_IMPLEMENTED"
       },
-      "closure": {
-        "gap": "D2H is explicitly rejected; deferred Host completion/writeback remains missing.",
-        "fix": "Add client Host ownership and server D2H staging, submit/completion/fetch operations and deferred writeback at queue/notifier/context completion frontiers.",
-        "acceptance": "Native/Remote unified async H2D/D2D/D2H with queue and context completion returns matching bytes; D2H submit returns while finite queued work remains."
+      "rpc_operations": [
+        "API_D2H_SUBMIT",
+        "API_TRANSFER_FETCH"
+      ],
+      "closure_resolution": {
+        "summary": "Explicit/default queues infer H2D/D2D/D2H with checked device ownership; H2D snapshot and true queued D2H submit/fetch. Client Host data publishes at successful queue/notifier/transfer/context/copy/free/module completion operations; no background publication. Async H2H returns native NOT_SUPPORTED.",
+        "native_test": "host-async-20261107/driver-host-async-native.log",
+        "remote_test": "host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log"
       }
     },
     {
@@ -10526,7 +10539,7 @@
       "family": "memcpy",
       "priority": 1,
       "depends_on": "allocation/queue",
-      "blocker": "3D/2D native platform capability; asynchronous completion",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnMemcpyDtoHAsync(void *dstAddr, CNaddr srcAddr, cn_uint64_t bytes, CNqueue hqueue);",
       "parameters": [
@@ -10534,9 +10547,9 @@
           "name": "dstAddr",
           "c_type": "void *",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "bytes",
+          "mapping": "client Host destination + optional allocation lease; deferred writeback after Transfer completion"
         },
         {
           "name": "srcAddr",
@@ -10560,15 +10573,19 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "owned QueueID, NULL -> native default queue 0"
         }
       ],
       "implementation": "manual",
-      "status": "UNSUPPORTED",
-      "boundary": "Explicit NOT_SUPPORTED; true async host completion/writeback and pinned host lifetime not implemented",
-      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
-      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-      "next_step": "M3.5: expand native differential cases and context/default-queue/resource semantics; M3.2 metadata and M3.3 host async completion"
+      "status": "IMPLEMENTED",
+      "boundary": "MLU370-S4 / Neuware 3.5.2 / AArch64; True native asynchronous D2H into persistent Server cnMallocHost pages; pinned or pageable Client destination receives fetched bytes at successful completion APIs. No background writeback; caller retains pageable destination lifetime. Reset/Context close drain before invalidation; EOF drops Client writes and Server cleans up independently.",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log; host-async-20261107/driver-host-async-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log; host-async-20261107/driver-host-async-remote.log; host-async-20261107/driver-host-async-preload.log; host-async-20261107/driver-host-async-isolated.log",
+      "next_step": "Retain Host/deferred-D2H regression coverage within the declared single-device completion boundary.",
+      "rpc_operations": [
+        "API_D2H_SUBMIT",
+        "API_TRANSFER_FETCH"
+      ]
     },
     {
       "name": "cnMemcpyHtoD",
@@ -11170,7 +11187,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
       "return_type": "CNresult",
       "signature": "CNresult cnMmap(CNaddr mluAddr, void **phostAddr, cn_uint64_t size);",
       "parameters": [
@@ -11204,7 +11221,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses."
     },
     {
       "name": "cnMmapCached",
@@ -11212,7 +11229,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
       "return_type": "CNresult",
       "signature": "CNresult cnMmapCached(CNaddr mluAddr, void **phostAddr, cn_uint64_t size);",
       "parameters": [
@@ -11246,7 +11263,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses."
     },
     {
       "name": "cnModuleGetKernel",
@@ -11555,7 +11572,7 @@
       "family": "host_memory",
       "priority": 2,
       "depends_on": "completion/writeback",
-      "blocker": "Pinned client pages cannot be represented by server pointers; true async D2H writeback pending",
+      "blocker": "Host allocation is available; native device mapping/cache coherency requires a separate local mapping and Server address representation.",
       "return_type": "CNresult",
       "signature": "CNresult cnMunmap(void *hostAddr, cn_uint64_t size);",
       "parameters": [
@@ -11581,7 +11598,7 @@
       "boundary": "No client export; loader may reject this API",
       "native_test": "not_run",
       "remote_test": "not_run",
-      "next_step": "Probe and implement this functional family"
+      "next_step": "Probe native map/cache flags and address consumers; design mapping ownership without transferring native Host addresses."
     },
     {
       "name": "cnNotifierElapsedExecTime",
@@ -16358,6 +16375,62 @@
         "CNctxConfigParam p={0};",
         "if(in->set) { p.visibleCluster=in->value; return (int)cnSetCtxConfigParam_pt(s->context,(CNctxConfigParamType)in->type,&p); }",
         "int st=cnGetCtxConfigParam_pt(s->context,(CNctxConfigParamType)in->type,&p); if(!st) out->value=p.visibleCluster; return st;"
+      ]
+    },
+    {
+      "name": "d2h_submit",
+      "operation": "API_D2H_SUBMIT",
+      "opcode": 78,
+      "request": [
+        {
+          "name": "allocation",
+          "type": "u64"
+        },
+        {
+          "name": "offset",
+          "type": "u64"
+        },
+        {
+          "name": "bytes",
+          "type": "u64"
+        },
+        {
+          "name": "queue",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "transfer",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "return backend_d2h_submit(s,in->allocation,in->offset,in->bytes,in->queue,&out->transfer);"
+      ]
+    },
+    {
+      "name": "transfer_fetch",
+      "operation": "API_TRANSFER_FETCH",
+      "opcode": 79,
+      "request": [
+        {
+          "name": "transfer",
+          "type": "u64"
+        },
+        {
+          "name": "bytes",
+          "type": "u64"
+        }
+      ],
+      "response": [],
+      "response_buffer": {
+        "name": "data",
+        "size_from": "bytes",
+        "max_bytes": 67108736
+      },
+      "backend_binding": [
+        "return backend_transfer_fetch(s,in->transfer,out->data,in->bytes);"
       ]
     }
   ],

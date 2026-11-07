@@ -1,0 +1,133 @@
+[
+  {
+    "name": "host-offline-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "offline"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "host-offline-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "offline"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "host-offline-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "offline"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "host-offline-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "offline"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-host-async-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-host-async-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-host-async-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-host-async-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-host-async-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-host-async-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-host-async-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-host-async-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_host_async",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "d2h-protocol",
+    "command": [
+      "python3",
+      "tests/host_async_protocol.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "backend-host-rollback",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/backend-resources-test",
+      "/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "backend-host-quarantine",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/backend-resources-test",
+      "/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin",
+      "quarantine"
+    ],
+    "returncode": 0
+  }
+]

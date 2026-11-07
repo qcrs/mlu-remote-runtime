@@ -4,6 +4,7 @@
 #include "remote_cnrt.h"
 #include "bang_image.h"
 #include "fake_va.h"
+#include "host_memory.h"
 #include <dlfcn.h>
 #include <elf.h>
 #include <link.h>
@@ -213,7 +214,7 @@ static int copy_endpoint(const void *p,size_t bytes) {
     int kind=mlu_fake_va_endpoint((uintptr_t)p,bytes,(uintptr_t)a->base,a->bytes,a->mapped,a->live,1);
     if(kind!=MLU_ENDPOINT_HOST) return kind;
   }
-  return MLU_ENDPOINT_HOST;
+  return mlu_host_range(p,bytes)<0 ? MLU_ENDPOINT_INVALID : MLU_ENDPOINT_HOST;
 }
 static cnrtRet_t copy(void *dst,void *src,size_t bytes,cnrtQueue_t handle,cnrtMemTransDir_t dir,int sync) {
   cnrtRet_t st=connect_remote(); if(st) return st;
@@ -236,14 +237,15 @@ static cnrtRet_t copy(void *dst,void *src,size_t bytes,cnrtQueue_t handle,cnrtMe
     r=sync ? mlu_remote_memcpy_h2d(ctx,da->id,doff,src,bytes,q->id,&tid)
            : mlu_remote_memcpy_h2d_async(ctx,da->id,doff,src,bytes,q->id,&tid);
   else if(dir==cnrtMemcpyDevToHost && sa && bytes<=sa->bytes-soff && !da)
-    r=mlu_remote_memcpy_d2h(ctx,dst,sa->id,soff,bytes,q->id,&tid);
+    r=sync ? mlu_remote_memcpy_d2h(ctx,dst,sa->id,soff,bytes,q->id,&tid)
+           : mlu_remote_memcpy_d2h_async(ctx,dst,sa->id,soff,bytes,q->id,&tid);
   else if(dir==cnrtMemcpyDevToDev && da && sa && bytes<=da->bytes-doff && bytes<=sa->bytes-soff)
     r=sync ? mlu_remote_memcpy_d2d(ctx,da->id,doff,sa->id,soff,bytes,q->id,&tid)
            : mlu_remote_memcpy_d2d_async(ctx,da->id,doff,sa->id,soff,bytes,q->id,&tid);
   else return cnrtErrorArgsInvalid;
   if(r) return status(r);
   if(sync && (r=mlu_remote_queue_sync(ctx,q->id))) return status(r);
-  /* D2H is currently blocking. H2D owns a server staging snapshot. */
+  /* Deferred D2H keeps its transfer and Host lease through writeback. */
   return release_transfer(tid);
 }
 cnrtRet_t cnrtMemcpy(void *d,void *s,size_t n,cnrtMemTransDir_t dir) { ENTER(); RETURN(copy(d,s,n,NULL,dir,1)); }
@@ -485,8 +487,8 @@ cnrtRet_t cnrtPeekAtLastError(void) { return last_error; }
 #include "local_cnrt_errors.inc"
 /* Unsupported declarations are exported with explicit errors, never success. */
 cnrtRet_t cnrtMallocConstant(void **p,size_t n) { (void)p; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtHostMalloc(void **p,size_t n) { (void)p; (void)n; ENTER(); RETURN(cnrtErrorNotSupport); }
-cnrtRet_t cnrtFreeHost(void *p) { (void)p; ENTER(); RETURN(cnrtErrorNotSupport); }
+cnrtRet_t cnrtHostMalloc(void **p,size_t n) { ENTER(); RETURN(status(mlu_host_alloc(p,n))); }
+cnrtRet_t cnrtFreeHost(void *p) { ENTER(); RETURN(status(mlu_host_free(p))); }
 static allocation *allocation_by_id(uint64_t id) {
   for(allocation *a=allocations;a;a=a->next) if(a->live && a->id==id) return a;
   return NULL;

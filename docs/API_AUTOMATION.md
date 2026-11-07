@@ -1,6 +1,6 @@
 # API 泛化与编译器元数据
 
-本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 43 个固定字段 RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 45 个公共 RPC 包装和 4 个本地 error API；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
+本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 45 个 typed RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 45 个公共 RPC 包装和 4 个本地 error API；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
 
 2026-11-07 error closure：四个 CNRT/CNDrv error API 改为 `generated_local`。显式 SDK-builder 命令 `capture-error-catalog.py` 从当前头文件枚举并集捕获 139 个不同错误值的原生文本；reviewed JSON 纳入版本控制，普通 build 只消费 JSON。生成器输出 immutable Host-local 查询、枚举静态断言和仅含输入值的 native probe，不依赖客户端 Driver/设备/Server。已验证初始化前、远端 port 1、replacement/preload/namespace 的全目录与八个未知值，区分 CNRT 在 199999 以上的回退。旧 typed error RPC 保留 wire 兼容，公共入口不再使用线程共享可覆盖文本。Native Driver 的 NULL 输出崩溃，Shim 安全返回 INVALID_VALUE。
 
@@ -17,7 +17,7 @@ MLU 使用 CNCC 的 `__bangRegisterFatBinary/Function/Var`、CNFB v2/LZ4、设�
 `schema/mlu_api_schema.json` 是签名、功能族、优先级、状态、边界及证据的单一来源。`compat/annotations.json` 改为生成的兼容视图，修改结论应编辑 Schema。Schema 包含：
 
 - 310 个公共链接符号的返回类型、完整签名、参数类型/方向/长度/映射、依赖和 blocker。Scalar、Enum、Pointer、Buffer、Struct、Object Handle 有不同描述。
-- `typed_rpc` 的 opcode、request/response 固定宽度字段、backend binding。公共 wrapper 显式指定输入映射、必需/可选输出、句柄解析和输出写入。
+- `typed_rpc` 的 opcode、request/response 固定宽度字段、可选 `response_buffer`、backend binding。公共 wrapper 显式指定输入映射、必需/可选输出、句柄解析和输出写入。
 - `bindings` 将本轮 API 对应到 wrapper、请求/响应、dispatch handler 与 backend；手工入口用 `rpc_operations` 关联相同链路。
 - `simple_rpc` 继续生成原来的 10 对对象包装/dispatch，`extra_exports` 单列 6 个私有 BANG hooks 与 legacy `cnrtInit`。
 
@@ -25,13 +25,19 @@ MLU 使用 CNCC 的 `__bangRegisterFatBinary/Function/Var`、CNFB v2/LZ4、设�
 
 Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这不是从任意 C 原型自动推导远程语义的工具。生成路径拒绝 unknown 参数、缺少请求映射、重号 opcode、未定义 RPC。结构体禁止直接用 native `sizeof` 上线；例如设备 properties 的数组和每个整数均独立编码。输出仅在成功且回复结构校验通过后发布，`cnrtGetLibVersion` 的可空输出已按 native 探针处理。构建把不兼容指针类型警告设为错误，防止将 CNDrv 的 `cn_int64_t *` 错作 32 位结果。
 
-复杂创建/销毁、context/TLS、对象回滚、异步 staging、Memset 的 owned range、2D/3D span、Kernel ABI 与重定位仍手写。统一 helper 复用原对象表和配额，不另造 RPC 框架。2D/3D 当前只支持 owned device allocations；3D 要求显式非零 pitch/ysize，别名和零 pitch 的完整边缘矩阵未验收，因此六个 stride-copy API 均保留部分实现。
+`response_buffer` 用 request 中 scalar u64 的 `size_from` 指定长度，生成器检查 `max_bytes`、caller-owned 输出、Server 回复分配及成功回复的精确字节数。上限为协议 payload 减固定回复字段及 128-byte envelope 余量；Native binding 仍负责业务范围及 ownership 校验。`wrapper.local_prepare` 位于必需参数校验后、CNRT `CONNECT()` 前，CNDrv 则在 `INIT()`/`CURRENT()` 后，用于从共享 Host registry 返回本地属性，保持初始化和离线语义。
+
+复杂创建/销毁、context/TLS、对象回滚、异步 staging、Memset 的 owned range、2D/3D span、Kernel ABI 与重定位仍手写。统一 helper 复用原对象表和配额，不另造 RPC 框架。2D/3D 的 owned allocation、显式 pitch/ysize 边界及审计结论见 [closure audit](API_COMPATIBILITY_CLOSURE.md)，不再因其他 allocation family 的缺口笼统挂 PARTIAL。
 
 ## 自动化前后的工作量
 
 之前仅有 10 个 ObjectID RPC 能生成。普通 API 需要分别增加 header、client 编解码、server 长度检查/dispatch、backend、导出与台账；各处重复字段和 opcode。现在新增一个已审查的普通 API，主要填写 Schema 中的字段/映射/native binding，再补功能族语义断言；其余重复路径一次生成。
 
-首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 43/45，另有 4 个本地 error API，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 45/45，另有 4 个本地 error API，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+
+## 2026-11-07 Host memory / deferred D2H
+
+两库 Host 分配/free 共享 `libremote_cnrt.so` 内的进程级 registry、guard/tombstone 和 pending lease，不发送真实客户端指针。新增 `API_D2H_SUBMIT` / `API_TRANSFER_FETCH` 与 `MLU_CAP_DEFERRED_D2H`：submit 只返回 TransferID，Server 的 native pinned buffer 独立存活；成功 Queue/Notifier/Transfer 完成、Context sync/free/module unload 触发非阻塞 fetch 和 Host 写回，reset/close 则在旧 ID 失效前 drain。查询遇 NotReady 不等待，较晚同 Queue 或重叠目标不能越过较早未发布的写回。旧同步 D2H wire 保留；同步回复写入目标前先发布已完成的旧异步结果。没有后台 publication，pageable 目标寿命由调用者负责。证据见 [Host 批次](../evidence/host-async-20261107/README.md)。
 
 ## 2026-11-13 V2 conversion
 
@@ -93,11 +99,11 @@ python3 scripts/verify-transparent.py --out evidence/<batch>/full-suite
 
 `generate_compat.py` 对 SDK 预处理 Census、头文件哈希、Schema 精确签名、真实链接导出和人工状态做校验，生成逐 API ledger、summary、功能族统计和剩余 API 的依赖计划。`verify-api-contracts.py` 再核对生成结果、opcode、codec/dispatch/binding、导出 allowlist、ledger 和完整状态的证据文件。
 
-新增功能族测试比较稳定 stdout；实时 free memory 只比不变量，时间值只比非负及 disabled-timing 错误，stderr 单独留存 native 诊断。生成 test plan 为全部 40 个 typed RPC 提供坏长度与坏成功回复测试，另加跨 session、overflow、stale、alignment、string 和元数据负例。生成模板不会被当作通过测试；语义断言仍由作者编写。
+新增功能族测试比较稳定 stdout；实时 free memory 只比不变量，时间值只比非负及 disabled-timing 错误，stderr 单独留存 native 诊断。生成 test plan 为全部 45 个 typed RPC 提供坏长度与坏成功回复测试，buffer 另验证精确动态长度，已有跨 session、overflow、stale、alignment、string 和元数据负例保留。生成模板不会被当作通过测试；语义断言仍由作者编写。
 
-2026-11-03 续批为 memcpy wire 增加可选 async 标志。旧 56-byte 请求继续由 server 接受，60-byte 扩展只在 host payload 长度唯一匹配时启用；因此默认 Queue 的 QueueID 0 语义可以扩展而不破坏已有协议负例。该字段由手工 memcpy adapter 使用，普通 typed RPC 生成器仍负责固定请求/响应、长度和成功回复校验。
+2026-11-03 续批为 memcpy wire 增加可选 async 标志。旧 56-byte 请求继续由 server 接受，60-byte 扩展只在 host payload 长度唯一匹配时启用；因此默认 Queue 的 QueueID 0 语义可以扩展而不破坏已有协议负例。该字段由手工 memcpy adapter 使用，typed RPC 生成器负责固定字段及有界 response buffer 的长度和成功回复校验。
 
-剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range、Context flags、QueueID 0 default ordering 和 owned allocation 边界已接入；后续实现 client host pages/completion/writeback，扩展 module/symbol 与嵌入 pointer aggregate metadata；Graph/IPC/Peer 等等待相应依赖。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
+剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range、Context flags、QueueID 0 default ordering、Host pages/completion/writeback 已接入；后续扩展 module/symbol 与嵌入 pointer aggregate metadata、Host conversion，再推进 Graph/IPC 共享状态机。Peer 仍受单卡条件阻塞。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
 
 ## 查询边界续批
 

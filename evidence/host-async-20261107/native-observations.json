@@ -1,0 +1,29 @@
+[
+  {
+    "family": "runtime",
+    "command": [
+      "build/native_host_async",
+      "runtime"
+    ],
+    "environment": {
+      "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+      "MLU_HOST_OBSERVE_NATIVE": "1"
+    },
+    "returncode": 3,
+    "purpose": "Observation of pending lifecycle cancellation; excluded from success suite"
+  },
+  {
+    "family": "driver",
+    "command": [
+      "build/native_host_async",
+      "driver",
+      "build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "environment": {
+      "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+      "MLU_HOST_OBSERVE_NATIVE": "1"
+    },
+    "returncode": 3,
+    "purpose": "Observation of pending lifecycle cancellation; excluded from success suite"
+  }
+]

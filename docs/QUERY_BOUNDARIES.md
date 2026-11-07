@@ -1,5 +1,7 @@
 # Context、PCI、内存属性和 Queue 扩展
 
+本文件保留该批历史范围；当前状态以 [closure audit](API_COMPATIBILITY_CLOSURE.md) 和 [Host/deferred D2H resolution](../evidence/host-async-20261107/README.md) 为准。
+
 2026-11-02，基于 `8dbd336`。本包新增 24 个公共 API，9 完整、15 部分；没有把原有部分入口自动提升。310 项合计为 **45 完整、73 部分、4 明确拒绝、188 未实现**。完整表示当前 Neuware 3.5.2 / AArch64 / 单 MLU370-S4 已测范围，不表示替代整个 vendor runtime。
 
 ## 实现范围

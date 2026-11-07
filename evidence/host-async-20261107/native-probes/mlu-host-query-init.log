@@ -1,0 +1,5 @@
+init=0
+malloc=0
+no-context host type status=100201 value=99
+create=0
+pageable type status=100006 value=99

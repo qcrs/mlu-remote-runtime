@@ -1,0 +1,5 @@
+COMMAND ['python3', 'tests/server_restart.py', '--out', '/home/lvtong/mlu-remote-runtime/evidence/host-async-20261107/full-suite/server-restart']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+PASS {"name": "stopped-server-deadline-no-replay-new-session-after-resume", "passed": true, "elapsed_seconds": 0.2503}
+PASS {"name": "killed-server-incomplete-exchange-poisons-context", "passed": true}
+PASS {"name": "restart-old-session-and-old-ID-rejected", "passed": true, "old_id": 1801774637987932091, "new_id": 6269871088626429}

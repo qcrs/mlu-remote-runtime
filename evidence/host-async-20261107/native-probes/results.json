@@ -1,0 +1,20 @@
+[
+  {
+    "name": "mlu-host-init",
+    "returncode": 0,
+    "source_sha256": "8f5a2fac54122aa4eabf2693258bf991756e63192c3c8beeaf5b7faccaedcc1f",
+    "binary_sha256": "592c828a7b9888fb74458066990c112b6078368a285ac234ef3ed2c41bf4546c"
+  },
+  {
+    "name": "mlu-host-query-init",
+    "returncode": 0,
+    "source_sha256": "d4dd4822843f0da9f5384be4715b7c865042af90bc68fbf5a7d2e741bf4d0e8b",
+    "binary_sha256": "5899d4e4756716eae29766de4941a2087f8b1619bd86e37d5cc4aa177c4b86b9"
+  },
+  {
+    "name": "mlu-host-attr-runtime",
+    "returncode": 0,
+    "source_sha256": "5bae3bac73bbb70288a60b9bb96c6dacb3b5ea796c77b6c81e0df37a060c4e84",
+    "binary_sha256": "6f661b8dbf52ccb1f64400848767f6131655119d5b787fd81545607349f95ef4"
+  }
+]

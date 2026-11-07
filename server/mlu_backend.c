@@ -169,6 +169,12 @@ static void reap_transfers(mlu_backend_session *s) {
     if (!t->live || !t->release_requested) continue;
     if (t->notifier_live && cnQueryNotifier(t->notifier) != CN_SUCCESS) continue;
     if (t->notifier_live && cnDestroyNotifier(t->notifier) != CN_SUCCESS) continue;
+    t->notifier_live = 0;
+    if (t->host) {
+      if (cnFreeHost(t->host) != CN_SUCCESS) continue;
+      t->host = NULL;
+      mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, t->bytes);
+    }
     mlu_object_registry_release(&s->objects, MLU_OBJECT_TRANSFER, t->id);
     t->live = t->notifier_live = 0;
   }
@@ -249,16 +255,32 @@ static void destroy_transfer_notifiers(mlu_backend_session *s, int *first) {
 static void release_staging(mlu_backend_session *s, uint64_t queue_id) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->staging[i].live && (!queue_id || s->staging[i].queue_id == queue_id)) {
-      free(s->staging[i].host); s->staging[i].live = 0;
+      if (s->staging[i].pinned) { if (cnFreeHost(s->staging[i].host)) continue; }
+      else free(s->staging[i].host);
+      s->staging[i].live = 0;
       mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, s->staging[i].bytes);
     }
 }
 static void release_staging_default(mlu_backend_session *s) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->staging[i].live && s->staging[i].queue_id == 0) {
-      free(s->staging[i].host); s->staging[i].live = 0;
+      if (s->staging[i].pinned) { if (cnFreeHost(s->staging[i].host)) continue; }
+      else free(s->staging[i].host);
+      s->staging[i].live = 0;
       mlu_resource_release(&s->usage, MLU_RESOURCE_STAGING, s->staging[i].bytes);
     }
+}
+
+/* D2H buffers survive queue completion and retirement until fetch/release.
+ * After a failed wait they remain owned until native context destruction. */
+static void release_transfer_buffers(mlu_backend_session *s) {
+  for (size_t i=0; i<MLU_BACKEND_MAX_OBJECTS; ++i) {
+    mlu_backend_transfer *t=&s->transfers[i];
+    if (t->host && cnFreeHost(t->host)==CN_SUCCESS) {
+      t->host=NULL;
+      mlu_resource_release(&s->usage,MLU_RESOURCE_STAGING,t->bytes);
+    }
+  }
 }
 
 /* Destroy must not wait for queued work. Keep native ownership after retiring
@@ -351,7 +373,7 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
   if (s->default_queue_used && cleanup_result(&first,"cnQueueSync(NULL)",0,cnQueueSync(NULL))) synchronized=0;
   /* On a synchronization error, retain host memory until context destruction
    * confirms no native operation can access it. Never free in-flight staging. */
-  if (synchronized) release_staging(s, 0);
+  if (synchronized) { release_staging(s, 0); release_transfer_buffers(s); }
   destroy_transfer_notifiers(s, &first);
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->modules[i].live && !cleanup_result(&first, "cnModuleUnload", s->modules[i].module_id,
@@ -377,7 +399,17 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     s->cleanup_failed = first;
     return first;
   }
+  s->context = NULL;
   release_staging(s, 0);
+  release_transfer_buffers(s);
+  /* cnFreeHost failure still owns pinned native pages, even after context
+   * destruction. Keep the allocation and quota instead of losing ownership. */
+  for (size_t i=0; i<MLU_BACKEND_MAX_OBJECTS; ++i)
+    if (s->transfers[i].host || s->staging[i].live) {
+      s->cleanup_failed=first ? first : (int)CN_ERROR_OPERATING_SYSTEM;
+      fprintf(stderr,"[server] CLEANUP_QUARANTINED owner=%llu pinned Host release failed\n",(unsigned long long)s->owner_token);
+      return s->cleanup_failed;
+    }
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->modules[i].live) free(s->modules[i].image);
   for (unsigned kind = 0; kind < MLU_RESOURCE_KINDS; ++kind)
@@ -445,6 +477,49 @@ int mlu_backend_free(mlu_backend_session *s, uint64_t id) {
 static int range(mlu_backend_allocation *a, uint64_t off, uint64_t bytes, CNaddr *out) {
   if (!a || off > a->bytes || bytes > a->bytes - off) return (int)CN_ERROR_INVALID_VALUE;
   *out = a->address + off;
+  return 0;
+}
+
+static int backend_d2h_submit(mlu_backend_session *s,uint64_t allocation,uint64_t offset,
+                               uint64_t bytes,uint64_t queue_id,uint64_t *id) {
+  CNaddr src;
+  if (!bytes || bytes>MLU_REMOTE_MAX_PAYLOAD-128 ||
+      range(find_alloc(s,allocation),offset,bytes,&src)) return CN_ERROR_INVALID_VALUE;
+  mlu_backend_queue *q=queue_id ? find_queue(s,queue_id) : NULL;
+  if (queue_id && !q) return CN_ERROR_INVALID_HANDLE;
+  int st=transfer_capacity(s); if(st) return st;
+  size_t slot=0;
+  while(slot<MLU_BACKEND_MAX_OBJECTS && s->staging[slot].live) ++slot;
+  if(slot==MLU_BACKEND_MAX_OBJECTS) return MLU_REMOTE_RESOURCE_LIMIT;
+  if(mlu_resource_reserve(&s->usage,MLU_RESOURCE_STAGING,bytes)) return MLU_REMOTE_RESOURCE_LIMIT;
+  void *host=NULL;
+  st=cnMallocHost(&host,bytes);
+  if(st) { mlu_resource_release(&s->usage,MLU_RESOURCE_STAGING,bytes); return st; }
+  /* Publish ownership before native submission. Failure to record completion
+   * or to synchronize must leave a reachable buffer for teardown. */
+  s->staging[slot]=(mlu_backend_staging){.queue_id=queue_id,.host=host,.bytes=bytes,
+    .owner=s->owner_token,.generation=new_generation(s),.pinned=1,.live=1};
+  st=cnMemcpyDtoHAsync(host,src,bytes,q ? q->handle : NULL);
+  if(!queue_id) s->default_queue_used=1;
+  if(!st) st=record_transfer(s,queue_id,1,id);
+  if(st) {
+    /* A submission error does not authorize freeing a possibly referenced
+     * page. The staging registry retains it if this wait also fails. */
+    if(cnQueueSync(q ? q->handle : NULL)==CN_SUCCESS) {
+      if(queue_id) release_staging(s,queue_id); else release_staging_default(s);
+    }
+    return st;
+  }
+  mlu_backend_transfer *t=find_transfer(s,*id);
+  t->host=host; t->bytes=bytes;
+  s->staging[slot].live=0;
+  return 0;
+}
+static int backend_transfer_fetch(mlu_backend_session *s,uint64_t id,void *out,uint64_t bytes) {
+  mlu_backend_transfer *t=find_transfer(s,id);
+  if(!t || t->release_requested || !t->host || t->bytes!=bytes) return CN_ERROR_INVALID_HANDLE;
+  int st=mlu_backend_transfer_query(s,id); if(st) return st;
+  memcpy(out,t->host,(size_t)bytes);
   return 0;
 }
 

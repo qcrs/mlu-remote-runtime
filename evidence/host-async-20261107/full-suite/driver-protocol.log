@@ -1,0 +1,14 @@
+COMMAND ['python3', 'tests/driver_protocol.py']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50231', 'MLU_TEST_SHIM': '1'}
+PASS HELLO16 four context flags and acknowledged close followed by EOF
+PASS invalid HELLO16 context flags rejected and connection closed
+PASS empty-module keeps current context usable
+PASS zero-image keeps current context usable
+PASS short-image keeps current context usable
+PASS trailing-image keeps current context usable
+PASS malformed-image keeps current context usable
+PASS context-sync-trailing keeps current context usable
+PASS close-trailing keeps current context usable
+PASS binary upload, two shared kernels, real NULL queue launch/sync/query and cross-session ownership
+default_queue_pending_before_close= 1
+PASS close acknowledges pending NULL queue cleanup, closes session, other client remains usable

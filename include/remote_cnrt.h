@@ -41,6 +41,10 @@ mlu_remote_context *mlu_remote_connect_device(const char *host, uint16_t port,
 mlu_remote_context *mlu_remote_connect_driver(const char *host, uint16_t port,
                                               uint32_t device, uint32_t flags);
 int mlu_remote_context_sync(mlu_remote_context *ctx);
+/* Deferred D2H owns a Host lease until a successful completion frontier.
+ * Queue/Notifier/Transfer/context waits and queries publish ready results. */
+int mlu_remote_memcpy_d2h_async(mlu_remote_context *ctx, void *dst,
+    uint64_t src, uint64_t offset, uint64_t bytes, uint64_t queue, uint64_t *transfer);
 /* Acknowledges native cleanup before closing; no context is recreated. */
 int mlu_remote_session_close(mlu_remote_context *ctx);
 /* Thread-local diagnostics for the last connect attempt. Successful connect

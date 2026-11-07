@@ -19,6 +19,22 @@ static void invalid_memory_attribute(void *pi,CNmem_attribute attr) {
   if(attr==CN_MEM_ATTRIBUTE_TYPE) { int unknown=CN_MEMORYTYPE_UNKNOWN; memcpy(pi,&unknown,4); }
   if(attr==CN_MEM_ATTRIBUTE_HOST_POINTER || attr==CN_MEM_ATTRIBUTE_DEVICE_POINTER) { uint64_t zero=0; memcpy(pi,&zero,8); }
 }
+static CNresult publish_host_attribute(void *pi,CNmem_attribute attr,CNaddr ptr) {
+  uint64_t v=0; unsigned width=4;
+  switch(attr) {
+    case CN_MEM_ATTRIBUTE_TYPE: v=CN_MEMORYTYPE_HOST; break;
+    case CN_MEM_ATTRIBUTE_HOST_POINTER: v=ptr; width=8; break;
+    case CN_MEM_ATTRIBUTE_DEVICE_POINTER: case CN_MEM_ATTRIBUTE_CONTEXT:
+    case CN_MEM_ATTRIBUTE_RANGE_START_ADDR: case CN_MEM_ATTRIBUTE_RANGE_SIZE: width=8; break;
+    case CN_MEM_ATTRIBUTE_DEVICE_ORDINAL: v=(uint32_t)-2; break;
+    case CN_MEM_ATTRIBUTE_HOST_CACHE_TYPE: v=(uint32_t)CN_HOSTMEMORY_NOT_SUPPORT; break;
+    case CN_MEM_ATTRIBUTE_IS_CACHE_OPS: case CN_MEM_ATTRIBUTE_ALLOWED_HANDLE_TYPES:
+    case CN_MEM_ATTRIBUTE_ISLINEAR: break;
+    case CN_MEM_ATTRIBUTE_MAPPED: width=1; break;
+    default: return CN_ERROR_INVALID_VALUE;
+  }
+  memcpy(pi,&v,width); return CN_SUCCESS;
+}
 static int publish_memory_attribute(void *pi,CNmem_attribute attr,CNaddr ptr,allocation *a,
                                     const mlu_api_memory_attribute_response *out) {
   uint64_t v=out->value; unsigned width=4;

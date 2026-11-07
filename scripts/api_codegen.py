@@ -1,4 +1,4 @@
-"""Typed, fixed-field RPC generator. Native structs are expanded field by field.
+"""Typed RPC generator with fixed fields and bounded caller-owned response buffers.
 
 The JSON holds bindings, not wire C layouts. No sizeof(native struct), native
 pointer, or native enum is ever put directly on the wire.
@@ -55,6 +55,13 @@ def validate(schema):
                 if f['type'] not in TYPES or not 1 <= f.get('count', 1) <= 4096: raise ValueError('invalid wire field')
                 if f['type']=='cstring' and 'count' not in f: raise ValueError('cstring requires a fixed capacity')
             if size(r[group]) > 16384: raise ValueError('fixed RPC too large')
+        if 'response_buffer' in r:
+            b = r['response_buffer']
+            if (b['name'] in {f['name'] for f in r['response']} or
+                not re.fullmatch(r'[a-zA-Z_]\w*', b['name']) or
+                not any(f['name'] == b['size_from'] and f['type'] == 'u64' and 'count' not in f for f in r['request']) or
+                not 1 <= b['max_bytes'] <= 64*1024*1024-128-size(r['response'])):
+                raise ValueError('invalid caller-owned response buffer')
     names = set()
     for api in schema['apis']:
         if api['name'] in names: raise ValueError('duplicate API')
@@ -90,11 +97,18 @@ def generate(root, schema, check):
     opcodes=[NOTICE]; client=[NOTICE]; server=[NOTICE]; backend=[NOTICE]; valid=[NOTICE]; decls=[NOTICE]
     for r in schema['typed_rpc']:
         name=r['name']; op='MLU_OP_'+r['operation']; req=r['request']; res=r['response']
+        buffer=r.get('response_buffer')
+        count_offset=sum(TYPES[f['type']][1]*f.get('count',1) for f in req[:next((i for i,f in enumerate(req) if buffer and f['name']==buffer['size_from']),0)])
         opcodes.append(f"{op} = {r['opcode']},")
         for direction, fs in [('request',req),('response',res)]:
-            header += ['typedef struct {', *fields_decl(fs), f'}} mlu_api_{name}_{direction};']
+            header += ['typedef struct {', *fields_decl(fs)]
+            if direction=='response' and buffer: header += [f"  unsigned char *{buffer['name']}; /* caller-owned, request.{buffer['size_from']} bytes */"]
+            header += [f'}} mlu_api_{name}_{direction};']
         header += [f'int mlu_remote_api_{name}(mlu_remote_context *, const mlu_api_{name}_request *, mlu_api_{name}_response *);']
         conditions=[f'n == {size(res)}']; offset=0
+        if buffer:
+            conditions=[f'request_len == {size(req)}', f'get64(request+{count_offset}) <= {buffer["max_bytes"]}u',
+                        f'n == {size(res)} + get64(request+{count_offset})']
         for f in res:
             if f['type']=='cstring': conditions.append(f'memchr(p+{offset},0,{f["count"]}) != NULL')
             offset+=TYPES[f['type']][1]*f.get('count',1)
@@ -104,16 +118,24 @@ def generate(root, schema, check):
                    '  if (!(ctx->capabilities & MLU_CAP_TYPED_API)) return MLU_REMOTE_UNSUPPORTED;',
                    f'  unsigned char p[{max(1,size(req))}];', '  unsigned char *e=NULL; uint32_t n=0;',
                    '  mlu_api_'+name+'_request in=*request; (void)in;', *codec(req,'in','p',True),
+                   *([f'  if(in.{buffer["size_from"]}>{buffer["max_bytes"]}u || (in.{buffer["size_from"]} && !response->{buffer["name"]})) return MLU_REMOTE_BAD_LENGTH;'] if buffer else []),
                    f'  int st=rpc(ctx,{op},p,{size(req)},&e,&n);',
                    f'  if (!st) {{ mlu_api_{name}_response out={{0}};', *codec(res,'out','e',False),
+                   *([f'    out.{buffer["name"]}=response->{buffer["name"]}; if(in.{buffer["size_from"]}) memcpy(out.{buffer["name"]},e+{size(res)},in.{buffer["size_from"]});'] if buffer else []),
                    '    *response=out;', '  } free(e); return st;', '}']
         server += [f'case {op}: {{', f'  if(n!={size(req)}) return send_response(fd,op,req,MLU_REMOTE_BAD_LENGTH,NULL,0);',
                    f'  mlu_api_{name}_request in={{0}}; mlu_api_{name}_response result={{0}};',
                    *codec(req,'in','p',False),
                    *[f'  if(!memchr(in.{f["name"]},0,{f["count"]})) return send_response(fd,op,req,MLU_REMOTE_BAD_LENGTH,NULL,0);' for f in req if f['type']=='cstring'],
+                   *([f'  if(in.{buffer["size_from"]}>{buffer["max_bytes"]}u) return send_response(fd,op,req,MLU_REMOTE_BAD_LENGTH,NULL,0);',
+                      f'  uint32_t encoded_size={size(res)}+(uint32_t)in.{buffer["size_from"]};',
+                      '  unsigned char *encoded=malloc(encoded_size ? encoded_size : 1);',
+                      '  if(!encoded) return send_response(fd,op,req,CN_ERROR_SYSTEM_OUT_OF_MEMORY,NULL,0);',
+                      f'  result.{buffer["name"]}=encoded+{size(res)};'] if buffer else []),
                    f'  st=mlu_backend_api_{name}(s,&in,&result);',
-                   f'  unsigned char encoded[{max(1,size(res))}];', *codec(res,'result','encoded',True),
-                   f'  return send_response(fd,op,req,(uint32_t)st,st ? NULL : encoded,st ? 0 : {size(res)});', '}']
+                   *([] if buffer else [f'  unsigned char encoded[{max(1,size(res))}];']), *codec(res,'result','encoded',True),
+                   *(['  int sent=send_response(fd,op,req,(uint32_t)st,st ? NULL : encoded,st ? 0 : encoded_size);',
+                      '  free(encoded); return sent;'] if buffer else [f'  return send_response(fd,op,req,(uint32_t)st,st ? NULL : encoded,st ? 0 : {size(res)});']), '}']
         decl=f'int mlu_backend_api_{name}(mlu_backend_session *s, const mlu_api_{name}_request *in, mlu_api_{name}_response *out)'
         decls += [decl+';']
         backend += [decl+' {',
@@ -131,6 +153,7 @@ def generate(root, schema, check):
             if not rt: lines += ['  CURRENT();' if w.get('current') else '  INIT();']
             required=w.get('required',[p['name'] for p in a['parameters'] if p['direction']=='out'])
             if required: lines += ['  if ('+' || '.join('!'+p for p in required)+f") RETURN({'cnrtErrorArgsInvalid' if rt else 'CN_ERROR_INVALID_VALUE'});"]
+            lines += ['  '+x for x in w.get('local_prepare',[])]
             if rt: lines += ['  CONNECT();']
             lines += ['  '+x for x in w.get('prepare',[])]
             lines += [f'  mlu_api_{rpc}_request in={{0}}; mlu_api_{rpc}_response out={{0}};']
@@ -155,7 +178,7 @@ def generate(root, schema, check):
     manifest=[dict(name=a['name'],library=a['library'],rpc=a.get('wrapper',{}).get('rpc'),status=a['status'],implementation=a['implementation'])
               for a in schema['apis'] if a['implementation']!='none']
     files['api_manifest.json']=json.dumps(manifest,indent=2)+'\n'
-    files['typed_test_plan.json']=json.dumps([dict(name=r['name'],opcode=r['opcode'],request_bytes=size(r['request']),response_bytes=size(r['response'])) for r in schema['typed_rpc']],indent=2)+'\n'
+    files['typed_test_plan.json']=json.dumps([dict(name=r['name'],opcode=r['opcode'],request_bytes=size(r['request']),response_bytes=size(r['response']), **({'response_buffer':r['response_buffer']} if r.get('response_buffer') else {})) for r in schema['typed_rpc']],indent=2)+'\n'
     # Editable scaffolding is emitted into build; semantic assertions must be
     # filled in by the author before adding reviewed evidence to the ledger.
     files['family_test_template.c']=[NOTICE,'#include <assert.h>','#include <cnrt.h>','#include <cn_api.h>',

@@ -1,0 +1,15 @@
+[server] limit DEVICE session=67108864 total=100663296 bytes
+[server] limit STAGING session=16 total=24 bytes
+[server] limit IMAGE session=6672 total=10008 bytes
+[server] MLU_REMOTE_BIND=127.0.0.1 PORT=43835 device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+[server] listening handshake_timeout_ms=5000 io_timeout_ms=120000 max_connections=8
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] session fd=10 disconnected; cleaning native resources
+[server] CLEANUP_ERROR op=cnCtxDestroy id=0 status=100006
+[server] CLEANUP_QUARANTINED owner=1
+[server] SESSION_CLEANUP_FAILED fd=10 status=100006
+[server] DRAIN_BEGIN workers=1
+[server] DRAIN_COMPLETE workers=0 cleanup_errors=1
+[server] RESOURCE_TOTAL device=0 staging=0 image=0
+[server] stopped

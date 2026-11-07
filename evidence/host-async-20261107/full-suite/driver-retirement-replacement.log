@@ -1,0 +1,15 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_queue_retirement', 'driver', '/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50231', 'MLU_TEST_SHIM': '1'}
+destroy driver frontier=0 seconds=0.000052 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=1 seconds=0.000044 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=2 seconds=0.000049 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=3 seconds=0.000044 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=4 seconds=0.000040 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+destroy driver frontier=5 seconds=0.000042 after=1
+driver data=2515503399,305419896,305419896 expected=2515503399
+PASS CNDrv retirement; notifier wait/query, context/free/module and cross-queue completion preserve kernel and H2D/D2D; 1200 retirements and pending teardown

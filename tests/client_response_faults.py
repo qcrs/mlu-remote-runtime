@@ -16,7 +16,7 @@ U64 = c.c_uint64
 U32 = c.c_uint32
 PTR = c.c_void_p
 MAGIC = 0x4D4C5552
-HELLO = struct.pack('!IIII', 1, 1, 0x1fff, 0x08010001)
+HELLO = struct.pack('!IIII', 1, 1, 0x7fff, 0x08010001)
 
 
 def bind(name, args, result=c.c_int):
@@ -210,3 +210,68 @@ for caps in (0xfff, 0x7ff):
         if healthy_errors:
             raise healthy_errors[0]
     print('PASS native error keeps healthy session usable' if caps & 0x800 else 'PASS old peer capability refuses lookup without sending or splitting module')
+
+# Generated size_from response buffers validate exact length before publishing.
+class FetchRequest(c.Structure):
+    _fields_ = [('transfer', U64), ('bytes', U64)]
+class FetchResponse(c.Structure):
+    _fields_ = [('unused', c.c_ubyte), ('data', PTR)]
+fetch = bind('api_transfer_fetch', [PTR, c.POINTER(FetchRequest), c.POINTER(FetchResponse)])
+def invoke_fetch(ctx):
+    data = c.create_string_buffer(b'KEEP', 4)
+    response = FetchResponse(0, c.cast(data, PTR))
+    st = fetch(ctx, c.byref(FetchRequest(1, 4)), c.byref(response))
+    assert data.raw == b'KEEP'
+    return st
+exercise('generated-buffer-short', invoke_fetch, lambda h: reply(h, b'xx'))
+exercise('generated-buffer-extra', invoke_fetch, lambda h: reply(h, b'xxxxx'))
+
+# Deterministic completion race: a later same-queue result must wait for an
+# earlier NotReady result, while another queue/destination can publish now.
+async_d2h = bind('memcpy_d2h_async', [PTR, PTR, U64, U64, U64, U64, c.POINTER(U64)])
+release_transfer = bind('transfer_release', [PTR, U64])
+errors = []
+with socket.socket() as listener:
+    listener.bind(('127.0.0.1', 0)); listener.listen(1); listener.settimeout(3)
+    def ordering_server():
+        try:
+            with listener.accept()[0] as sock:
+                sock.settimeout(3)
+                h, _ = request(sock); sock.sendall(reply(h, HELLO))
+                for tid in (1, 2, 3):
+                    h, data = request(sock); assert h[2] == 78
+                    sock.sendall(reply(h, struct.pack('!Q', tid)))
+                def respond(op, tid=None, data=b'', status=0):
+                    h, body = request(sock); assert h[2] == op, (h[2], op)
+                    if tid is not None: assert struct.unpack_from('!Q', body)[0] == tid
+                    sock.sendall(reply(h, data, status))
+                respond(8)
+                respond(23, 1, status=1)
+                # No query/fetch for transfer 2 until transfer 1 can publish.
+                respond(23, 3); respond(79, 3, b'THRD'); respond(28, 3)
+                respond(8)
+                for tid, data in ((1, b'AAAA'), (2, b'BBBB')):
+                    respond(23, tid); respond(79, tid, data); respond(28, tid)
+                respond(78, data=struct.pack('!Q',4))
+                respond(5, data=struct.pack('!QQ',5,4)+b'LAST')
+                respond(23,4); respond(79,4,b'OLD!'); respond(28,4)
+                assert sock.recv(1) == b''
+        except BaseException as error: errors.append(error)
+    worker = threading.Thread(target=ordering_server, daemon=True); worker.start()
+    ctx = connect(b'127.0.0.1', listener.getsockname()[1]); assert ctx
+    common = c.create_string_buffer(b'KEEP', 4); independent = c.create_string_buffer(b'KEEP', 4)
+    try:
+        for dst, q in ((common, 3), (common, 3), (independent, 4)):
+            tid = U64(); assert not async_d2h(ctx, dst, 1, 0, 4, q, c.byref(tid))
+            assert not release_transfer(ctx, tid.value)
+        assert not sync(ctx, 99)
+        assert common.raw == b'KEEP' and independent.raw == b'THRD'
+        assert not sync(ctx, 3); assert common.raw == b'BBBB'
+        tid = U64(); assert not async_d2h(ctx, common, 1, 0, 4, 3, c.byref(tid))
+        assert not release_transfer(ctx, tid.value)
+        assert not d2h(ctx, common, 1, 0, 4, 3, c.byref(tid))
+        assert common.raw == b'LAST' and tid.value == 5
+    finally: disconnect(ctx)
+    worker.join(4); assert not worker.is_alive()
+    if errors: raise errors[0]
+print('PASS deferred D2H preserves queue write order, independent progress and newer synchronous copy output')

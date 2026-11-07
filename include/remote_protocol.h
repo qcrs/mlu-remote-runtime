@@ -54,6 +54,7 @@ enum mlu_remote_opcode {
 #define MLU_CAP_MODULE_KERNELS 0x800u
 #define MLU_CAP_DRIVER_CONTEXT 0x1000u
 #define MLU_CAP_TYPED_API 0x2000u
+#define MLU_CAP_DEFERRED_D2H 0x4000u
 /* Generic scalar bytes are LP64 little endian. Framing remains network order. */
 #define MLU_REMOTE_KERNEL_ABI 0x08010001u
 

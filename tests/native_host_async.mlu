@@ -1,0 +1,170 @@
+#include <bang.h>
+#include <cn_api.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#define OK(e) do { int st_=(int)(e); if(st_) { fprintf(stderr,"line %d %s status=%d\n",__LINE__,#e,st_); exit(2); } } while(0)
+#define REQUIRE(e) do { if(!(e)) { fprintf(stderr,"line %d %s\n",__LINE__,#e); exit(3); } } while(0)
+__mlu_entry__ void host_work(unsigned *out,int count) {
+  volatile unsigned v=7;
+  for(int i=0;i<count;i++) v=v*1664525u+1013904223u;
+  *out=v;
+}
+static const int iterations=500000;
+static unsigned expected(void) { unsigned v=7; for(int i=0;i<iterations;i++) v=v*1664525u+1013904223u; return v; }
+static void pause_poll(void) { struct timespec t={0,1000000}; nanosleep(&t,NULL); }
+static void attributes(void *p) {
+  cnrtPointerAttributes_t a;
+  OK(cnrtPointerGetAttributes(&a,(char *)p+4));
+  REQUIRE(a.type==cnrtMemTypeHost && a.device==-2 && !a.size && !a.devicePointer &&
+          a.hostPointer==(char *)p+4 && a.cacheMode==cnrtUvaNotSupport && !a.deviceBasePointer);
+  int attrs[]={1,2,3,4,6,7,17,18,21,22,23,24};
+  uint64_t expected_values[]={1,0,(uintptr_t)p+4,0,0,(uint32_t)-2,0,0,(uint32_t)-1,0,0,0};
+  unsigned widths[]={4,8,8,4,8,4,8,8,4,1,4,4};
+  for(unsigned i=0;i<sizeof(attrs)/sizeof(attrs[0]);i++) {
+    uint64_t actual=0xa5a5a5a5a5a5a5a5, want=actual;
+    memcpy(&want,expected_values+i,widths[i]);
+    OK(cnGetMemAttribute(&actual,(CNmem_attribute)attrs[i],(CNaddr)(uintptr_t)p+4)); REQUIRE(actual==want);
+  }
+  CNmem_attribute batch[]={CN_MEM_ATTRIBUTE_ACCESS_FLAGS,CN_MEM_ATTRIBUTE_TYPE,CN_MEM_ATTRIBUTE_RANGE_SIZE};
+  uint64_t unsupported=0xa5a5a5a5a5a5a5a5, size=7; int type=7;
+  void *outputs[]={&unsupported,&type,&size}; OK(cnGetMemAttributes(3,batch,outputs,(CNaddr)(uintptr_t)p));
+  REQUIRE(unsupported==0xa5a5a5a5a5a5a5a5 && type==1 && size==0);
+  int pageable=0; OK(cnrtPointerGetAttributes(&a,&pageable)); REQUIRE(a.type==cnrtMemTypeUnregistered && !a.hostPointer);
+  for(int attr=1;attr<=3;attr++) {
+    uint64_t untouched=0xa5a5a5a5a5a5a5a5;
+    REQUIRE(cnGetMemAttribute(&untouched,(CNmem_attribute)attr,(CNaddr)(uintptr_t)&pageable)==CN_ERROR_INVALID_VALUE);
+    REQUIRE(untouched==0xa5a5a5a5a5a5a5a5);
+  }
+  puts("PASS Host attributes: shared CNRT/CNDrv registry, interior pointer, native output widths and mixed batch");
+}
+static void runtime_startup(void) {
+  void *p=NULL; OK(cnrtHostMalloc(&p,16)); REQUIRE(p); memset(p,7,16);
+  cnrtPointerAttributes_t a; OK(cnrtPointerGetAttributes(&a,(char *)p+4));
+  REQUIRE(a.type==cnrtMemTypeHost && a.hostPointer==(char *)p+4); OK(cnrtFreeHost(p));
+  puts("PASS CNRT Host allocation/attributes/free before initialization and without a remote connection");
+}
+/* Real buffers larger than fixed RPC fields; both native default and explicit
+ * queues, plus pageable destinations accepted by this SDK. */
+static void buffers(int driver) {
+  const size_t n=65539;
+  unsigned char *p=NULL,*pageable=(unsigned char *)malloc(n),*source=(unsigned char *)malloc(n);
+  REQUIRE(pageable && source);
+  for(size_t i=0;i<n;i++) source[i]=(unsigned char)(i*13+7);
+  void *zero=(void *)1;
+  if(driver) { OK(cnMallocHost(&zero,0)); } else { OK(cnrtHostMalloc(&zero,0)); }
+  REQUIRE(!zero);
+  if(driver) { OK(cnFreeHost(NULL)); OK(cnMallocHost((void **)&p,n)); }
+  else { OK(cnrtFreeHost(NULL)); OK(cnrtHostMalloc((void **)&p,n)); }
+  for(int def=0;def<2;def++) {
+    if(driver) {
+      CNaddr d; CNqueue q=NULL; OK(cnMalloc(&d,n)); if(!def) OK(cnCreateQueue(&q,0));
+      OK(cnMemcpyHtoDAsync(d,source,n,q)); OK(cnMemcpyDtoHAsync(p,d,n,q));
+      OK(cnMemcpyAsync((CNaddr)(uintptr_t)pageable,d,n,q)); OK(cnQueueSync(q));
+      REQUIRE(!memcmp(p,source,n) && !memcmp(pageable,source,n));
+      if(q) OK(cnDestroyQueue(q)); OK(cnFree(d));
+    } else {
+      void *d; cnrtQueue_t q=NULL; OK(cnrtMalloc(&d,n)); if(!def) OK(cnrtQueueCreate(&q));
+      OK(cnrtMemcpyAsync(d,source,n,q,cnrtMemcpyHostToDev)); OK(cnrtMemcpyAsync(p,d,n,q,cnrtMemcpyDevToHost));
+      OK(cnrtMemcpyAsync(pageable,d,n,q,cnrtMemcpyNoDirection)); OK(cnrtQueueSync(q));
+      REQUIRE(!memcmp(p,source,n) && !memcmp(pageable,source,n));
+      if(q) OK(cnrtQueueDestroy(q)); OK(cnrtFree(d));
+    }
+  }
+  if(driver) OK(cnrtFreeHost(p)); else OK(cnFreeHost(p));
+  if(getenv("MLU_TEST_SHIM")) {
+    /* Early free retires the public range; the pending lease keeps pages alive
+     * until writeback. Reading an application-freed pointer is never required. */
+    void *h=NULL,*d=NULL; cnrtQueue_t q;
+    OK(cnrtHostMalloc(&h,32)); OK(cnrtMalloc(&d,32)); OK(cnrtQueueCreate(&q));
+    OK(cnrtMemcpy(d,source,32,cnrtMemcpyHostToDev));
+    OK(cnrtMemcpyAsync(h,d,32,q,cnrtMemcpyDevToHost)); OK(cnFreeHost(h));
+    REQUIRE(cnrtFreeHost(h)!=cnrtSuccess);
+    REQUIRE(cnrtMemcpyAsync(h,d,32,q,cnrtMemcpyDevToHost)!=cnrtSuccess);
+    OK(cnrtQueueSync(q)); OK(cnrtQueueDestroy(q)); OK(cnrtFree(d));
+  }
+  free(source); free(pageable);
+  puts("PASS Host zero/free, large pinned/pageable D2H, default/explicit queue and shared free");
+}
+static void runtime(void) {
+  runtime_startup();
+  OK(cnrtSetDevice(0)); OK(cnInit(0)); CNcontext attr_context; OK(cnCtxCreate(&attr_context,0,0));
+  unsigned *host=NULL; OK(cnrtHostMalloc((void **)&host,32)); attributes(host);
+  for(int f=0;f<9;f++) {
+    unsigned *d=NULL; void *scratch=NULL; cnrtQueue_t q,next; cnrtNotifier_t done;
+    OK(cnrtMalloc((void **)&d,12)); OK(cnrtMalloc(&scratch,4)); OK(cnrtMemset(d,0xa5,12));
+    OK(cnrtQueueCreate(&q)); OK(cnrtQueueCreate(&next)); OK(cnrtNotifierCreate(&done));
+    memset(host,0xa5,32); unsigned source=0x12345678;
+    cnrtDim3_t dim={1,1,1}; host_work<<<dim,cnrtFuncTypeBlock,q>>>(d,iterations); OK(cnrtGetLastError());
+    OK(cnrtMemcpyAsync(d+1,&source,4,q,cnrtMemcpyHostToDev)); OK(cnrtMemcpyAsync(d+2,d+1,4,q,cnrtMemcpyDevToDev));
+    OK(cnrtMemcpyAsync(host+1,d,12,q,f%2 ? cnrtMemcpyNoDirection : cnrtMemcpyDevToHost));
+    /* Two dependent writes to the same Host address must publish in queue order. */
+    OK(cnrtMemcpyAsync(host+4,d+1,4,q,cnrtMemcpyDevToHost)); OK(cnrtMemcpyAsync(host+4,d,4,q,cnrtMemcpyDevToHost));
+    OK(cnrtPlaceNotifier(done,q)); REQUIRE(cnrtQueryNotifier(done)==cnrtErrorNotReady);
+    REQUIRE(host[1]==0xa5a5a5a5 && host[4]==0xa5a5a5a5);
+    if(f==0) OK(cnrtQueueSync(q));
+    if(f==1) { int st; do { st=cnrtQueueQuery(q); if(st==1) pause_poll(); } while(st==1); OK(st); }
+    if(f==2) OK(cnrtWaitNotifier(done));
+    if(f==3) { int st; do { st=cnrtQueryNotifier(done); if(st==1) pause_poll(); } while(st==1); OK(st); }
+    if(f==4) OK(cnrtSyncDevice());
+    if(f==5) { OK(cnrtQueueWaitNotifier(done,next,0)); OK(cnrtQueueSync(next)); }
+    if(f==6) { OK(cnrtFree(scratch)); scratch=NULL; OK(cnrtQueueSync(q)); }
+    if(f==7) {
+      if(!getenv("MLU_TEST_SHIM")) OK(cnrtWaitNotifier(done));
+      OK(cnrtQueueDestroy(q)); q=NULL; OK(cnrtWaitNotifier(done));
+    }
+    /* SDK reset/unload can cancel pending D2H; numerical Native baseline waits first. */
+    if(f==8 && !getenv("MLU_TEST_SHIM") && !getenv("MLU_HOST_OBSERVE_NATIVE")) OK(cnrtWaitNotifier(done));
+    if(f==8) OK(cnrtDeviceReset());
+    REQUIRE(host[0]==0xa5a5a5a5 && host[1]==expected() && host[2]==source && host[3]==source && host[4]==expected());
+    if(f!=8) { if(q) OK(cnrtQueueDestroy(q)); OK(cnrtQueueDestroy(next)); OK(cnrtNotifierDestroy(done)); OK(cnrtFree(d)); if(scratch) OK(cnrtFree(scratch)); }
+    (void)cnrtGetLastError();
+    printf("PASS CNRT async D2H frontier=%d data=%u,%u,%u ordered=%u\n",f,host[1],host[2],host[3],host[4]);
+  }
+  attributes(host); buffers(0); OK(cnFreeHost(host)); OK(cnCtxDestroy(attr_context));
+}
+static void driver(const char *image) {
+  OK(cnInit(0)); void *initial=NULL; OK(cnMallocHost(&initial,16)); REQUIRE(initial); OK(cnFreeHost(initial));
+  puts("PASS CNDrv Host allocation/free after init without a current Context");
+  CNcontext ctx; OK(cnCtxCreate(&ctx,0,0));
+  unsigned *host=NULL; OK(cnMallocHost((void **)&host,32)); attributes(host);
+  for(int f=0;f<10;f++) {
+    CNmodule module; CNkernel kernel; CNaddr d=0,scratch=0; CNqueue q,next; CNnotifier done;
+    OK(cnModuleLoad(image,&module)); OK(cnModuleGetKernel(module,"_Z10drain_workPji",&kernel));
+    OK(cnMalloc(&d,12)); OK(cnMalloc(&scratch,4)); OK(cnMemsetD8(d,0xa5,12));
+    OK(cnCreateQueue(&q,0)); OK(cnCreateQueue(&next,0)); OK(cnCreateNotifier(&done,0));
+    memset(host,0xa5,32); unsigned source=0x12345678; int count=iterations; void *args[]={&d,&count};
+    OK(cnInvokeKernel(kernel,1,1,1,CN_KERNEL_CLASS_BLOCK,0,q,args,NULL));
+    OK(cnMemcpyHtoDAsync(d+4,&source,4,q)); OK(cnMemcpyDtoDAsync(d+8,d+4,4,q));
+    if(f%2) OK(cnMemcpyAsync((CNaddr)(uintptr_t)(host+1),d,12,q)); else OK(cnMemcpyDtoHAsync(host+1,d,12,q));
+    OK(cnMemcpyDtoHAsync(host+4,d+4,4,q)); OK(cnMemcpyDtoHAsync(host+4,d,4,q));
+    OK(cnPlaceNotifier(done,q)); REQUIRE(cnQueryNotifier(done)==CN_ERROR_NOT_READY);
+    REQUIRE(host[1]==0xa5a5a5a5 && host[4]==0xa5a5a5a5);
+    if(f==0) OK(cnQueueSync(q));
+    if(f==1) { int st; do { st=cnQueryQueue(q); if(st==1) pause_poll(); } while(st==1); OK(st); }
+    if(f==2) OK(cnWaitNotifier(done));
+    if(f==3) { int st; do { st=cnQueryNotifier(done); if(st==1) pause_poll(); } while(st==1); OK(st); }
+    if(f==4) OK(cnCtxSync());
+    if(f==5) { OK(cnQueueWaitNotifier(next,done)); OK(cnQueueSync(next)); }
+    if(f==6) { OK(cnFree(scratch)); scratch=0; OK(cnQueueSync(q)); }
+    if(f==7) {
+      if(!getenv("MLU_TEST_SHIM")) OK(cnWaitNotifier(done));
+      OK(cnDestroyQueue(q)); q=NULL; OK(cnWaitNotifier(done));
+    }
+    if(f>=8 && !getenv("MLU_TEST_SHIM") && !getenv("MLU_HOST_OBSERVE_NATIVE")) OK(cnWaitNotifier(done));
+    if(f==8) { OK(cnModuleUnload(module)); module=NULL; }
+    if(f==9) OK(cnCtxDestroy(ctx));
+    REQUIRE(host[0]==0xa5a5a5a5 && host[1]==expected() && host[2]==source && host[3]==source && host[4]==expected());
+    if(f!=9) { if(q) OK(cnDestroyQueue(q)); OK(cnDestroyQueue(next)); OK(cnDestroyNotifier(done)); OK(cnFree(d)); if(scratch) OK(cnFree(scratch)); if(module) OK(cnModuleUnload(module)); }
+    printf("PASS CNDrv async D2H frontier=%d data=%u,%u,%u ordered=%u\n",f,host[1],host[2],host[3],host[4]);
+  }
+  OK(cnCtxCreate(&ctx,0,0)); attributes(host); buffers(1); OK(cnrtFreeHost(host)); OK(cnCtxDestroy(ctx));
+}
+int main(int argc,char **argv) {
+  REQUIRE(argc==2 || argc==3);
+  if(!strcmp(argv[1],"offline")) runtime_startup();
+  else if(!strcmp(argv[1],"runtime")) runtime(); else { REQUIRE(argc==3); driver(argv[2]); }
+  return 0;
+}
