@@ -81,3 +81,9 @@ MLUABI02 明确提供自然 LP64 聚合参数的 pointer 字段 offset；两库�
 普通 memory/Host/VMM IPC 已有 Native 正例，仍为 NOT_IMPLEMENTED。当前 SDK 重复 export 同 allocation 失败，同进程跨 Context 的 IPC open 也失败；多线程 Server 因此需要 broker 及兼容 Context 的共享执行模型，Host CPU 共享和客户端 FD 传递亦需额外架构。VMM 的 void* FD 输出实测写 8 bytes，后续 adapter 必须保留本机 ABI 行为。
 
 Schema 的 `graph_ipc_plan` 定义 GraphID/NodeID/EntityID/CaptureID 与 export/import/VMM refs 的计划模型，将两族逐 API 分为 G1～G4、I1～I3；生成器校验阶段唯一性、有序依赖和 family 归属，输出 [family plan](../compat/family-plan.md) 的分批缺口与验收。这些是待实现契约，不是已完成的共享 runtime 基础。下一阶段先建立 owned DAG 与 entity payload/lease，再接 capture replay、客户端 callback/user refs；IPC 先解决 process-wide backing/执行路由，再推进 VMM/OS handle。详见 [Graph/IPC 设计](GRAPH_IPC.md)。
+
+## 2026-11-07 G1 owned DAG 收口
+
+两库各 14 个 Graph API 已按 G1 boundary 升级：173 IMPLEMENTED、0 PARTIAL、11 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、123 NOT_IMPLEMENTED。Graph 余 74 项、普通 memory/VMM IPC 余 8 项；原 97 项 closure audit 与历史 resolution 不变。
+
+新增共享有界 u64 arrays codegen、三个 Graph RPC 和全部 28 个生成式 wrapper；native DAG adapter 管理 GraphID/NodeID、父图校验、clone remap、查询和 reset/EOF 回收。14/14 专项及本批核心复跑见 [G1 证据](../evidence/graph-g1-20261107/README.md)。两库实际查询方向与名字相反，由 native 权威返回；stale 拒绝属于 Remote 安全边界。下一阶段为 G2 typed payload/entity snapshot/leases，G3/G4 和 IPC broker/VMM 仍待实现。

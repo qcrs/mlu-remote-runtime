@@ -1,0 +1,9 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_driver', '/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin', '/home/lvtong/mlu-remote-runtime/build/audit/native_bang_abi-bang-mlisa-cambricon-bang.cnfatbin', '/home/lvtong/mlu-remote-runtime/build/drain-audit/native_bang_drain-bang-mlisa-cambricon-bang.cnfatbin']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50250', 'LD_PRELOAD': '/home/lvtong/mlu-remote-runtime/build/driver-shim/libcndrv.so', 'MLU_TEST_SHIM': '1'}
+Driver device=MLU370-S4[mtp_372.41] bytes=25769803776 count=1
+PASS Driver file/fatbinary load, two kernels share globals, two contexts isolate state, TLS bind/unbind
+PASS Driver mixed primitive args, pointer offsets/NULL, xyz, 1200 launches, 1200 async H2D, D2D, notifier
+Driver pending queue default=0 status=1
+Driver pending queue default=1 status=1
+PASS Driver explicit/NULL queue module unload drains finite kernel and preserves its result
+PASS Driver explicit destroy drains resources and invalidates context children

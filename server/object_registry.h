@@ -13,6 +13,8 @@ enum mlu_object_type {
   MLU_OBJECT_MODULE = 4,
   MLU_OBJECT_KERNEL = 5,
   MLU_OBJECT_TRANSFER = 6,
+  MLU_OBJECT_GRAPH = 7,
+  MLU_OBJECT_GRAPH_NODE = 8,
 };
 
 typedef struct {

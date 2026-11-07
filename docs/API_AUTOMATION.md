@@ -1,6 +1,6 @@
 # API 泛化与编译器元数据
 
-本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 45 个 typed RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 44 个公共 RPC 包装和 4 个本地 error API；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
+本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 48 个 typed RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 72 个公共 RPC 包装和 4 个本地 error API；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
 
 2026-11-07 error closure：四个 CNRT/CNDrv error API 改为 `generated_local`。显式 SDK-builder 命令 `capture-error-catalog.py` 从当前头文件枚举并集捕获 139 个不同错误值的原生文本；reviewed JSON 纳入版本控制，普通 build 只消费 JSON。生成器输出 immutable Host-local 查询、枚举静态断言和仅含输入值的 native probe，不依赖客户端 Driver/设备/Server。已验证初始化前、远端 port 1、replacement/preload/namespace 的全目录与八个未知值，区分 CNRT 在 199999 以上的回退。旧 typed error RPC 保留 wire 兼容，公共入口不再使用线程共享可覆盖文本。Native Driver 的 NULL 输出崩溃，Shim 安全返回 INVALID_VALUE。
 
@@ -17,7 +17,7 @@ MLU 使用 CNCC 的 `__bangRegisterFatBinary/Function/Var`、CNFB v2/LZ4、设�
 `schema/mlu_api_schema.json` 是签名、功能族、优先级、状态、边界及证据的单一来源。`compat/annotations.json` 改为生成的兼容视图，修改结论应编辑 Schema。Schema 包含：
 
 - 310 个公共链接符号的返回类型、完整签名、参数类型/方向/长度/映射、依赖和 blocker。Scalar、Enum、Pointer、Buffer、Struct、Object Handle 有不同描述。
-- `typed_rpc` 的 opcode、request/response 固定宽度字段、可选 `response_buffer`、backend binding。公共 wrapper 显式指定输入映射、必需/可选输出、句柄解析和输出写入。
+- `typed_rpc` 的 opcode、request/response 固定宽度字段、可选 `response_buffer` 或有界 `request_array`/`response_array`、backend binding。公共 wrapper 显式指定输入映射、必需/可选输出、句柄解析和输出写入。
 - `bindings` 将本轮 API 对应到 wrapper、请求/响应、dispatch handler 与 backend；手工入口用 `rpc_operations` 关联相同链路。
 - `simple_rpc` 继续生成原来的 10 对对象包装/dispatch，`extra_exports` 单列 6 个私有 BANG hooks 与 legacy `cnrtInit`。
 
@@ -27,13 +27,19 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 `response_buffer` 用 request 中 scalar u64 的 `size_from` 指定长度，生成器检查 `max_bytes`、caller-owned 输出、Server 回复分配及成功回复的精确字节数。上限为协议 payload 减固定回复字段及 128-byte envelope 余量；Native binding 仍负责业务范围及 ownership 校验。`wrapper.local_prepare` 位于必需参数校验后、CNRT `CONNECT()` 前，CNDrv 则在 `INIT()`/`CURRENT()` 后，用于从共享 Host registry 返回本地属性，保持初始化和离线语义。
 
+`request_array` / `response_array` 的字段为 `name`、`type: u64`、`size_from`、`max_count`；`size_from` 引用 request 的 scalar u64，wire 为固定字段后紧跟逐元素网络序数组。请求借用调用者数组；响应须由调用者预分配，生成器校验成功回复恰好为固定长度加 `8*count`，校验通过后才发布。Server 使用独立解码数组并统一释放；业务 adapter 负责 identity 类型、parent/owner 和容量语义。`wrapper.response_prepare` 绑定 caller-owned 输出，`cleanup` 回收调用临时数组。数组与原 byte-buffer 生成路径互斥。
+
 复杂创建/销毁、context/TLS、对象回滚、异步 staging、Memset 的 owned range、2D/3D span、Kernel ABI 与重定位仍手写。统一 helper 复用原对象表和配额，不另造 RPC 框架。2D/3D 的 owned allocation、显式 pitch/ysize 边界及审计结论见 [closure audit](API_COMPATIBILITY_CLOSURE.md)，不再因其他 allocation family 的缺口笼统挂 PARTIAL。
 
 ## 自动化前后的工作量
 
 之前仅有 10 个 ObjectID RPC 能生成。普通 API 需要分别增加 header、client 编解码、server 长度检查/dispatch、backend、导出与台账；各处重复字段和 opcode。现在新增一个已审查的普通 API，主要填写 Schema 中的字段/映射/native binding，再补功能族语义断言；其余重复路径一次生成。
 
-首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 45/44，另有 4 个本地 error API，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 48/72，另有 4 个本地 error API，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+
+## 2026-11-07 G1 Graph arrays 与生命周期
+
+28 个公开 Graph wrapper 全部由 Schema 生成，三个 action/edit/query RPC 复用有界数组生成器。双库共享 native CNDrv DAG adapter 与 GraphID/NodeID registry；clone 预留并映射独立节点身份、编辑校验 parent、destroy/reset/EOF 撤销并回收。SDK 的实际节点查询方向直接保留；typed payload/entity/capture 和 IPC 尚待后续阶段。详见 [设计](GRAPH_IPC.md) 与 [14 场景证据](../evidence/graph-g1-20261107/README.md)。
 
 ## 2026-11-07 Host memory / deferred D2H
 
@@ -91,7 +97,7 @@ MLUABI02 的可变长度记录包含 `.cn_fatbin` payload 字节数、FNV64 指�
 
 ## 2026-11-07 CNRT registered-image accounting
 
-`cnrtDeviceQueryKernelMemoryUsage` 改为手写 registration adapter：逐个存活注册查询并缓存 native image memory estimate，注册后首 launch 前即计入、reset 保留、最终 unregister 扣除。原生 CNDrv module 不参与 CNRT 计数，Server 无客户端注册表，旧 `API_KERNEL_MEMORY_USAGE` opcode 保留并明确返回 NOT_SUPPORTED；公共入口使用已有 image memory query RPC，避免返回误导性的零。当前为 45 个 typed RPC、44 个生成公共 RPC wrapper 和 4 个本地 error API。
+`cnrtDeviceQueryKernelMemoryUsage` 改为手写 registration adapter：逐个存活注册查询并缓存 native image memory estimate，注册后首 launch 前即计入、reset 保留、最终 unregister 扣除。原生 CNDrv module 不参与 CNRT 计数，Server 无客户端注册表，旧 `API_KERNEL_MEMORY_USAGE` opcode 保留并明确返回 NOT_SUPPORTED；公共入口使用已有 image memory query RPC，避免返回误导性的零。该批完成时为 45 个 typed RPC、44 个生成公共 RPC wrapper 和 4 个本地 error API。
 
 ## 扩展流程与回归
 
@@ -105,11 +111,11 @@ python3 scripts/verify-transparent.py --out evidence/<batch>/full-suite
 
 `generate_compat.py` 对 SDK 预处理 Census、头文件哈希、Schema 精确签名、真实链接导出和人工状态做校验，生成逐 API ledger、summary、功能族统计和剩余 API 的依赖计划。`verify-api-contracts.py` 再核对生成结果、opcode、codec/dispatch/binding、导出 allowlist、ledger 和完整状态的证据文件。
 
-新增功能族测试比较稳定 stdout；实时 free memory 只比不变量，时间值只比非负及 disabled-timing 错误，stderr 单独留存 native 诊断。生成 test plan 为全部 45 个 typed RPC 提供坏长度与坏成功回复测试，buffer 另验证精确动态长度，已有跨 session、overflow、stale、alignment、string 和元数据负例保留。生成模板不会被当作通过测试；语义断言仍由作者编写。
+新增功能族测试比较稳定 stdout；实时 free memory 只比不变量，时间值只比非负及 disabled-timing 错误，stderr 单独留存 native 诊断。生成 test plan 为全部 48 个 typed RPC 提供坏长度与坏成功回复测试，buffer/array 另验证动态长度，已有跨 session、overflow、stale、alignment、string 和元数据负例保留。生成模板不会被当作通过测试；语义断言仍由作者编写。
 
 2026-11-03 续批为 memcpy wire 增加可选 async 标志。旧 56-byte 请求继续由 server 接受，60-byte 扩展只在 host payload 长度唯一匹配时启用；因此默认 Queue 的 QueueID 0 语义可以扩展而不破坏已有协议负例。该字段由手工 memcpy adapter 使用，typed RPC 生成器负责固定字段及有界 response buffer 的长度和成功回复校验。
 
-剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range、Context flags、QueueID 0 default ordering、Host pages/completion/writeback 已接入；module/symbol 与聚合 pointer 字段 metadata 已按当前 ABI 收口；后续补 Host conversion，再推进 Graph/IPC 共享状态机。Peer 仍受单卡条件阻塞。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
+310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range、Context flags、QueueID 0 default ordering、Host pages/completion/writeback 已接入；module/symbol、聚合 pointer 字段 metadata 与 Host conversion 已按当前范围收口。G1 完成后继续 G2～G4 与 IPC broker/VMM。Peer 仍受单卡条件阻塞。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
 
 ## 查询边界续批
 

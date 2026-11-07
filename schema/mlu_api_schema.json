@@ -93,7 +93,10 @@
     "API_CTX_CONFIG": 75,
     "MODULE_QUERY_FATBINARY_MEMORY": 77,
     "API_D2H_SUBMIT": 78,
-    "API_TRANSFER_FETCH": 79
+    "API_TRANSFER_FETCH": 79,
+    "API_GRAPH_ACTION": 80,
+    "API_GRAPH_EDIT": 81,
+    "API_GRAPH_QUERY": 82
   },
   "hello": {
     "request": [
@@ -362,7 +365,8 @@
       "encoding": "named fields, no native padding or embedded host pointers"
     },
     "object_handle": {
-      "mapping": "session-owned object ID; parent module lifetime"
+      "mapping": "session-owned object ID; checked type, generation and parent lifetime",
+      "arrays": "bounded u64 IDs encoded individually in network order; client ABI pointers never transmitted"
     }
   },
   "apis": [
@@ -4612,7 +4616,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddDependencies(cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *from, const cnrtTaskTopoNode_t *to, size_t numDependencies);",
       "parameters": [
@@ -4629,16 +4633,20 @@
           "c_type": "const cnrtTaskTopoNode_t *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "to",
           "c_type": "const cnrtTaskTopoNode_t *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "numDependencies",
@@ -4649,13 +4657,40 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "inputs": {
+          "action": "2",
+          "graph": "(uintptr_t)taskTopo",
+          "count": "numDependencies*2",
+          "ids": "ids"
+        },
+        "rpc": "graph_edit",
+        "local_prepare": [
+          "if(numDependencies>32768u || (numDependencies && (!from || !to))) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "prepare": [
+          "uint64_t *ids=calloc(numDependencies ? numDependencies*2 : 1,sizeof(*ids)); if(!ids) RETURN(cnrtErrorSysNoMem);",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)from[i];",
+          "for(size_t i=0;i<numDependencies;i++) ids[numDependencies+i]=(uintptr_t)to[i];"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_EDIT"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoAddEmptyNode",
@@ -4663,7 +4698,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddEmptyNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies);",
       "parameters": [
@@ -4671,9 +4706,9 @@
           "name": "pNode",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "taskTopo",
@@ -4688,8 +4723,10 @@
           "c_type": "const cnrtTaskTopoNode_t *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "numDependencies",
@@ -4700,13 +4737,44 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode"
+        ],
+        "inputs": {
+          "action": "1",
+          "graph": "(uintptr_t)taskTopo",
+          "count": "numDependencies",
+          "ids": "ids"
+        },
+        "rpc": "graph_edit",
+        "local_prepare": [
+          "if(numDependencies>65536u || (numDependencies && (!dependencies))) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "prepare": [
+          "uint64_t *ids=calloc(numDependencies ? numDependencies*1 : 1,sizeof(*ids)); if(!ids) RETURN(cnrtErrorSysNoMem);",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ],
+        "outputs": [
+          "*pNode=(cnrtTaskTopoNode_t)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_EDIT"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoAddHostNode",
@@ -4985,7 +5053,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoClone(cnrtTaskTopo_t *pTaskTopoClone, cnrtTaskTopo_t originalTaskTopo);",
       "parameters": [
@@ -4993,9 +5061,9 @@
           "name": "pTaskTopoClone",
           "c_type": "cnrtTaskTopo_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "originalTaskTopo",
@@ -5006,13 +5074,34 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pTaskTopoClone"
+        ],
+        "inputs": {
+          "action": "3",
+          "flags": "0",
+          "graph": "(uintptr_t)originalTaskTopo",
+          "node": "0"
+        },
+        "rpc": "graph_action",
+        "outputs": [
+          "*pTaskTopoClone=(cnrtTaskTopo_t)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoCreate",
@@ -5020,7 +5109,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoCreate(cnrtTaskTopo_t *pTaskTopo, unsigned int flags);",
       "parameters": [
@@ -5028,9 +5117,9 @@
           "name": "pTaskTopo",
           "c_type": "cnrtTaskTopo_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "flags",
@@ -5041,13 +5130,34 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pTaskTopo"
+        ],
+        "inputs": {
+          "action": "1",
+          "flags": "flags",
+          "graph": "0",
+          "node": "0"
+        },
+        "rpc": "graph_action",
+        "outputs": [
+          "*pTaskTopo=(cnrtTaskTopo_t)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoDebugDotPrint",
@@ -5098,7 +5208,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoDestroy(cnrtTaskTopo_t taskTopo);",
       "parameters": [
@@ -5111,13 +5221,29 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "inputs": {
+          "action": "2",
+          "flags": "0",
+          "graph": "(uintptr_t)taskTopo",
+          "node": "0"
+        },
+        "rpc": "graph_action"
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoDestroyNode",
@@ -5125,7 +5251,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoDestroyNode(cnrtTaskTopoNode_t node);",
       "parameters": [
@@ -5138,13 +5264,29 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "inputs": {
+          "action": "6",
+          "flags": "0",
+          "graph": "0",
+          "node": "(uintptr_t)node"
+        },
+        "rpc": "graph_action"
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoEntityChildTopoNodeSetParams",
@@ -5480,7 +5622,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoGetEdges(cnrtTaskTopo_t taskTopo, cnrtTaskTopoNode_t *from, cnrtTaskTopoNode_t *to, size_t *numEdges);",
       "parameters": [
@@ -5496,34 +5638,76 @@
           "name": "from",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numEdges",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numEdges"
         },
         {
           "name": "to",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numEdges",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numEdges"
         },
         {
           "name": "numEdges",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numEdges"
+        ],
+        "inputs": {
+          "query": "2",
+          "has_array": "from!=NULL",
+          "object": "(uintptr_t)taskTopo",
+          "capacity": "capacity",
+          "slots": "capacity*2"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(from && *numEdges>32768u) RETURN(cnrtErrorArgsInvalid);",
+          "if((!from)!=(!to)) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "prepare": [
+          "size_t capacity=from ? *numEdges : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*2 : 1,sizeof(*ids)); if(!ids) RETURN(cnrtErrorSysNoMem);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) from[i]=(cnrtTaskTopoNode_t)(uintptr_t)ids[i];",
+          "for(size_t i=0;i<capacity;i++) to[i]=(cnrtTaskTopoNode_t)(uintptr_t)ids[capacity+i];",
+          "*numEdges=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoGetNodes",
@@ -5531,7 +5715,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoGetNodes(cnrtTaskTopo_t taskTopo, cnrtTaskTopoNode_t *pNode, size_t *numNodes);",
       "parameters": [
@@ -5547,26 +5731,64 @@
           "name": "pNode",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numNodes",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numNodes"
         },
         {
           "name": "numNodes",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numNodes"
+        ],
+        "inputs": {
+          "query": "1",
+          "has_array": "pNode!=NULL",
+          "object": "(uintptr_t)taskTopo",
+          "capacity": "capacity",
+          "slots": "capacity"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pNode && *numNodes>65536u) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "prepare": [
+          "size_t capacity=pNode ? *numNodes : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*1 : 1,sizeof(*ids)); if(!ids) RETURN(cnrtErrorSysNoMem);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pNode[i]=(cnrtTaskTopoNode_t)(uintptr_t)ids[i];",
+          "*numNodes=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoGetRootNodes",
@@ -5574,7 +5796,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoGetRootNodes(cnrtTaskTopo_t taskTopo, cnrtTaskTopoNode_t *pRootNode, size_t *numRootNodes);",
       "parameters": [
@@ -5590,26 +5812,64 @@
           "name": "pRootNode",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numRootNodes",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numRootNodes"
         },
         {
           "name": "numRootNodes",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numRootNodes"
+        ],
+        "inputs": {
+          "query": "3",
+          "has_array": "pRootNode!=NULL",
+          "object": "(uintptr_t)taskTopo",
+          "capacity": "capacity",
+          "slots": "capacity"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pRootNode && *numRootNodes>65536u) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "prepare": [
+          "size_t capacity=pRootNode ? *numRootNodes : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*1 : 1,sizeof(*ids)); if(!ids) RETURN(cnrtErrorSysNoMem);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pRootNode[i]=(cnrtTaskTopoNode_t)(uintptr_t)ids[i];",
+          "*numRootNodes=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoHostNodeGetParams",
@@ -6077,7 +6337,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoNodeFindInClone(cnrtTaskTopoNode_t *pNode, cnrtTaskTopoNode_t originalNode, cnrtTaskTopo_t clonedTaskTopo);",
       "parameters": [
@@ -6085,9 +6345,9 @@
           "name": "pNode",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "originalNode",
@@ -6106,13 +6366,34 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode"
+        ],
+        "inputs": {
+          "action": "4",
+          "flags": "0",
+          "graph": "(uintptr_t)clonedTaskTopo",
+          "node": "(uintptr_t)originalNode"
+        },
+        "rpc": "graph_action",
+        "outputs": [
+          "*pNode=(cnrtTaskTopoNode_t)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoNodeGetDependencies",
@@ -6120,7 +6401,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoNodeGetDependencies(cnrtTaskTopoNode_t node, cnrtTaskTopoNode_t *pDependencies, size_t *numDependencies);",
       "parameters": [
@@ -6136,26 +6417,64 @@
           "name": "pDependencies",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numDependencies",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "numDependencies",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numDependencies"
+        ],
+        "inputs": {
+          "query": "4",
+          "has_array": "pDependencies!=NULL",
+          "object": "(uintptr_t)node",
+          "capacity": "capacity",
+          "slots": "capacity"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pDependencies && *numDependencies>65536u) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "prepare": [
+          "size_t capacity=pDependencies ? *numDependencies : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*1 : 1,sizeof(*ids)); if(!ids) RETURN(cnrtErrorSysNoMem);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pDependencies[i]=(cnrtTaskTopoNode_t)(uintptr_t)ids[i];",
+          "*numDependencies=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoNodeGetDependentNodes",
@@ -6163,7 +6482,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoNodeGetDependentNodes(cnrtTaskTopoNode_t node, cnrtTaskTopoNode_t *pDependentNodes, size_t *numDependentNodes);",
       "parameters": [
@@ -6179,26 +6498,64 @@
           "name": "pDependentNodes",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numDependentNodes",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numDependentNodes"
         },
         {
           "name": "numDependentNodes",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numDependentNodes"
+        ],
+        "inputs": {
+          "query": "5",
+          "has_array": "pDependentNodes!=NULL",
+          "object": "(uintptr_t)node",
+          "capacity": "capacity",
+          "slots": "capacity"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pDependentNodes && *numDependentNodes>65536u) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "prepare": [
+          "size_t capacity=pDependentNodes ? *numDependentNodes : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*1 : 1,sizeof(*ids)); if(!ids) RETURN(cnrtErrorSysNoMem);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pDependentNodes[i]=(cnrtTaskTopoNode_t)(uintptr_t)ids[i];",
+          "*numDependentNodes=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoNodeGetType",
@@ -6206,7 +6563,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoNodeGetType(cnrtTaskTopoNode_t node, cnrtTaskTopoNodeType_t *pType);",
       "parameters": [
@@ -6222,18 +6579,39 @@
           "name": "pType",
           "c_type": "cnrtTaskTopoNodeType_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "native_node_type"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pType"
+        ],
+        "inputs": {
+          "action": "5",
+          "flags": "0",
+          "graph": "0",
+          "node": "(uintptr_t)node"
+        },
+        "rpc": "graph_action",
+        "outputs": [
+          "*pType=(cnrtTaskTopoNodeType_t)out.value;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtTaskTopoReleaseUserObject",
@@ -6284,7 +6662,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoRemoveDependencies(cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *from, const cnrtTaskTopoNode_t *to, size_t numDependencies);",
       "parameters": [
@@ -6301,16 +6679,20 @@
           "c_type": "const cnrtTaskTopoNode_t *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "to",
           "c_type": "const cnrtTaskTopoNode_t *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "numDependencies",
@@ -6321,13 +6703,40 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/runtime-native.log",
+      "remote_test": "graph-g1-20261107/runtime-remote.log;graph-g1-20261107/runtime-preload.log;graph-g1-20261107/runtime-isolated.log;graph-g1-20261107/runtime-reset.log;graph-g1-20261107/runtime-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "inputs": {
+          "action": "3",
+          "graph": "(uintptr_t)taskTopo",
+          "count": "numDependencies*2",
+          "ids": "ids"
+        },
+        "rpc": "graph_edit",
+        "local_prepare": [
+          "if(numDependencies>32768u || (numDependencies && (!from || !to))) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "prepare": [
+          "uint64_t *ids=calloc(numDependencies ? numDependencies*2 : 1,sizeof(*ids)); if(!ids) RETURN(cnrtErrorSysNoMem);",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)from[i];",
+          "for(size_t i=0;i<numDependencies;i++) ids[numDependencies+i]=(uintptr_t)to[i];"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_EDIT"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnrtUnMapMemHandle",
@@ -13126,7 +13535,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddDependencies(CNtaskTopo hTopo, const CNtaskTopoNode *from, const CNtaskTopoNode *to, size_t numDependencies);",
       "parameters": [
@@ -13143,16 +13552,20 @@
           "c_type": "const CNtaskTopoNode *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "to",
           "c_type": "const CNtaskTopoNode *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "numDependencies",
@@ -13163,13 +13576,40 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "inputs": {
+          "action": "2",
+          "graph": "(uintptr_t)hTopo",
+          "count": "numDependencies*2",
+          "ids": "ids"
+        },
+        "rpc": "graph_edit",
+        "local_prepare": [
+          "if(numDependencies>32768u || (numDependencies && (!from || !to))) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "prepare": [
+          "uint64_t *ids=calloc(numDependencies ? numDependencies*2 : 1,sizeof(*ids)); if(!ids) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)from[i];",
+          "for(size_t i=0;i<numDependencies;i++) ids[numDependencies+i]=(uintptr_t)to[i];"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_EDIT"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoAddEmptyNode",
@@ -13177,7 +13617,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddEmptyNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies);",
       "parameters": [
@@ -13185,9 +13625,9 @@
           "name": "pNode",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "hTopo",
@@ -13202,8 +13642,10 @@
           "c_type": "const CNtaskTopoNode *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "numDependencies",
@@ -13214,13 +13656,44 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode"
+        ],
+        "inputs": {
+          "action": "1",
+          "graph": "(uintptr_t)hTopo",
+          "count": "numDependencies",
+          "ids": "ids"
+        },
+        "rpc": "graph_edit",
+        "local_prepare": [
+          "if(numDependencies>65536u || (numDependencies && (!dependencies))) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "prepare": [
+          "uint64_t *ids=calloc(numDependencies ? numDependencies*1 : 1,sizeof(*ids)); if(!ids) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ],
+        "outputs": [
+          "*pNode=(CNtaskTopoNode)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_EDIT"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoAddHostNode",
@@ -13499,7 +13972,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoClone(CNtaskTopo *pClonedTopo, CNtaskTopo hOriginTopo);",
       "parameters": [
@@ -13507,9 +13980,9 @@
           "name": "pClonedTopo",
           "c_type": "CNtaskTopo *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "hOriginTopo",
@@ -13520,13 +13993,34 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pClonedTopo"
+        ],
+        "inputs": {
+          "action": "3",
+          "flags": "0",
+          "graph": "(uintptr_t)hOriginTopo",
+          "node": "0"
+        },
+        "rpc": "graph_action",
+        "outputs": [
+          "*pClonedTopo=(CNtaskTopo)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoCreate",
@@ -13534,7 +14028,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoCreate(CNtaskTopo *pTopo, unsigned int flags);",
       "parameters": [
@@ -13542,9 +14036,9 @@
           "name": "pTopo",
           "c_type": "CNtaskTopo *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "flags",
@@ -13555,13 +14049,34 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pTopo"
+        ],
+        "inputs": {
+          "action": "1",
+          "flags": "flags",
+          "graph": "0",
+          "node": "0"
+        },
+        "rpc": "graph_action",
+        "outputs": [
+          "*pTopo=(CNtaskTopo)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoDebugDotPrint",
@@ -13612,7 +14127,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoDestroy(CNtaskTopo hTopo);",
       "parameters": [
@@ -13625,13 +14140,29 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "inputs": {
+          "action": "2",
+          "flags": "0",
+          "graph": "(uintptr_t)hTopo",
+          "node": "0"
+        },
+        "rpc": "graph_action"
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoDestroyNode",
@@ -13639,7 +14170,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoDestroyNode(CNtaskTopoNode hNode);",
       "parameters": [
@@ -13652,13 +14183,29 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "inputs": {
+          "action": "6",
+          "flags": "0",
+          "graph": "0",
+          "node": "(uintptr_t)hNode"
+        },
+        "rpc": "graph_action"
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoEntityChildTopoNodeSetParams",
@@ -13994,7 +14541,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoGetEdges(CNtaskTopo hTopo, CNtaskTopoNode *pNodesFrom, CNtaskTopoNode *pNodesTo, size_t *numEdges);",
       "parameters": [
@@ -14010,34 +14557,76 @@
           "name": "pNodesFrom",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numEdges",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numEdges"
         },
         {
           "name": "pNodesTo",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numEdges",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numEdges"
         },
         {
           "name": "numEdges",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numEdges"
+        ],
+        "inputs": {
+          "query": "2",
+          "has_array": "pNodesFrom!=NULL",
+          "object": "(uintptr_t)hTopo",
+          "capacity": "capacity",
+          "slots": "capacity*2"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pNodesFrom && *numEdges>32768u) RETURN(CN_ERROR_INVALID_VALUE);",
+          "if((!pNodesFrom)!=(!pNodesTo)) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "prepare": [
+          "size_t capacity=pNodesFrom ? *numEdges : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*2 : 1,sizeof(*ids)); if(!ids) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pNodesFrom[i]=(CNtaskTopoNode)(uintptr_t)ids[i];",
+          "for(size_t i=0;i<capacity;i++) pNodesTo[i]=(CNtaskTopoNode)(uintptr_t)ids[capacity+i];",
+          "*numEdges=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoGetNodes",
@@ -14045,7 +14634,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoGetNodes(CNtaskTopo hTopo, CNtaskTopoNode *pNodes, size_t *numNodes);",
       "parameters": [
@@ -14061,26 +14650,64 @@
           "name": "pNodes",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numNodes",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numNodes"
         },
         {
           "name": "numNodes",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numNodes"
+        ],
+        "inputs": {
+          "query": "1",
+          "has_array": "pNodes!=NULL",
+          "object": "(uintptr_t)hTopo",
+          "capacity": "capacity",
+          "slots": "capacity"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pNodes && *numNodes>65536u) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "prepare": [
+          "size_t capacity=pNodes ? *numNodes : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*1 : 1,sizeof(*ids)); if(!ids) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pNodes[i]=(CNtaskTopoNode)(uintptr_t)ids[i];",
+          "*numNodes=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoGetRootNodes",
@@ -14088,7 +14715,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoGetRootNodes(CNtaskTopo hTopo, CNtaskTopoNode *pRootNodes, size_t *numRootNodes);",
       "parameters": [
@@ -14104,26 +14731,64 @@
           "name": "pRootNodes",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numRootNodes",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numRootNodes"
         },
         {
           "name": "numRootNodes",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numRootNodes"
+        ],
+        "inputs": {
+          "query": "3",
+          "has_array": "pRootNodes!=NULL",
+          "object": "(uintptr_t)hTopo",
+          "capacity": "capacity",
+          "slots": "capacity"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pRootNodes && *numRootNodes>65536u) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "prepare": [
+          "size_t capacity=pRootNodes ? *numRootNodes : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*1 : 1,sizeof(*ids)); if(!ids) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pRootNodes[i]=(CNtaskTopoNode)(uintptr_t)ids[i];",
+          "*numRootNodes=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoHostNodeGetParams",
@@ -14591,7 +15256,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoNodeFindInClone(CNtaskTopoNode *pClonedNode, CNtaskTopoNode hOriginNode, CNtaskTopo hClonedTopo);",
       "parameters": [
@@ -14599,9 +15264,9 @@
           "name": "pClonedNode",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "hOriginNode",
@@ -14620,13 +15285,34 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pClonedNode"
+        ],
+        "inputs": {
+          "action": "4",
+          "flags": "0",
+          "graph": "(uintptr_t)hClonedTopo",
+          "node": "(uintptr_t)hOriginNode"
+        },
+        "rpc": "graph_action",
+        "outputs": [
+          "*pClonedNode=(CNtaskTopoNode)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoNodeGetDependencies",
@@ -14634,7 +15320,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoNodeGetDependencies(CNtaskTopoNode hNode, CNtaskTopoNode *pDependencies, size_t *numDependencies);",
       "parameters": [
@@ -14650,26 +15336,64 @@
           "name": "pDependencies",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numDependencies",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "numDependencies",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numDependencies"
+        ],
+        "inputs": {
+          "query": "4",
+          "has_array": "pDependencies!=NULL",
+          "object": "(uintptr_t)hNode",
+          "capacity": "capacity",
+          "slots": "capacity"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pDependencies && *numDependencies>65536u) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "prepare": [
+          "size_t capacity=pDependencies ? *numDependencies : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*1 : 1,sizeof(*ids)); if(!ids) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pDependencies[i]=(CNtaskTopoNode)(uintptr_t)ids[i];",
+          "*numDependencies=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoNodeGetDependentNodes",
@@ -14677,7 +15401,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoNodeGetDependentNodes(CNtaskTopoNode hNode, CNtaskTopoNode *pDependentNodes, size_t *numDependentNodes);",
       "parameters": [
@@ -14693,26 +15417,64 @@
           "name": "pDependentNodes",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "*numDependentNodes",
+          "mapping": "nullable_session_node_ids_null_tail",
+          "nullable": true,
+          "size_from": "numDependentNodes"
         },
         {
           "name": "numDependentNodes",
           "c_type": "size_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "inout",
+          "length": "1",
+          "mapping": "native_count_capacity"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "numDependentNodes"
+        ],
+        "inputs": {
+          "query": "5",
+          "has_array": "pDependentNodes!=NULL",
+          "object": "(uintptr_t)hNode",
+          "capacity": "capacity",
+          "slots": "capacity"
+        },
+        "rpc": "graph_query",
+        "local_prepare": [
+          "if(pDependentNodes && *numDependentNodes>65536u) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "prepare": [
+          "size_t capacity=pDependentNodes ? *numDependentNodes : 0;",
+          "uint64_t *ids=calloc(capacity ? capacity*1 : 1,sizeof(*ids)); if(!ids) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);"
+        ],
+        "response_prepare": [
+          "out.ids=ids;"
+        ],
+        "outputs": [
+          "for(size_t i=0;i<capacity;i++) pDependentNodes[i]=(CNtaskTopoNode)(uintptr_t)ids[i];",
+          "*numDependentNodes=(size_t)out.count;"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_QUERY"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoNodeGetType",
@@ -14720,7 +15482,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoNodeGetType(CNtaskTopoNode hNode, CNtaskTopoNodeType *pType);",
       "parameters": [
@@ -14736,18 +15498,39 @@
           "name": "pType",
           "c_type": "CNtaskTopoNodeType *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "native_node_type"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pType"
+        ],
+        "inputs": {
+          "action": "5",
+          "flags": "0",
+          "graph": "0",
+          "node": "(uintptr_t)hNode"
+        },
+        "rpc": "graph_action",
+        "outputs": [
+          "*pType=(CNtaskTopoNodeType)out.value;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ACTION"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnTaskTopoReleaseUserObject",
@@ -14798,7 +15581,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "Owned DAG and node identities",
-      "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoRemoveDependencies(CNtaskTopo hTopo, const CNtaskTopoNode *from, const CNtaskTopoNode *to, size_t numDependencies);",
       "parameters": [
@@ -14815,16 +15598,20 @@
           "c_type": "const CNtaskTopoNode *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "to",
           "c_type": "const CNtaskTopoNode *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "session_node_ids_same_parent",
+          "nullable": true,
+          "size_from": "numDependencies"
         },
         {
           "name": "numDependencies",
@@ -14835,13 +15622,40 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-      "contract_stage": "G1"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "G1 owned native DAG/empty nodes via shared CNDrv adapter; session/generation/type and parent validation; clone has independent stable NodeIDs; destroy/reset/EOF revoke IDs and reclaim graphs. Limits: 1024 graphs and 4096 total nodes per session, shared 8192-object registry; at most 65536 u64 identities per RPC (32768 edges). Native count-only/truncation/NULL-tail behavior retained. On this SDK NodeGetDependencies returns successors and NodeGetDependentNodes predecessors. Stale-ID rejection is Remote safety, not a Native equivalence claim. Typed payloads/entities/capture/callbacks are subsequent stages.",
+      "native_test": "graph-g1-20261107/driver-native.log",
+      "remote_test": "graph-g1-20261107/driver-remote.log;graph-g1-20261107/driver-preload.log;graph-g1-20261107/driver-isolated.log;graph-g1-20261107/driver-reset.log;graph-g1-20261107/driver-abrupt.log;graph-g1-20261107/protocol.log;graph-g1-20261107/after-cleanup.log",
+      "next_step": "G1 complete within boundary; G2 adds typed payload relocation, executable snapshots, leases and invocation completion.",
+      "contract_stage": "G1",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "inputs": {
+          "action": "3",
+          "graph": "(uintptr_t)hTopo",
+          "count": "numDependencies*2",
+          "ids": "ids"
+        },
+        "rpc": "graph_edit",
+        "local_prepare": [
+          "if(numDependencies>32768u || (numDependencies && (!from || !to))) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "prepare": [
+          "uint64_t *ids=calloc(numDependencies ? numDependencies*2 : 1,sizeof(*ids)); if(!ids) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)from[i];",
+          "for(size_t i=0;i<numDependencies;i++) ids[numDependencies+i]=(uintptr_t)to[i];"
+        ],
+        "cleanup": [
+          "free(ids);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_EDIT"
+      ],
+      "ownership": "session generation; Graph owns NodeIDs; destroy/reset/EOF revokes all child identities",
+      "routing": "current Driver context session / CNRT device session; native CNDrv DAG adapter"
     },
     {
       "name": "cnUserObjectAcquire",
@@ -16529,6 +17343,118 @@
       "backend_binding": [
         "return backend_transfer_fetch(s,in->transfer,out->data,in->bytes);"
       ]
+    },
+    {
+      "name": "graph_action",
+      "operation": "API_GRAPH_ACTION",
+      "opcode": 80,
+      "request": [
+        {
+          "name": "action",
+          "type": "u32"
+        },
+        {
+          "name": "flags",
+          "type": "u32"
+        },
+        {
+          "name": "graph",
+          "type": "u64"
+        },
+        {
+          "name": "node",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "value",
+          "type": "u32"
+        }
+      ],
+      "backend_binding": [
+        "return graph_action(s,in,out);"
+      ]
+    },
+    {
+      "name": "graph_edit",
+      "operation": "API_GRAPH_EDIT",
+      "opcode": 81,
+      "request": [
+        {
+          "name": "action",
+          "type": "u32"
+        },
+        {
+          "name": "graph",
+          "type": "u64"
+        },
+        {
+          "name": "count",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "id",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "return graph_edit(s,in,out);"
+      ],
+      "request_array": {
+        "name": "ids",
+        "type": "u64",
+        "size_from": "count",
+        "max_count": 65536
+      }
+    },
+    {
+      "name": "graph_query",
+      "operation": "API_GRAPH_QUERY",
+      "opcode": 82,
+      "request": [
+        {
+          "name": "query",
+          "type": "u32"
+        },
+        {
+          "name": "has_array",
+          "type": "u32"
+        },
+        {
+          "name": "object",
+          "type": "u64"
+        },
+        {
+          "name": "capacity",
+          "type": "u64"
+        },
+        {
+          "name": "slots",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "count",
+          "type": "u64"
+        }
+      ],
+      "backend_binding": [
+        "return graph_query(s,in,out);"
+      ],
+      "response_array": {
+        "name": "ids",
+        "type": "u64",
+        "size_from": "slots",
+        "max_count": 65536
+      }
     }
   ],
   "extra_exports": {
@@ -16566,7 +17492,7 @@
     "queue_union": "AccessPolicyWindow uses allocation,offset,bytes,f32 ratio,hit,miss. NULL attribute queue rejected. Freed window allocation cannot be reverse-relocated."
   },
   "graph_ipc_plan": {
-    "phase": "native_contracts_verified_remote_implementation_pending",
+    "phase": "g1_remote_complete_g2_g4_and_memory_ipc_pending",
     "evidence": "graph-ipc-contracts-20261107/README.md",
     "design": "docs/GRAPH_IPC.md",
     "object_models": [
@@ -16619,8 +17545,10 @@
         "family": "graph",
         "title": "Owned DAG and node identities",
         "depends_on": [],
-        "missing": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "acceptance": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree."
+        "missing": "No remaining G1 gap within the declared boundary; typed payloads, entity snapshots and invocation leases belong to G2.",
+        "acceptance": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "status": "IMPLEMENTED",
+        "evidence": "graph-g1-20261107/README.md"
       },
       {
         "id": "G2",

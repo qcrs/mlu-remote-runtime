@@ -446,4 +446,37 @@ typedef struct {
   unsigned char *data; /* caller-owned, request.bytes bytes */
 } mlu_api_transfer_fetch_response;
 int mlu_remote_api_transfer_fetch(mlu_remote_context *, const mlu_api_transfer_fetch_request *, mlu_api_transfer_fetch_response *);
+typedef struct {
+  uint32_t action;
+  uint32_t flags;
+  uint64_t graph;
+  uint64_t node;
+} mlu_api_graph_action_request;
+typedef struct {
+  uint64_t id;
+  uint32_t value;
+} mlu_api_graph_action_response;
+int mlu_remote_api_graph_action(mlu_remote_context *, const mlu_api_graph_action_request *, mlu_api_graph_action_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t graph;
+  uint64_t count;
+  const uint64_t *ids;
+} mlu_api_graph_edit_request;
+typedef struct {
+  uint64_t id;
+} mlu_api_graph_edit_response;
+int mlu_remote_api_graph_edit(mlu_remote_context *, const mlu_api_graph_edit_request *, mlu_api_graph_edit_response *);
+typedef struct {
+  uint32_t query;
+  uint32_t has_array;
+  uint64_t object;
+  uint64_t capacity;
+  uint64_t slots;
+} mlu_api_graph_query_request;
+typedef struct {
+  uint64_t count;
+  uint64_t *ids;
+} mlu_api_graph_query_response;
+int mlu_remote_api_graph_query(mlu_remote_context *, const mlu_api_graph_query_request *, mlu_api_graph_query_response *);
 #endif

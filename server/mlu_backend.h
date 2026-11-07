@@ -140,6 +140,8 @@ typedef struct mlu_backend_session {
   mlu_backend_kernel kernels[MLU_BACKEND_MAX_OBJECTS];
   mlu_backend_staging staging[MLU_BACKEND_MAX_OBJECTS];
   mlu_backend_transfer transfers[MLU_BACKEND_MAX_OBJECTS];
+  struct { uint64_t id; CNtaskTopo handle; int live; } graphs[MLU_BACKEND_MAX_OBJECTS];
+  struct { uint64_t id, parent; CNtaskTopoNode handle; int live; } graph_nodes[4096];
 } mlu_backend_session;
 
 int mlu_backend_global_init(void);

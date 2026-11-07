@@ -4,9 +4,9 @@
 
 | 层 | IMPLEMENTED | PARTIAL | BLOCKED | OUT_OF_SCOPE | UNSUPPORTED | NOT_IMPLEMENTED | 合计 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| CNRT | 59 | 0 | 5 | 0 | 1 | 65 | 130 |
-| CNDrv | 86 | 0 | 6 | 2 | 0 | 86 | 180 |
-| 总计 | 145 | 0 | 11 | 2 | 1 | 151 | 310 |
+| CNRT | 73 | 0 | 5 | 0 | 1 | 51 | 130 |
+| CNDrv | 100 | 0 | 6 | 2 | 0 | 72 | 180 |
+| 总计 | 173 | 0 | 11 | 2 | 1 | 123 | 310 |
 
 6 个私有 BANG hooks 和 legacy `cnrtInit` 不计入公共分母。IMPLEMENTED 以行内范围为限；NOT_IMPLEMENTED 未提供客户端导出，应用可能在符号解析时失败；UNSUPPORTED 为 Shim 明确拒绝，不等于 Native 硬件不支持。原 97 个 PARTIAL 的审计及后续 resolution 见 [收口记录](API_COMPATIBILITY_CLOSURE.md)。
 
@@ -14,6 +14,6 @@
 
 最近完整核心回归为 76/76，功能族 15/15，8 个普通 BANG workload 共 19 输入在 Native/replacement/preload 的 57 次运行通过。隔离客户端隐藏本地 SDK 和设备节点；尚未作为第二物理主机认证。实现范围、共享基础能力和证据入口见 [PROJECT_STATE](PROJECT_STATE.md)、[Host completion](../evidence/host-async-20261107/README.md)、[Host cast](HOST_CAST.md)。
 
-Graph 102 项与普通 memory/VMM IPC 8 项仍待实现。[Graph/IPC 设计](GRAPH_IPC.md) 和 [family plan](../compat/family-plan.md) 已定义分批状态机；[本批 Native 13 场景 / 74 检查](../evidence/graph-ipc-contracts-20261107/README.md) 不代表 Remote 成功。11 个 BLOCKED 中，7 个 Peer 需要第二设备，4 个 notifier IPC 需要支持 IPC notifier 的设备/SDK；其余 Host/device IPC 与 VMM 已有 Native 正例，继续列为实现工作。
+Graph 102 项中 G1 的 28 项已实现，覆盖 empty-node DAG、依赖编辑、查询、clone 和生命周期；[专项证据](../evidence/graph-g1-20261107/README.md) 为 14/14。剩余 Graph 74 项与普通 memory/VMM IPC 8 项按 [设计](GRAPH_IPC.md) 和 [family plan](../compat/family-plan.md) 推进。此前 [Native 13 场景 / 74 检查](../evidence/graph-ipc-contracts-20261107/README.md) 为后续 Graph/IPC 契约基线。11 个 BLOCKED 中，7 个 Peer 需要第二设备，4 个 notifier IPC 需要支持 IPC notifier 的设备/SDK；其余 Host/device IPC 与 VMM 已有 Native 正例，继续列为实现工作。
 
 `cnMallocSecurity`、`cnMallocFrameBuffer` 的专用消费者语义范围外；`cnrtMallocConstant` 明确拒绝。CNNL 库缺失属于独立工程限制，不在此 310 项分母。生产认证/TLS、异构 CPU 和其他 SDK/image ABI 未包含在当前完成声明中。

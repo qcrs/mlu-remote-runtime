@@ -66,7 +66,8 @@
     "family": "graph",
     "priority": 5,
     "counts": {
-      "NOT_IMPLEMENTED": 102
+      "NOT_IMPLEMENTED": 74,
+      "IMPLEMENTED": 28
     },
     "remaining": [
       {
@@ -140,26 +141,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnrtTaskTopoAddDependencies",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnrtTaskTopoAddEmptyNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
         "api": "cnrtTaskTopoAddHostNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -210,26 +191,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnrtTaskTopoClone",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnrtTaskTopoCreate",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
         "api": "cnrtTaskTopoDebugDotPrint",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -238,26 +199,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoDestroy",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnrtTaskTopoDestroyNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoEntityChildTopoNodeSetParams",
@@ -338,36 +279,6 @@
         "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
         "closure": {},
         "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoGetEdges",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnrtTaskTopoGetNodes",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnrtTaskTopoGetRootNodes",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
       },
       {
         "api": "cnrtTaskTopoHostNodeGetParams",
@@ -490,46 +401,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnrtTaskTopoNodeFindInClone",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnrtTaskTopoNodeGetDependencies",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnrtTaskTopoNodeGetDependentNodes",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnrtTaskTopoNodeGetType",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
         "api": "cnrtTaskTopoReleaseUserObject",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -538,16 +409,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoRemoveDependencies",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
       },
       {
         "api": "cnrtUserObjectAcquire",
@@ -650,26 +511,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnTaskTopoAddDependencies",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnTaskTopoAddEmptyNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
         "api": "cnTaskTopoAddHostNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -720,26 +561,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnTaskTopoClone",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnTaskTopoCreate",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
         "api": "cnTaskTopoDebugDotPrint",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -748,26 +569,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoDestroy",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnTaskTopoDestroyNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoEntityChildTopoNodeSetParams",
@@ -848,36 +649,6 @@
         "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
         "closure": {},
         "contract_stage": "G2"
-      },
-      {
-        "api": "cnTaskTopoGetEdges",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnTaskTopoGetNodes",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnTaskTopoGetRootNodes",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
       },
       {
         "api": "cnTaskTopoHostNodeGetParams",
@@ -1000,46 +771,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnTaskTopoNodeFindInClone",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnTaskTopoNodeGetDependencies",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnTaskTopoNodeGetDependentNodes",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
-        "api": "cnTaskTopoNodeGetType",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
-      },
-      {
         "api": "cnTaskTopoReleaseUserObject",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -1048,16 +779,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoRemoveDependencies",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "Owned DAG and node identities",
-        "blocker": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "next_step": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
-        "closure": {},
-        "contract_stage": "G1"
       },
       {
         "api": "cnUserObjectAcquire",
@@ -1096,8 +817,10 @@
         "family": "graph",
         "title": "Owned DAG and node identities",
         "depends_on": [],
-        "missing": "GraphID/NodeID registry, parent-aware invalidation, bounded identity arrays and clone remapping are absent.",
-        "acceptance": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree."
+        "missing": "No remaining G1 gap within the declared boundary; typed payloads, entity snapshots and invocation leases belong to G2.",
+        "acceptance": "Both libraries: Native/Remote DAG node/edge/root queries, dependency edits, clone mapping, owner/reset/EOF cleanup and driverless clients agree.",
+        "status": "IMPLEMENTED",
+        "evidence": "graph-g1-20261107/README.md"
       },
       {
         "id": "G2",

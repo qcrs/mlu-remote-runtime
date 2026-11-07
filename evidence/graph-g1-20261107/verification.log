@@ -1,0 +1,159 @@
+./scripts/build.sh > /tmp/graph-g1-build.log 2>&1
+exit=0; full output copied to build.log
+
+$ python3 scripts/verify-graph.py
+runtime-native 0
+runtime-remote 0
+runtime-preload 0
+runtime-isolated 0
+runtime-reset 0
+runtime-abrupt 0
+driver-native 0
+driver-remote 0
+driver-preload 0
+driver-isolated 0
+driver-reset 0
+driver-abrupt 0
+protocol 0
+after-cleanup 0
+PASS G1: 14 scenarios; native/replacement/preload/isolated, reset/EOF and clean drain
+exit=0
+
+$ python3 scripts/generate_rpc.py
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 48 RPC codecs/dispatch/bindings, 72 public wrappers
+exit=0
+
+$ python3 scripts/generate_compat.py
+{"CNRT": {"NOT_IMPLEMENTED": 51, "IMPLEMENTED": 73, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 72, "IMPLEMENTED": 100, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}
+exit=0
+
+$ python3 scripts/verify-api-contracts.py
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 48 RPC codecs/dispatch/bindings, 72 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 51, "IMPLEMENTED": 73, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 72, "IMPLEMENTED": 100, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 123, 'IMPLEMENTED': 173, 'BLOCKED': 11, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 2}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence
+exit=0
+
+$ python3 scripts/verify-closure-audit.py
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 123, 'IMPLEMENTED': 173, 'BLOCKED': 11, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 2}
+exit=0
+
+$ python3 scripts/verify-api-families.py --out evidence/graph-g1-20261107/families --port 50251
+runtime-native 0
+runtime-remote 0
+runtime-preload 0
+runtime-isolated 0
+driver-native 0
+driver-remote 0
+driver-preload 0
+driver-isolated 0
+metadata-native 0
+metadata-remote 0
+metadata-preload 0
+metadata-isolated 0
+typed-protocol 0
+typed-client-faults 0
+metadata-validation 0
+exit=0
+
+$ python3 scripts/verify-transparent.py --out evidence/graph-g1-20261107/core --port 50250
+environment 0
+native_bang_remote-native 0
+native_bang_remote-replacement 0
+native_bang_remote-preload 0
+native_bang_generic-native 0
+native_bang_generic-replacement 0
+native_bang_generic-preload 0
+native_bang_abi-native 0
+native_bang_abi-replacement 0
+native_bang_abi-preload 0
+native_bang_module-native 0
+native_bang_module-replacement 0
+native_bang_module-preload 0
+native_bang_module_dso-native 0
+native_bang_module_dso-replacement 0
+native_bang_module_dso-preload 0
+native_bang_drain-native 0
+native_bang_drain-replacement 0
+native_bang_drain-preload 0
+runtime-host-async-native 0
+runtime-host-async-replacement 0
+runtime-host-async-preload 0
+runtime-host-async-isolated 0
+driver-host-async-native 0
+driver-host-async-replacement 0
+driver-host-async-preload 0
+driver-host-async-isolated 0
+d2h-protocol 0
+runtime-retirement-native 0
+runtime-retirement-replacement 0
+runtime-retirement-preload 0
+runtime-retirement-isolated 0
+driver-retirement-native 0
+driver-retirement-replacement 0
+driver-retirement-preload 0
+driver-retirement-isolated 0
+driver-native 0
+driver-replacement 0
+driver-preload 0
+driver-semantics-native 0
+driver-semantics-remote 0
+driver-protocol 0
+api-semantics-native 0
+api-semantics-remote 0
+client-test 0
+operator-test 0
+custom-kernel-test 0
+protocol-error-test 0
+session-isolation-test 0
+device-select-test 0
+session-reset-test 0
+cnnl-test 0
+generic-protocol 0
+shared-module-protocol 0
+isolated-client 0
+isolated-shared-module 0
+isolated-module-dso 0
+isolated-driver 0
+abrupt 0
+dependencies 0
+no-driver-access 0
+driver-dependencies 0
+driver-no-device-access 0
+generated 0
+compatibility-ledger 0
+api-contracts 0
+client-response-faults 0
+driver-client-faults 0
+client-transport-deadlines 0
+object-identity 0
+server-transport-deadlines 0
+server-restart 0
+server-resources 0
+backend-resource-rollback 0
+backend-resource-quarantine 0
+parser-bounds 0
+exit=0
+
+$ git diff --check
+exit=0
+
+$ python3 scripts/summarize-api-change.py --baseline c6271ca --out evidence/graph-g1-20261107
+28 newly implemented APIs; no existing status changes; exit=0
+
+Final evidence/provenance audit
+results.json: 14/14 PASS
+families/results.json: 15/15 PASS
+core/results.json: 76/76 PASS
+Current sources, generated headers, SDK headers and binaries match G1 provenance; exit=0
+
+$ git diff --check
+exit=0
+
+Staged evidence whitespace check: native cnmon/stderr trailing spaces normalized in 13 logs; text and numeric values preserved.
+$ git diff --cached --check
+exit=0

@@ -364,6 +364,7 @@ int mlu_backend_session_reset(mlu_backend_session *s) {
   return mlu_backend_session_init(s, ordinal);
 }
 
+static int graph_cleanup(mlu_backend_session *s);
 int mlu_backend_session_cleanup(mlu_backend_session *s) {
   if (!s) return 0;
   int first = 0, synchronized = 1;
@@ -378,6 +379,14 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
    * confirms no native operation can access it. Never free in-flight staging. */
   if (synchronized) { release_staging(s, 0); release_transfer_buffers(s); }
   destroy_transfer_notifiers(s, &first);
+  int graph_status=graph_cleanup(s);
+  if(graph_status) {
+    /* Graphs are host-side native objects; context destruction alone does not
+     * prove their release. Keep ownership instead of discarding failed DAGs. */
+    s->cleanup_failed=first ? first : graph_status;
+    fprintf(stderr,"[server] CLEANUP_QUARANTINED owner=%llu Graph release failed\n",(unsigned long long)s->owner_token);
+    return s->cleanup_failed;
+  }
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->modules[i].live && !cleanup_result(&first, "cnModuleUnload", s->modules[i].module_id,
                                              cnModuleUnload(s->modules[i].module))) {
@@ -1158,5 +1167,6 @@ static int mlu_backend_copy3d(mlu_backend_session *s,const mlu_api_copy3d_reques
   p.extent=(CNextent){in->depth,in->height,in->width};
   return (int)cnMemcpyDtoD3D(&p);
 }
+#include "graph_backend.inc"
 #include "api_queries.inc"
 #include "typed_backend.inc"

@@ -76,12 +76,13 @@ for f in families:
     c=f['counts']; plan.append('| '+f['family']+' | '+str(sum(c.values()))+' | '+' | '.join(str(c.get(k,0)) for k in ('IMPLEMENTED','PARTIAL_IMPLEMENTED','BLOCKED','OUT_OF_SCOPE','UNSUPPORTED','NOT_IMPLEMENTED'))+' | P'+str(f['priority'])+' |')
 plan+=['','P0：设备/context/版本基础查询；P1：owned memory、stride copy、queue/notifier；P2：Host completion 与 kernel/module ABI；P3：Host 数值工具；P4：多设备 Peer；P5：Graph/IPC。具体 API 可在同一功能族中按依赖再排序。','']
 if schema.get('graph_ipc_plan'):
-    plan+=['## Graph / IPC 分批实现契约','','原生契约已验证，Remote 仍待实现；共享状态机、SDK 特例和验收见 [设计](../docs/GRAPH_IPC.md) 与 [证据](../evidence/'+schema['graph_ipc_plan']['evidence']+')。native_test 中的 Notifier 证据证明创建前提缺失，并非成功导出/导入。',
-           '','| 批次 | 能力 | API 数 | 依赖 |','|---|---|---:|---|']
+    plan+=['## Graph / IPC 分批实现契约','','原生契约与逐批 Remote 状态见下表；共享状态机、SDK 特例和验收见 [设计](../docs/GRAPH_IPC.md) 与 [原生证据](../evidence/'+schema['graph_ipc_plan']['evidence']+')。G1 Remote 证据见 [owned DAG](../evidence/graph-g1-20261107/README.md)。native_test 中的 Notifier 证据证明创建前提缺失，并非成功导出/导入。',
+           '','| 批次 | 能力 | API 数 | 已实现 | 依赖 |','|---|---|---:|---:|---|']
     for stage in schema['graph_ipc_plan']['stages']:
-        count=sum(a.get('contract_stage')==stage['id'] for a in schema['apis'])
-        plan.append('| '+stage['id']+' | '+stage['title']+' | '+str(count)+' | '+(', '.join(stage['depends_on']) or '无')+' |')
-    plan+=['','每批具体缺口及验收见 `family-plan.json` 的 `implementation_stages`；该计划不新增 wire opcode、客户端导出或 IMPLEMENTED 声明。','']
+        apis=[a for a in schema['apis'] if a.get('contract_stage')==stage['id']]
+        count=len(apis); implemented=sum(a['status']=='IMPLEMENTED' for a in apis)
+        plan.append('| '+stage['id']+' | '+stage['title']+' | '+str(count)+' | '+str(implemented)+' | '+(', '.join(stage['depends_on']) or '无')+' |')
+    plan+=['','每批具体缺口及验收见 `family-plan.json` 的 `implementation_stages`；完成声明以逐 API 状态、boundary 和 Native/Remote 证据为准。','']
 for relative, text in [('compat/api-ledger.csv',buf.getvalue()),('compat/summary.json',json.dumps(summary,indent=2,ensure_ascii=False)+'\n'),
                        ('compat/annotations.json',json.dumps(annotations,indent=2,ensure_ascii=False)+'\n'),('compat/family-plan.json',json.dumps(families,indent=2,ensure_ascii=False)+'\n'),('compat/family-plan.md','\n'.join(plan))]:
     target=ROOT/relative

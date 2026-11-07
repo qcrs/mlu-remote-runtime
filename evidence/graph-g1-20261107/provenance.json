@@ -1,0 +1,23 @@
+{
+  "tests/native_graph.c": "fa5801cb455d2d5c347cefef1dbd18ba120b98422574980cc0290f5440456093",
+  "tests/graph_protocol.py": "c7145b3c459bf372bc106f731d1cd49ee008c03351251257756479e303de65cd",
+  "scripts/verify-graph.py": "279163d139578c0160bade740e6453348f0ee11b8e8046d1b14fd1a739a10213",
+  "scripts/array_codegen.py": "229fb8903494bbb112dfd4874929066e39febe88a9083587856570dd779b5c81",
+  "scripts/api_codegen.py": "0f3c7baaa5665431e1e12259f98bb30d6399e10f9c9ebcee26a381516c64f9c0",
+  "scripts/build.sh": "97446db5c6606e8a79094bd524c9c195ae4a0518e04c3a99dff67e7b7b48a9bd",
+  "server/graph_backend.inc": "f1d7e0d2d3b3ddb1d8373d2e4e03c5f8d462c5a363f547f32685ce4491104d4b",
+  "server/mlu_backend.c": "d8c4a257414cbf9d7e787a73b3ef8609baca1fc9f5206bbb58e0c10af31e55b3",
+  "server/mlu_backend.h": "227b716985e31953932d3ec9d43e4fc66cbefe8fdd2c61346da606569bb1b4d8",
+  "server/object_registry.h": "7f9d7997867703b2ee9f8b2e4b7d3279bbf07f374bb608268d09f233b3518261",
+  "include/remote_graph.h": "401f32d3ad8264970d7b9d3090d876b44be6a9a4ee104944b10f2a0d52f14755",
+  "schema/mlu_api_schema.json": "c184f5ff905fe03f0d2e4fdf0d3d303e33044d7216e3e83eca5bbbfee2a98d4d",
+  "include/generated/typed_api.h": "9d7ebdec8f05e051175416a94df89817087a939c90989f29a6ab7c94c38b0bc5",
+  "include/generated/typed_opcodes.inc": "20244f75c574a40bad2fd286e8d6058cf99d2a3d06c20095270b0046f93cc758",
+  "build/mlu-remote-server": "4ee2d6b0a4e0824446e069a00506f6f917c8af3ffff6deaac18ad6479dff4b2d",
+  "build/shim/libcnrt.so": "f0260e629994a230a4d33fe9aaa41e503a046f6b5721c4e9aaa5c9c8367173d7",
+  "build/driver-shim/libcndrv.so": "c8181ebb69d28e1d6e2b31d3d5e39cbfe1328f6156af3ba8e73d35b0e4b77655",
+  "build/native_graph_runtime": "74fa01c98cbb4afcc2b856af0fe6d90f03fa5d8d15f32f46315f11ff998264df",
+  "build/native_graph_driver": "db794c14a91a3e7e77e1a64abf47016e0f888694b91d3a87c1ee02020e6d3238",
+  "/usr/local/neuware/include/cnrt.h": "d29d66084ab522bd42a7a3515c95b8ee4eee89512ae45e74012d51aa86bbf614",
+  "/usr/local/neuware/include/cn_api.h": "3439b23770c2bf5f791a7e849a8aa849076139e79871bf38ceff68562544e3b6"
+}

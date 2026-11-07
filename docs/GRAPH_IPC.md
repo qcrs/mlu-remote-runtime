@@ -1,6 +1,6 @@
 # Graph / IPC 原生契约与实现计划
 
-更新：2026-11-07。范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64 LP64。本阶段完成 Native 契约探针和共享对象模型设计；以下 Remote 状态机尚未实现。102 个 Graph API、8 个普通 memory/VMM IPC API 仍为 NOT_IMPLEMENTED；4 个 IPC notifier API 因本机原生前提缺失为 BLOCKED。不能从 Native 成功推导客户端导出或 RPC 能力。
+更新：2026-11-07。范围为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64 LP64。G1 的 28 个 Graph API 已实现；其余 74 个 Graph API、8 个普通 memory/VMM IPC API 仍为 NOT_IMPLEMENTED，4 个 IPC notifier API 因本机原生前提缺失为 BLOCKED。下文区分 G1 已实现能力与后续状态机计划。
 
 分批归属、依赖和验收以 [Schema 的 graph_ipc_plan](../schema/mlu_api_schema.json) 为准，生成到 [family plan](../compat/family-plan.md)。原始运行和复现方式见 [本批证据](../evidence/graph-ipc-contracts-20261107/README.md)。
 
@@ -21,9 +21,21 @@
 
 当前探针只覆盖数值 DAG、relaxed capture 与正常 close-before-free 的共享路径。Kernel/Host/child nodes、entity update、pending entity destroy、其他 capture 模式/线程交互、user objects、重复 importer 和源进程提前退出尚无 Native 成功基线，不能称为整族认证。
 
-## 计划中的 Graph 对象模型
+## G1 已实现：owned DAG 与节点身份
 
-现有 [object registry](../server/object_registry.h) 提供 session owner/generation 和不可直接作为 native 指针使用的 identity；[backend](../server/mlu_backend.h) 为每会话持有独立 CNcontext。Graph 需要新增以下对象，不能把所有句柄都塞进 Queue 或 module 的现有表。
+双库各 14 个入口统一生成到 `graph_action`、`graph_edit`、`graph_query` 三个 RPC（opcode 80～82）。共享 CNDrv adapter 直接维护 native DAG；查询结果映射为 GraphID/NodeID，拓扑边与查询方向由本机 SDK 决定。`scripts/array_codegen.py` 生成有界 trailing u64 arrays、逐元素网络序编码、精确长度检查和 caller-owned 输出；客户端 ABI 句柄仅保存 opaque ID。
+
+GraphID/NodeID 复用 session owner/generation/type registry，NodeID 带 parent GraphID。输入依赖逐个检查父图；clone 预留并登记全部新 NodeIDs，重复查询和 FindInClone 返回稳定身份。DestroyNode 先由 native 删除节点/边再撤销 ID；graph destroy/reset/EOF 撤销全部 child IDs。native graph 清理失败保留 session/context ownership 并 quarantine，不能假定 context destroy 自动释放这些 host-side 对象。
+
+每 session 最多 1024 个 graph、所有 graph 合计 4096 个 node，并受共享 8192-object registry 限制。单 RPC 最多 65536 个 u64 identities；node 查询 capacity 上限 65536，edge 查询两组数组合计上限相同，因此 capacity 上限 32768。count-only、截断、零容量和 NULL tail 保留 native 实测语义；零条 Add/RemoveDependencies 成功。
+
+本机两库 `NodeGetDependencies` 返回 outgoing 后继，`NodeGetDependentNodes` 返回 incoming 前驱；Remote 直接调用 native 后映射身份，不按名字反转。stale/destroyed handle 的 native 行为不能作为安全契约，Remote 的 stale/reset 拒绝单列为安全校验。当前图只含 empty nodes；typed payload、entity、capture、callback 和 user object 均属后续阶段。
+
+[G1 证据](../evidence/graph-g1-20261107/README.md) 包含独立 Server/Client、两库 Native/replacement/preload/隔离客户端、owner/type/parent/clone/数组边界、reset/EOF 和 clean drain，专项 14/14。
+
+## 后续 Graph 对象模型
+
+现有 [object registry](../server/object_registry.h) 提供 session owner/generation 和不可直接作为 native 指针使用的 identity；[backend](../server/mlu_backend.h) 为每会话持有独立 CNcontext。G1 已提供 GraphID/NodeID，后续为它们加入 typed payload 与引用，并新增 EntityID/CaptureID/invocation 对象。
 
 | 对象 | 归属与内容 | 退役与回收 |
 |---|---|---|
@@ -91,7 +103,7 @@ SCM_RIGHTS 只在本机 Unix socket 中传递 descriptor；本批 Python runner 
 
 | 批次 | 本族 API 数 | 共享能力与升级条件 |
 |---|---:|---|
-| G1 | 28 | owned DAG、node identities、父图校验、clone remap、有界 node/edge arrays；两库 Native/Remote 查询、编辑、reset/EOF 和隔离客户端 |
+| G1 | 28 | 已完成；owned DAG、node identities、父图校验、clone remap、有界 node/edge arrays；两库 Native/Remote 查询、编辑、reset/EOF 和隔离客户端 |
 | G2 | 44 | typed copy/memset/kernel/child nodes、entity revision/update、module/allocation leases、invoke completion；数值与 pending destroy 回收 |
 | G3 | 10 | 逻辑线程 capture 状态、frontier、每次 Host 输入与 D2H publication；多次 replay、模式/线程与依赖转移 |
 | G4 | 20 | 客户端 callback/destructor、user refs、客户端 DOT 路径；顺序与恰好一次析构 |
@@ -99,4 +111,4 @@ SCM_RIGHTS 只在本机 Unix socket 中传递 descriptor；本批 Python runner 
 | I2 | 2 | VMM backing/VA/handle/FD refs 及客户端 OS transport；依赖的 memory family API 另计，不包含在本行的 2 项中 |
 | I3 | 4 | 当前 BLOCKED；先换至 IPCNOTIFIER_SUPPORTED=1 且合法创建成功的设备/SDK，再做跨进程 record/wait 基线和 Remote refs |
 
-G1→G2→G3→G4；I1→I2。I3 的 native 前提独立检查。每批均需正常 Native 数值、独立 Remote Server/Client、replacement/preload、无本地 SDK/设备客户端与必要 ownership/资源回收证据，才按逐 API boundary 升级；本阶段未增加 wire opcode、Shim 导出或运行期共享资源。7 个 Peer API 仍单独因缺第二设备 BLOCKED。
+G1→G2→G3→G4；I1→I2。I3 的 native 前提独立检查。每批均需相关 Native 语义、独立 Remote Server/Client、replacement/preload、无本地 SDK/设备客户端与必要 ownership/资源回收证据，才按逐 API boundary 升级；G1 完成不代表 typed graph 执行或 IPC 已实现。7 个 Peer API 仍单独因缺第二设备 BLOCKED。

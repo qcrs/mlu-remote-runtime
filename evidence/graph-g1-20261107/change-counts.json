@@ -1,0 +1,228 @@
+{
+  "baseline_commit": "c6271caba59cf4e252410ae4c7576fd5fa0a7915",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnrtTaskTopoAddDependencies",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoAddEmptyNode",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoClone",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoCreate",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoDestroy",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoDestroyNode",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoGetEdges",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoGetNodes",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoGetRootNodes",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoNodeFindInClone",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoNodeGetDependencies",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoNodeGetDependentNodes",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoNodeGetType",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoRemoveDependencies",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoAddDependencies",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoAddEmptyNode",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoClone",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoCreate",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoDestroy",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoDestroyNode",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoGetEdges",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoGetNodes",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoGetRootNodes",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoNodeFindInClone",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoNodeGetDependencies",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoNodeGetDependentNodes",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoNodeGetType",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoRemoveDependencies",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    }
+  ],
+  "new_status_counts": {
+    "IMPLEMENTED": 28
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 151,
+    "IMPLEMENTED": 145,
+    "BLOCKED": 11,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 123,
+    "IMPLEMENTED": 173,
+    "BLOCKED": 11,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "generated_before": {
+    "typed_rpc": 45,
+    "public_wrappers": 44
+  },
+  "generated_after": {
+    "typed_rpc": 48,
+    "public_wrappers": 72
+  }
+}

@@ -1,0 +1,8 @@
+COMMAND ['python3', 'scripts/verify-api-contracts.py']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+simple RPC schema: 10 generated client wrappers + server cases
+typed schema: 310 APIs, 48 RPC codecs/dispatch/bindings, 72 public wrappers
+{"CNRT": {"NOT_IMPLEMENTED": 51, "IMPLEMENTED": 73, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 72, "IMPLEMENTED": 100, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}
+PASS closure audit: 97 original PARTIAL decisions; {'PARTIAL_IMPLEMENTED': 18, 'IMPLEMENTED': 77, 'OUT_OF_SCOPE': 2}
+Current statuses: {'NOT_IMPLEMENTED': 123, 'IMPLEMENTED': 173, 'BLOCKED': 11, 'UNSUPPORTED': 1, 'OUT_OF_SCOPE': 2}
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence

@@ -35,6 +35,8 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/native_api_families.c" -o "$ROOT/build/native_api_families" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_memory_allocations.c" -o "$ROOT/build/native_memory_allocations" $LDFLAGS -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_cast.c" -o "$ROOT/build/native_cast" $LDFLAGS -lcnrt
+"$CC" $CFLAGS "$ROOT/tests/native_graph.c" -o "$ROOT/build/native_graph_driver" $LDFLAGS -lcndrv
+"$CC" $CFLAGS -DTEST_CNRT "$ROOT/tests/native_graph.c" -o "$ROOT/build/native_graph_runtime" $LDFLAGS -lcnrt
 "$CC" $CFLAGS "$ROOT/tests/native_query_boundaries.c" -o "$ROOT/build/native_query_boundaries" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_error_catalog.c" -o "$ROOT/build/native_error_catalog" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_inferred_copy.c" -o "$ROOT/build/native_inferred_copy" $LDFLAGS -lcnrt -lcndrv

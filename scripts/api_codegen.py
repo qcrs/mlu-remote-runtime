@@ -83,6 +83,14 @@ def validate(schema):
                 not any(f['name'] == b['size_from'] and f['type'] == 'u64' and 'count' not in f for f in r['request']) or
                 not 1 <= b['max_bytes'] <= 64*1024*1024-128-size(r['response'])):
                 raise ValueError('invalid caller-owned response buffer')
+        for key in ('request_array','response_array'):
+            if key not in r: continue
+            a=r[key]
+            if (a.get('type')!='u64' or not re.fullmatch(r'[a-zA-Z_]\w*',a['name']) or
+                a['name'] in {f['name'] for f in r['request' if key=='request_array' else 'response']} or
+                not any(f['name']==a['size_from'] and f['type']=='u64' and 'count' not in f for f in r['request']) or
+                not 1<=a['max_count']<=(64*1024*1024-16384)//8 or r.get('response_buffer')):
+                raise ValueError('invalid bounded u64 array')
     names = set()
     for api in schema['apis']:
         if api['name'] in names: raise ValueError('duplicate API')
@@ -108,7 +116,7 @@ def validate(schema):
             if re.sub(r'\s+','',prototype) != re.sub(r'\s+','',api['signature']):
                 raise ValueError('wrapper parameter/signature drift: '+api['name'])
             rpc=next(r for r in schema['typed_rpc'] if r['name']==api['wrapper']['rpc'])
-            if set(api['wrapper'].get('inputs',{})) != {f['name'] for f in rpc['request']}: raise ValueError('wrapper request mapping incomplete')
+            if set(api['wrapper'].get('inputs',{})) != {f['name'] for f in rpc['request']} | ({rpc['request_array']['name']} if rpc.get('request_array') else set()): raise ValueError('wrapper request mapping incomplete')
             if api['wrapper'].get('native_status') and not any(f['name']==api['wrapper']['native_status'] and f['type']=='u32' for f in rpc['response']):
                 raise ValueError('native_status requires a u32 response field')
 
@@ -117,6 +125,10 @@ def generate(root, schema, check):
     files = {}; header = [NOTICE, '#ifndef MLU_TYPED_API_H', '#define MLU_TYPED_API_H']
     opcodes=[NOTICE]; client=[NOTICE]; server=[NOTICE]; backend=[NOTICE]; valid=[NOTICE]; decls=[NOTICE]
     for r in schema['typed_rpc']:
+        if r.get('request_array') or r.get('response_array'):
+            from array_codegen import generate_array_rpc
+            generate_array_rpc(r,header,opcodes,client,server,backend,valid,decls,fields_decl,size,codec)
+            continue
         name=r['name']; op='MLU_OP_'+r['operation']; req=r['request']; res=r['response']
         buffer=r.get('response_buffer')
         count_offset=sum(TYPES[f['type']][1]*f.get('count',1) for f in req[:next((i for i,f in enumerate(req) if buffer and f['name']==buffer['size_from']),0)])
@@ -179,6 +191,9 @@ def generate(root, schema, check):
             lines += ['  '+x for x in w.get('prepare',[])]
             lines += [f'  mlu_api_{rpc}_request in={{0}}; mlu_api_{rpc}_response out={{0}};']
             rpc_fields={field['name']:field for spec in schema['typed_rpc'] if spec['name']==rpc for field in spec['request']}
+            rpc_spec=next(spec for spec in schema['typed_rpc'] if spec['name']==rpc)
+            if rpc_spec.get('request_array'):
+                rpc_fields[rpc_spec['request_array']['name']]={'type':'u64'}
             for k,v in w.get('inputs',{}).items():
                 f=rpc_fields[k]
                 if f['type']=='cstring':
@@ -188,10 +203,12 @@ def generate(root, schema, check):
                 elif 'count' in f: lines += [f'  memcpy(in.{k},{v},sizeof(in.{k}));']
                 else: lines += [f'  in.{k}={v};']
             session=w.get('session','ctx' if rt else 'c->remote' if w.get('current') else 'control')
+            lines += ['  '+x for x in w.get('response_prepare',[])]
             lines += [f'  int st=mlu_remote_api_{rpc}({session},&in,&out);', '  if (!st) {']
             lines += ['    '+x for x in w.get('outputs',[])]
             if w.get('native_status'): lines += [f'    st=(int)out.{w["native_status"]};']
-            lines += ['  }', f"  RETURN({'status' if rt else 'result'}(st));", '}']
+            lines += ['  }', *['  '+x for x in w.get('cleanup',[])],
+                      f"  RETURN({'status' if rt else 'result'}(st));", '}']
         files[filename]=lines
         exports=[a['name'] for a in schema['apis'] if a['library']==lib and a['implementation']!='none']
         exports+=schema.get('extra_exports',{}).get(lib,[])
@@ -199,7 +216,7 @@ def generate(root, schema, check):
     manifest=[dict(name=a['name'],library=a['library'],rpc=a.get('wrapper',{}).get('rpc'),status=a['status'],implementation=a['implementation'])
               for a in schema['apis'] if a['implementation']!='none']
     files['api_manifest.json']=json.dumps(manifest,indent=2)+'\n'
-    files['typed_test_plan.json']=json.dumps([dict(name=r['name'],opcode=r['opcode'],request_bytes=size(r['request']),response_bytes=size(r['response']), **({'response_buffer':r['response_buffer']} if r.get('response_buffer') else {})) for r in schema['typed_rpc']],indent=2)+'\n'
+    files['typed_test_plan.json']=json.dumps([dict(name=r['name'],opcode=r['opcode'],request_bytes=size(r['request']),response_bytes=size(r['response']), **{k:r[k] for k in ('response_buffer','request_array','response_array') if k in r}) for r in schema['typed_rpc']],indent=2)+'\n'
     # Editable scaffolding is emitted into build; semantic assertions must be
     # filled in by the author before adding reviewed evidence to the ledger.
     files['family_test_template.c']=[NOTICE,'#include <assert.h>','#include <cnrt.h>','#include <cn_api.h>',
