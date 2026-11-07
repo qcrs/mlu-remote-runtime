@@ -1,0 +1,3 @@
+COMMAND ['python3', 'scripts/generate_compat.py', '--check']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+{"CNRT": {"NOT_IMPLEMENTED": 36, "IMPLEMENTED": 88, "BLOCKED": 5, "UNSUPPORTED": 1}, "CNDrv": {"NOT_IMPLEMENTED": 57, "IMPLEMENTED": 115, "BLOCKED": 6, "OUT_OF_SCOPE": 2}}

@@ -1,0 +1,13 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_queue_retirement', 'runtime']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50250', 'LD_PRELOAD': '/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so:/home/lvtong/mlu-remote-runtime/build/driver-shim/libcndrv.so', 'MLU_TEST_SHIM': '1'}
+destroy runtime frontier=0 seconds=0.000042 after=1
+runtime data=2515503399,305419896,305419896 expected=2515503399
+destroy runtime frontier=1 seconds=0.000037 after=1
+runtime data=2515503399,305419896,305419896 expected=2515503399
+destroy runtime frontier=2 seconds=0.000036 after=1
+runtime data=2515503399,305419896,305419896 expected=2515503399
+destroy runtime frontier=3 seconds=0.000040 after=1
+runtime data=2515503399,305419896,305419896 expected=2515503399
+destroy runtime frontier=4 seconds=0.000039 after=1
+runtime data=2515503399,305419896,305419896 expected=2515503399
+PASS CNRT retirement; notifier wait/query, context/free and cross-queue completion preserve kernel and H2D/D2D; 1200 retirements and pending reset

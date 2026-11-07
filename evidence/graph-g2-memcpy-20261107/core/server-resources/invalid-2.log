@@ -1,0 +1,4 @@
+[server] limit DEVICE session=67108864 total=100663296 bytes
+[server] limit STAGING session=16 total=24 bytes
+[server] invalid MLU_REMOTE_SESSION_IMAGE_BYTES: expected decimal integer 1..18446744073709551615
+backend init failed: "invalid argument" (100006)
