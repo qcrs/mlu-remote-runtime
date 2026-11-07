@@ -1,0 +1,13 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/native_queue_retirement', 'runtime']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+destroy runtime frontier=0 seconds=0.000096 after=0
+runtime data=2515503399,305419896,305419896 expected=2515503399
+destroy runtime frontier=1 seconds=0.000090 after=0
+runtime data=2515503399,305419896,305419896 expected=2515503399
+destroy runtime frontier=2 seconds=0.000094 after=0
+runtime data=2515503399,305419896,305419896 expected=2515503399
+destroy runtime frontier=3 seconds=0.000110 after=0
+runtime data=2515503399,305419896,305419896 expected=2515503399
+destroy runtime frontier=4 seconds=0.000066 after=0
+runtime data=2515503399,305419896,305419896 expected=2515503399
+PASS CNRT retirement; notifier wait/query, context/free and cross-queue completion preserve kernel and H2D/D2D; 1200 retirements and pending reset

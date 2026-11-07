@@ -17,7 +17,7 @@
 | 核心透明运行 | 76 | 全部通过 |
 | 合计 | 289 | 全部通过 |
 
-`results.json` 为 G4 的 20 项，每个回归子目录另有 results/stdout/stderr/Server/provenance；`verification.log` 保存回归命令及输出，`checks.log` 保存收口检查。表中不重复累加 core 内嵌的 transport/resource 子场景。Server 与 Client 始终是独立进程；Native 直接链接 vendor 库，replacement/preload 使用相同测试程序。isolated 用例确认 vendor SDK 路径和设备节点被隐藏。
+`results.json` 为 G4 的 20 项，每个回归子目录另有 results/stdout/stderr/Server/provenance；`verification.log` 保存回归命令及输出，`checks.log` 保存收口检查。表中不重复累加 core 内嵌的 transport/resource 子场景。Native stderr 和 cnmon 日志保留原内容，仅去除行末空格。Server 与 Client 始终是独立进程；Native 直接链接 vendor 库，replacement/preload 使用相同测试程序。isolated 用例确认 vendor SDK 路径和设备节点被隐藏。
 
 ## 语义证据
 

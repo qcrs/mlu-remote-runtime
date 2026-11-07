@@ -15,3 +15,5 @@ PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindin
 exit=0
 $ git diff --check
 exit=0
+$ git diff 4b86cac --check
+exit=0

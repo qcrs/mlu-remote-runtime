@@ -1,0 +1,25 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/backend-resources-test', '/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin', 'quarantine']
+ENV {'LD_LIBRARY_PATH': '/usr/local/neuware/lib64'}
+[server] limit DEVICE session=1073741824 total=8589934592 bytes
+[server] limit STAGING session=67108864 total=268435456 bytes
+[server] limit IMAGE session=67108864 total=268435456 bytes
+[server] GRAPH_CLEANUP owner=1 graphs=3 nodes=5 status=100006
+[server] CLEANUP_QUARANTINED owner=1 Graph release failed
+[server] GRAPH_CLEANUP owner=1 graphs=1 nodes=2 status=0
+[server] CLEANUP_ERROR op=cnDestroyQueue(retired) id=10070304862221324550 status=100006
+[server] RESOURCE_LIMIT kind=STAGING request=16 session_used=67108856 total_used=67108856
+[server] CLEANUP_ERROR op=cnQueueSync id=10070304862221324566 status=100006
+[server] CLEANUP_ERROR op=cnCtxDestroy id=0 status=100006
+[server] CLEANUP_QUARANTINED owner=4
+[server] RESOURCE_TOTAL device=0 staging=32 image=0
+PASS failed graph/child adoption rollback retains ownership; cleanup quarantine retries and releases allocation leases
+PASS memcpy native Add/Set/EntitySet failure rolls back both endpoint leases; replacement reaps retired endpoints; same-allocation refs balance
+PASS Host replay clone/allocate/set/instantiate/invoke/notifier rollback; failed wait retains orphan; native entity/Host/view release retries preserve ownership and quota
+PASS injected native allocation failure rolls back reservation
+PASS injected async-copy failure rolls back; real completion releases staging
+PASS kernel Add/Set/EntitySet rollback balances staging/module/allocation leases; clone/entity share immutable records; failed deferred unload retains image until retry
+PASS injected native module-load failure rolls back image reservation
+PASS queue retirement retains staging; failed deferred destroy is observable and retry retains native ownership
+PASS pinned D2H allocation/submission/notifier failures, retained staging, fetch and deferred Host free retry
+PASS failed D2H queue wait preserves host output and pending staging
+PASS failed synchronization and context destruction quarantine staging and its quota
