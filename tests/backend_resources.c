@@ -1,6 +1,7 @@
 /* Native backend with selected failure returns injected by the linker's wrap.
  * Success paths execute real CNDrv. No successful native call is fabricated. */
 #include "mlu_backend.h"
+#include "remote_graph.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +9,22 @@
 
 static int fail_alloc, fail_image, fail_copy, fail_sync, fail_destroy, fail_queue_destroy;
 static int fail_host_alloc, fail_host_free, fail_d2h, fail_notifier;
+static int fail_graph_destroy, fail_graph_find, fail_graph_node_destroy;
+extern CNresult __real_cnTaskTopoDestroy(CNtaskTopo);
+CNresult __wrap_cnTaskTopoDestroy(CNtaskTopo graph) {
+  if(fail_graph_destroy) { --fail_graph_destroy; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoDestroy(graph);
+}
+extern CNresult __real_cnTaskTopoNodeFindInClone(CNtaskTopoNode *,CNtaskTopoNode,CNtaskTopo);
+CNresult __wrap_cnTaskTopoNodeFindInClone(CNtaskTopoNode *out,CNtaskTopoNode node,CNtaskTopo graph) {
+  if(fail_graph_find) { --fail_graph_find; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoNodeFindInClone(out,node,graph);
+}
+extern CNresult __real_cnTaskTopoDestroyNode(CNtaskTopoNode);
+CNresult __wrap_cnTaskTopoDestroyNode(CNtaskTopoNode node) {
+  if(fail_graph_node_destroy) { --fail_graph_node_destroy; return CN_ERROR_INVALID_VALUE; }
+  return __real_cnTaskTopoDestroyNode(node);
+}
 extern CNresult __real_cnMallocHost(void **, cn_uint64_t);
 CNresult __wrap_cnMallocHost(void **p, cn_uint64_t n) {
   if(fail_host_alloc) { fail_host_alloc=0; return CN_ERROR_SYSTEM_OUT_OF_MEMORY; }
@@ -59,10 +76,42 @@ CNresult __wrap_cnCtxDestroy(CNcontext c) {
   return __real_cnCtxDestroy(c);
 }
 
+static void graph_failures(void) {
+  mlu_backend_session *s=calloc(1,sizeof(*s)); assert(s);
+  assert(!mlu_backend_session_init(s,0)); uint64_t allocation=0;
+  assert(!mlu_backend_alloc(s,64,&allocation));
+  mlu_api_graph_action_request action={.action=MLU_GRAPH_CREATE};
+  mlu_api_graph_action_response graph={0},parent={0},unused={0};
+  assert(!mlu_backend_api_graph_action(s,&action,&graph));
+  assert(!mlu_backend_api_graph_action(s,&action,&parent));
+  mlu_api_graph_memset_request fill={.action=MLU_GRAPH_PARAM_ADD,.graph=graph.id,
+    .allocation=allocation,.element_size=1,.width=64,.height=1,.value=7};
+  mlu_api_graph_memset_response filled={0};
+  assert(!mlu_backend_api_graph_memset(s,&fill,&filled));
+  /* A real clone/add succeeds before its identity adoption is made to fail.
+   * Failed native rollback must retain the hidden native objects and leases. */
+  action.action=MLU_GRAPH_CLONE; action.graph=graph.id;
+  fail_graph_find=1; fail_graph_destroy=1;
+  assert(mlu_backend_api_graph_action(s,&action,&unused)==CN_ERROR_INVALID_VALUE);
+  mlu_api_graph_child_request child={.action=MLU_GRAPH_CHILD_ADD,.graph=parent.id,.child=graph.id};
+  mlu_api_graph_child_response added={0};
+  fail_graph_find=1; fail_graph_node_destroy=1;
+  assert(mlu_backend_api_graph_child(s,&child,&added)==CN_ERROR_INVALID_VALUE);
+  assert(!mlu_backend_free(s,allocation));
+  assert(s->usage.bytes[MLU_RESOURCE_DEVICE]==64);
+  fail_graph_destroy=1;
+  assert(mlu_backend_session_cleanup(s)==CN_ERROR_INVALID_VALUE);
+  assert(s->context && s->usage.bytes[MLU_RESOURCE_DEVICE]==64);
+  assert(!mlu_backend_session_cleanup(s));
+  assert(!s->context && !s->usage.bytes[MLU_RESOURCE_DEVICE]);
+  free(s);
+  puts("PASS failed graph/child adoption rollback retains ownership; cleanup quarantine retries and releases allocation leases");
+}
+
 int main(int argc, char **argv) {
   assert(argc == 2 || argc == 3);
   mlu_backend_session *s = calloc(1, sizeof(*s)); assert(s);
-  assert(!mlu_backend_global_init()); assert(!mlu_backend_session_init(s, 0));
+  assert(!mlu_backend_global_init()); graph_failures(); assert(!mlu_backend_session_init(s, 0));
   uint64_t a = 0, q = 0, tid = 0, mid = 0, kid = 0;
   fail_alloc = 1;
   assert(mlu_backend_alloc(s, 64, &a) == CN_MEMORY_ERROR_OUT_OF_MEMORY);

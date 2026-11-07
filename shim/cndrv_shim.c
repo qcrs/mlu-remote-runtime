@@ -454,6 +454,7 @@ __attribute__((destructor)) static void finish(void) {
   pthread_mutex_unlock(&lock);
 }
 #include "driver_queries.inc"
+#include "graph_memset.inc"
 #include "cndrv_api.inc"
 
 CNresult cnCreateQueueWithPriority(CNqueue *out,unsigned flags,int priority) {

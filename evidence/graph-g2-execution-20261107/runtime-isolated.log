@@ -1,0 +1,11 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50253
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_graph_execution_runtime
+update_failure=100400 result=2 error_null=1
+PASS graph memset snapshots/update/pending destroy
+PASS child graph ownership/edit/clone/entity replacement
+PASS nested child snapshot leases

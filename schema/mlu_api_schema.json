@@ -96,7 +96,10 @@
     "API_TRANSFER_FETCH": 79,
     "API_GRAPH_ACTION": 80,
     "API_GRAPH_EDIT": 81,
-    "API_GRAPH_QUERY": 82
+    "API_GRAPH_QUERY": 82,
+    "API_GRAPH_MEMSET": 83,
+    "API_GRAPH_ENTITY": 84,
+    "API_GRAPH_CHILD": 85
   },
   "hello": {
     "request": [
@@ -4557,7 +4560,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddChildTopoNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies, cnrtTaskTopo_t hChildTopo);",
       "parameters": [
@@ -4565,9 +4568,9 @@
           "name": "pNode",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "taskTopo",
@@ -4582,8 +4585,8 @@
           "c_type": "const cnrtTaskTopoNode_t *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "bounded_node_ids"
         },
         {
           "name": "numDependencies",
@@ -4602,13 +4605,40 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode"
+        ],
+        "prepare": [
+          "if(numDependencies>MLU_GRAPH_MAX_NODES || (numDependencies && !dependencies)) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t ids[MLU_GRAPH_MAX_NODES];",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];"
+        ],
+        "rpc": "graph_child",
+        "inputs": {
+          "action": "MLU_GRAPH_CHILD_ADD",
+          "graph": "(uintptr_t)taskTopo",
+          "node": "0",
+          "child": "(uintptr_t)hChildTopo",
+          "entity": "0",
+          "count": "numDependencies",
+          "ids": "ids"
+        },
+        "outputs": [
+          "*pNode=(cnrtTaskTopoNode_t)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CHILD"
+      ]
     },
     {
       "name": "cnrtTaskTopoAddDependencies",
@@ -4959,7 +4989,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoAddMemsetNode(cnrtTaskTopoNode_t *pNode, cnrtTaskTopo_t taskTopo, const cnrtTaskTopoNode_t *dependencies, size_t numDependencies, const cnrtMemsetParams_t *copyParams);",
       "parameters": [
@@ -4967,9 +4997,9 @@
           "name": "pNode",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "taskTopo",
@@ -4984,8 +5014,8 @@
           "c_type": "const cnrtTaskTopoNode_t *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "bounded_node_ids"
         },
         {
           "name": "numDependencies",
@@ -5000,17 +5030,53 @@
           "c_type": "const cnrtMemsetParams_t *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memset_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode",
+          "copyParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memset_request params={0};",
+          "if(graph_memset_encode(NULL,copyParams,&params)) RETURN(cnrtErrorArgsInvalid);",
+          "if(numDependencies>MLU_GRAPH_MAX_NODES || (numDependencies && !dependencies)) RETURN(cnrtErrorArgsInvalid);",
+          "uint64_t ids[MLU_GRAPH_MAX_NODES];",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_ADD",
+          "graph": "(uintptr_t)taskTopo",
+          "node": "0",
+          "allocation": "params.allocation",
+          "offset": "params.offset",
+          "pitch": "params.pitch",
+          "value": "params.value",
+          "element_size": "params.element_size",
+          "width": "params.width",
+          "height": "params.height",
+          "count": "numDependencies",
+          "ids": "ids",
+          "entity": "0"
+        },
+        "rpc": "graph_memset",
+        "outputs": [
+          "*pNode=(cnrtTaskTopoNode_t)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMSET"
+      ]
     },
     {
       "name": "cnrtTaskTopoChildTopoNodeGetTopo",
@@ -5018,7 +5084,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoChildTopoNodeGetTopo(cnrtTaskTopoNode_t node, cnrtTaskTopo_t *pTaskTopo);",
       "parameters": [
@@ -5034,18 +5100,41 @@
           "name": "pTaskTopo",
           "c_type": "cnrtTaskTopo_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pTaskTopo"
+        ],
+        "prepare": [],
+        "rpc": "graph_child",
+        "inputs": {
+          "action": "MLU_GRAPH_CHILD_GET",
+          "graph": "0",
+          "node": "(uintptr_t)node",
+          "child": "0",
+          "entity": "0",
+          "count": "0",
+          "ids": "NULL"
+        },
+        "outputs": [
+          "*pTaskTopo=(cnrtTaskTopo_t)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CHILD"
+      ]
     },
     {
       "name": "cnrtTaskTopoClone",
@@ -5294,7 +5383,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityChildTopoNodeSetParams(cnrtTaskTopoEntity_t entity, cnrtTaskTopoNode_t node, cnrtTaskTopo_t childTopo);",
       "parameters": [
@@ -5323,13 +5412,32 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "prepare": [],
+        "rpc": "graph_child",
+        "inputs": {
+          "action": "MLU_GRAPH_CHILD_ENTITY_SET",
+          "graph": "0",
+          "node": "(uintptr_t)node",
+          "child": "(uintptr_t)childTopo",
+          "entity": "(uintptr_t)entity",
+          "count": "0",
+          "ids": "NULL"
+        },
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_CHILD"
+      ]
     },
     {
       "name": "cnrtTaskTopoEntityDestroy",
@@ -5337,7 +5445,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityDestroy(cnrtTaskTopoEntity_t entity);",
       "parameters": [
@@ -5350,13 +5458,32 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "rpc": "graph_entity",
+        "native_status": "status",
+        "inputs": {
+          "action": "MLU_GRAPH_ENTITY_DESTROY",
+          "entity": "(uintptr_t)entity",
+          "graph": "0",
+          "queue": "0",
+          "log_size": "0"
+        },
+        "prepare": [],
+        "response_prepare": [],
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_ENTITY"
+      ]
     },
     {
       "name": "cnrtTaskTopoEntityHostNodeSetParams",
@@ -5407,7 +5534,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityInvoke(cnrtTaskTopoEntity_t entity, cnrtQueue_t queue);",
       "parameters": [
@@ -5425,16 +5552,39 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "rpc": "graph_entity",
+        "native_status": "status",
+        "inputs": {
+          "action": "MLU_GRAPH_ENTITY_INVOKE",
+          "entity": "(uintptr_t)entity",
+          "graph": "0",
+          "queue": "qid",
+          "log_size": "0"
+        },
+        "prepare": [
+          "object *q=get_queue(queue); if(!q) RETURN(cnrtErrorInvalidResourceHandle); uint64_t qid=q->id;"
+        ],
+        "response_prepare": [],
+        "outputs": [
+          "if(!out.status) out.status=(uint32_t)mlu_remote_transfer_release(ctx,out.id);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ENTITY"
+      ]
     },
     {
       "name": "cnrtTaskTopoEntityKernelNodeSetParams",
@@ -5528,7 +5678,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityMemsetNodeSetParams( cnrtTaskTopoEntity_t entity, cnrtTaskTopoNode_t node, const cnrtMemsetParams_t *nodeParams);",
       "parameters": [
@@ -5553,17 +5703,46 @@
           "c_type": "const cnrtMemsetParams_t *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memset_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memset_request params={0};",
+          "if(graph_memset_encode(NULL,nodeParams,&params)) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "rpc": "graph_memset",
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_ENTITY_SET",
+          "graph": "0",
+          "node": "(uintptr_t)node",
+          "entity": "(uintptr_t)entity",
+          "allocation": "params.allocation",
+          "offset": "params.offset",
+          "pitch": "params.pitch",
+          "value": "params.value",
+          "element_size": "params.element_size",
+          "width": "params.width",
+          "height": "params.height",
+          "count": "0",
+          "ids": "NULL"
+        }
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMSET"
+      ]
     },
     {
       "name": "cnrtTaskTopoEntityUpdate",
@@ -5571,7 +5750,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoEntityUpdate( cnrtTaskTopoEntity_t entity, cnrtTaskTopo_t topo, cnrtTaskTopoNode_t *pErrorNode_out, cnrtTaskTopoEntityUpdateResult_t *updateResult_out);",
       "parameters": [
@@ -5595,26 +5774,51 @@
           "name": "pErrorNode_out",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "updateResult_out",
           "c_type": "cnrtTaskTopoEntityUpdateResult_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pErrorNode_out",
+          "updateResult_out"
+        ],
+        "rpc": "graph_entity",
+        "native_status": "status",
+        "inputs": {
+          "action": "MLU_GRAPH_ENTITY_UPDATE",
+          "entity": "(uintptr_t)entity",
+          "graph": "(uintptr_t)topo",
+          "queue": "0",
+          "log_size": "0"
+        },
+        "prepare": [],
+        "response_prepare": [],
+        "outputs": [
+          "*pErrorNode_out=(cnrtTaskTopoNode_t)(uintptr_t)out.error_node;",
+          "*updateResult_out=(cnrtTaskTopoEntityUpdateResult_t)out.update_result;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ENTITY"
+      ]
     },
     {
       "name": "cnrtTaskTopoGetEdges",
@@ -5947,7 +6151,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoInstantiate(cnrtTaskTopoEntity_t *entity, cnrtTaskTopo_t taskTopo, cnrtTaskTopoNode_t *pErrorNode, char *logBuffer, size_t bufferSize);",
       "parameters": [
@@ -5955,9 +6159,9 @@
           "name": "entity",
           "c_type": "cnrtTaskTopoEntity_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "taskTopo",
@@ -5971,17 +6175,17 @@
           "name": "pErrorNode",
           "c_type": "cnrtTaskTopoNode_t *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "logBuffer",
           "c_type": "char *",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "bufferSize",
+          "mapping": "caller_diagnostic_buffer"
         },
         {
           "name": "bufferSize",
@@ -5992,13 +6196,41 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "entity"
+        ],
+        "rpc": "graph_entity",
+        "native_status": "status",
+        "inputs": {
+          "action": "MLU_GRAPH_INSTANTIATE",
+          "entity": "0",
+          "graph": "(uintptr_t)taskTopo",
+          "queue": "0",
+          "log_size": "bufferSize"
+        },
+        "prepare": [
+          "if(bufferSize>65536 || (bufferSize && !logBuffer)) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "response_prepare": [
+          "out.log=(unsigned char *)logBuffer;"
+        ],
+        "outputs": [
+          "if(!out.status) *entity=(cnrtTaskTopoEntity_t)(uintptr_t)out.id;",
+          "if(pErrorNode) *pErrorNode=(cnrtTaskTopoNode_t)(uintptr_t)out.error_node;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ENTITY"
+      ]
     },
     {
       "name": "cnrtTaskTopoKernelNodeCopyAttributes",
@@ -6267,7 +6499,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoMemsetNodeGetParams(cnrtTaskTopoNode_t node, cnrtMemsetParams_t *nodeParams);",
       "parameters": [
@@ -6283,18 +6515,49 @@
           "name": "nodeParams",
           "c_type": "cnrtMemsetParams_t *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "typed_memset_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memset_request params={0};"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_GET",
+          "graph": "0",
+          "node": "(uintptr_t)node",
+          "allocation": "params.allocation",
+          "offset": "params.offset",
+          "pitch": "params.pitch",
+          "value": "params.value",
+          "element_size": "params.element_size",
+          "width": "params.width",
+          "height": "params.height",
+          "count": "0",
+          "ids": "NULL",
+          "entity": "0"
+        },
+        "rpc": "graph_memset",
+        "outputs": [
+          "graph_memset_decode(NULL,&out,nodeParams);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMSET"
+      ]
     },
     {
       "name": "cnrtTaskTopoMemsetNodeSetParams",
@@ -6302,7 +6565,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "cnrtRet_t",
       "signature": "cnrtRet_t cnrtTaskTopoMemsetNodeSetParams(cnrtTaskTopoNode_t node, const cnrtMemsetParams_t *nodeParams);",
       "parameters": [
@@ -6319,17 +6582,47 @@
           "c_type": "const cnrtMemsetParams_t *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memset_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cnrt-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-execution-20261107/runtime-native.log",
+      "remote_test": "graph-g2-execution-20261107/runtime-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memset_request params={0};",
+          "if(graph_memset_encode(NULL,nodeParams,&params)) RETURN(cnrtErrorArgsInvalid);"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_SET",
+          "graph": "0",
+          "node": "(uintptr_t)node",
+          "allocation": "params.allocation",
+          "offset": "params.offset",
+          "pitch": "params.pitch",
+          "value": "params.value",
+          "element_size": "params.element_size",
+          "width": "params.width",
+          "height": "params.height",
+          "count": "0",
+          "ids": "NULL",
+          "entity": "0"
+        },
+        "rpc": "graph_memset",
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMSET"
+      ]
     },
     {
       "name": "cnrtTaskTopoNodeFindInClone",
@@ -13476,7 +13769,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddChildTopoNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies, CNtaskTopo hChildTopo);",
       "parameters": [
@@ -13484,9 +13777,9 @@
           "name": "pNode",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "hTopo",
@@ -13501,8 +13794,8 @@
           "c_type": "const CNtaskTopoNode *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "bounded_node_ids"
         },
         {
           "name": "numDependencies",
@@ -13521,13 +13814,40 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode"
+        ],
+        "prepare": [
+          "if(numDependencies>MLU_GRAPH_MAX_NODES || (numDependencies && !dependencies)) RETURN(CN_ERROR_INVALID_VALUE);",
+          "uint64_t ids[MLU_GRAPH_MAX_NODES];",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];"
+        ],
+        "rpc": "graph_child",
+        "inputs": {
+          "action": "MLU_GRAPH_CHILD_ADD",
+          "graph": "(uintptr_t)hTopo",
+          "node": "0",
+          "child": "(uintptr_t)hChildTopo",
+          "entity": "0",
+          "count": "numDependencies",
+          "ids": "ids"
+        },
+        "outputs": [
+          "*pNode=(CNtaskTopoNode)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CHILD"
+      ]
     },
     {
       "name": "cnTaskTopoAddDependencies",
@@ -13878,7 +14198,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoAddMemsetNode(CNtaskTopoNode *pNode, CNtaskTopo hTopo, const CNtaskTopoNode *dependencies, size_t numDependencies, const CN_MEMSET_NODE_PARAMS *copyParams);",
       "parameters": [
@@ -13886,9 +14206,9 @@
           "name": "pNode",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "hTopo",
@@ -13903,8 +14223,8 @@
           "c_type": "const CNtaskTopoNode *",
           "kind": "object_handle",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "numDependencies",
+          "mapping": "bounded_node_ids"
         },
         {
           "name": "numDependencies",
@@ -13919,17 +14239,53 @@
           "c_type": "const CN_MEMSET_NODE_PARAMS *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memset_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pNode",
+          "copyParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memset_request params={0};",
+          "if(graph_memset_encode(c,copyParams,&params)) RETURN(CN_ERROR_INVALID_VALUE);",
+          "if(numDependencies>MLU_GRAPH_MAX_NODES || (numDependencies && !dependencies)) RETURN(CN_ERROR_INVALID_VALUE);",
+          "uint64_t ids[MLU_GRAPH_MAX_NODES];",
+          "for(size_t i=0;i<numDependencies;i++) ids[i]=(uintptr_t)dependencies[i];"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_ADD",
+          "graph": "(uintptr_t)hTopo",
+          "node": "0",
+          "allocation": "params.allocation",
+          "offset": "params.offset",
+          "pitch": "params.pitch",
+          "value": "params.value",
+          "element_size": "params.element_size",
+          "width": "params.width",
+          "height": "params.height",
+          "count": "numDependencies",
+          "ids": "ids",
+          "entity": "0"
+        },
+        "rpc": "graph_memset",
+        "outputs": [
+          "*pNode=(CNtaskTopoNode)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMSET"
+      ]
     },
     {
       "name": "cnTaskTopoChildTopoNodeGetTopo",
@@ -13937,7 +14293,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoChildTopoNodeGetTopo(CNtaskTopoNode hNode, CNtaskTopo *pTopo);",
       "parameters": [
@@ -13953,18 +14309,41 @@
           "name": "pTopo",
           "c_type": "CNtaskTopo *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "pTopo"
+        ],
+        "prepare": [],
+        "rpc": "graph_child",
+        "inputs": {
+          "action": "MLU_GRAPH_CHILD_GET",
+          "graph": "0",
+          "node": "(uintptr_t)hNode",
+          "child": "0",
+          "entity": "0",
+          "count": "0",
+          "ids": "NULL"
+        },
+        "outputs": [
+          "*pTopo=(CNtaskTopo)(uintptr_t)out.id;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_CHILD"
+      ]
     },
     {
       "name": "cnTaskTopoClone",
@@ -14213,7 +14592,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityChildTopoNodeSetParams(CNtaskTopoEntity hEntity, CNtaskTopoNode hNode, CNtaskTopo childTopo);",
       "parameters": [
@@ -14242,13 +14621,32 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native node-owned child clone has independent GraphID/NodeID tree; GetTopo edits affect that child, recursive clones/leases support depth <64. Direct destroy of a borrowed child graph is rejected by Remote ownership policy.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "prepare": [],
+        "rpc": "graph_child",
+        "inputs": {
+          "action": "MLU_GRAPH_CHILD_ENTITY_SET",
+          "graph": "0",
+          "node": "(uintptr_t)hNode",
+          "child": "(uintptr_t)childTopo",
+          "entity": "(uintptr_t)hEntity",
+          "count": "0",
+          "ids": "NULL"
+        },
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_CHILD"
+      ]
     },
     {
       "name": "cnTaskTopoEntityDestroy",
@@ -14256,7 +14654,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityDestroy(CNtaskTopoEntity hEntity);",
       "parameters": [
@@ -14269,13 +14667,32 @@
           "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Public EntityID is revoked on successful native destruction; in-flight invocation leases last to completion. Failed native release retains ownership for retry.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "rpc": "graph_entity",
+        "native_status": "status",
+        "inputs": {
+          "action": "MLU_GRAPH_ENTITY_DESTROY",
+          "entity": "(uintptr_t)hEntity",
+          "graph": "0",
+          "queue": "0",
+          "log_size": "0"
+        },
+        "prepare": [],
+        "response_prepare": [],
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_ENTITY"
+      ]
     },
     {
       "name": "cnTaskTopoEntityHostNodeSetParams",
@@ -14326,7 +14743,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityInvoke(CNtaskTopoEntity hEntity, CNqueue hqueue);",
       "parameters": [
@@ -14344,16 +14761,39 @@
           "kind": "object_handle",
           "direction": "in",
           "length": "1",
-          "mapping": "review_required"
+          "mapping": "session_object_id"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native asynchronous Queue submission; each invocation retains its submitted base/override resources until Transfer completion. Default and explicit queues supported.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [],
+        "rpc": "graph_entity",
+        "native_status": "status",
+        "inputs": {
+          "action": "MLU_GRAPH_ENTITY_INVOKE",
+          "entity": "(uintptr_t)hEntity",
+          "graph": "0",
+          "queue": "qid",
+          "log_size": "0"
+        },
+        "prepare": [
+          "uint64_t qid=0; if(queue_id(c,hqueue,&qid)) RETURN(CN_ERROR_INVALID_HANDLE);"
+        ],
+        "response_prepare": [],
+        "outputs": [
+          "if(!out.status) out.status=(uint32_t)mlu_remote_transfer_release(c->remote,out.id);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ENTITY"
+      ]
     },
     {
       "name": "cnTaskTopoEntityKernelNodeSetParams",
@@ -14447,7 +14887,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityMemsetNodeSetParams(CNtaskTopoEntity hEntity, CNtaskTopoNode hNode, const CN_MEMSET_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -14472,17 +14912,46 @@
           "c_type": "const CN_MEMSET_NODE_PARAMS *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memset_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memset_request params={0};",
+          "if(graph_memset_encode(c,nodeParams,&params)) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "rpc": "graph_memset",
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_ENTITY_SET",
+          "graph": "0",
+          "node": "(uintptr_t)hNode",
+          "entity": "(uintptr_t)hEntity",
+          "allocation": "params.allocation",
+          "offset": "params.offset",
+          "pitch": "params.pitch",
+          "value": "params.value",
+          "element_size": "params.element_size",
+          "width": "params.width",
+          "height": "params.height",
+          "count": "0",
+          "ids": "NULL"
+        }
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMSET"
+      ]
     },
     {
       "name": "cnTaskTopoEntityUpdate",
@@ -14490,7 +14959,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoEntityUpdate(CNtaskTopoEntity hEntity, CNtaskTopo hTopo, CNtaskTopoNode *hErrorNode_out, CNtaskTopoEntityUpdateResult *updateResult_out);",
       "parameters": [
@@ -14514,26 +14983,51 @@
           "name": "hErrorNode_out",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "updateResult_out",
           "c_type": "CNtaskTopoEntityUpdateResult *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "not_run",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Native validation/result retained on failure; successful update keeps the original instantiate-time setter node correspondence. Resources retain the whole revision without assuming GetNodes enumeration matches native pairing.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "hErrorNode_out",
+          "updateResult_out"
+        ],
+        "rpc": "graph_entity",
+        "native_status": "status",
+        "inputs": {
+          "action": "MLU_GRAPH_ENTITY_UPDATE",
+          "entity": "(uintptr_t)hEntity",
+          "graph": "(uintptr_t)hTopo",
+          "queue": "0",
+          "log_size": "0"
+        },
+        "prepare": [],
+        "response_prepare": [],
+        "outputs": [
+          "*hErrorNode_out=(CNtaskTopoNode)(uintptr_t)out.error_node;",
+          "*updateResult_out=(CNtaskTopoEntityUpdateResult)out.update_result;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ENTITY"
+      ]
     },
     {
       "name": "cnTaskTopoGetEdges",
@@ -14866,7 +15360,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoInstantiate(CNtaskTopoEntity *entity, CNtaskTopo topo, CNtaskTopoNode *pErrorNode, char *logBuffer, size_t bufferSize);",
       "parameters": [
@@ -14874,9 +15368,9 @@
           "name": "entity",
           "c_type": "CNtaskTopoEntity *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "topo",
@@ -14890,17 +15384,17 @@
           "name": "pErrorNode",
           "c_type": "CNtaskTopoNode *",
           "kind": "object_handle",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "session_object_id"
         },
         {
           "name": "logBuffer",
           "c_type": "char *",
           "kind": "buffer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "bufferSize",
+          "mapping": "caller_diagnostic_buffer"
         },
         {
           "name": "bufferSize",
@@ -14911,13 +15405,41 @@
           "mapping": "value"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Diagnostic buffer <=65536 bytes; failing-node identity mapping currently covers top-level nodes. <=4096 native snapshot nodes per session, including nested children.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "entity"
+        ],
+        "rpc": "graph_entity",
+        "native_status": "status",
+        "inputs": {
+          "action": "MLU_GRAPH_INSTANTIATE",
+          "entity": "0",
+          "graph": "(uintptr_t)topo",
+          "queue": "0",
+          "log_size": "bufferSize"
+        },
+        "prepare": [
+          "if(bufferSize>65536 || (bufferSize && !logBuffer)) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "response_prepare": [
+          "out.log=(unsigned char *)logBuffer;"
+        ],
+        "outputs": [
+          "if(!out.status) *entity=(CNtaskTopoEntity)(uintptr_t)out.id;",
+          "if(pErrorNode) *pErrorNode=(CNtaskTopoNode)(uintptr_t)out.error_node;"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_ENTITY"
+      ]
     },
     {
       "name": "cnTaskTopoKernelNodeCopyAttributes",
@@ -15186,7 +15708,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoMemsetNodeGetParams(CNtaskTopoNode hNode, CN_MEMSET_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -15202,18 +15724,49 @@
           "name": "nodeParams",
           "c_type": "CN_MEMSET_NODE_PARAMS *",
           "kind": "pointer",
-          "direction": "unknown",
-          "length": "review_required",
-          "mapping": "review_required"
+          "direction": "out",
+          "length": "1",
+          "mapping": "typed_memset_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memset_request params={0};"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_GET",
+          "graph": "0",
+          "node": "(uintptr_t)hNode",
+          "allocation": "params.allocation",
+          "offset": "params.offset",
+          "pitch": "params.pitch",
+          "value": "params.value",
+          "element_size": "params.element_size",
+          "width": "params.width",
+          "height": "params.height",
+          "count": "0",
+          "ids": "NULL",
+          "entity": "0"
+        },
+        "rpc": "graph_memset",
+        "outputs": [
+          "graph_memset_decode(c,&out,nodeParams);"
+        ]
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMSET"
+      ]
     },
     {
       "name": "cnTaskTopoMemsetNodeSetParams",
@@ -15221,7 +15774,7 @@
       "family": "graph",
       "priority": 5,
       "depends_on": "G1",
-      "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
+      "blocker": "",
       "return_type": "CNresult",
       "signature": "CNresult cnTaskTopoMemsetNodeSetParams(CNtaskTopoNode hNode, const CN_MEMSET_NODE_PARAMS *nodeParams);",
       "parameters": [
@@ -15238,17 +15791,47 @@
           "c_type": "const CN_MEMSET_NODE_PARAMS *",
           "kind": "pointer",
           "direction": "in",
-          "length": "review_required",
-          "mapping": "review_required"
+          "length": "1",
+          "mapping": "typed_memset_payload"
         }
       ],
-      "implementation": "none",
-      "status": "NOT_IMPLEMENTED",
-      "boundary": "No client export; Native observations and the planned shared state model do not certify Remote support.",
-      "native_test": "graph-ipc-contracts-20261107/cndrv-graph.jsonl",
-      "remote_test": "not_run",
-      "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-      "contract_stage": "G2"
+      "implementation": "generated",
+      "status": "IMPLEMENTED",
+      "boundary": "Installed SDK 1D memset/empty/child DAGs; session-owned opaque identities, independent clone/instantiate snapshots and invocation allocation leases. Kernel/memcpy/capture/callback nodes remain separate work. Element sizes 1/2/4, height=1, owned AllocationID+offset; getters preserve retired client VA identity. Dependencies <=4096.",
+      "native_test": "graph-g2-execution-20261107/driver-native.log",
+      "remote_test": "graph-g2-execution-20261107/driver-remote.log",
+      "next_step": "No remaining gap in the declared memset/empty/child-node boundary; finish kernel and replay-aware memcpy nodes for the whole G2 stage.",
+      "contract_stage": "G2",
+      "wrapper": {
+        "current": true,
+        "required": [
+          "nodeParams"
+        ],
+        "prepare": [
+          "mlu_api_graph_memset_request params={0};",
+          "if(graph_memset_encode(c,nodeParams,&params)) RETURN(CN_ERROR_INVALID_VALUE);"
+        ],
+        "inputs": {
+          "action": "MLU_GRAPH_PARAM_SET",
+          "graph": "0",
+          "node": "(uintptr_t)hNode",
+          "allocation": "params.allocation",
+          "offset": "params.offset",
+          "pitch": "params.pitch",
+          "value": "params.value",
+          "element_size": "params.element_size",
+          "width": "params.width",
+          "height": "params.height",
+          "count": "0",
+          "ids": "NULL",
+          "entity": "0"
+        },
+        "rpc": "graph_memset",
+        "outputs": []
+      },
+      "rpc_operations": [
+        "API_GRAPH_MEMSET"
+      ]
     },
     {
       "name": "cnTaskTopoNodeFindInClone",
@@ -17455,6 +18038,204 @@
         "size_from": "slots",
         "max_count": 65536
       }
+    },
+    {
+      "name": "graph_memset",
+      "operation": "API_GRAPH_MEMSET",
+      "opcode": 83,
+      "request": [
+        {
+          "name": "action",
+          "type": "u32"
+        },
+        {
+          "name": "graph",
+          "type": "u64"
+        },
+        {
+          "name": "node",
+          "type": "u64"
+        },
+        {
+          "name": "entity",
+          "type": "u64"
+        },
+        {
+          "name": "allocation",
+          "type": "u64"
+        },
+        {
+          "name": "offset",
+          "type": "u64"
+        },
+        {
+          "name": "pitch",
+          "type": "u64"
+        },
+        {
+          "name": "value",
+          "type": "u32"
+        },
+        {
+          "name": "element_size",
+          "type": "u32"
+        },
+        {
+          "name": "width",
+          "type": "u64"
+        },
+        {
+          "name": "height",
+          "type": "u64"
+        },
+        {
+          "name": "count",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "allocation",
+          "type": "u64"
+        },
+        {
+          "name": "offset",
+          "type": "u64"
+        },
+        {
+          "name": "pitch",
+          "type": "u64"
+        },
+        {
+          "name": "value",
+          "type": "u32"
+        },
+        {
+          "name": "element_size",
+          "type": "u32"
+        },
+        {
+          "name": "width",
+          "type": "u64"
+        },
+        {
+          "name": "height",
+          "type": "u64"
+        }
+      ],
+      "request_array": {
+        "name": "ids",
+        "type": "u64",
+        "size_from": "count",
+        "max_count": 4096
+      },
+      "backend_binding": [
+        "return graph_memset(s,in,out);"
+      ]
+    },
+    {
+      "name": "graph_entity",
+      "operation": "API_GRAPH_ENTITY",
+      "opcode": 84,
+      "request": [
+        {
+          "name": "action",
+          "type": "u32"
+        },
+        {
+          "name": "entity",
+          "type": "u64"
+        },
+        {
+          "name": "graph",
+          "type": "u64"
+        },
+        {
+          "name": "queue",
+          "type": "u64"
+        },
+        {
+          "name": "log_size",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "status",
+          "type": "u32"
+        },
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "error_node",
+          "type": "u64"
+        },
+        {
+          "name": "update_result",
+          "type": "u32"
+        }
+      ],
+      "response_buffer": {
+        "name": "log",
+        "size_from": "log_size",
+        "max_bytes": 65536
+      },
+      "backend_binding": [
+        "out->status=(uint32_t)graph_entity(s,in,out);",
+        "return 0;"
+      ]
+    },
+    {
+      "name": "graph_child",
+      "operation": "API_GRAPH_CHILD",
+      "opcode": 85,
+      "request": [
+        {
+          "name": "action",
+          "type": "u32"
+        },
+        {
+          "name": "graph",
+          "type": "u64"
+        },
+        {
+          "name": "node",
+          "type": "u64"
+        },
+        {
+          "name": "child",
+          "type": "u64"
+        },
+        {
+          "name": "entity",
+          "type": "u64"
+        },
+        {
+          "name": "count",
+          "type": "u64"
+        }
+      ],
+      "response": [
+        {
+          "name": "id",
+          "type": "u64"
+        }
+      ],
+      "request_array": {
+        "name": "ids",
+        "type": "u64",
+        "size_from": "count",
+        "max_count": 4096
+      },
+      "backend_binding": [
+        "return graph_child(s,in,out);"
+      ]
     }
   ],
   "extra_exports": {
@@ -17492,7 +18273,7 @@
     "queue_union": "AccessPolicyWindow uses allocation,offset,bytes,f32 ratio,hit,miss. NULL attribute queue rejected. Freed window allocation cannot be reverse-relocated."
   },
   "graph_ipc_plan": {
-    "phase": "g1_remote_complete_g2_g4_and_memory_ipc_pending",
+    "phase": "g1_complete_g2_memset_child_entity_complete_kernel_memcpy_pending",
     "evidence": "graph-ipc-contracts-20261107/README.md",
     "design": "docs/GRAPH_IPC.md",
     "object_models": [
@@ -17557,8 +18338,9 @@
         "depends_on": [
           "G1"
         ],
-        "missing": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree."
+        "missing": "22/44 APIs implemented: 1D memset nodes, nested child ownership, executable snapshots/update and invocation allocation leases. Remaining: kernel nodes/attributes (14), replay-aware memcpy nodes (8), module leases and per-invocation Host publication.",
+        "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "evidence": "graph-g2-execution-20261107/README.md"
       },
       {
         "id": "G3",

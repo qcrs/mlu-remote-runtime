@@ -118,7 +118,7 @@ static int register_object(mlu_backend_session *s, uint16_t type,
 
 static mlu_backend_allocation *find_alloc(mlu_backend_session *s, uint64_t id) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->allocations[i].live && s->allocations[i].owner == s->owner_token &&
+    if (s->allocations[i].live && !s->allocations[i].retired && s->allocations[i].owner == s->owner_token &&
         s->allocations[i].id == id && mlu_object_registry_contains(&s->objects, MLU_OBJECT_ALLOCATION, id)) return &s->allocations[i];
   return NULL;
 }
@@ -166,11 +166,13 @@ static void invalidate_module_kernels(mlu_backend_session *s, uint64_t module_id
     memset(k, 0, sizeof(*k));
   }
 }
+static void graph_transfer_release(mlu_backend_session *s,mlu_backend_transfer *t);
 static void reap_transfers(mlu_backend_session *s) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i) {
     mlu_backend_transfer *t = &s->transfers[i];
     if (!t->live || !t->release_requested) continue;
     if (t->notifier_live && cnQueryNotifier(t->notifier) != CN_SUCCESS) continue;
+    graph_transfer_release(s,t);
     if (t->notifier_live && cnDestroyNotifier(t->notifier) != CN_SUCCESS) continue;
     t->notifier_live = 0;
     if (t->host) {
@@ -365,6 +367,7 @@ int mlu_backend_session_reset(mlu_backend_session *s) {
 }
 
 static int graph_cleanup(mlu_backend_session *s);
+static void graph_orphans_release(mlu_backend_session *s);
 int mlu_backend_session_cleanup(mlu_backend_session *s) {
   if (!s) return 0;
   int first = 0, synchronized = 1;
@@ -377,7 +380,11 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
   if (s->default_queue_used && cleanup_result(&first,"cnQueueSync(NULL)",0,cnQueueSync(NULL))) synchronized=0;
   /* On a synchronization error, retain host memory until context destruction
    * confirms no native operation can access it. Never free in-flight staging. */
-  if (synchronized) { release_staging(s, 0); release_transfer_buffers(s); }
+  if (synchronized) {
+    release_staging(s, 0); release_transfer_buffers(s);
+    for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) graph_transfer_release(s,&s->transfers[i]);
+    graph_orphans_release(s);
+  }
   destroy_transfer_notifiers(s, &first);
   int graph_status=graph_cleanup(s);
   if(graph_status) {
@@ -399,7 +406,8 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->queues[i].live) cleanup_result(&first, "cnDestroyQueue", s->queues[i].id, cnDestroyQueue(s->queues[i].handle));
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
-    if (s->allocations[i].live && !cleanup_result(&first, "cnFree", s->allocations[i].id, cnFree(s->allocations[i].address))) {
+    if (s->allocations[i].live && !s->allocations[i].graph_refs &&
+        !cleanup_result(&first, "cnFree", s->allocations[i].id, cnFree(s->allocations[i].address))) {
       mlu_resource_release(&s->usage, MLU_RESOURCE_DEVICE, s->allocations[i].bytes);
       s->allocations[i].live = 0;
     }
@@ -412,6 +420,8 @@ int mlu_backend_session_cleanup(mlu_backend_session *s) {
     return first;
   }
   s->context = NULL;
+  for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) graph_transfer_release(s,&s->transfers[i]);
+  graph_orphans_release(s);
   release_staging(s, 0);
   release_transfer_buffers(s);
   /* cnFreeHost failure still owns pinned native pages, even after context
@@ -469,9 +479,34 @@ int mlu_backend_alloc(mlu_backend_session *s, uint64_t bytes, uint64_t *id) {
   return backend_alloc_kind(s,bytes,0,0,id);
 }
 
+/* Graph payloads and executable snapshots own native storage independently of
+ * the public allocation ID. Retirement revokes the ID before reclaiming bytes.
+ * Failed native release remains charged and owned for retry during cleanup. */
+static int graph_release_allocation(mlu_backend_session *s, mlu_backend_allocation *a) {
+  if(!a || !a->live || !a->retired || a->graph_refs) return 0;
+  int st=cnFree(a->address);
+  if(!st) {
+    mlu_resource_release(&s->usage,MLU_RESOURCE_DEVICE,a->bytes);
+    memset(a,0,sizeof(*a));
+  }
+  return st;
+}
+static int graph_reap_allocations(mlu_backend_session *s) {
+  int first=0;
+  for(unsigned i=0;i<MLU_BACKEND_MAX_OBJECTS;i++) {
+    int st=graph_release_allocation(s,&s->allocations[i]);
+    if(st && !first) first=st;
+  }
+  return first;
+}
 int mlu_backend_free(mlu_backend_session *s, uint64_t id) {
   mlu_backend_allocation *a = find_alloc(s, id);
   if (!a) return (int)CN_ERROR_INVALID_HANDLE;
+  if(a->graph_refs) {
+    a->retired=1;
+    mlu_object_registry_release(&s->objects,MLU_OBJECT_ALLOCATION,id);
+    return 0;
+  }
   for (size_t i = 0; i < MLU_BACKEND_MAX_OBJECTS; ++i)
     if (s->queues[i].live) { CNresult qr = cnQueueSync(s->queues[i].handle); if (qr != CN_SUCCESS) return (int)qr; }
   if (s->default_queue_used) { CNresult qr=cnQueueSync(NULL); if(qr) return (int)qr; }

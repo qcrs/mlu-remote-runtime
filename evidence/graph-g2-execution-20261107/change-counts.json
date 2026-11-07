@@ -1,0 +1,186 @@
+{
+  "baseline_commit": "eb5212d3c2774e5126ed5d0d75c40b883b50a8dd",
+  "census": 310,
+  "new_apis": [
+    {
+      "name": "cnrtTaskTopoAddChildTopoNode",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoAddMemsetNode",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoChildTopoNodeGetTopo",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoEntityChildTopoNodeSetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoEntityDestroy",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoEntityInvoke",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoEntityMemsetNodeSetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoEntityUpdate",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoInstantiate",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoMemsetNodeGetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnrtTaskTopoMemsetNodeSetParams",
+      "library": "CNRT",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoAddChildTopoNode",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoAddMemsetNode",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoChildTopoNodeGetTopo",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoEntityChildTopoNodeSetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoEntityDestroy",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoEntityInvoke",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoEntityMemsetNodeSetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoEntityUpdate",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoInstantiate",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoMemsetNodeGetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    },
+    {
+      "name": "cnTaskTopoMemsetNodeSetParams",
+      "library": "CNDrv",
+      "family": "graph",
+      "status": "IMPLEMENTED",
+      "implementation": "generated"
+    }
+  ],
+  "new_status_counts": {
+    "IMPLEMENTED": 22
+  },
+  "existing_status_changes": [],
+  "before": {
+    "NOT_IMPLEMENTED": 123,
+    "IMPLEMENTED": 173,
+    "BLOCKED": 11,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "after": {
+    "NOT_IMPLEMENTED": 101,
+    "IMPLEMENTED": 195,
+    "BLOCKED": 11,
+    "UNSUPPORTED": 1,
+    "OUT_OF_SCOPE": 2
+  },
+  "generated_before": {
+    "typed_rpc": 48,
+    "public_wrappers": 72
+  },
+  "generated_after": {
+    "typed_rpc": 51,
+    "public_wrappers": 94
+  }
+}

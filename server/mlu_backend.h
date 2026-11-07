@@ -18,6 +18,8 @@ typedef struct {
   uint64_t bytes;
   uint64_t owner;
   uint32_t generation;
+  unsigned graph_refs;
+  int retired;
   int live;
 } mlu_backend_allocation;
 
@@ -119,6 +121,7 @@ typedef struct {
   uint64_t bytes;
   int notifier_live;
   int release_requested;
+  struct mlu_graph_invocation *graph_hold;
   int live;
 } mlu_backend_transfer;
 
@@ -140,8 +143,11 @@ typedef struct mlu_backend_session {
   mlu_backend_kernel kernels[MLU_BACKEND_MAX_OBJECTS];
   mlu_backend_staging staging[MLU_BACKEND_MAX_OBJECTS];
   mlu_backend_transfer transfers[MLU_BACKEND_MAX_OBJECTS];
-  struct { uint64_t id; CNtaskTopo handle; int live; } graphs[MLU_BACKEND_MAX_OBJECTS];
-  struct { uint64_t id, parent; CNtaskTopoNode handle; int live; } graph_nodes[4096];
+  struct { uint64_t id, owner_node; CNtaskTopo handle; int live; } graphs[MLU_BACKEND_MAX_OBJECTS];
+  struct { uint64_t id, parent; CNtaskTopoNode handle; struct mlu_graph_payload *payload; int live; } graph_nodes[4096];
+  struct mlu_graph_entity *graph_entities;
+  struct mlu_graph_invocation *graph_orphans;
+  unsigned graph_snapshot_nodes;
 } mlu_backend_session;
 
 int mlu_backend_global_init(void);

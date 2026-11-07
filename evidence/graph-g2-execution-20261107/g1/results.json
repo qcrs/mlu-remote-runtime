@@ -1,0 +1,109 @@
+[
+  {
+    "name": "runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-reset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_runtime",
+      "reset"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-abrupt",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_runtime",
+      "abrupt"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_driver"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-reset",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_driver",
+      "reset"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-abrupt",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_driver",
+      "abrupt"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "protocol",
+    "command": [
+      "python3",
+      "tests/graph_protocol.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "after-cleanup",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_graph_driver"
+    ],
+    "returncode": 0
+  }
+]

@@ -1,0 +1,22 @@
+G2 subset verification (2026-11-07)
+
+$ python3 scripts/verify-graph-execution.py
+PASS graph execution: 16 scenarios; Native/replacement/preload/isolated and resource drain
+
+$ python3 scripts/verify-graph.py --out evidence/graph-g2-execution-20261107/g1 --port 50252
+PASS G1: 14 scenarios; native/replacement/preload/isolated, reset/EOF and clean drain
+
+$ python3 scripts/verify-api-families.py --out evidence/graph-g2-execution-20261107/families --port 50251
+15/15 checks passed
+
+$ python3 scripts/verify-transparent.py --out evidence/graph-g2-execution-20261107/core --port 50250
+76/76 checks passed
+
+$ python3 scripts/verify-api-contracts.py
+PASS API contracts: 310 declarations; signatures, opcodes, codecs, native bindings, linked exports, ledger and evidence
+
+$ python3 scripts/verify-closure-audit.py
+PASS closure audit; 195 IMPLEMENTED, 0 PARTIAL, 11 BLOCKED, 2 OUT_OF_SCOPE, 1 UNSUPPORTED, 101 NOT_IMPLEMENTED
+
+$ git diff --check
+PASS

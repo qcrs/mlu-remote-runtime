@@ -1,0 +1,14 @@
+PASS unknown aggregate/vector/oversize scalar/indirect pointer require ABI review
+PASS compiler aggregate layout/padding and pointer offsets; reject recursive/opaque/packed types
+PASS legacy v1 compiler metadata numerical launch
+PASS image/symbol association across duplicate symbols
+PASS rejected metadata stale-image
+PASS rejected metadata wrong-size
+PASS rejected metadata wrong-kind
+PASS rejected metadata truncated
+PASS rejected host/Driver metadata field-argument
+PASS rejected host/Driver metadata field-range
+PASS rejected host/Driver metadata field-alignment
+PASS rejected host/Driver metadata field-overlap
+PASS rejected host/Driver metadata field-kind
+PASS rejected host/Driver metadata field-count

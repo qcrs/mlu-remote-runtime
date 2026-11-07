@@ -36,7 +36,7 @@ static cnrtRet_t status(int st) {
     case 0: case 1: case 100002: case 100004: case 100005: case 100006:
     case 100007: case 100010: case 100014: case 100015: case 100050:
     case 100051: case 100060: case 100100: case 100128: case 100132:
-    case 100133: case 100301: case 100302: return (cnrtRet_t)st;
+    case 100133: case 100301: case 100302: case 100400: return (cnrtRet_t)st;
     case MLU_REMOTE_UNSUPPORTED: return cnrtErrorNotSupport;
     case MLU_REMOTE_BAD_LENGTH: return cnrtErrorArgsInvalid;
     case MLU_REMOTE_BAD_OBJECT: return cnrtErrorInvalidResourceHandle;
@@ -422,6 +422,8 @@ static allocation *allocation_by_id(uint64_t id) {
   for(allocation *a=allocations;a;a=a->next) if(a->live && a->id==id) return a;
   return NULL;
 }
+#define MLU_GRAPH_RUNTIME
+#include "graph_memset.inc"
 #include "cnrt_api.inc"
 __attribute__((destructor)) static void shutdown_remote(void) {
   ENTER(); if(ctx) { mlu_remote_disconnect(ctx); ctx=NULL; }

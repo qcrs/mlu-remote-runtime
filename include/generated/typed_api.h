@@ -479,4 +479,58 @@ typedef struct {
   uint64_t *ids;
 } mlu_api_graph_query_response;
 int mlu_remote_api_graph_query(mlu_remote_context *, const mlu_api_graph_query_request *, mlu_api_graph_query_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t graph;
+  uint64_t node;
+  uint64_t entity;
+  uint64_t allocation;
+  uint64_t offset;
+  uint64_t pitch;
+  uint32_t value;
+  uint32_t element_size;
+  uint64_t width;
+  uint64_t height;
+  uint64_t count;
+  const uint64_t *ids;
+} mlu_api_graph_memset_request;
+typedef struct {
+  uint64_t id;
+  uint64_t allocation;
+  uint64_t offset;
+  uint64_t pitch;
+  uint32_t value;
+  uint32_t element_size;
+  uint64_t width;
+  uint64_t height;
+} mlu_api_graph_memset_response;
+int mlu_remote_api_graph_memset(mlu_remote_context *, const mlu_api_graph_memset_request *, mlu_api_graph_memset_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t entity;
+  uint64_t graph;
+  uint64_t queue;
+  uint64_t log_size;
+} mlu_api_graph_entity_request;
+typedef struct {
+  uint32_t status;
+  uint64_t id;
+  uint64_t error_node;
+  uint32_t update_result;
+  unsigned char *log; /* caller-owned, request.log_size bytes */
+} mlu_api_graph_entity_response;
+int mlu_remote_api_graph_entity(mlu_remote_context *, const mlu_api_graph_entity_request *, mlu_api_graph_entity_response *);
+typedef struct {
+  uint32_t action;
+  uint64_t graph;
+  uint64_t node;
+  uint64_t child;
+  uint64_t entity;
+  uint64_t count;
+  const uint64_t *ids;
+} mlu_api_graph_child_request;
+typedef struct {
+  uint64_t id;
+} mlu_api_graph_child_response;
+int mlu_remote_api_graph_child(mlu_remote_context *, const mlu_api_graph_child_request *, mlu_api_graph_child_response *);
 #endif

@@ -66,8 +66,8 @@
     "family": "graph",
     "priority": 5,
     "counts": {
-      "NOT_IMPLEMENTED": 74,
-      "IMPLEMENTED": 28
+      "NOT_IMPLEMENTED": 52,
+      "IMPLEMENTED": 50
     },
     "remaining": [
       {
@@ -131,16 +131,6 @@
         "contract_stage": "G4"
       },
       {
-        "api": "cnrtTaskTopoAddChildTopoNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnrtTaskTopoAddHostNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -171,26 +161,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnrtTaskTopoAddMemsetNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoChildTopoNodeGetTopo",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnrtTaskTopoDebugDotPrint",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -201,26 +171,6 @@
         "contract_stage": "G4"
       },
       {
-        "api": "cnrtTaskTopoEntityChildTopoNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoEntityDestroy",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnrtTaskTopoEntityHostNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -229,16 +179,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoEntityInvoke",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoEntityKernelNodeSetParams",
@@ -252,26 +192,6 @@
       },
       {
         "api": "cnrtTaskTopoEntityMemcpyNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoEntityMemsetNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoEntityUpdate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "G1",
@@ -299,16 +219,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnrtTaskTopoInstantiate",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
       },
       {
         "api": "cnrtTaskTopoKernelNodeCopyAttributes",
@@ -372,26 +282,6 @@
       },
       {
         "api": "cnrtTaskTopoMemcpyNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoMemsetNodeGetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnrtTaskTopoMemsetNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "G1",
@@ -501,16 +391,6 @@
         "contract_stage": "G4"
       },
       {
-        "api": "cnTaskTopoAddChildTopoNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnTaskTopoAddHostNode",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -541,26 +421,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnTaskTopoAddMemsetNode",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnTaskTopoChildTopoNodeGetTopo",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnTaskTopoDebugDotPrint",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -571,26 +431,6 @@
         "contract_stage": "G4"
       },
       {
-        "api": "cnTaskTopoEntityChildTopoNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnTaskTopoEntityDestroy",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnTaskTopoEntityHostNodeSetParams",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -599,16 +439,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoEntityInvoke",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoEntityKernelNodeSetParams",
@@ -622,26 +452,6 @@
       },
       {
         "api": "cnTaskTopoEntityMemcpyNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnTaskTopoEntityMemsetNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnTaskTopoEntityUpdate",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
         "depends_on": "G1",
@@ -669,16 +479,6 @@
         "next_step": "Both libraries: callbacks execute in the client process at ordered boundaries, user-object final release happens exactly once, and DOT output is written at the client path.",
         "closure": {},
         "contract_stage": "G4"
-      },
-      {
-        "api": "cnTaskTopoInstantiate",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
       },
       {
         "api": "cnTaskTopoKernelNodeCopyAttributes",
@@ -751,26 +551,6 @@
         "contract_stage": "G2"
       },
       {
-        "api": "cnTaskTopoMemsetNodeGetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
-        "api": "cnTaskTopoMemsetNodeSetParams",
-        "status": "NOT_IMPLEMENTED",
-        "priority": 5,
-        "depends_on": "G1",
-        "blocker": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "next_step": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
-        "closure": {},
-        "contract_stage": "G2"
-      },
-      {
         "api": "cnTaskTopoReleaseUserObject",
         "status": "NOT_IMPLEMENTED",
         "priority": 5,
@@ -829,8 +609,9 @@
         "depends_on": [
           "G1"
         ],
-        "missing": "Typed node payload relocation, entity snapshot leases and per-invocation completion/publication are absent.",
-        "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree."
+        "missing": "22/44 APIs implemented: 1D memset nodes, nested child ownership, executable snapshots/update and invocation allocation leases. Remaining: kernel nodes/attributes (14), replay-aware memcpy nodes (8), module leases and per-invocation Host publication.",
+        "acceptance": "Both libraries: memset/copy/kernel numerical replay, source mutation/destruction, entity update, module/allocation leases and outstanding destroy cleanup agree.",
+        "evidence": "graph-g2-execution-20261107/README.md"
       },
       {
         "id": "G3",
