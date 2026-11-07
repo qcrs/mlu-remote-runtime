@@ -1,0 +1,3 @@
+PASS nested struct/array pointer fields, offsets, NULL, scalar bits and guards
+PASS nested struct/array pointer fields, offsets, NULL, scalar bits and guards
+PASS reset preserves registered aggregate metadata and reloads module

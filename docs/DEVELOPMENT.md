@@ -18,6 +18,7 @@ python3 scripts/generate_compat.py
 - `build/driver-shim/libcndrv.so`：部分原生 Driver ABI，只有系统库与 client core 依赖；与 CNRT Shim 分目录选择。
 - `build/native_driver`、`build/probes/probe_driver_semantics`：普通 CNDrv binary 的模块/launch/TLS/生命周期及原生语义探针；[运行方式](DRIVER_SHIM.md)。
 - `build/native_bang_{remote,generic,abi,module,drain}`：普通 CNCC 编译的原生程序。
+- `build/native_module_accounting`、`build/libnative_module_globals_{1,2}.so`：注册计量、初始化/const globals、DSO/reset 生命周期；`build/native_bang_relocations` 与 `build/relocation-audit/`：Runtime/Driver 聚合 pointer 字段和附带 metadata 的 image。
 - `build/native_queue_retirement`：CNRT/CNDrv pending Queue destroy、独立 completion 和回收压力测试。
 - `build/libnative_bang_module.so`、`build/native_bang_module_dso`：CNCC 生成的共享库及原生 CNRT/动态 loader 测试程序。
 - `build/audit/`：ABI 用例的 `-save-temps` host/device 产物。
@@ -97,6 +98,8 @@ python3 scripts/verify-transparent.py --host SERVER_IP --port 50051 --out eviden
 | native_bang_generic | 不存在于 preset registry 的 kernel，数值 +1 |
 | native_bang_abi | 同名不同实现、混合标量、offset/NULL、xyz、线程、1200 launch/copy、notifier；remote 额外测 reset/stale/拒绝 ABI |
 | native_bang_module | 同一 image 的两个 Kernel 共享未初始化设备变量；reset 保留注册并重新加载一个 module |
+| native_module_accounting / verify-module-accounting.py | 两库 Native/replacement/preload/namespace 的注册计量、三类 globals、两 image/DSO 引用/reset/unregister，独立 Server drain |
+| native_bang_relocations / relocation_protocol.py / bang_metadata.py | 自然 LP64 nested struct/array pointer 的 NULL/offset/scalar/guard、reset/reload、foreign/stale ownership；wire/metadata 负例、v1 兼容及 Driver extern-C/zero args |
 | native_bang_module_dso | 20 次 dlopen/dlclose、保留 loader 引用、pending-work unload、两批注册间 reset；native/replacement/preload/隔离客户端 |
 | probe_semantics | 零分配、Free(NULL)、负设备、sticky error、H2D→D2D→D2H 和完成 query 的 native/remote 对照 |
 | generic_protocol.py | 真 TCP module/launch、错误 arg count/size、跨 session module/allocation、offset/dim/class、坏 image、unload stale |
@@ -108,7 +111,7 @@ python3 scripts/verify-transparent.py --host SERVER_IP --port 50051 --out eviden
 | native_queue_retirement / verify-queue-retirement.py | 两库公开句柄立即失效、pending kernel/H2D/D2D 的 Notifier wait/query、context/free/module/cross-queue 完成、1200 次退役及 pending reset/teardown；SDK pending-destroy 异常单独记录，Native 数值基线先等待，Remote 验证 pending destroy |
 | server_resources.py / backend_resources.c | 自建真机 server 的配额、并发预留、pending kernel/H2D、socket drain、cnmon 计量；原生失败注入验证回滚/隔离 |
 | server_restart.py | 仅暂停/kill 自建 server；断线/超时 context 不重放，重启后旧对象 ID 不误命中新 allocation |
-| bang_image_bounds | ASan/UBSan：真实 image、截断、越界 section、NOBITS、变量 OBJECT/大小；kernel parser 与两种 variable image 各 2000 次 mutation |
+| bang_image_bounds | ASan/UBSan：真实 image、截断、越界 section、NOBITS、变量 OBJECT/大小；kernel parser、未初始化变量两种 image 和初始化/const globals 各 2000 次 mutation |
 | run-isolated-client.sh | user/mount namespace 隐藏当前 SDK 和整个 /dev，保留网络，连接 namespace 外的真机 server |
 | 原有 client / operator / custom-kernel / isolation / reset / device / abrupt / CNNL | 六 preset 及内存/对象生命周期回归；CNNL 验证明确拒绝 |
 
@@ -124,9 +127,10 @@ python3 scripts/generate_compat.py
 python3 scripts/generate_compat.py --check
 python3 scripts/verify-api-contracts.py
 python3 scripts/verify-api-families.py
+python3 scripts/verify-module-accounting.py
 ```
 
-`schema/mlu_api_schema.json` 保留 operator registry 和 10 对 `simple_rpc`；当前有 40 个 typed RPC 编解码/分派/binding、46 个公共包装、导出 map、test plan/template。关键的内存/异步/注册/归属语义仍有手写部分。不要通过添加成功空函数提高兼容数字。[自动化扩展指南](API_AUTOMATION.md) 说明 Schema 字段、compiler metadata、生成边界和 Native/Remote 功能族测试。
+`schema/mlu_api_schema.json` 保留 operator registry 和 10 对 `simple_rpc`；当前有 45 个 typed RPC 编解码/分派/binding、44 个公共 RPC 包装和 4 个本地 error API、导出 map、test plan/template。关键的内存/异步/注册/归属语义仍有手写部分。不要通过添加成功空函数提高兼容数字。[自动化扩展指南](API_AUTOMATION.md) 说明 Schema 字段、compiler metadata、生成边界和 Native/Remote 功能族测试。
 
 人工语义审查在 Schema 的 `apis` 中维护，`compat/annotations.json` 是生成的兼容视图；生成器遍历安装头文件、核对签名和真实导出，输出 310 行公共 API 及逐项 blocker/优先级。更新 SDK 后先核对 diff、原生语义与证据，再调整状态。新增能力按 [M1～M4](../design/MILESTONES.md) 的交付门槛更新。
 

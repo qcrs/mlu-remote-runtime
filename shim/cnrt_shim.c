@@ -3,6 +3,7 @@
 #include "bang_registration.h"
 #include "remote_cnrt.h"
 #include "bang_image.h"
+#include "bang_args.h"
 #include "fake_va.h"
 #include "host_memory.h"
 #include <dlfcn.h>
@@ -120,6 +121,8 @@ typedef struct registration {
   unsigned char *image;
   size_t size;
   uint64_t mid;
+  uint64_t memory_usage;
+  int usage_known;
   variable *variables;
   int live, unsupported;
 } registration;
@@ -129,7 +132,7 @@ typedef struct kernel {
   const void *host;
   char *name;
   bang_param_layout layout;
-  unsigned char pointer[BANG_MAX_ARGS];
+  bang_param_types types;
   uint64_t kid;
   int valid;
 } kernel;
@@ -306,8 +309,8 @@ void __bangRegisterFunction(void **handle,const char *host,char *symbol,const ch
     if(k) {
       k->reg=r; k->host=host; k->name=strdup(symbol);
       if(k->name && !bang_image_params(r->image,r->size,symbol,&k->layout)) {
-        int metadata=bang_metadata_classify(host,r->image,r->size,symbol,&k->layout,k->pointer);
-        k->valid=metadata==0 || (metadata==1 && !bang_classify_params(k->name,&k->layout,k->pointer));
+        int metadata=bang_metadata_classify(host,r->image,r->size,symbol,&k->layout,&k->types);
+        k->valid=metadata==0 || (metadata==1 && !bang_classify_params(k->name,&k->layout,k->types.kind));
       }
       k->next=kernels; kernels=k;
       if(!k->valid) fprintf(stderr,"[mlu-shim] unsupported kernel ABI: %s\n",symbol);
@@ -317,8 +320,8 @@ void __bangRegisterFunction(void **handle,const char *host,char *symbol,const ch
 }
 void __bangRegisterVar(void **handle,char *host,char *address,const char *name,int ext,int size,int constant,int global) {
   ENTER(); registration *r=get_registration(handle);
-  /* Native probe: ext/constant/global are all zero for ordinary uninitialized
-   * __mlu_device__ objects. Native module loading owns their storage and
+  /* Native probe: ext/constant/global are zero for initialized, const and
+   * uninitialized __mlu_device__ objects. Native module loading owns storage and
    * relocations. Host symbol-copy/address APIs remain outside this subset. */
   if (!r || !host || !address || !name || strcmp(address,name) || ext || constant || global || size<=0 ||
       bang_image_device_variable(r->image,r->size,name,(size_t)size)) {
@@ -424,6 +427,29 @@ cnrtRet_t cnrtGetSymbolSize(size_t *size,const void *symbol) {
     if(v->host==symbol) { *size=v->size; RETURN(cnrtSuccess); }
   RETURN(cnrtErrorNotFound);
 }
+cnrtRet_t cnrtDeviceQueryKernelMemoryUsage(size_t *bytes) {
+  ENTER(); if(!bytes) RETURN(cnrtErrorArgsInvalid); CONNECT();
+  /* CNRT accounts registered images before their first launch and across
+   * reset. Server modules use CNDrv, which CNRT's native counter excludes.
+   * Cache native image estimates, then sum only this process's live registry. */
+  uint64_t total=0;
+  for(registration *r=registrations;r;r=r->next) if(r->live) {
+    if(!r->usage_known) {
+      int st=mlu_remote_module_query_fatbinary_memory(ctx,r->image,r->size,&r->memory_usage);
+      if(st) RETURN(status(st));
+      r->usage_known=1;
+    }
+    if(r->memory_usage>SIZE_MAX-total) RETURN(cnrtErrorSysNoMem);
+    total+=r->memory_usage;
+  }
+  *bytes=(size_t)total; RETURN(cnrtSuccess);
+}
+static int resolve_kernel_pointer(void *owner,uint64_t ptr,uint64_t *id,uint64_t *offset) {
+  (void)owner;
+  allocation *a=lookup((void *)(uintptr_t)ptr,offset);
+  if(!a) return -1;
+  *id=a->id; return 0;
+}
 void __bangUnregisterFatBinary(void **handle) {
   ENTER(); registration *r=get_registration(handle);
   if(r) {
@@ -456,20 +482,10 @@ cnrtRet_t cnrtInvokeKernel(const void *host,cnrtDim3_t dim,cnrtFunctionType_t ty
   if(!dim.x || !dim.y || !dim.z || (k->layout.count && !args)) RETURN(cnrtErrorArgsInvalid);
   if(type!=cnrtFuncTypeBlock && type!=cnrtFuncTypeUnion1 && type!=cnrtFuncTypeUnion2 && type!=cnrtFuncTypeUnion4 && type!=cnrtFuncTypeUnion8 && type!=cnrtFuncTypeUnion16) RETURN(cnrtErrorNotSupport);
   object *q=get_queue(handle); if(!q) RETURN(cnrtErrorInvalidResourceHandle);
-  mlu_remote_kernel_arg wire[BANG_MAX_ARGS]; memset(wire,0,sizeof(wire));
-  for(unsigned i=0;i<k->layout.count;++i) {
-    if(!args[i]) RETURN(cnrtErrorArgsInvalid);
-    wire[i].size=k->layout.sizes[i];
-    if(k->pointer[i]==1) {
-      void *value; memcpy(&value,args[i],8);
-      wire[i].kind=1;
-      if(value) {
-        allocation *a=lookup(value,&wire[i].offset);
-        if(!a) RETURN(cnrtErrorInvalidResourceHandle);
-        wire[i].allocation=a->id;
-      }
-    } else { wire[i].kind=2; wire[i].scalar=args[i]; }
-  }
+  mlu_remote_kernel_arg wire[BANG_MAX_ARGS];
+  mlu_remote_kernel_relocation relocations[BANG_MAX_RELOCS];
+  int packed=bang_pack_args(&k->layout,&k->types,args,resolve_kernel_pointer,NULL,wire,relocations);
+  if(packed) RETURN(packed==-1 ? cnrtErrorArgsInvalid : cnrtErrorInvalidResourceHandle);
   if(!k->reg->mid) {
     int st=mlu_remote_module_load_image(ctx,k->reg->image,k->reg->size,k->name,&k->reg->mid,&k->kid);
     if(st) RETURN(status(st));

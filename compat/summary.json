@@ -7,16 +7,15 @@
   "counts": {
     "CNRT": {
       "NOT_IMPLEMENTED": 67,
-      "PARTIAL_IMPLEMENTED": 5,
-      "IMPLEMENTED": 54,
+      "PARTIAL_IMPLEMENTED": 2,
+      "IMPLEMENTED": 57,
       "BLOCKED": 3,
       "UNSUPPORTED": 1
     },
     "CNDrv": {
       "NOT_IMPLEMENTED": 88,
-      "IMPLEMENTED": 84,
+      "IMPLEMENTED": 86,
       "BLOCKED": 4,
-      "PARTIAL_IMPLEMENTED": 2,
       "OUT_OF_SCOPE": 2
     }
   },
@@ -37,6 +36,6 @@
   ],
   "generated_object_rpc_count": 10,
   "generated_typed_rpc_count": 45,
-  "generated_public_wrapper_count": 45,
+  "generated_public_wrapper_count": 44,
   "generated_local_api_count": 4
 }

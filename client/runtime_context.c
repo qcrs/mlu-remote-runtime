@@ -424,12 +424,26 @@ int mlu_remote_kernel_launch_generic(mlu_remote_context *ctx, uint64_t module,
   if (!(ctx->capabilities & MLU_CAP_GENERIC_LAUNCH) || ctx->kernel_abi != MLU_REMOTE_KERNEL_ABI)
     return MLU_REMOTE_UNSUPPORTED;
   size_t total = 44;
+  uint32_t relocation_total=0;
   for (uint32_t i = 0; i < arg_count; ++i) {
-    if (args[i].kind != 1 && args[i].kind != 2) return MLU_REMOTE_BAD_LENGTH;
-    if (!args[i].size || args[i].size > 4096 || (args[i].kind == 2 && !args[i].scalar)) return MLU_REMOTE_BAD_LENGTH;
+    if (args[i].kind < 1 || args[i].kind > 3) return MLU_REMOTE_BAD_LENGTH;
+    if (!args[i].size || args[i].size > 4096 || (args[i].kind != 1 && !args[i].scalar)) return MLU_REMOTE_BAD_LENGTH;
     if (args[i].kind == 1 && args[i].size != 8) return MLU_REMOTE_BAD_LENGTH;
-    if (total > MLU_REMOTE_MAX_PAYLOAD - (32u + args[i].size)) return MLU_REMOTE_BAD_LENGTH;
-    total += 32u + args[i].size;
+    if(args[i].kind!=1 && (args[i].allocation || args[i].offset)) return MLU_REMOTE_BAD_LENGTH;
+    uint32_t count=args[i].relocation_count;
+    if(args[i].kind==3) {
+      if(!(ctx->capabilities & MLU_CAP_ARGUMENT_RELOCATIONS)) return MLU_REMOTE_UNSUPPORTED;
+      if(!count || count>512-relocation_total || !args[i].relocations) return MLU_REMOTE_BAD_LENGTH;
+      for(uint32_t j=0;j<count;++j) {
+        const mlu_remote_kernel_relocation *r=&args[i].relocations[j];
+        if(r->offset>args[i].size || args[i].size-r->offset<8 || r->offset%8 ||
+           (j && r->offset<args[i].relocations[j-1].offset+8) || (!r->allocation && r->allocation_offset)) return MLU_REMOTE_BAD_LENGTH;
+      }
+    } else if(count) return MLU_REMOTE_BAD_LENGTH;
+    relocation_total+=count;
+    size_t need=32u+args[i].size+24u*count;
+    if (total > MLU_REMOTE_MAX_PAYLOAD - need) return MLU_REMOTE_BAD_LENGTH;
+    total += need;
   }
   unsigned char *p = (unsigned char *)calloc(1, total);
   if (!p) return CN_ERROR_SYSTEM_OUT_OF_MEMORY;
@@ -440,9 +454,15 @@ int mlu_remote_kernel_launch_generic(mlu_remote_context *ctx, uint64_t module,
   for (uint32_t i = 0; i < arg_count; ++i) {
     put32(cursor, args[i].kind); put32(cursor + 4, args[i].size);
     put64(cursor + 8, args[i].allocation); put64(cursor + 16, args[i].offset);
-    put64(cursor + 24, 0); cursor += 32;
-    if (args[i].kind == 2) memcpy(cursor, args[i].scalar, args[i].size);
+    put64(cursor + 24, args[i].relocation_count); cursor += 32;
+    if (args[i].kind != 1) memcpy(cursor, args[i].scalar, args[i].size);
+    for(uint32_t j=0;j<args[i].relocation_count;++j) memset(cursor+args[i].relocations[j].offset,0,8);
     cursor += args[i].size;
+    for(uint32_t j=0;j<args[i].relocation_count;++j) {
+      const mlu_remote_kernel_relocation *r=&args[i].relocations[j];
+      put32(cursor,r->offset); put32(cursor+4,0);
+      put64(cursor+8,r->allocation); put64(cursor+16,r->allocation_offset); cursor+=24;
+    }
   }
   unsigned char *e = NULL; uint32_t n = 0;
   int st = rpc(ctx, MLU_OP_KERNEL_LAUNCH_GENERIC, p, (uint32_t)total, &e, &n);

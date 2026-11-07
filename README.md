@@ -10,7 +10,7 @@ BANG C Application / CNCC host stub
   → ServerSession → Native CNDrv → MLU
 ```
 
-当前在 MLU370-S4 / Neuware 3.5.2 真机上验证了原生、动态库替换、LD_PRELOAD、隐藏 SDK 和设备节点的客户端运行。真实注册 image、pointer-free 按值 struct/嵌套 struct/固定数组（[证据](evidence/aggregate-20261103/README.md)）、混合标量、指针偏移/NULL、三维 task grid、1200 次 launch、1200 次异步 H2D、线程、资源回收和旧六算子均有证据。**跨第二台物理主机的最终验收尚未完成。**
+当前在 MLU370-S4 / Neuware 3.5.2 真机上验证了原生、动态库替换、LD_PRELOAD、隐藏 SDK 和设备节点的客户端运行。真实注册 image、含 pointer 字段的自然布局按值 struct/嵌套 struct/固定数组、初始化/const globals 与注册计量（[证据](evidence/module-accounting-20261107/README.md)）、混合标量、指针偏移/NULL、三维 task grid、1200 次 launch、1200 次异步 H2D、线程、资源回收和旧六算子均有证据。**跨第二台物理主机的最终验收尚未完成。**
 
 ```sh
 ./scripts/build.sh
@@ -50,7 +50,7 @@ LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/native_bang_generic
 
 ## API 自动化扩展（2026-11-02）
 
-首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；后续查询边界、Driver error、allocation/context、quantization 和 V2 conversion 批次继续复用同一 Schema。当前 Schema 覆盖 310 个公共声明，生成 45 个 typed RPC、45 个公共 RPC wrapper 和 4 个本地 error API；状态及各入口的支持边界以 [compatibility summary](compat/summary.json) 和 [closure audit](docs/API_COMPATIBILITY_CLOSURE.md) 为准。两库共享 Host 分配/属性和真异步 D2H 已接通 pinned Transfer、completion fetch 与延后写回，证据见 [Host 阶段](evidence/host-async-20261107/README.md)；publication 边界与失败资源所有权见 [生命周期](docs/RESOURCE_LIFECYCLE.md)。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)。
+首个 API 扩展批次新增 30 个 CNRT/CNDrv 公共 API，接通 Client→Protocol→Server→Native Backend；后续查询边界、Driver error、allocation/context、quantization 和 V2 conversion 批次继续复用同一 Schema。当前 Schema 覆盖 310 个公共声明，生成 45 个 typed RPC、44 个公共 RPC wrapper 和 4 个本地 error API；状态及各入口的支持边界以 [compatibility summary](compat/summary.json) 和 [closure audit](docs/API_COMPATIBILITY_CLOSURE.md) 为准。两库共享 Host 分配/属性和真异步 D2H 已接通 pinned Transfer、completion fetch 与延后写回，证据见 [Host 阶段](evidence/host-async-20261107/README.md)；publication 边界与失败资源所有权见 [生命周期](docs/RESOURCE_LIFECYCLE.md)。详情见 [设计和扩展流程](docs/API_AUTOMATION.md)、[查询边界设计](docs/QUERY_BOUNDARIES.md)、[功能族计划](compat/family-plan.md)。
 
 ## Application Workloads
 

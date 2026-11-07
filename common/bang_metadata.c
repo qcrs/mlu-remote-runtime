@@ -1,68 +1,84 @@
 #define _GNU_SOURCE
 #include "bang_image.h"
 #include <dlfcn.h>
-#include <elf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Local compiler metadata only. The fingerprint detects stale compilation
- * artifacts; it is not an authentication mechanism. Native ELF sizes/offsets
- * are independently checked before any argument is copied. */
+/* Compiler metadata describes types, never pointer-shaped scalar values.
+ * The CNFB payload fingerprint survives adding a non-allocated ELF section.
+ * It binds a compiler artifact pair, not an authentication boundary. */
 static uint32_t u32(const void *p) { uint32_t v; memcpy(&v,p,4); return v; }
 static uint64_t u64(const void *p) { uint64_t v; memcpy(&v,p,8); return v; }
-static int fits(uint64_t off,uint64_t size,size_t n) { return off<=n && size<=n-off; }
+static uint64_t fingerprint(const void *data,size_t n) {
+  uint64_t hash=14695981039346656037ull;
+  for(size_t i=0;i<n;++i) hash=(hash^((const unsigned char *)data)[i])*1099511628211ull;
+  return hash;
+}
+static int classify(const void *elf,size_t elf_size,const void *image,size_t image_size,
+                    const char *symbol,const bang_param_layout *layout,bang_param_types *types) {
+  const unsigned char *p=NULL; size_t n=0;
+  int st=bang_image_section(elf,elf_size,".mlu.remote.abi",&p,&n);
+  if(st) return st;
+  if(n<12 || (memcmp(p,"MLUABI01",8) && memcmp(p,"MLUABI02",8))) return -1;
+  int v2=!memcmp(p,"MLUABI02",8), found=0, stale=0;
+  uint32_t count=u32(p+8); if(count>4096) return -1;
+  const unsigned char *payload=image; size_t payload_size=image_size;
+  if(v2 && bang_image_section(image,image_size,".cn_fatbin",&payload,&payload_size)) return -1;
+  uint64_t hash=fingerprint(payload,payload_size);
+  size_t cursor=12;
+  bang_param_types candidate={0};
+  for(unsigned j=0;j<count;++j) {
+    size_t length=276+BANG_MAX_ARGS*5;
+    if(v2) {
+      if(n-cursor<4) return -1;
+      length=u32(p+cursor); cursor+=4;
+    }
+    if(length>n-cursor || length<(v2 ? 280u : 276u)) return -1;
+    const unsigned char *r=p+cursor; cursor+=length;
+    if(!memchr(r+16,0,256)) return -1;
+    uint32_t argc=u32(r+272), fields=v2 ? u32(r+276) : 0;
+    if(argc>BANG_MAX_ARGS || fields>BANG_MAX_RELOCS ||
+       (v2 && length!=280ull+argc*5ull+fields*8ull)) return -1;
+    if(strcmp((const char *)r+16,symbol)) continue;
+    stale=1;
+    if(u64(r)!=payload_size || u64(r+8)!=hash) continue;
+    if(found++ || argc!=layout->count) return -1;
+    size_t start=v2 ? 280 : 276;
+    for(unsigned k=0;k<argc;++k) {
+      uint32_t size=u32(r+start+k*5); unsigned char kind=r[start+4+k*5];
+      if(size!=layout->sizes[k] || !size || size>4096 || kind>2 || (kind==1 && size!=8)) return -1;
+      candidate.kind[k]=kind;
+    }
+    candidate.count=fields;
+    for(unsigned k=0;k<fields;++k) {
+      const unsigned char *f=r+start+argc*5+k*8;
+      uint32_t arg=u32(f), off=u32(f+4);
+      if(arg>=argc || candidate.kind[arg]!=2 || off>layout->sizes[arg] || layout->sizes[arg]-off<8 || off%8 ||
+         (k && (arg<candidate.fields[k-1].argument ||
+          (arg==candidate.fields[k-1].argument && off<candidate.fields[k-1].offset+8)))) return -1;
+      candidate.fields[k]=(bang_pointer_field){arg,off};
+    }
+  }
+  if(cursor!=n) return -1;
+  if(found) { *types=candidate; return 0; }
+  return stale ? -1 : 1;
+}
+int bang_metadata_classify_image(const void *image,size_t size,const char *symbol,
+                                  const bang_param_layout *layout,bang_param_types *types) {
+  return classify(image,size,image,size,symbol,layout,types);
+}
 int bang_metadata_classify(const void *host,const void *image,size_t size,const char *symbol,
-                           const bang_param_layout *layout,unsigned char pointer[BANG_MAX_ARGS]) {
+                           const bang_param_layout *layout,bang_param_types *types) {
   Dl_info info;
   if(!dladdr(host,&info) || !info.dli_fname) return 1;
   FILE *f=fopen(info.dli_fname,"rb"); if(!f) return -1;
   unsigned char *data=NULL; int result=-1;
   if(fseek(f,0,SEEK_END)) goto done;
   long length=ftell(f);
-  if(length<(long)sizeof(Elf64_Ehdr) || length>256*1024*1024 || fseek(f,0,SEEK_SET)) goto done;
+  if(length<64 || length>256*1024*1024 || fseek(f,0,SEEK_SET)) goto done;
   data=malloc((size_t)length); if(!data || fread(data,1,length,f)!=(size_t)length) goto done;
-  Elf64_Ehdr e; memcpy(&e,data,sizeof(e));
-  if(memcmp(e.e_ident,ELFMAG,4) || e.e_ident[EI_CLASS]!=ELFCLASS64 || e.e_ident[EI_DATA]!=ELFDATA2LSB ||
-     e.e_shentsize!=sizeof(Elf64_Shdr) || e.e_shstrndx>=e.e_shnum ||
-     !fits(e.e_shoff,(uint64_t)e.e_shnum*sizeof(Elf64_Shdr),length)) goto done;
-  Elf64_Shdr strings; memcpy(&strings,data+e.e_shoff+e.e_shstrndx*sizeof(strings),sizeof(strings));
-  if(!fits(strings.sh_offset,strings.sh_size,length)) goto done;
-  result=1;
-  for(unsigned i=0;i<e.e_shnum;++i) {
-    Elf64_Shdr s; memcpy(&s,data+e.e_shoff+i*sizeof(s),sizeof(s));
-    if(s.sh_name>=strings.sh_size) { result=-1; break; }
-    const char *name=(const char *)data+strings.sh_offset+s.sh_name;
-    if(!memchr(name,0,strings.sh_size-s.sh_name)) { result=-1; break; }
-    if(strcmp(name,".mlu.remote.abi")) continue;
-    result=-1;
-    if(!fits(s.sh_offset,s.sh_size,length) || s.sh_size<12) break;
-    const unsigned char *p=data+s.sh_offset;
-    const size_t record=276+BANG_MAX_ARGS*5;
-    uint32_t count=u32(p+8);
-    if(memcmp(p,"MLUABI01",8) || count>4096 || s.sh_size!=12+(uint64_t)count*record) break;
-    uint64_t hash=14695981039346656037ull;
-    for(size_t j=0;j<size;++j) hash=(hash^((const unsigned char *)image)[j])*1099511628211ull;
-    result=1;
-    for(unsigned j=0;j<count;++j) {
-      const unsigned char *r=p+12+j*record;
-      if(!memchr(r+16,0,256)) { result=-1; break; }
-      if(strcmp((const char *)r+16,symbol)) continue;
-      result=-1;
-      /* Different modules may contain the same symbol. Find the image/symbol
-       * pair, while keeping stale same-name metadata an explicit rejection. */
-      if(u64(r)!=size || u64(r+8)!=hash) continue;
-      if(u32(r+272)!=layout->count) break;
-      result=0;
-      for(unsigned k=0;k<layout->count;++k) {
-        uint32_t n=u32(r+276+k*5); unsigned char kind=r[280+k*5];
-        if(n!=layout->sizes[k] || !n || n>4096 || kind>2 || (kind==1 && n!=8)) { result=-1; break; }
-        pointer[k]=kind;
-      }
-      break;
-    }
-    break;
-  }
+  result=classify(data,(size_t)length,image,size,symbol,layout,types);
 done:
   free(data); fclose(f); return result;
 }

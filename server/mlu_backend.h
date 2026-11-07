@@ -202,6 +202,9 @@ typedef struct {
   uint64_t allocation_id;
   uint64_t offset;
   const unsigned char *scalar;
+  uint32_t relocation_count;
+  /* Network-order 24-byte entries; never cast the unaligned wire buffer. */
+  const unsigned char *relocations;
 } mlu_backend_kernel_arg;
 int mlu_backend_kernel_launch_generic(mlu_backend_session *s,
                                        uint64_t module_id, uint64_t kernel_id,

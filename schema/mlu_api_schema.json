@@ -1071,43 +1071,26 @@
           "mapping": "field_codec"
         }
       ],
-      "implementation": "generated",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Native query over typed u64 reply; empty-context Native/Remote value tested. Loaded module/process-wide attribution not yet certified.",
-      "native_test": "api-expansion-20261104/runtime-native.log",
-      "remote_test": "api-expansion-20261104/runtime-remote.log",
-      "next_step": "Measure Native CNRT and CNDrv module attribution, then query or track memory for the owning session and module lifecycle.",
-      "rpc": "kernel_memory_usage",
-      "wrapper": {
-        "rpc": "kernel_memory_usage",
-        "inputs": {},
-        "outputs": [
-          "*pBytes=(size_t)out.bytes;"
-        ],
-        "prepare": [],
-        "current": false
-      },
+      "implementation": "manual",
+      "status": "IMPLEMENTED",
+      "boundary": "Client live CNRT registrations sum cached native CNDrv image memory estimates; counted before launch, across reset, and once per registration until final unregister. Independent CNDrv loads do not contribute. Single-device CNFBv2 scope.",
+      "native_test": "api-expansion-20261104/runtime-native.log; module-accounting-20261107/runtime-native.log; module-accounting-20261107/driver-native.log",
+      "remote_test": "api-expansion-20261104/runtime-remote.log; module-accounting-20261107/runtime-remote.log; module-accounting-20261107/runtime-preload.log; module-accounting-20261107/runtime-isolated.log; module-accounting-20261107/driver-remote.log; module-accounting-20261107/driver-isolated.log",
+      "next_step": "",
       "rpc_operations": [
+        "MODULE_QUERY_FATBINARY_MEMORY",
         "API_KERNEL_MEMORY_USAGE"
       ],
-      "bindings": {
-        "client_wrapper": "cnrtDeviceQueryKernelMemoryUsage",
-        "client_source": "build/generated/cnrt_api.inc",
-        "request": "mlu_api_kernel_memory_usage_request",
-        "response": "mlu_api_kernel_memory_usage_response",
-        "server_handler": "mlu_backend_api_kernel_memory_usage",
-        "backend_binding": "typed_rpc.kernel_memory_usage.backend_binding"
-      },
-      "closure": {
-        "gap": "The backend calls CNRT accounting while modules are loaded through CNDrv; only an empty-context value has been validated.",
-        "fix": "Measure Native CNRT and CNDrv module attribution, then query or track memory for the owning session and module lifecycle.",
-        "acceptance": "Load and launch an ordinary BANG module with device globals; compare usage before load, after launch, after unload and reset against Native."
-      },
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "The backend calls CNRT accounting while modules are loaded through CNDrv; only an empty-context value has been validated.",
         "baseline_boundary": "Native query over typed u64 reply; empty-context Native/Remote value tested. Loaded module/process-wide attribution not yet certified.",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Measured native registration/load/launch/reset/unregister accounting, including two images, retained DSO references and re-registration. Replaced undercounting Server CNRT query with live client registration accounting.",
+        "native_test": "module-accounting-20261107/runtime-native.log; module-accounting-20261107/driver-native.log",
+        "remote_test": "module-accounting-20261107/runtime-remote.log; module-accounting-20261107/runtime-preload.log; module-accounting-20261107/runtime-isolated.log; module-accounting-20261107/driver-remote.log; module-accounting-20261107/driver-isolated.log"
       }
     },
     {
@@ -1900,22 +1883,22 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Returns registered uninitialized device variable byte size from host registration metadata; unknown symbol and null output reject. No device address or data copy.",
-      "native_test": "api-expansion-20261108/symbol-size-native.log",
-      "remote_test": "api-expansion-20261108/symbol-size-remote.log",
-      "next_step": "Extend shared image/variable registration metadata and symbol ownership to initialized/constant variables before publishing sizes.",
+      "status": "IMPLEMENTED",
+      "boundary": "Returns host registration byte size for current CNCC ordinary uninitialized, initialized and const __mlu_device__ globals after bounded device ELF OBJECT/section validation. Unknown symbol and NULL output reject. External variables and symbol address/copy APIs are outside this entry point.",
+      "native_test": "api-expansion-20261108/symbol-size-native.log; module-accounting-20261107/runtime-native.log",
+      "remote_test": "api-expansion-20261108/symbol-size-remote.log; module-accounting-20261107/runtime-remote.log; module-accounting-20261107/runtime-preload.log; module-accounting-20261107/runtime-isolated.log; module-accounting-20261107/parser-bounds.log",
+      "next_step": "",
       "rpc_operations": [],
-      "closure": {
-        "gap": "Only uninitialized __mlu_device__ variables pass registration; initialized/constant globals in ordinary current-toolchain programs are rejected.",
-        "fix": "Extend shared image/variable registration metadata and symbol ownership to initialized/constant variables before publishing sizes.",
-        "acceptance": "An ordinary CNCC program with uninitialized, initialized and constant globals reports identical symbol sizes and kernel values in Native and Remote."
-      },
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Only uninitialized __mlu_device__ variables pass registration; initialized/constant globals in ordinary current-toolchain programs are rejected.",
         "baseline_boundary": "Returns registered uninitialized device variable byte size from host registration metadata; unknown symbol and null output reject. No device address or data copy.",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Ordinary CNCC DSOs report identical uninitialized/initialized/const sizes (20/12/8) and kernel values before and after reset/reload; initialized GDRAM section extents are validated.",
+        "native_test": "module-accounting-20261107/runtime-native.log",
+        "remote_test": "module-accounting-20261107/runtime-remote.log; module-accounting-20261107/runtime-preload.log; module-accounting-20261107/runtime-isolated.log; module-accounting-20261107/parser-bounds.log"
       }
     },
     {
@@ -2054,21 +2037,21 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Compiler metadata: exact image fingerprint + symbol + device ELF layout; C/enum/template/zero args, scalar/direct pointers and pointer-free natural-layout byval structs, nested structs and fixed arrays numerically tested. Legacy primitive demangler retained; embedded pointers, pointer graphs, packed/opaque aggregates, multi-arch images and unknown ABI not certified",
-      "native_test": "aggregate-20261103/metadata-native.log; native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log",
-      "remote_test": "aggregate-20261103/metadata-remote.log; native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log",
-      "next_step": "Extend compiler metadata with nested pointer field offsets, encode AllocationID plus offset per field and rebuild arguments on the server; do not guess pointers from scalar values.",
-      "closure": {
-        "gap": "Embedded pointers in by-value aggregates are rejected; the compiler metadata path has no field relocation list.",
-        "fix": "Extend compiler metadata with nested pointer field offsets, encode AllocationID plus offset per field and rebuild arguments on the server; do not guess pointers from scalar values.",
-        "acceptance": "Same ordinary BANG binary with nested aggregate pointers, NULL and allocation offsets has matching Native/Remote values and unload/reset ownership."
-      },
+      "status": "IMPLEMENTED",
+      "boundary": "Compiler metadata binds CNFB payload fingerprint, exact symbol and device ELF layout. Supports scalar/direct pointers, C/enum/template/zero args, natural LP64 byval structs/nested structs/fixed arrays with explicit pointer field offsets. AllocationID+offset relocations preserve NULL and scalar bits; stale pointers reject. Legacy primitive fallback and v1 metadata retained. Device pointer graphs, packed/opaque ABI, multi-arch images and other CPU/SDK ABIs remain outside the certified scope.",
+      "native_test": "aggregate-20261103/metadata-native.log; native_bang_abi-native.log; native_bang_generic-native.log; shared-module-20261102/suite/native_bang_module-native.log; shared-module-20261102/suite/native_bang_module_dso-native.log; module-accounting-20261107/relocation-runtime-native.log",
+      "remote_test": "aggregate-20261103/metadata-remote.log; native_bang_abi-replacement.log; generic-protocol.log; shared-module-20261102/suite/shared-module-protocol.log; shared-module-20261102/suite/isolated-shared-module.log; shared-module-20261102/suite/isolated-module-dso.log; module-accounting-20261107/relocation-runtime-remote.log; module-accounting-20261107/relocation-runtime-preload.log; module-accounting-20261107/relocation-runtime-isolated.log; module-accounting-20261107/relocation-protocol.log; module-accounting-20261107/metadata-validation.log",
+      "next_step": "",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Embedded pointers in by-value aggregates are rejected; the compiler metadata path has no field relocation list.",
         "baseline_boundary": "Compiler metadata: exact image fingerprint + symbol + device ELF layout; C/enum/template/zero args, scalar/direct pointers and pointer-free natural-layout byval structs, nested structs and fixed arrays numerically tested. Legacy primitive demangler retained; embedded pointers, pointer graphs, packed/opaque aggregates, multi-arch images and unknown ABI not certified",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Added MLUABI02 compiler field offsets and shared argument packing/Server relocation. Same binary validates nested struct/array pointers, offsets/NULL/scalar bits/guards, reset/reload and stale pointer rejection; malformed relocation/metadata and v1 compatibility are checked.",
+        "native_test": "module-accounting-20261107/relocation-runtime-native.log",
+        "remote_test": "module-accounting-20261107/relocation-runtime-remote.log; module-accounting-20261107/relocation-runtime-preload.log; module-accounting-20261107/relocation-runtime-isolated.log; module-accounting-20261107/relocation-protocol.log; module-accounting-20261107/metadata-validation.log"
       }
     },
     {
@@ -8569,21 +8552,21 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Generic user image with primitive scalars/single pointers, offsets/NULL, xyz, explicit/native NULL queue and native transfer notifier; reserved=0 and extra=NULL; Block verified, Union forwarded but not verified; no complex ABI",
-      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
-      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-      "next_step": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
-      "closure": {
-        "gap": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
-        "fix": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
-        "acceptance": "Native/Remote Driver binary loads extern-C and aggregate kernels, launches with identical results and rejects stale parent modules."
-      },
+      "status": "IMPLEMENTED",
+      "boundary": "Driver image compiler metadata supports extern-C/zero args and natural LP64 byval nested struct/array pointer fields through shared AllocationID+offset relocation. Legacy primitive fallback remains; stale module/kernel and foreign-context pointers reject. Explicit/native NULL Queue; reserved=0, extra=NULL. Block verified; Union forwarded without numerical certification. Device pointer graphs, packed/opaque and unknown ABIs remain outside scope.",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log; module-accounting-20261107/relocation-driver-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log; module-accounting-20261107/relocation-driver-remote.log; module-accounting-20261107/relocation-driver-preload.log; module-accounting-20261107/relocation-driver-isolated.log; module-accounting-20261107/relocation-protocol.log; module-accounting-20261107/metadata-validation.log",
+      "next_step": "",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
         "baseline_boundary": "Generic user image with primitive scalars/single pointers, offsets/NULL, xyz, explicit/native NULL queue and native transfer notifier; reserved=0 and extra=NULL; Block verified, Union forwarded but not verified; no complex ABI",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Driver consumes compiler metadata attached to the loaded image and shares the CNRT packing engine. Native/Remote numerical launches, stable lookup, foreign-context pointer rejection, malformed metadata and parent unload invalidation pass.",
+        "native_test": "module-accounting-20261107/relocation-driver-native.log",
+        "remote_test": "module-accounting-20261107/relocation-driver-remote.log; module-accounting-20261107/relocation-driver-preload.log; module-accounting-20261107/relocation-driver-isolated.log; module-accounting-20261107/relocation-protocol.log; module-accounting-20261107/metadata-validation.log"
       }
     },
     {
@@ -11301,21 +11284,21 @@
         }
       ],
       "implementation": "manual",
-      "status": "PARTIAL_IMPLEMENTED",
-      "boundary": "Native lookup first; missing symbol clears output as measured; shared parent module/multiple kernels; LP64 primitive/single pointer signatures only, aggregate/extern-C lookup explicitly unsupported",
-      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log",
-      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log",
-      "next_step": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
-      "closure": {
-        "gap": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
-        "fix": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
-        "acceptance": "Native/Remote Driver binary loads extern-C and aggregate kernels, launches with identical results and rejects stale parent modules."
-      },
+      "status": "IMPLEMENTED",
+      "boundary": "Native exact-symbol lookup first; missing symbol clears output as measured. Stable owner/parent-bound kernel handles. Compiler metadata attached to CNFB ELF enables extern-C/zero args and natural LP64 byval aggregates with pointer fields; invalid/stale metadata rejects. Legacy mangled primitives remain supported; unsupported ABIs require reviewed metadata.",
+      "native_test": "driver-shim-20261102/final-suite/driver-native.log; driver-shim-20261102/final-suite/driver-semantics-native.log; module-accounting-20261107/relocation-driver-native.log",
+      "remote_test": "driver-shim-20261102/final-suite/driver-replacement.log; driver-shim-20261102/final-suite/driver-preload.log; driver-shim-20261102/final-suite/isolated-driver.log; driver-shim-20261102/final-suite/driver-protocol.log; driver-shim-20261102/final-suite/driver-client-faults.log; module-accounting-20261107/relocation-driver-remote.log; module-accounting-20261107/relocation-driver-preload.log; module-accounting-20261107/relocation-driver-isolated.log; module-accounting-20261107/metadata-validation.log",
+      "next_step": "",
       "closure_review": {
         "baseline_status": "PARTIAL_IMPLEMENTED",
         "decision": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
         "baseline_boundary": "Native lookup first; missing symbol clears output as measured; shared parent module/multiple kernels; LP64 primitive/single pointer signatures only, aggregate/extern-C lookup explicitly unsupported",
         "audit_status": "PARTIAL_IMPLEMENTED"
+      },
+      "closure_resolution": {
+        "summary": "Attached image metadata binds CNFB payload fingerprint and exact symbol to device ELF sizes, enabling Driver extern-C/aggregate kernels without guessing types; repeated lookup, malformed metadata and unload ownership are verified.",
+        "native_test": "module-accounting-20261107/relocation-driver-native.log",
+        "remote_test": "module-accounting-20261107/relocation-driver-remote.log; module-accounting-20261107/relocation-driver-preload.log; module-accounting-20261107/relocation-driver-isolated.log; module-accounting-20261107/metadata-validation.log"
       }
     },
     {
@@ -16315,8 +16298,8 @@
         }
       ],
       "backend_binding": [
-        "size_t bytes=0; int st=cnrtDeviceQueryKernelMemoryUsage(&bytes);",
-        "if(!st) out->bytes=bytes; return st;"
+        "/* Legacy opcode has no client registration registry; CNDrv loads are excluded by native CNRT accounting. */",
+        "return CN_OPS_ERROR_NOT_SUPPORTED;"
       ]
     },
     {
@@ -16447,16 +16430,18 @@
     "CNDrv": []
   },
   "compiler_metadata": {
-    "format": "MLUABI01 in host ELF .mlu.remote.abi",
-    "producer": "scripts/generate_bang_metadata.py",
-    "types": "CNCC mlisa_kernel LLVM IR scalar (kind 0), direct pointer (kind 1), pointer-free byval aggregate (kind 2); per-image exact symbol",
-    "layout": "Exact reviewed CNCC datalayout; natural struct padding/nested structs/fixed arrays, maximum 4096 bytes; cross-check sizes/count against device ELF .params.text; field layout in build manifest",
-    "fallback": "legacy demangler only when metadata absent; invalid or stale metadata rejects",
+    "format": "MLUABI02 variable records in host/image ELF .mlu.remote.abi; MLUABI01 reader retained",
+    "producer": "scripts/generate_bang_metadata.py (--attach-images for CNDrv)",
+    "types": "CNCC mlisa_kernel LLVM IR scalar (kind 0), direct pointer (kind 1), byval aggregate (kind 2); explicit sorted (argument, pointer field offset) entries, at most 512 per launch",
+    "layout": "Exact reviewed CNCC LP64 datalayout; natural struct padding/nested structs/fixed arrays, maximum 4096 bytes per argument; cross-check sizes/count against device ELF .params.text; field layout in build manifest",
+    "association": "FNV64 of .cn_fatbin payload + payload length + exact symbol; artifact association, not authentication",
+    "fallback": "legacy primitive demangler only when matching metadata absent; invalid or stale metadata rejects",
+    "wire": "MLU_CAP_ARGUMENT_RELOCATIONS gates kind 3; zeroed pointer bytes plus 24-byte network-order field records; Server checks owner/range/NULL/alignment/order/overlap before patching native addresses",
     "blocked": [
-      "pointer-containing, packed, opaque or recursive aggregates",
-      "pointer graphs",
-      "unknown LLVM types",
-      "cross-architecture scalar semantics"
+      "packed or opaque aggregate layouts",
+      "device pointer graphs",
+      "unknown LLVM/address-space types",
+      "multi-architecture images and cross-architecture scalar semantics"
     ]
   },
   "query_contracts": {

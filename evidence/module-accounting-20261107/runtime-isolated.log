@@ -1,0 +1,27 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542189]
+mnt mnt:[4026542190]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50229
+CLIENT /home/lvtong/mlu-remote-runtime/build/native_module_accounting
+usage empty 0
+usage registered 74752
+symbol uninitialized 20
+symbol initialized 12
+symbol const 8
+usage second-reference 74752
+usage retained-reference 74752
+usage two-images 149504
+globals value 37
+globals value 41
+usage launched 149504
+usage reset 149504
+globals value 38
+usage reloaded 149504
+usage one-unregistered 74752
+usage all-unregistered 0
+usage registered-again 74752
+globals value 39
+usage closed-again 0
+PASS registered-image accounting and module globals

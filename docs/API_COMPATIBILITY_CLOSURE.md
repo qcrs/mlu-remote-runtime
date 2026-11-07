@@ -8,7 +8,7 @@
 
 收口依据包括：默认 Queue 已经转发 native NULL，不再按旧文档认定为合成 Queue；Notifier flags、priority、跨 Queue wait 和 timing 已有真实对照；内存 node/zero-fill/kind、Context TLS/flags 和当前 CNCC image/module 生命周期的证据也已齐备。无需穷举的负例、多设备和其他 SDK 格式不再模糊阻塞当前单设备入口。
 
-审计明确了统一异步 copy、立即 Queue destroy、Host 属性、模块计量和参数 relocation 的具体缺口。后续 Queue retirement 和 Host/deferred D2H 已按下面的 resolution 收口；模块计量及参数 relocation 等剩余项继续保留明确验收条件。
+审计明确了统一异步 copy、立即 Queue destroy、Host 属性、模块计量和参数 relocation 的具体缺口。后续批次已按下面的 resolution 收口；剩余两个 cast 入口继续保留明确验收条件。
 
 ## 审计时的待修复项
 
@@ -52,4 +52,14 @@
 
 共享 Host registry/lease、Server pinned Transfer ownership 和两个生成 RPC 提供真实 submit/completion/fetch：pending kernel 后的 D2H 提交先返回，成功完成 API 发布数据；default/显式 Queue、interior/pageable Host、跨 Context 和两库交叉 free、动态 buffer、释放与失败配额均已验证。没有后台 Host publication，pageable 地址由调用者保持存活；mapped/VMM/cache coherence 属于其他未实现 family，不能推导为完成。Native 数值基线对 SDK 可能取消 D2H 的生命周期操作先等待，Remote 则验证 pending drain；两种顺序明确分开记录。详见 [Host evidence](../evidence/host-async-20261107/README.md)。
 
-真正剩余 PARTIAL 为 casts 两项、`cnrtDeviceQueryKernelMemoryUsage`、`cnrtGetSymbolSize`、`cnrtInvokeKernel`、`cnInvokeKernel`、`cnModuleGetKernel`。Graph/IPC 的共享状态机尚待核心阶段后推进；Peer 的 7 项仍需第二设备。
+该批结束时剩余 7 个 PARTIAL；其中五个 module/kernel 入口在下面的续批收口。
+
+## 2026-11-07 Module / symbol / argument resolution
+
+`cnrtDeviceQueryKernelMemoryUsage`、`cnrtGetSymbolSize`、`cnrtInvokeKernel`、`cnModuleGetKernel`、`cnInvokeKernel` 已按当前 CNCC 单设备 ABI 收口，当前为 143 IMPLEMENTED、2 PARTIAL、7 BLOCKED、2 OUT_OF_SCOPE、1 UNSUPPORTED、155 NOT_IMPLEMENTED。每项保留原 `closure_review`，新增 `closure_resolution` 和真机证据。
+
+原生 CNRT 在注册时计入 image，reset 后仍计量，独立 CNDrv load/launch 不计入；因此改为客户端存活 registration 求和，缓存 native image estimate。DSO 引用、两 image、最终 unregister 与重新注册均已差分。普通 `__mlu_device__` 未初始化/初始化/const globals 返回 20/12/8 bytes，并在 reset/reload 前后取得相同 kernel 数值。
+
+MLUABI02 明确提供自然 LP64 聚合参数的 pointer 字段 offset；两库共享 AllocationID+offset 打包，Server 校验 owner/range/NULL/alignment/order 后重建参数。Driver image 也可携带该 metadata，支持 extern-C/aggregate/zero args；v1 reader 和保守 primitive fallback 保留。嵌套 struct/array 数值、guard、scalar 位值、reset/reload、foreign/stale owner 与损坏 metadata/wire 均有验证。指纹只关联构建产物；device pointer graph、packed/opaque/未知 ABI 不包含在当前声明。详见 [批次证据](../evidence/module-accounting-20261107/README.md)。
+
+剩余 PARTIAL 为 `cnrtCastDataType` 和 `cnrtCastDataType_V2`。Graph/IPC 的共享状态机尚待核心阶段后推进；Peer 的 7 项仍需第二设备。

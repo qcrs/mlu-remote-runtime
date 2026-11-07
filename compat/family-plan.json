@@ -1494,24 +1494,10 @@
     "family": "module_kernel",
     "priority": 2,
     "counts": {
-      "PARTIAL_IMPLEMENTED": 5,
-      "NOT_IMPLEMENTED": 2,
-      "IMPLEMENTED": 6
+      "IMPLEMENTED": 11,
+      "NOT_IMPLEMENTED": 2
     },
     "remaining": [
-      {
-        "api": "cnrtDeviceQueryKernelMemoryUsage",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "native context",
-        "blocker": "",
-        "next_step": "Measure Native CNRT and CNDrv module attribution, then query or track memory for the owning session and module lifecycle.",
-        "closure": {
-          "gap": "The backend calls CNRT accounting while modules are loaded through CNDrv; only an empty-context value has been validated.",
-          "fix": "Measure Native CNRT and CNDrv module attribution, then query or track memory for the owning session and module lifecycle.",
-          "acceptance": "Load and launch an ordinary BANG module with device globals; compare usage before load, after launch, after unload and reset against Native."
-        }
-      },
       {
         "api": "cnrtGetSymbolAddress",
         "status": "NOT_IMPLEMENTED",
@@ -1520,58 +1506,6 @@
         "blocker": "Complex aggregates, indirect pointers and compiler metadata coverage",
         "next_step": "Probe and implement this functional family",
         "closure": {}
-      },
-      {
-        "api": "cnrtGetSymbolSize",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "",
-        "next_step": "Extend shared image/variable registration metadata and symbol ownership to initialized/constant variables before publishing sizes.",
-        "closure": {
-          "gap": "Only uninitialized __mlu_device__ variables pass registration; initialized/constant globals in ordinary current-toolchain programs are rejected.",
-          "fix": "Extend shared image/variable registration metadata and symbol ownership to initialized/constant variables before publishing sizes.",
-          "acceptance": "An ordinary CNCC program with uninitialized, initialized and constant globals reports identical symbol sizes and kernel values in Native and Remote."
-        }
-      },
-      {
-        "api": "cnrtInvokeKernel",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "",
-        "next_step": "Extend compiler metadata with nested pointer field offsets, encode AllocationID plus offset per field and rebuild arguments on the server; do not guess pointers from scalar values.",
-        "closure": {
-          "gap": "Embedded pointers in by-value aggregates are rejected; the compiler metadata path has no field relocation list.",
-          "fix": "Extend compiler metadata with nested pointer field offsets, encode AllocationID plus offset per field and rebuild arguments on the server; do not guess pointers from scalar values.",
-          "acceptance": "Same ordinary BANG binary with nested aggregate pointers, NULL and allocation offsets has matching Native/Remote values and unload/reset ownership."
-        }
-      },
-      {
-        "api": "cnInvokeKernel",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "",
-        "next_step": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
-        "closure": {
-          "gap": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
-          "fix": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
-          "acceptance": "Native/Remote Driver binary loads extern-C and aggregate kernels, launches with identical results and rejects stale parent modules."
-        }
-      },
-      {
-        "api": "cnModuleGetKernel",
-        "status": "PARTIAL_IMPLEMENTED",
-        "priority": 2,
-        "depends_on": "image/typed arguments",
-        "blocker": "",
-        "next_step": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
-        "closure": {
-          "gap": "Driver lookup classifies only mangled primitive signatures; extern-C and by-value aggregate kernels lack authoritative parameter types.",
-          "fix": "Attach compiler-authored argument metadata to Driver-loaded images and share the CNRT relocation engine, including embedded aggregate pointers.",
-          "acceptance": "Native/Remote Driver binary loads extern-C and aggregate kernels, launches with identical results and rejects stale parent modules."
-        }
       },
       {
         "api": "cnModuleGetSymbol",

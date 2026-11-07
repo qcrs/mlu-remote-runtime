@@ -1,0 +1,1 @@
+PASS nested struct/array pointer fields, offsets, NULL, scalar bits and guards

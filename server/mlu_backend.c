@@ -12,6 +12,9 @@
 
 static int backend_ready;
 static uint64_t next_session_owner;
+static uint64_t read_be64(const unsigned char *p) {
+  uint64_t value=0; for(unsigned i=0;i<8;++i) value=(value<<8)|p[i]; return value;
+}
 
 typedef struct {
   uint32_t id;
@@ -1015,12 +1018,12 @@ int mlu_backend_kernel_launch_generic(mlu_backend_session *s,
   }
   size_t scalar_bytes = 0;
   for (uint32_t i = 0; i < arg_count; ++i) {
-    if ((args[i].kind != 1 && args[i].kind != 2) || !args[i].size || args[i].size > 4096 ||
+    if ((args[i].kind < 1 || args[i].kind > 3) || !args[i].size || args[i].size > 4096 ||
         args[i].size != k->params.sizes[i])
       { free(params); free(device_values); return (int)CN_ERROR_INVALID_VALUE; }
     if (args[i].kind == 1 && args[i].size != sizeof(CNaddr))
       { free(params); free(device_values); return (int)CN_ERROR_INVALID_VALUE; }
-    if (args[i].kind == 2) {
+    if (args[i].kind != 1) {
       if (!args[i].scalar || scalar_bytes > SIZE_MAX - args[i].size) { free(params); free(device_values); return (int)CN_ERROR_INVALID_VALUE; }
       scalar_bytes += (args[i].size + 15u) & ~15u;
     }
@@ -1038,6 +1041,28 @@ int mlu_backend_kernel_launch_generic(mlu_backend_session *s,
       device_values[i] = a->address + args[i].offset; params[i] = &device_values[i];
     } else {
       memcpy(scalars + scalar_cursor, args[i].scalar, args[i].size);
+      if(args[i].kind==3) {
+        uint32_t previous=0;
+        if(!args[i].relocation_count || args[i].relocation_count>BANG_MAX_RELOCS || !args[i].relocations) {
+          free(scalars);free(params);free(device_values);return CN_ERROR_INVALID_VALUE;
+        }
+        for(uint32_t j=0;j<args[i].relocation_count;++j) {
+          const unsigned char *r=args[i].relocations+j*24;
+          uint32_t off=0,reserved=0; uint64_t aid=0,offset=0,value=0;
+          memcpy(&off,r,4);off=ntohl(off);memcpy(&reserved,r+4,4);
+          aid=read_be64(r+8);offset=read_be64(r+16);
+          if(off>args[i].size || args[i].size-off<8 || off%8 || reserved || (j && off<previous+8)) {
+            free(scalars);free(params);free(device_values);return CN_ERROR_INVALID_VALUE;
+          }
+          memcpy(&value,scalars+scalar_cursor+off,8);
+          mlu_backend_allocation *a=aid ? find_alloc(s,aid) : NULL;
+          if(value || (aid ? !a || offset>a->bytes : offset!=0)) {
+            free(scalars);free(params);free(device_values);return CN_ERROR_INVALID_VALUE;
+          }
+          value=a ? a->address+offset : 0;
+          memcpy(scalars+scalar_cursor+off,&value,8); previous=off;
+        }
+      }
       params[i] = scalars + scalar_cursor; scalar_cursor += (args[i].size + 15u) & ~15u;
     }
   }

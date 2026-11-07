@@ -44,7 +44,9 @@ sizes   = [8, 8, 1, 2, 4, 8, 4, 8]
 offsets = [0, 8,16,18,20,24,32,40]
 ```
 
-这验证了大小/对齐，但没有指针类别。Shim 对完整 demangled primitive 签名分类并核对 sizes；aggregate、extern C 无类型符号、模板、嵌套指针不猜测支持。后续可从可靠 compiler metadata/显式 sidecar 扩展类型，仍应保持原业务源码不改。
+这验证了大小/对齐，但没有指针类别。`generate_bang_metadata.py` 从同次 CNCC 的 device LLVM IR 生成 MLUABI02，写入宿主 executable/DSO 的非加载 `.mlu.remote.abi`；`--attach-images` 同时写入 Driver 加载的 image。记录以 `.cn_fatbin` payload 长度/FNV64 和精确符号关联，包含参数分类及聚合 pointer 字段 offset，并与设备 ELF sizes 交叉核对。该指纹用于关联产物，不提供认证。原业务源码无需修改。
+
+C/enum/template/zero args、primitive pointer 与自然 LP64 byval nested struct/固定数组已通过；聚合中的 pointer 字段转换为 AllocationID+offset，wire 中对应八字节清零。`MLU_CAP_ARGUMENT_RELOCATIONS` 协商 kind 3，24-byte 网络序字段记录携带 offset/reserved/allocation/offset；Server 拒绝越界、未对齐、乱序/重叠、非零指针字节、跨 owner 和非法 NULL，再填入 native 地址。最多 512 个字段。无 metadata 时保留 primitive demangler，v1 metadata reader 保留；损坏/过期 metadata 拒绝。Device pointer graph、packed/opaque/未知地址空间和跨架构 ABI 仍不支持。
 
 CNDrv 的 cnInvokeKernel 接受 void** 的逐参数地址；server 持有对齐的各参数值，因此无需把 offsets 当成连续 packed host buffer 再传给 Driver。
 
@@ -68,7 +70,9 @@ cnrtDim3_t 是 BANG task grid，xyz={2,2,2} 的 taskDim=8 已由 kernel 写回�
 
 CNCC __bang_module_dtor 调 __bangUnregisterFatBinary。当前 Shim 每个 FatBinary registration 持有一个远程 ModuleID；后续 Kernel 通过 opcode 29 在同一 ModuleID 下查询，保留各自 KernelID。注销时同步 session 队列并卸载该 module，全部子 KernelID 失效，再释放 image、kernel/name metadata；仅保留小型 registration 身份 tombstone，避免旧 handle 被新 DSO 复用。session reset 清理远端对象但保留有效 host 注册，下次首个 launch 重新上传，其余符号从同一个 module 重新查询。
 
-新增 `tests/native_bang_module.mlu` 原生探针：两个 Kernel 通过 `__mlu_device__ int module_state[4]` 共享状态。CNCC 同时生成 RegisterFunction 和 RegisterVar；后者参数 ext=0、size=16、constant=0、global=0。device ELF 的 `module_state` 是 size=64 的 OBJECT，位于零文件长度的 `.data.gdram_uninit.module_state`，说明 host size 不能直接等同 device symbol size。当前仅按已测的 64-byte 对齐和 uninitialized section 验证该类注册；原生 module 持有设备存储/relocation。Host symbol API、initialized/constant/external globals 仍未支持。
+`tests/native_bang_module.mlu` 的两个 Kernel 通过 `__mlu_device__ int module_state[4]` 共享状态。RegisterVar 参数 ext=0、size=16、constant=0、global=0；device ELF 的 OBJECT size=64，位于零文件长度的 `.data.gdram_uninit.module_state`，host size 与 device symbol size 不相等。续批 `native_module_globals.mlu` 验证普通初始化与 const 对象：注册 flags 同样全零，`.data.gdram_init.<symbol>` 文件长度等于按 64-byte 对齐后的 OBJECT size，st_value=0。Shim 验证这两类 section 后发布 host registration size；原生 module 持有存储与初始化。Host symbol address/copy、external globals 不包含在此支持中。
+
+`cnrtDeviceQueryKernelMemoryUsage` 使用客户端存活 registration 求和，缓存 Server 原生 `cnModuleQueryFatBinaryMemoryUsage` estimate。Native CNRT 在注册时已计量且 reset 保留，独立 CNDrv load/launch 的 CNRT 计数始终为零；直接读取 Server CNRT 计数会漏计。因此最终 unregister 才扣除对应 image；reset 只使 ModuleID 失效，下一次 launch 重新加载。证据见 [module 批次](../evidence/module-accounting-20261107/README.md)。
 
 共享状态与 reset/reload 用例在 native/replacement/preload 和隐藏 SDK/设备的客户端通过；另有 20 次 DSO 重载、保留一个 loader 引用、pending-work unload 对照，以及 parent/child 所有权、重复 lookup、stale IDs 的 TCP 负例。见 [共享模块证据](../evidence/shared-module-20261102/README.md)。并发 dlclose 压力、跨 DSO image 引用和 multi-arch fatbin 仍为 M3 待办。
 

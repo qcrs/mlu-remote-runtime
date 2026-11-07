@@ -8,20 +8,20 @@
 
 /* Exercise the untrusted image boundary under ASan/UBSan, using a real CNCC
  * image plus truncated and mutated copies. No native driver is loaded. */
-static void variable_bounds(const char *path) {
+static void variable_bounds(const char *path, const char *symbol, size_t bytes) {
   FILE *f = fopen(path, "rb"); assert(f);
   assert(!fseek(f, 0, SEEK_END)); long length = ftell(f); assert(length > 0);
   rewind(f); size_t n = (size_t)length;
   unsigned char *image = malloc(n), *copy = malloc(n); assert(image && copy);
   assert(fread(image, 1, n, f) == n); fclose(f);
-  assert(!bang_image_device_variable(image, n, "module_state", 16));
+  assert(!bang_image_device_variable(image, n, symbol, bytes));
   assert(!bang_image_validate(image,n));
-  assert(bang_image_device_variable(image, n, "module_state", 0));
-  assert(bang_image_device_variable(image, n, "module_state", 65));
-  assert(bang_image_device_variable(image, n, "module_state", SIZE_MAX));
+  assert(bang_image_device_variable(image, n, symbol, 0));
+  assert(bang_image_device_variable(image, n, symbol, 65));
+  assert(bang_image_device_variable(image, n, symbol, SIZE_MAX));
   assert(bang_image_device_variable(image, n, "absent", 16));
   for (size_t cut = 0; cut < n; cut += 17) {
-    assert(bang_image_device_variable(image, cut, "module_state", 16));
+    assert(bang_image_device_variable(image, cut, symbol, bytes));
     assert(bang_image_validate(image,cut));
   }
   uint32_t seed = 19;
@@ -31,15 +31,15 @@ static void variable_bounds(const char *path) {
       seed = seed * 1664525u + 1013904223u;
       copy[seed % n] ^= (unsigned char)(1u << (seed % 8));
     }
-    bang_image_device_variable(copy, n, "module_state", 16);
+    bang_image_device_variable(copy, n, symbol, bytes);
     bang_image_validate(copy,n);
   }
   free(copy); free(image);
-  puts("PASS device variable metadata, sizes, truncation and 2000 mutations");
+  printf("PASS device variable %s metadata, sizes, truncation and 2000 mutations\n", symbol);
 }
 
 int main(int argc, char **argv) {
-  assert(argc == 3 || argc == 5);
+  assert(argc == 3 || argc == 5 || argc == 6);
   FILE *f = fopen(argv[1], "rb"); assert(f);
   assert(!fseek(f, 0, SEEK_END)); long length = ftell(f); assert(length > 0);
   rewind(f); size_t n = (size_t)length;
@@ -92,5 +92,10 @@ int main(int argc, char **argv) {
   }
   free(copy); free(image);
   puts("PASS bounded ELF/CNFB parser: native image, truncation, extents, NOBITS, 2000 mutations");
-  if (argc == 5) { variable_bounds(argv[3]); variable_bounds(argv[4]); }
+  if (argc >= 5) { variable_bounds(argv[3], "module_state", 16); variable_bounds(argv[4], "module_state", 16); }
+  if (argc == 6) {
+    variable_bounds(argv[5], "uninitialized", 20);
+    variable_bounds(argv[5], "initialized", 12);
+    variable_bounds(argv[5], "_ZL9constants", 8);
+  }
 }

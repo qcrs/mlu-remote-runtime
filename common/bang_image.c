@@ -63,12 +63,14 @@ static int params_elf(const unsigned char *p, size_t n, const char *symbol,
         if (ELF64_ST_TYPE(v.st_info)!=STT_OBJECT || !v.st_shndx || v.st_shndx>=e.e_shnum ||
             host_size>MLU_REMOTE_MAX_PAYLOAD || v.st_size!=((host_size+63u)&~63ull)) return -1;
         Elf64_Shdr data=section(p,&e,v.st_shndx);
-        if (data.sh_name>=strings.sh_size || data.sh_type!=SHT_PROGBITS || data.sh_size) return -1;
+        if (data.sh_name>=strings.sh_size || data.sh_type!=SHT_PROGBITS) return -1;
         const char *dn=(const char *)p+strings.sh_offset+data.sh_name;
         if (!memchr(dn,0,strings.sh_size-data.sh_name)) return -1;
         char expected[300];
         if (snprintf(expected,sizeof(expected),".data.gdram_uninit.%s",symbol)>=(int)sizeof(expected)) return -1;
-        return strcmp(dn,expected) ? -1 : 0;
+        if (!strcmp(dn,expected)) return data.sh_size || v.st_value ? -1 : 0;
+        if (snprintf(expected,sizeof(expected),".data.gdram_init.%s",symbol)>=(int)sizeof(expected)) return -1;
+        return strcmp(dn,expected) || v.st_value || data.sh_size!=v.st_size ? -1 : 0;
       }
     }
     if (!host_size && (symbol ? !strcmp(name,target) : !strncmp(name,".params.text.",13))) {
@@ -133,4 +135,20 @@ int bang_image_device_variable(const void *image, size_t n, const char *symbol,
   if (!image || !symbol || !*symbol || !host_size || n>MLU_REMOTE_MAX_PAYLOAD) return -1;
   bang_param_layout unused={0};
   return params_elf(image,n,symbol,&unused,host_size,0);
+}
+
+int bang_image_section(const void *image,size_t n,const char *name,
+                         const unsigned char **data,size_t *size) {
+  const unsigned char *p=image; Elf64_Ehdr e; size_t exact;
+  if(!p || !name || !data || !size || bang_image_span(p,n,&exact) || header(p,n,&e)) return -1;
+  Elf64_Shdr strings=section(p,&e,e.e_shstrndx);
+  if(strings.sh_type!=SHT_STRTAB) return -1;
+  for(unsigned i=0;i<e.e_shnum;++i) {
+    Elf64_Shdr s=section(p,&e,i);
+    if(s.sh_name>=strings.sh_size || !memchr(p+strings.sh_offset+s.sh_name,0,strings.sh_size-s.sh_name)) return -1;
+    if(strcmp((const char *)p+strings.sh_offset+s.sh_name,name)) continue;
+    if(s.sh_type!=SHT_PROGBITS) return -1;
+    *data=p+s.sh_offset; *size=s.sh_size; return 0;
+  }
+  return 1;
 }

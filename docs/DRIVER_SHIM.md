@@ -21,11 +21,11 @@
 
 MODULE_LOAD_BINARY 在加载时立即调用原生 `cnModuleLoadFatBinary`，无须预先提供第一个 kernel 名。服务端复制并保留 image，通过 ModuleID 管理其 native module；`cnModuleGetKernel` 随后查询原生符号，再建立多个 child KernelID。两个 BANG kernel 共享 module globals，分别加载相同 image 的 context 保持独立状态。
 
-客户端和服务端复用 `.params.text.*` 的参数大小/偏移解析；客户端额外 demangle 参数类型，仅接受当前验证的 primitive scalar 与单层 primitive/void pointer。参数通过 AllocationID+offset 重定位，标量原样传输。缺少可靠类型信息的 extern C、aggregate、嵌套 pointer 等明确拒绝；不能根据参数值猜指针。
+客户端和服务端复用 `.params.text.*` 的参数大小/偏移解析。`generate_bang_metadata.py --attach-images` 将同次 CNCC device LLVM IR 生成的 MLUABI02 写入 Driver image，以 `.cn_fatbin` payload 长度/FNV64 和精确符号关联参数类型、自然 LP64 聚合布局及 pointer 字段 offsets；指纹只关联产物，不提供认证。CNRT/CNDrv 共享参数打包，将顶层 pointer 和按值 struct/嵌套 struct/固定数组中的 pointer 字段转为 AllocationID+offset，保留标量字节。Server 校验字段范围、对齐、顺序/重叠、NULL 和 allocation owner 后填入 native 地址；最多 512 个字段，旧 peer 未协商 relocation 能力时本地拒绝。缺少 metadata 时仅保留已验证的 primitive scalar 与单层 primitive/void pointer demangle fallback；无法确定类别时拒绝，不能根据参数值猜指针。MLUABI01 reader 保留，device pointer graph、packed/opaque/未知地址空间 ABI 不在当前支持范围。见 [本批 metadata/relocation 证据](../evidence/module-accounting-20261107/README.md)。
 
 当前 image 只支持已测 ELF64 LE / CNFB v2 单 device image，要求有可验证的参数 section；其他合法 native 格式也可能被拒绝。原生符号不存在时返回 `CN_ERROR_NOT_FOUND` 并清空 kernel 输出句柄；本轮探针确认文件不存在时则保留 module 输出值。对于其他不支持格式，不承诺逐错误码与 native 相同。
 
-`cnInvokeKernel` 支持 xyz、primitive 混合参数、offset/NULL pointer、显式 queue 和真实 native NULL queue；reserved 必须为 0，extra 必须为 NULL。Block 数值已验收，Union 系列仅转发，尚未验收其完整语义。
+`cnInvokeKernel` 支持 xyz、primitive 混合参数、offset/NULL pointer、带编译器 metadata 的 extern-C/自然布局按值聚合参数和零参数 kernel，以及显式 queue 和真实 native NULL queue；reserved 必须为 0，extra 必须为 NULL。嵌套 struct/array、跨 context pointer 拒绝和 module unload 后 Kernel 失效已有真机数值/错误验证。Block 数值已验收，Union 系列仅转发，尚未验收其完整语义。
 
 ## NULL queue、异步和清理
 

@@ -1,0 +1,30 @@
+#include <bang.h>
+#include <stdio.h>
+
+#ifndef MODULE_VARIANT
+#define MODULE_VARIANT 1
+#endif
+__mlu_device__ int uninitialized[5];
+__mlu_device__ int initialized[3] = {11, 22, 33};
+__mlu_device__ const int constants[2] = {7, 9};
+
+__mlu_entry__ void module_globals(int *out, int seed) {
+  uninitialized[1] = initialized[1] + constants[1] + seed + MODULE_VARIANT;
+  out[0] = uninitialized[1];
+}
+
+extern "C" int module_submit(int *out, int seed) {
+  module_globals<<<(cnrtDim3_t){1, 1, 1}, cnrtFuncTypeBlock, NULL>>>(out, seed);
+  return cnrtGetLastError();
+}
+
+extern "C" int module_symbols(void) {
+  size_t bytes = 0;
+  if (cnrtGetSymbolSize(&bytes, uninitialized) || bytes != sizeof(uninitialized)) return 1;
+  printf("symbol uninitialized %zu\n", bytes);
+  if (cnrtGetSymbolSize(&bytes, initialized) || bytes != sizeof(initialized)) return 2;
+  printf("symbol initialized %zu\n", bytes);
+  if (cnrtGetSymbolSize(&bytes, constants) || bytes != sizeof(constants)) return 3;
+  printf("symbol const %zu\n", bytes);
+  return 0;
+}

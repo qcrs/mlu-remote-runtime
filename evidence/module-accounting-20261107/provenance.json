@@ -1,0 +1,274 @@
+{
+  "recorded_at": "2026-11-07T04:24:13.530645+00:00",
+  "base_commit": "4a3ce109de30a60172e982c406b3603abb17fa7a",
+  "source_state": "uncommitted working tree; file hashes identify reviewed sources",
+  "sources": [
+    {
+      "path": "README.md",
+      "bytes": 5076,
+      "sha256": "7e427b5be021666545816d591dff0a47d9ce9277ebcad6fb41c1f8824daa3850"
+    },
+    {
+      "path": "client/runtime_context.c",
+      "bytes": 38532,
+      "sha256": "fbdd71b0c24e6ef008492bb2e5a800640e39388a33081331ca5ce74b52ec558f"
+    },
+    {
+      "path": "common/bang_args.c",
+      "bytes": 1304,
+      "sha256": "1483bfcecdd84eabf7d3095ddf77fd3d48e9cfc7ac982d21e7d7e9904a583c2e"
+    },
+    {
+      "path": "common/bang_image.c",
+      "bytes": 7868,
+      "sha256": "38acbf5335fa4f885c65fb4637a2de86f4c6998a94e5665abf610b6d9fec26c9"
+    },
+    {
+      "path": "common/bang_metadata.c",
+      "bytes": 3942,
+      "sha256": "100a3cc8f4c428e2c387111eda62661e81f19f971a9d6fd6b368b05fc28c1ccc"
+    },
+    {
+      "path": "compat/annotations.json",
+      "bytes": 89092,
+      "sha256": "eda003f711530b049d13ed03eb28f9d0311ec1dbdd8b400f227fefaf2cf0ea81"
+    },
+    {
+      "path": "compat/api-ledger.csv",
+      "bytes": 139982,
+      "sha256": "03f9a7d7c811d835820b0e1e98fc046b1e72eefd0d7686bc96735e865d7455da"
+    },
+    {
+      "path": "compat/family-plan.json",
+      "bytes": 62876,
+      "sha256": "2fe28ec151d8aa9ebf1bf5b4841ab5805730fb754e9824f6a9f8a981bc13b038"
+    },
+    {
+      "path": "compat/family-plan.md",
+      "bytes": 1192,
+      "sha256": "b98a98fe1a9ec6bbf4addb5bf02bcf19b41c10f4d1b3e8da0aabb052d3f775b2"
+    },
+    {
+      "path": "compat/summary.json",
+      "bytes": 1145,
+      "sha256": "f8a2d5c915e1e52897af7ad32e798a4821ebddf2de561a9aacdf9d1cf4ce0f9b"
+    },
+    {
+      "path": "docs/API_AUTOMATION.md",
+      "bytes": 16400,
+      "sha256": "59d98954145c8a3779839c4921ceec70566cb52951d256272764bcbe8ee3ea30"
+    },
+    {
+      "path": "docs/API_COMPATIBILITY_CLOSURE.md",
+      "bytes": 9299,
+      "sha256": "43dca687fbc51210e361a49c28c6e0ea660b5dcf3a834f48ec7080ad96df048e"
+    },
+    {
+      "path": "docs/BANG_EXECUTION_CHAIN.md",
+      "bytes": 7998,
+      "sha256": "2b2aebc74d843aa2bf61fbc87953886dd667d00fa243938bea2db5c7fb3eb1dd"
+    },
+    {
+      "path": "docs/DEVELOPMENT.md",
+      "bytes": 11020,
+      "sha256": "5af2957b6c69578195c2499328e507597a860feab0de624efb9e39accf6f8013"
+    },
+    {
+      "path": "docs/DRIVER_SHIM.md",
+      "bytes": 9270,
+      "sha256": "2420fc73c78f14a8d74946ab950cd10af2bc31d18703f0754c4e6599ea8f987d"
+    },
+    {
+      "path": "docs/PROJECT_STATE.md",
+      "bytes": 7137,
+      "sha256": "088976371fb009d14d45e95fa661687d4072968af5396ac0aa572278571904dd"
+    },
+    {
+      "path": "include/bang_args.h",
+      "bytes": 552,
+      "sha256": "3cfa9d10362bc9cffc0494907fc63d12acf6a08958f11c5a5cd062a92f0935ec"
+    },
+    {
+      "path": "include/bang_image.h",
+      "bytes": 1850,
+      "sha256": "20e886658bf7c1a3478dda0805f532d9d1101ec46abfb123dded859a9bd959eb"
+    },
+    {
+      "path": "include/remote_cnrt.h",
+      "bytes": 8331,
+      "sha256": "551e249118685d896d5976e0ce591f26b47ee508b53258ec8a469ed96260ee3c"
+    },
+    {
+      "path": "include/remote_protocol.h",
+      "bytes": 3359,
+      "sha256": "53d25508d59a93100a6cb7a06613ab1f4cc856887f11baf4e436b1bab7009326"
+    },
+    {
+      "path": "schema/mlu_api_schema.json",
+      "bytes": 604173,
+      "sha256": "a749dba584a922563a12f5913b30297ba97a8c15afc5d3bbc32562703e2d7d9f"
+    },
+    {
+      "path": "scripts/build-client.sh",
+      "bytes": 1979,
+      "sha256": "a92d6eb78db37d5bbafbfce9d7baa380abfeccaa25658c2a742d2fa292435f65"
+    },
+    {
+      "path": "scripts/build.sh",
+      "bytes": 8241,
+      "sha256": "0647902c2d8828bf32d792dfe6ad8ead9023542c3de8456bb38c0c0742d327a3"
+    },
+    {
+      "path": "scripts/generate_bang_metadata.py",
+      "bytes": 8350,
+      "sha256": "ebc75a35528c6487b8a552ad5d01df2e1a8520567d7c93122bbae3ca48bc7f8a"
+    },
+    {
+      "path": "scripts/verify-module-accounting.py",
+      "bytes": 5094,
+      "sha256": "7b210903ded53816659f50f2c9b46f59a6e73b1f31acad1a97f3dd9b17f00599"
+    },
+    {
+      "path": "server/mlu_backend.c",
+      "bytes": 61124,
+      "sha256": "afa7bfdd2d41e9f22053669175514ca0f20422faaca96c5c317697180924812d"
+    },
+    {
+      "path": "server/mlu_backend.h",
+      "bytes": 8231,
+      "sha256": "c406574f3484f028391d03611cbcf492a5978a53298e395551aeca189518464d"
+    },
+    {
+      "path": "server/mlu_remote_server.c",
+      "bytes": 27343,
+      "sha256": "70137ebe09d130ed09f1f0047489b53556ad06c8043103918cdb08998b1417e1"
+    },
+    {
+      "path": "shim/cndrv_shim.c",
+      "bytes": 27778,
+      "sha256": "d52fb5a731d62424aa130896ae99928e3d0fd953169081b696c8acf7ebd15bca"
+    },
+    {
+      "path": "shim/cnrt_shim.c",
+      "bytes": 32814,
+      "sha256": "20cd7f8781e77af0c218e059d1693025122b53fb0fa65bd90e6fec88dda41279"
+    },
+    {
+      "path": "tests/bang_image_bounds.c",
+      "bytes": 4457,
+      "sha256": "d4dc2bf359b0fd54a12ecff173f78ca94ae7cf148f96e5004c108fe778402ffe"
+    },
+    {
+      "path": "tests/bang_metadata.py",
+      "bytes": 6657,
+      "sha256": "7925c81040254a2cfac6224b2e7a37e72c4f328867aa520e022227ad909ab5c7"
+    },
+    {
+      "path": "tests/client_response_faults.py",
+      "bytes": 12917,
+      "sha256": "ca0884415908013cd87b43912465453c756450f77b870d08d774ed2f22ffe80f"
+    },
+    {
+      "path": "tests/native_bang_relocations.mlu",
+      "bytes": 5231,
+      "sha256": "d19826f8992109a9b7e9134dc4c1d696b2b88f640dd0a9625018380224780bde"
+    },
+    {
+      "path": "tests/native_module_accounting.c",
+      "bytes": 3340,
+      "sha256": "7f882cd5d3310d3f9395c18d4bab0e9e9d65319d66f17ba2a7fc7da3bb8ca72b"
+    },
+    {
+      "path": "tests/native_module_globals.mlu",
+      "bytes": 1024,
+      "sha256": "e64fba1ddb951f477dde360ec1fc0292cbcecec443637e46645c8401e4ef1aa8"
+    },
+    {
+      "path": "tests/relocation_protocol.py",
+      "bytes": 2622,
+      "sha256": "d549784e6647ad782a3d0fe2d1c300792b7854c3ffd145c19a22b6beebe100a1"
+    },
+    {
+      "path": "tests/typed_api_protocol.py",
+      "bytes": 2298,
+      "sha256": "a3b342ea022dec7b1dd822ce37f640251e8dfc43c47cc97017da0e3e8a52e7a8"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "build/mlu-remote-server",
+      "bytes": 113624,
+      "sha256": "b13b28d9de1b92ae13f90ff8fb49e021958f6fb80c4f3d2c6086c8b566a9f5cf"
+    },
+    {
+      "path": "build/libremote_cnrt.so",
+      "bytes": 65848,
+      "sha256": "3237b01d3fa6b96bc95c92c868ab609e0768ddd2fc1c7265fcdef0deec6655e2"
+    },
+    {
+      "path": "build/shim/libcnrt.so",
+      "bytes": 88000,
+      "sha256": "70a3e07bb504755d072e54b1d1a775fc84400b96f5074159b5febee0ff344b5e"
+    },
+    {
+      "path": "build/driver-shim/libcndrv.so",
+      "bytes": 105432,
+      "sha256": "d353bca24fb47b781c6c04b21380aa8a5407e8e4ca1ba302f4114666fceb1dc0"
+    },
+    {
+      "path": "build/bang-image-bounds",
+      "bytes": 119680,
+      "sha256": "392045e7956051a27e2377bc62369451a1c88b20c3c5eba75080da0e154f7566"
+    },
+    {
+      "path": "build/native_module_accounting",
+      "bytes": 18464,
+      "sha256": "12347701fba47bad2bdfd52ad29c14da80ff4963d34dcb46ee399df926e0bbe7"
+    },
+    {
+      "path": "build/native_bang_relocations",
+      "bytes": 28600,
+      "sha256": "623eceedc1eed913b957ff49e0d78dcb7370f09c606ae99445cc50f20aa6ab6e"
+    },
+    {
+      "path": "build/native_bang_metadata",
+      "bytes": 20312,
+      "sha256": "4b8901205b645c52bb2a7a7129b3d599a7b8911b595bc447af157c4f5f54fdfc"
+    },
+    {
+      "path": "build/relocation-audit/types.ll",
+      "bytes": 44907,
+      "sha256": "a0796ecaee995227d8c3395f9928cee0589386b9129de9c4f29e5c35a6e089c5"
+    },
+    {
+      "path": "build/relocation-audit/native_bang_relocations-bang-mlisa-cambricon-bang.cnfatbin",
+      "bytes": 4360,
+      "sha256": "046a0bbd961a453162e20f840305048e75c3a2a8b157bef11615f84f1e1e8e84"
+    },
+    {
+      "path": "build/metadata-audit/native_bang_metadata-bang-mlisa-cambricon-bang.cnfatbin",
+      "bytes": 4040,
+      "sha256": "0d4f26058ba9397de94d1addd3b1350e2a9e31286948f818423c2afccd211aa4"
+    },
+    {
+      "path": "build/libnative_module_globals_1.so",
+      "bytes": 13720,
+      "sha256": "fd4678f3e01d2134dfb7181732f49cd8edc43976f3d62d9b5c4ea2310427dff4"
+    },
+    {
+      "path": "build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "bytes": 2984,
+      "sha256": "778ac08a5fa6892368242069a595759a17fb5de93cebc7ba2e4c7598af7f1860"
+    },
+    {
+      "path": "build/libnative_module_globals_2.so",
+      "bytes": 13720,
+      "sha256": "86708d81e69d0000b93cb0dd2742cabfcdcb1e27e29d71570c1064912a317545"
+    },
+    {
+      "path": "build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "bytes": 2984,
+      "sha256": "7e017a2e14a4011c0c221d702be8f1c5ceb413d20cabc0bace73804762614189"
+    }
+  ]
+}

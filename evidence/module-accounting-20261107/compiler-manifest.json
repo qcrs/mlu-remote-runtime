@@ -1,0 +1,97 @@
+[
+  {
+    "symbol": "relocated",
+    "image_size": 2544,
+    "fingerprint": "0xe476fcfa642618eb",
+    "parameters": [
+      {
+        "size": 72,
+        "kind": "aggregate",
+        "layout": {
+          "type": "struct",
+          "size": 72,
+          "alignment": 8,
+          "fields": [
+            {
+              "offset": 0,
+              "layout": {
+                "type": "i8",
+                "size": 1,
+                "alignment": 1
+              }
+            },
+            {
+              "offset": 8,
+              "layout": {
+                "type": "array",
+                "count": 2,
+                "size": 48,
+                "alignment": 8,
+                "element": {
+                  "type": "struct",
+                  "size": 24,
+                  "alignment": 8,
+                  "fields": [
+                    {
+                      "offset": 0,
+                      "layout": {
+                        "type": "pointer",
+                        "size": 8,
+                        "alignment": 8
+                      }
+                    },
+                    {
+                      "offset": 8,
+                      "layout": {
+                        "type": "pointer",
+                        "size": 8,
+                        "alignment": 8
+                      }
+                    },
+                    {
+                      "offset": 16,
+                      "layout": {
+                        "type": "i32",
+                        "size": 4,
+                        "alignment": 4
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "offset": 56,
+              "layout": {
+                "type": "pointer",
+                "size": 8,
+                "alignment": 8
+              }
+            },
+            {
+              "offset": 64,
+              "layout": {
+                "type": "i64",
+                "size": 8,
+                "alignment": 8
+              }
+            }
+          ]
+        },
+        "pointer_offsets": [
+          8,
+          16,
+          32,
+          40,
+          56
+        ]
+      }
+    ]
+  },
+  {
+    "symbol": "relocation_no_args",
+    "image_size": 2544,
+    "fingerprint": "0xe476fcfa642618eb",
+    "parameters": []
+  }
+]

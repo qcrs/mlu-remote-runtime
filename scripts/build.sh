@@ -38,6 +38,7 @@ CLIENT_LIBS="-L$ROOT/build -Wl,-rpath,$ROOT/build -lremote_cnrt -lremote_cnnl"
 "$CC" $CFLAGS "$ROOT/tests/native_query_boundaries.c" -o "$ROOT/build/native_query_boundaries" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_error_catalog.c" -o "$ROOT/build/native_error_catalog" $LDFLAGS -lcnrt -lcndrv
 "$CC" $CFLAGS "$ROOT/tests/native_inferred_copy.c" -o "$ROOT/build/native_inferred_copy" $LDFLAGS -lcnrt -lcndrv
+"$CC" $CFLAGS "$ROOT/tests/native_module_accounting.c" -o "$ROOT/build/native_module_accounting" $LDFLAGS -lcnrt -lcndrv -ldl
 "$CC" $CFLAGS "$ROOT/probes/probe_query_semantics.c" -o "$ROOT/build/probes/probe_query_semantics" $LDFLAGS -lcnrt -lcndrv
 "$CC" -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -I"$ROOT/include" "$ROOT/common/bang_image.c" "$ROOT/tests/bang_image_bounds.c" -ldl -o "$ROOT/build/bang-image-bounds"
 
@@ -69,6 +70,20 @@ if command -v cncc >/dev/null 2>&1 || [ -x "$NEUWARE_HOME/bin/cncc" ] || [ -x /u
   python3 "$ROOT/scripts/generate_bang_metadata.py" --host "$ROOT/build/native_bang_metadata" \
     --pair "$ROOT/build/metadata-audit/types.ll:$ROOT/build/metadata-audit/native_bang_metadata-bang-mlisa-cambricon-bang.cnfatbin" \
     --manifest "$ROOT/build/metadata-audit/manifest.json"
+
+  for VARIANT in 1 2; do
+    mkdir -p "$ROOT/build/globals-$VARIANT"
+    (cd "$ROOT/build/globals-$VARIANT" && "$CNCC" --bang-mlu-arch=mtp_372 -save-temps -shared -fPIC \
+      -DMODULE_VARIANT="$VARIANT" "$ROOT/tests/native_module_globals.mlu" -o "$ROOT/build/libnative_module_globals_$VARIANT.so")
+  done
+  mkdir -p "$ROOT/build/relocation-audit"
+  (cd "$ROOT/build/relocation-audit" && "$CNCC" --bang-mlu-arch=mtp_372 -save-temps \
+    "$ROOT/tests/native_bang_relocations.mlu" -lcndrv -o "$ROOT/build/native_bang_relocations")
+  "$CNCC" --bang-device-only --bang-mlu-arch=mtp_372 -S -emit-llvm \
+    "$ROOT/tests/native_bang_relocations.mlu" -o "$ROOT/build/relocation-audit/types.ll"
+  python3 "$ROOT/scripts/generate_bang_metadata.py" --host "$ROOT/build/native_bang_relocations" \
+    --pair "$ROOT/build/relocation-audit/types.ll:$ROOT/build/relocation-audit/native_bang_relocations-bang-mlisa-cambricon-bang.cnfatbin" \
+    --manifest "$ROOT/build/relocation-audit/manifest.json" --attach-images
 
 else
   echo "WARN: cncc not found; preset kernel remains PARTIAL"

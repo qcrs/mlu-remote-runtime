@@ -1,0 +1,202 @@
+[
+  {
+    "name": "runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_module_accounting",
+      "runtime",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_1.so",
+      "/home/lvtong/mlu-remote-runtime/build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_2.so"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_module_accounting",
+      "runtime",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_1.so",
+      "/home/lvtong/mlu-remote-runtime/build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_2.so"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_module_accounting",
+      "runtime",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_1.so",
+      "/home/lvtong/mlu-remote-runtime/build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_2.so"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_module_accounting",
+      "runtime",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_1.so",
+      "/home/lvtong/mlu-remote-runtime/build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_2.so"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_module_accounting",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_1.so",
+      "/home/lvtong/mlu-remote-runtime/build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_2.so"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_module_accounting",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_1.so",
+      "/home/lvtong/mlu-remote-runtime/build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_2.so"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_module_accounting",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_1.so",
+      "/home/lvtong/mlu-remote-runtime/build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_2.so"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_module_accounting",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_1.so",
+      "/home/lvtong/mlu-remote-runtime/build/globals-2/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/libnative_module_globals_2.so"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-runtime-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_relocations",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-runtime-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_relocations",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-runtime-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_relocations",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-runtime-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_relocations",
+      "runtime"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-driver-native",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_relocations",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/relocation-audit/native_bang_relocations-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-driver-remote",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_relocations",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/relocation-audit/native_bang_relocations-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-driver-preload",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_relocations",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/relocation-audit/native_bang_relocations-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-driver-isolated",
+    "command": [
+      "bash",
+      "scripts/run-isolated-client.sh",
+      "/home/lvtong/mlu-remote-runtime/build/native_bang_relocations",
+      "driver",
+      "/home/lvtong/mlu-remote-runtime/build/relocation-audit/native_bang_relocations-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "relocation-protocol",
+    "command": [
+      "python3",
+      "tests/relocation_protocol.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "metadata-validation",
+    "command": [
+      "python3",
+      "tests/bang_metadata.py"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "parser-bounds",
+    "command": [
+      "/home/lvtong/mlu-remote-runtime/build/bang-image-bounds",
+      "/home/lvtong/mlu-remote-runtime/build/audit/native_bang_abi-bang-mlisa-cambricon-bang.cnfatbin",
+      "_Z10vector_addPfPKfS1_i",
+      "/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang.cnfatbin",
+      "/home/lvtong/mlu-remote-runtime/build/module-audit/native_bang_module-bang-mlisa-cambricon-bang-mtp_372.o",
+      "/home/lvtong/mlu-remote-runtime/build/globals-1/native_module_globals-bang-mlisa-cambricon-bang.cnfatbin"
+    ],
+    "returncode": 0
+  }
+]

@@ -1,0 +1,96 @@
+#include <bang.h>
+#include <cn_api.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define OK(e) do { int st = (int)(e); if (st) { fprintf(stderr, "%s: %d at %d\n", #e, st, __LINE__); exit(2); } } while (0)
+#define REQUIRE(e) do { if (!(e)) { fprintf(stderr, "%s at %d\n", #e, __LINE__); exit(3); } } while (0)
+struct Leaf { const int *input; const int *nullable; int bias; };
+struct Payload { unsigned char tag; Leaf fields[2]; int *output; uint64_t scalar; };
+
+extern "C" __mlu_entry__ void relocated(Payload p) {
+  p.output[0] = p.fields[0].input[0] + p.fields[0].bias + p.tag;
+  p.output[1] = p.fields[1].input[0] + p.fields[1].bias +
+                (p.fields[0].nullable ? p.fields[0].nullable[0] : 0) +
+                (p.fields[1].nullable ? p.fields[1].nullable[0] : 0);
+  /* CNCC uses .s48 for i64; compare the measured lower 48 bits. */
+  p.output[2] = (int)(p.scalar & 0xffff);
+}
+extern "C" __mlu_entry__ void relocation_no_args(void) {}
+
+static Payload payload(int *input, int *output) {
+  Payload p = {0}; p.tag = 3;
+  p.fields[0] = (Leaf){input + 1, NULL, -2};
+  p.fields[1] = (Leaf){input + 3, input + 2, 5};
+  p.output = output + 1;
+  p.scalar = (uintptr_t)input; /* Must remain scalar despite matching a VA. */
+  return p;
+}
+static void verify(int *host, Payload p) {
+  REQUIRE(host[0] == -77 && host[4] == -77);
+  REQUIRE(host[1] == 12 && host[2] == 30 && host[3] == (int)(p.scalar & 0xffff));
+  puts("PASS nested struct/array pointer fields, offsets, NULL, scalar bits and guards");
+}
+
+int main(int argc, char **argv) {
+  REQUIRE(argc == 2 || argc == 3);
+  int in[5] = {2, 11, 7, 18, 21}, out[5] = {-77, -77, -77, -77, -77};
+  if (!strcmp(argv[1], "runtime")) {
+    int *a, *b; OK(cnrtMalloc((void **)&a, sizeof(in))); OK(cnrtMalloc((void **)&b, sizeof(out)));
+    OK(cnrtMemcpy(a, in, sizeof(in), cnrtMemcpyHostToDev));
+    OK(cnrtMemcpy(b, out, sizeof(out), cnrtMemcpyHostToDev));
+    Payload p = payload(a, b); cnrtDim3_t dim = {1, 1, 1};
+    relocated<<<dim, cnrtFuncTypeBlock, NULL>>>(p); OK(cnrtGetLastError());
+    relocation_no_args<<<dim, cnrtFuncTypeBlock, NULL>>>(); OK(cnrtGetLastError());
+    OK(cnrtSyncDevice()); OK(cnrtMemcpy(out, b, sizeof(out), cnrtMemcpyDevToHost)); verify(out, p);
+    Payload before_reset = p;
+    OK(cnrtFree(a)); OK(cnrtFree(b)); OK(cnrtDeviceReset());
+    OK(cnrtMalloc((void **)&a, sizeof(in))); OK(cnrtMalloc((void **)&b, sizeof(out)));
+    for (int i = 0; i < 5; ++i) out[i] = -77;
+    OK(cnrtMemcpy(a, in, sizeof(in), cnrtMemcpyHostToDev));
+    OK(cnrtMemcpy(b, out, sizeof(out), cnrtMemcpyHostToDev));
+    p = payload(a, b);
+    relocated<<<dim, cnrtFuncTypeBlock, NULL>>>(p); OK(cnrtGetLastError());
+    OK(cnrtSyncDevice()); OK(cnrtMemcpy(out, b, sizeof(out), cnrtMemcpyDevToHost)); verify(out, p);
+    puts("PASS reset preserves registered aggregate metadata and reloads module");
+    OK(cnrtFree(a));
+    if (getenv("MLU_TEST_SHIM")) {
+      void *args[] = {&p};
+      REQUIRE(cnrtInvokeKernel((const void *)relocated, dim, cnrtFuncTypeBlock, args, 0, NULL) == cnrtErrorInvalidResourceHandle);
+      args[0] = &before_reset;
+      REQUIRE(cnrtInvokeKernel((const void *)relocated, dim, cnrtFuncTypeBlock, args, 0, NULL) == cnrtErrorInvalidResourceHandle);
+      puts("PASS stale nested pointer rejected");
+    }
+    OK(cnrtFree(b)); OK(cnrtDeviceReset());
+  } else {
+    REQUIRE(argc == 3 && !strcmp(argv[1], "driver"));
+    OK(cnInit(0)); CNdev device; CNcontext ctx; OK(cnDeviceGet(&device, 0)); OK(cnCtxCreate(&ctx, 0, device));
+    CNmodule module; CNkernel kernel, same, empty;
+    OK(cnModuleLoad(argv[2], &module)); OK(cnModuleGetKernel(module, "relocated", &kernel));
+    OK(cnModuleGetKernel(module, "relocated", &same)); REQUIRE(same == kernel);
+    OK(cnModuleGetKernel(module, "relocation_no_args", &empty));
+    CNaddr a, b; OK(cnMalloc(&a, sizeof(in))); OK(cnMalloc(&b, sizeof(out)));
+    OK(cnMemcpyHtoD(a, in, sizeof(in))); OK(cnMemcpyHtoD(b, out, sizeof(out)));
+    Payload p = payload((int *)(uintptr_t)a, (int *)(uintptr_t)b); void *params[] = {&p};
+    OK(cnInvokeKernel(kernel, 1, 1, 1, CN_KERNEL_CLASS_BLOCK, 0, NULL, params, NULL));
+    OK(cnInvokeKernel(empty, 1, 1, 1, CN_KERNEL_CLASS_BLOCK, 0, NULL, NULL, NULL));
+    OK(cnCtxSync()); OK(cnMemcpyDtoH(out, b, sizeof(out))); verify(out, p);
+    if (getenv("MLU_TEST_SHIM")) {
+      CNcontext other; OK(cnCtxCreate(&other, 0, device)); CNaddr alien; OK(cnMalloc(&alien, 16));
+      OK(cnCtxSetCurrent(ctx)); p.fields[0].input = (int *)(uintptr_t)alien;
+      REQUIRE(cnInvokeKernel(kernel, 1, 1, 1, CN_KERNEL_CLASS_BLOCK, 0, NULL, params, NULL) == CN_MEMORY_ERROR_INVALID_ADDRESS);
+      OK(cnCtxSetCurrent(other)); OK(cnFree(alien)); OK(cnCtxDestroy(other)); OK(cnCtxSetCurrent(ctx));
+      p = payload((int *)(uintptr_t)a, (int *)(uintptr_t)b);
+      puts("PASS foreign-context nested pointer rejected");
+    }
+    OK(cnFree(a)); OK(cnFree(b)); OK(cnModuleUnload(module));
+    if (getenv("MLU_TEST_SHIM")) {
+      REQUIRE(cnInvokeKernel(kernel, 1, 1, 1, CN_KERNEL_CLASS_BLOCK, 0, NULL, params, NULL) == CN_ERROR_INVALID_KERNEL);
+      puts("PASS module unload invalidates metadata kernel handles");
+    }
+    OK(cnCtxDestroy(ctx));
+  }
+  return 0;
+}

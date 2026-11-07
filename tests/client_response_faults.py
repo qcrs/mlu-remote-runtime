@@ -170,6 +170,11 @@ exercise('bad-hello-version', None, lambda h: reply(h, struct.pack('!IIII', 99, 
 exercise('short-hello', None, lambda h: reply(h, bytes(8)), True)
 
 # A legitimate native API failure does not corrupt the protocol connection.
+class Relocation(c.Structure):
+    _fields_ = [('offset', U32), ('allocation', U64), ('allocation_offset', U64)]
+class KernelArg(c.Structure):
+    _fields_ = [('kind', U32), ('size', U32), ('allocation', U64), ('offset', U64),
+                ('scalar', PTR), ('relocation_count', U32), ('relocations', c.POINTER(Relocation))]
 for caps in (0xfff, 0x7ff):
     with socket.socket() as listener:
         listener.bind(('127.0.0.1', 0))
@@ -184,7 +189,7 @@ for caps in (0xfff, 0x7ff):
                     h, _ = request(sock)
                     sock.sendall(reply(h, struct.pack("!IIII", 1, 1, caps, 0x08010001)))
                     h, _ = request(sock)
-                    assert h[2] == 8, "unsupported capability sent a lookup request"
+                    assert h[2] == 8, "unsupported capability sent a lookup/launch request"
                     sock.sendall(reply(h, status=1))  # Native NotReady, no poison.
                     h, _ = request(sock)
                     sock.sendall(reply(h, struct.pack('!IQI', 1, 32, 0)))
@@ -200,6 +205,10 @@ for caps in (0xfff, 0x7ff):
                 kid = U64(77)
                 assert kernel(ctx, 1, b"kernel", c.byref(kid)) & 0xffffffff == 0x80000005
                 assert kid.value == 77
+            field=Relocation(0,1,0); raw=c.create_string_buffer(8)
+            arg=KernelArg(3,8,0,0,c.cast(raw,PTR),1,c.pointer(field)); tid=U64(77)
+            assert generic(ctx,1,1,0,1,1,1,1,c.byref(arg),1,c.byref(tid)) & 0xffffffff == 0x80000005
+            assert tid.value==77
             assert sync(ctx, 1) == 1
             value = U32(0)
             assert count(ctx, c.byref(value)) == 0 and value.value == 1
@@ -210,6 +219,7 @@ for caps in (0xfff, 0x7ff):
         if healthy_errors:
             raise healthy_errors[0]
     print('PASS native error keeps healthy session usable' if caps & 0x800 else 'PASS old peer capability refuses lookup without sending or splitting module')
+print('PASS old peer refuses aggregate relocation without sending; session remains usable')
 
 # Generated size_from response buffers validate exact length before publishing.
 class FetchRequest(c.Structure):

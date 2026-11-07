@@ -1,6 +1,6 @@
 # API 泛化与编译器元数据
 
-本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 45 个 typed RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 45 个公共 RPC 包装和 4 个本地 error API；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
+本工作包保留 TCP v1、Session、ObjectID、fake VA、TransferID 和六 preset。当前共有 45 个 typed RPC，通过 `MLU_CAP_TYPED_API` 协商支持，生成 44 个公共 RPC 包装和 4 个本地 error API；普通查询不再逐项手写协议。完整的 310 个公共声明进入 Schema，未审查的参数保留 `unknown/review_required`，不能直接进入自动生成路径。
 
 2026-11-07 error closure：四个 CNRT/CNDrv error API 改为 `generated_local`。显式 SDK-builder 命令 `capture-error-catalog.py` 从当前头文件枚举并集捕获 139 个不同错误值的原生文本；reviewed JSON 纳入版本控制，普通 build 只消费 JSON。生成器输出 immutable Host-local 查询、枚举静态断言和仅含输入值的 native probe，不依赖客户端 Driver/设备/Server。已验证初始化前、远端 port 1、replacement/preload/namespace 的全目录与八个未知值，区分 CNRT 在 199999 以上的回退。旧 typed error RPC 保留 wire 兼容，公共入口不再使用线程共享可覆盖文本。Native Driver 的 NULL 输出崩溃，Shim 安全返回 INVALID_VALUE。
 
@@ -33,7 +33,7 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 之前仅有 10 个 ObjectID RPC 能生成。普通 API 需要分别增加 header、client 编解码、server 长度检查/dispatch、backend、导出与台账；各处重复字段和 opcode。现在新增一个已审查的普通 API，主要填写 Schema 中的字段/映射/native binding，再补功能族语义断言；其余重复路径一次生成。
 
-首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 45/45，另有 4 个本地 error API，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 45/44，另有 4 个本地 error API，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
 ## 2026-11-07 Host memory / deferred D2H
 
@@ -65,7 +65,7 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 ## 2026-11-08 Symbol metadata
 
-`cnrtGetSymbolSize` 直接读取 `__bangRegisterVar` 的 host registration metadata，返回已验证的未初始化 device variable 大小，不把 host pointer 或 symbol 数值送入 RPC。地址/拷贝和 initialized/constant/external globals 等需要 server module symbol mapping，继续保持边界。
+`cnrtGetSymbolSize` 直接读取 `__bangRegisterVar` 的 host registration metadata，返回经过 device ELF 校验的普通未初始化、初始化和 const device variable 大小，不把 host pointer 或 symbol 数值送入 RPC。地址/拷贝和 external globals 不包含在此入口；2026-11-07 收口证据见 [module 批次](../evidence/module-accounting-20261107/README.md)。
 
 ## 2026-11-07 Context configuration
 
@@ -79,13 +79,19 @@ CNDrv `cnMallocNode`、`cnZmalloc`、`cnZmallocNode`、`cnMallocConstant`、`cnM
 
 `scripts/generate_bang_metadata.py` 接受同一构建的 device LLVM IR 与实际嵌入的 `.cnfatbin`，提取 `mlisa_kernel` 参数，写入宿主 executable/DSO 的非加载 ELF section `.mlu.remote.abi`。构建命令见 `scripts/build.sh` 的 `metadata-audit` 段；也可重复传 `--pair LL:IMAGE` 附带多个 image 的记录。无需额外导出 helper，无运行时 SDK、环境 sidecar 路径或业务源码分支。
 
-记录包含 image 字节数、FNV64 指纹、精确符号、参数数量、大小和 scalar/pointer/aggregate 分类。指纹用于发现过期构建产物，不提供密码学认证。客户端通过注册的 host stub 定位宿主 ELF，独立读取设备 ELF 大小/offset，再交叉核对类型；不匹配或损坏会拒绝。无 metadata 的已有 binary 继续用原保守 demangler。
+MLUABI02 的可变长度记录包含 `.cn_fatbin` payload 字节数、FNV64 指纹、精确符号、参数数量/大小、scalar/pointer/aggregate 分类，以及聚合 pointer 字段的 (argument, offset) 列表。MLUABI01 reader 仍保留。指纹用于发现过期构建产物，不提供密码学认证。客户端通过注册的 host stub 定位宿主 ELF，独立读取设备 ELF 大小/offset，再交叉核对类型；不匹配或损坏会拒绝。无 metadata 的已有 binary 继续用原保守 demangler。`--attach-images` 可把同一 metadata 写入 Driver 加载的 image，保留独立 CNDrv binary 的 extern-C/aggregate 类型关联。
 
 已通过 C 链接符号、枚举、模板、零参数、一个 module 的三个 kernel、NULL/offset pointer 和与 fake VA 位值相同的 scalar 数值验证。重定位复用现有 allocation ID+offset→native address 机制，完全不按 kernel 名称、参数个数或 scalar 位值猜类型。四类 stale/损坏 metadata 均被拒绝；旧 aggregate/C-symbol 无 metadata 拒绝测试保留。
 
 本机 CNCC 在 LLVM IR 中给出 i64，却在设备 MLISA 中发出 `.s48`；Native tagged VA 作为 scalar 的高位会被截断，`unsigned long long` 也不能消除这个观察。测试保留实际 input/output 到 stderr，并按原生 low48 语义断言；没有宣称任意 64 位数值都能跨 ABI 保真。IR 类型有助于区分 pointer，但不能单独证明设备算术语义。
 
-新增 pointer-free 自然布局 byval struct、嵌套 struct 和固定数组：按 CNCC datalayout 计算成员 offset、alignment 和 padding，构建 manifest 保留布局；设备 ELF 参数大小再交叉验证。真机 Native/Remote 输出 `21 / 11 / -123`，覆盖 signed/float 字段。嵌入 pointer、pointer graph、packed/opaque/recursive aggregate、未知 IR 类型、复杂地址空间仍显式阻塞。见 [aggregate 证据](../evidence/aggregate-20261103/README.md)。Device Globals 沿用已有 Var 注册校验和 module 内未初始化 globals 共享测试；Host symbol 地址/拷贝、initialized/constant/external globals、Driver module 的 compiler 类型关联仍需实现，不能由 kernel 元数据成功推导完成。
+自然布局 byval struct、嵌套 struct 和固定数组按 CNCC datalayout 计算成员 offset、alignment 和 padding，构建 manifest 保留布局；设备 ELF 参数大小再交叉验证。早期无 pointer 用例输出 `21 / 11 / -123`，覆盖 signed/float 字段，见 [aggregate 证据](../evidence/aggregate-20261103/README.md)。续批增加 pointer 字段 offset：共享 `bang_pack_args` 只解析编译器标记的字段，将 AllocationID+offset 传给 Server，scalar 位值保持原样。`MLU_CAP_ARGUMENT_RELOCATIONS` 控制 kind 3；wire 清零 pointer 字节并附带最多 512 个 24-byte 网络序字段记录。Server 在 owner/range/NULL/alignment/order/overlap 校验后填入 native 地址。
+
+[module 收口证据](../evidence/module-accounting-20261107/README.md) 覆盖 Runtime/Driver 同 binary 的 nested struct/array pointer、NULL、offset、scalar bits、guard、reset/reload 和 stale/foreign ownership。Driver 的 extern-C/zero-arg lookup/launch、v1 兼容、坏 metadata 和畸形 relocation 均有验证。Device pointer graph、packed/opaque/递归布局、未知 IR/地址空间与多架构 image 继续拒绝；普通初始化/const globals 已支持，Host symbol address/copy 与 external globals 不在此入口范围。
+
+## 2026-11-07 CNRT registered-image accounting
+
+`cnrtDeviceQueryKernelMemoryUsage` 改为手写 registration adapter：逐个存活注册查询并缓存 native image memory estimate，注册后首 launch 前即计入、reset 保留、最终 unregister 扣除。原生 CNDrv module 不参与 CNRT 计数，Server 无客户端注册表，旧 `API_KERNEL_MEMORY_USAGE` opcode 保留并明确返回 NOT_SUPPORTED；公共入口使用已有 image memory query RPC，避免返回误导性的零。当前为 45 个 typed RPC、44 个生成公共 RPC wrapper 和 4 个本地 error API。
 
 ## 扩展流程与回归
 
@@ -103,7 +109,7 @@ python3 scripts/verify-transparent.py --out evidence/<batch>/full-suite
 
 2026-11-03 续批为 memcpy wire 增加可选 async 标志。旧 56-byte 请求继续由 server 接受，60-byte 扩展只在 host payload 长度唯一匹配时启用；因此默认 Queue 的 QueueID 0 语义可以扩展而不破坏已有协议负例。该字段由手工 memcpy adapter 使用，typed RPC 生成器负责固定字段及有界 response buffer 的长度和成功回复校验。
 
-剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range、Context flags、QueueID 0 default ordering、Host pages/completion/writeback 已接入；后续扩展 module/symbol 与嵌入 pointer aggregate metadata、Host conversion，再推进 Graph/IPC 共享状态机。Peer 仍受单卡条件阻塞。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
+剩余 310 项分类及逐项 blocker 见 [功能族计划](../compat/family-plan.md) 和 `compat/family-plan.json`。Context/config/PCI、allocation attribute/range、Context flags、QueueID 0 default ordering、Host pages/completion/writeback 已接入；module/symbol 与聚合 pointer 字段 metadata 已按当前 ABI 收口；后续补 Host conversion，再推进 Graph/IPC 共享状态机。Peer 仍受单卡条件阻塞。CNNL 不在这 310 项分母，当前 SDK 缺库仍阻塞。本阶段无需第二物理主机和新增生产安全体系。
 
 ## 查询边界续批
 

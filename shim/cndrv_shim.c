@@ -2,6 +2,7 @@
 #include <cn_api.h>
 #include "remote_cnrt.h"
 #include "bang_image.h"
+#include "bang_args.h"
 #include "fake_va.h"
 #include "host_memory.h"
 #include <errno.h>
@@ -27,7 +28,7 @@ typedef struct object {
   unsigned char *image;
   size_t size;
   bang_param_layout layout;
-  unsigned char pointer[BANG_MAX_ARGS];
+  bang_param_types types;
 } object;
 struct context {
   context *next;
@@ -420,11 +421,16 @@ CNresult cnModuleGetKernel(CNmodule handle,const char *name,CNkernel *out) {
   uint64_t kid=0; int st=mlu_remote_module_get_kernel(c->remote,m->id,name,&kid);
   if(st) { if(st==CN_ERROR_NOT_FOUND) *out=NULL; RETURN(result(st)); }
   for(object *o=objects;o;o=o->next) if(o->live && o->owner==c && o->kind==KERNEL && o->id==kid) { *out=(CNkernel)(uintptr_t)o->token; RETURN(CN_SUCCESS); }
-  bang_param_layout layout; unsigned char pointer[BANG_MAX_ARGS]={0};
-  if(bang_image_params(m->image,m->size,name,&layout) || bang_classify_params(name,&layout,pointer)) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);
+  bang_param_layout layout; bang_param_types types={0};
+  if(bang_image_params(m->image,m->size,name,&layout)) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);
+  int metadata=bang_metadata_classify_image(m->image,m->size,name,&layout,&types);
+  if(metadata<0 || (metadata==1 && bang_classify_params(name,&layout,types.kind))) RETURN(CN_OPS_ERROR_NOT_SUPPORTED);
   object *k=new_object(c,KERNEL); if(!k) RETURN(CN_ERROR_SYSTEM_OUT_OF_MEMORY);
-  k->id=kid; k->parent=m->token; k->layout=layout; memcpy(k->pointer,pointer,sizeof(pointer));
+  k->id=kid; k->parent=m->token; k->layout=layout; k->types=types;
   k->live=1; *out=(CNkernel)(uintptr_t)k->token; RETURN(CN_SUCCESS);
+}
+static int resolve_kernel_pointer(void *owner,uint64_t ptr,uint64_t *id,uint64_t *offset) {
+  return bounds(owner,(CNaddr)ptr,0,id,offset);
 }
 CNresult cnInvokeKernel(CNkernel handle,unsigned x,unsigned y,unsigned z,KernelClass cls,
                           unsigned reserved,CNqueue queue,void **params,void **extra) {
@@ -436,14 +442,9 @@ CNresult cnInvokeKernel(CNkernel handle,unsigned x,unsigned y,unsigned z,KernelC
   uint64_t q; if(queue_id(c,queue,&q)) RETURN(CN_QUEUE_ERROR_INVALID);
   if(!x || !y || !z || (k->layout.count && !params)) RETURN(CN_ERROR_INVALID_VALUE);
   mlu_remote_kernel_arg args[BANG_MAX_ARGS]={0};
-  for(unsigned i=0;i<k->layout.count;++i) {
-    if(!params[i]) RETURN(CN_ERROR_INVALID_VALUE);
-    args[i].size=k->layout.sizes[i];
-    if(k->pointer[i]) {
-      CNaddr address=0; memcpy(&address,params[i],8); args[i].kind=1;
-      if(address && bounds(c,address,0,&args[i].allocation,&args[i].offset)) RETURN(CN_MEMORY_ERROR_INVALID_ADDRESS);
-    } else { args[i].kind=2; args[i].scalar=params[i]; }
-  }
+  mlu_remote_kernel_relocation relocations[BANG_MAX_RELOCS];
+  int packed=bang_pack_args(&k->layout,&k->types,params,resolve_kernel_pointer,c,args,relocations);
+  if(packed) RETURN(packed==-1 ? CN_ERROR_INVALID_VALUE : CN_MEMORY_ERROR_INVALID_ADDRESS);
   uint64_t transfer=0; int st=mlu_remote_kernel_launch_generic(c->remote,m->id,k->id,q,x,y,z,cls,args,k->layout.count,&transfer);
   RETURN(result(release(c,st,transfer)));
 }

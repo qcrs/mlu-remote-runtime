@@ -15,6 +15,9 @@ try:
             status,body=a.rpc(r['opcode'],bytes(size))
             assert status==0x80000003 and not body,(r,status)
         print('PASS generated malformed frame',r['name'])
+    status,body=a.rpc(ops['kernel_memory_usage'])
+    assert status==100050 and not body
+    print('PASS legacy CNRT memory RPC explicitly rejects missing registration ownership')
     alloc,=struct.unpack('!Q',a.ok(3,idarg(128)))
     other,=struct.unpack('!Q',b.ok(3,idarg(128)))
     # memset fields: allocation,offset,count,value,width,queue,async

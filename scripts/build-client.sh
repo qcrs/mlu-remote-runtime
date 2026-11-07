@@ -16,11 +16,11 @@ ar rcs "$ROOT/build/libmlu_remote_client.a" "${OBJECTS[@]}"
 if [[ ${CLIENT_CORE_ONLY:-0} != 1 ]]; then
   # SDK headers are needed on the builder, no vendor runtime on the client.
   NEUWARE_HOME=${NEUWARE_HOME:-/usr/local/neuware}
-  "$CC" "${FLAGS[@]}" -I"$NEUWARE_HOME/include" -shared "$ROOT/shim/cnrt_shim.c" "$ROOT/common/bang_image.c" "$ROOT/common/bang_types.c" "$ROOT/common/bang_metadata.c" \
+  "$CC" "${FLAGS[@]}" -I"$NEUWARE_HOME/include" -shared "$ROOT/shim/cnrt_shim.c" "$ROOT/common/bang_image.c" "$ROOT/common/bang_types.c" "$ROOT/common/bang_metadata.c" "$ROOT/common/bang_args.c" \
     -L"$ROOT/build" -lremote_cnrt '-Wl,-rpath,$ORIGIN/..' -Wl,-soname,libcnrt.so -Wl,-z,defs \
     -Wl,--version-script,"$ROOT/build/generated/cnrt_exports.map" -o "$ROOT/build/shim/libcnrt.so" -lpthread -ldl
   mkdir -p "$ROOT/build/driver-shim"
-  "$CC" "${FLAGS[@]}" -I"$NEUWARE_HOME/include" -shared "$ROOT/shim/cndrv_shim.c" "$ROOT/common/bang_image.c" "$ROOT/common/bang_types.c" \
+  "$CC" "${FLAGS[@]}" -I"$NEUWARE_HOME/include" -shared "$ROOT/shim/cndrv_shim.c" "$ROOT/common/bang_image.c" "$ROOT/common/bang_types.c" "$ROOT/common/bang_metadata.c" "$ROOT/common/bang_args.c" \
     -L"$ROOT/build" -lremote_cnrt '-Wl,-rpath,$ORIGIN/..' -Wl,-soname,libcndrv.so -Wl,-z,defs \
     -Wl,--version-script,"$ROOT/build/generated/cndrv_exports.map" -o "$ROOT/build/driver-shim/libcndrv.so" -lpthread -ldl
   ln -sfn shim/libcnrt.so "$ROOT/build/libmlu_remote_cnrt_shim.so"

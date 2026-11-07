@@ -1,0 +1,6 @@
+PASS bounded ELF/CNFB parser: native image, truncation, extents, NOBITS, 2000 mutations
+PASS device variable module_state metadata, sizes, truncation and 2000 mutations
+PASS device variable module_state metadata, sizes, truncation and 2000 mutations
+PASS device variable uninitialized metadata, sizes, truncation and 2000 mutations
+PASS device variable initialized metadata, sizes, truncation and 2000 mutations
+PASS device variable _ZL9constants metadata, sizes, truncation and 2000 mutations

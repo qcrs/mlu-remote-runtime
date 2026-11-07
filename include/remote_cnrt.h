@@ -19,13 +19,20 @@ typedef uint64_t mlu_remote_transfer_id;
 typedef uint64_t mlu_remote_module_id;
 typedef uint64_t mlu_remote_kernel_id;
 
+typedef struct mlu_remote_kernel_relocation {
+  uint32_t offset;
+  uint64_t allocation;
+  uint64_t allocation_offset;
+} mlu_remote_kernel_relocation;
 typedef struct mlu_remote_kernel_arg {
-  /* kind 1 is a device allocation plus offset; kind 2 is an inline scalar. */
+  /* 1 allocation, 2 scalar bytes, 3 bytes plus explicit pointer relocations. */
   uint32_t kind;
   uint32_t size;
   uint64_t allocation;
   uint64_t offset;
   const void *scalar;
+  uint32_t relocation_count;
+  const mlu_remote_kernel_relocation *relocations;
 } mlu_remote_kernel_arg;
 
 typedef struct mlu_remote_error {

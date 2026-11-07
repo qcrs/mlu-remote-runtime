@@ -1,0 +1,14 @@
+PASS relocation foreign-allocation
+PASS relocation allocation-range
+PASS relocation null-offset
+PASS relocation field-range
+PASS relocation unaligned-field
+PASS relocation overlapping-field
+PASS relocation unsorted-fields
+PASS relocation reserved-field
+PASS relocation pointer-bytes
+PASS relocation no-relocations
+PASS relocation scalar-relocations
+PASS relocation too-many-relocations
+PASS relocation truncated
+PASS valid relocation after rejection and stale module

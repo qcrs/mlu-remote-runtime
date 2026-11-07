@@ -106,7 +106,7 @@ static int parse_hello(int fd, const struct mlu_remote_wire_header *h, const uns
   unsigned char out[16]; put32(out, MLU_REMOTE_VERSION); put32(out + 4, (uint32_t)count);
   /* Capability bits: device, allocation, copies, queue, notifier, preset
    * module, generic operators, and TransferID completion. */
-  put32(out + 8, 0xffu | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API | MLU_CAP_DEFERRED_D2H);
+  put32(out + 8, 0xffu | MLU_CAP_MODULE_IMAGE | MLU_CAP_GENERIC_LAUNCH | MLU_CAP_TRANSFER_RELEASE | MLU_CAP_MODULE_KERNELS | MLU_CAP_DRIVER_CONTEXT | MLU_CAP_TYPED_API | MLU_CAP_DEFERRED_D2H | MLU_CAP_ARGUMENT_RELOCATIONS);
   put32(out + 12, MLU_REMOTE_KERNEL_ABI);
   int sent = send_response(fd, MLU_OP_HELLO, ntohll_u(h->request_id), (uint32_t)st, out, sizeof(out));
   return st ? -1 : sent;
@@ -276,17 +276,23 @@ static int handle_request(int fd, mlu_backend_session *s, const struct mlu_remot
       if (count > 256) return send_response(fd, op, req, MLU_REMOTE_BAD_LENGTH, NULL, 0);
       mlu_backend_kernel_arg *args = count ? calloc(count, sizeof(*args)) : NULL;
       if (count && !args) return send_response(fd, op, req, CN_ERROR_SYSTEM_OUT_OF_MEMORY, NULL, 0);
-      const unsigned char *cursor = p + 44; uint32_t remaining = n - 44; int parse_error = 0;
+      const unsigned char *cursor = p + 44; uint32_t remaining = n - 44, relocations=0; int parse_error = 0;
       for (uint32_t i = 0; i < count; ++i) {
         if (remaining < 32) { parse_error = 1; break; }
         args[i].kind = get32(cursor); args[i].size = get32(cursor + 4);
         args[i].allocation_id = get64(cursor + 8); args[i].offset = get64(cursor + 16);
-        if (get64(cursor + 24) != 0 || (args[i].kind == 2 && (args[i].allocation_id || args[i].offset))) { parse_error = 1; break; }
+        uint64_t rc=get64(cursor+24);
+        if(rc>512-relocations || (args[i].kind==3 ? !rc : rc!=0) ||
+           (args[i].kind != 1 && (args[i].allocation_id || args[i].offset))) { parse_error = 1; break; }
+        args[i].relocation_count=(uint32_t)rc; relocations+=(uint32_t)rc;
         cursor += 32; remaining -= 32;
         if (!args[i].size || args[i].size > 4096 || args[i].size > remaining ||
-            (args[i].kind != 1 && args[i].kind != 2) || (args[i].kind == 1 && args[i].size != 8)) { parse_error = 1; break; }
-        args[i].scalar = args[i].kind == 2 ? cursor : NULL;
+            args[i].kind<1 || args[i].kind>3 || (args[i].kind == 1 && args[i].size != 8)) { parse_error = 1; break; }
+        args[i].scalar = args[i].kind != 1 ? cursor : NULL;
         cursor += args[i].size; remaining -= args[i].size;
+        if(rc*24>remaining) { parse_error=1; break; }
+        args[i].relocations=rc ? cursor : NULL;
+        cursor+=rc*24; remaining-=rc*24;
       }
       if (parse_error || remaining) { free(args); return send_response(fd, op, req, MLU_REMOTE_BAD_LENGTH, NULL, 0); }
       tid = 0; st = mlu_backend_kernel_launch_generic(s, mid, kid, qid, dx, dy, dz, klass, args, count, &tid); free(args);
