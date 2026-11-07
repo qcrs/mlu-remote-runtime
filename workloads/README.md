@@ -8,6 +8,7 @@
 | naive_gemm | M=N=K=64 FP32 | 三重循环矩阵乘 | 1e-4 |
 | image_threshold | 512×512 灰度（float 存储） | >127 输出255，否则0 | 0 |
 | image_blur | 512×512 灰度（float 存储） | 3×3 均值，四周边界复制输入 | 1e-4 |
+| queue_notifier | 4096 FP32 | async H2D → notifier → cross-queue affine kernel | 1e-6 |
 
 Kernel 用 taskId/taskDim 分配工作，4 个 Block task；优先验证正确性，不提供性能结论。GEMM 输入是确定性的二进制可精确表示小数，仍保留 FP32 tolerance。
 
@@ -32,7 +33,7 @@ MLU_REMOTE_BIND=127.0.0.1 MLU_REMOTE_PORT=50221 ./scripts/run-server.sh
 python3 scripts/verify-workloads.py --external-server --host 127.0.0.1 --port 50221
 ```
 
-脚本每个程序只编译一次，Native/replacement/preload 使用同一 executable，结果记录 SHA256。Native 使用 Neuware libcnrt，replacement 设置 Shim library path，preload 设置 LD_PRELOAD。默认自动启动并回收服务端；external-server 模式不管理终端 A 的服务端。支持 --skip-build、--out；输出每种模式日志、stderr、results.json，并运行一次现有 generic core smoke。
+脚本每个程序只编译一次，Native/replacement/preload 使用同一 executable，结果记录 SHA256。Native 使用 Neuware libcnrt，replacement 设置 Shim library path，preload 设置 LD_PRELOAD。默认自动启动并回收服务端；external-server 模式不管理终端 A 的服务端。支持 --skip-build、--out；输出每种模式日志、stderr、results.json，并运行一次现有 generic core smoke。`queue_notifier` 额外覆盖 `cnrtMemGetInfo`、device pointer attributes、异步 H2D、Notifier query/wait、跨 Queue 依赖和计时 API。
 
 单独观察客户端输出：
 

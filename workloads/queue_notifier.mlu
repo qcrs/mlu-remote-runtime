@@ -1,0 +1,77 @@
+#include "common.h"
+#include <string.h>
+
+/* A small application-shaped pipeline: an async H2D copy and kernel run on
+ * one queue, followed by a cross-queue notifier dependency.  The source is
+ * intentionally ordinary BANG C; the runtime mode is selected outside the
+ * executable by the verification script. */
+__mlu_entry__ void affine_kernel(const float *input, float *output, int n) {
+  for (int i = taskId; i < n; i += taskDim)
+    output[i] = input[i] * 2.0f + 1.0f;
+}
+
+int main(void) {
+  const int n = 4096;
+  const size_t bytes = (size_t)n * sizeof(float);
+  float *host_input = (float *)malloc(bytes);
+  float *host_output = (float *)malloc(bytes);
+  float *reference = (float *)malloc(bytes);
+  if (!host_input || !host_output || !reference) return 2;
+  for (int i = 0; i < n; ++i) {
+    host_input[i] = (float)((i % 31) - 15) / 8.0f;
+    reference[i] = host_input[i] * 2.0f + 1.0f;
+  }
+
+  unsigned device_count = 0;
+  int current_device = -1;
+  size_t free_bytes = 0, total_bytes = 0;
+  CHECK(cnrtGetDeviceCount(&device_count));
+  CHECK(cnrtGetDevice(&current_device));
+  CHECK(cnrtMemGetInfo(&free_bytes, &total_bytes));
+  if (device_count == 0 || current_device != 0 || free_bytes == 0 || total_bytes < free_bytes)
+    return 3;
+
+  float *device_input = NULL, *device_output = NULL;
+  CHECK(cnrtMalloc((void **)&device_input, bytes));
+  CHECK(cnrtMalloc((void **)&device_output, bytes));
+  cnrtPointerAttributes_t attributes;
+  memset(&attributes, 0, sizeof(attributes));
+  CHECK(cnrtPointerGetAttributes(&attributes, device_input + 7));
+  if (attributes.type != cnrtMemTypeDevice || attributes.device != current_device ||
+      attributes.size != bytes || attributes.deviceBasePointer != device_input ||
+      attributes.devicePointer != device_input + 7)
+    return 4;
+
+  cnrtQueue_t copy_queue = NULL, compute_queue = NULL;
+  cnrtNotifier_t copied = NULL, complete = NULL;
+  CHECK(cnrtQueueCreate(&copy_queue));
+  CHECK(cnrtQueueCreate(&compute_queue));
+  CHECK(cnrtNotifierCreate(&copied));
+  CHECK(cnrtNotifierCreate(&complete));
+  CHECK(cnrtMemset(device_output, 0, bytes));
+  CHECK(cnrtMemcpyAsync(device_input, host_input, bytes, copy_queue, cnrtMemcpyHostToDev));
+  CHECK(cnrtPlaceNotifier(copied, copy_queue));
+  CHECK(cnrtQueueWaitNotifier(copied, compute_queue, 0));
+  cnrtDim3_t dim = {4, 1, 1};
+  affine_kernel<<<dim, cnrtFuncTypeBlock, compute_queue>>>(device_input, device_output, n);
+  CHECK(cnrtGetLastError());
+  CHECK(cnrtPlaceNotifier(complete, compute_queue));
+  CHECK(cnrtWaitNotifier(complete));
+  CHECK(cnrtQueryNotifier(complete));
+  float elapsed = -1.0f;
+  CHECK(cnrtNotifierElapsedTime(copied, complete, &elapsed));
+  if (elapsed < 0.0f) return 5;
+  CHECK(cnrtMemcpy(host_output, device_output, bytes, cnrtMemcpyDevToHost));
+  int result = report("queue_notifier", "4096-f32-cross-queue", reference, host_output, n, 1e-6f);
+
+  CHECK(cnrtNotifierDestroy(copied));
+  CHECK(cnrtNotifierDestroy(complete));
+  CHECK(cnrtQueueDestroy(copy_queue));
+  CHECK(cnrtQueueDestroy(compute_queue));
+  CHECK(cnrtFree(device_input));
+  CHECK(cnrtFree(device_output));
+  free(host_input);
+  free(host_output);
+  free(reference);
+  return result;
+}

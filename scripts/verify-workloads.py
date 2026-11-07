@@ -10,9 +10,9 @@ import subprocess
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-NAMES = ('matrix_add', 'naive_gemm', 'image_threshold', 'image_blur')
+NAMES = ('matrix_add', 'naive_gemm', 'image_threshold', 'image_blur', 'queue_notifier')
 p = argparse.ArgumentParser(description=__doc__)
-p.add_argument('--out', default='evidence/workloads-20261103')
+p.add_argument('--out', default='evidence/workloads-20261107')
 p.add_argument('--port', type=int, default=50221)
 p.add_argument('--host', default='127.0.0.1')
 p.add_argument('--external-server', action='store_true', help='use server started in a separate terminal')
