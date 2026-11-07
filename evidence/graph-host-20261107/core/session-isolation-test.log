@@ -1,0 +1,3 @@
+COMMAND ['/home/lvtong/mlu-remote-runtime/build/mlu-remote-session-isolation-test']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50264', 'MLU_TEST_SHIM': '1'}
+PASS session isolation queue_a=4994778935462643728 queue_b=4994778935462643731 cross_status=100014

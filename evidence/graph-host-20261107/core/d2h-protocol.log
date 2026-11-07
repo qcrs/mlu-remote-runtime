@@ -1,0 +1,4 @@
+COMMAND ['python3', 'tests/host_async_protocol.py']
+ENV {'LD_LIBRARY_PATH': '/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build', 'MLU_REMOTE_HOST': '127.0.0.1', 'MLU_REMOTE_PORT': '50264', 'MLU_TEST_SHIM': '1'}
+PASS D2H Transfer owner, exact variable-buffer fetch, release retirement
+PASS pending kernel/D2H connection EOF delegates native buffer cleanup to Server
