@@ -1,0 +1,4 @@
+PASS 8 ordinary CNCC applications, 19 cases, 57 executions
+PASS identical executable SHA256 across Native/replacement/preload
+PASS selective --skip-build receipt and corrupted-guard rejection
+PASS no remote helper imports or Runtime/schema/API changes

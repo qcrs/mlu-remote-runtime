@@ -1,0 +1,81 @@
+#include "common.h"
+
+/* Five-point Jacobi update. Each launch reads a complete previous time step;
+ * ordered launches on one queue provide the inter-step dependency. */
+__mlu_entry__ void heat_step_kernel(const float *src, float *dst, int width,
+                                  int height, float alpha) {
+  for (int i = taskId; i < width * height; i += taskDim) {
+    int x = i % width, y = i / width;
+    float center = src[i];
+    if (x == 0 || y == 0 || x + 1 == width || y + 1 == height) {
+      dst[i] = center;
+    } else {
+      float neighbors = (src[i - width] + src[i + width]) + (src[i - 1] + src[i + 1]);
+      dst[i] = center + alpha * (neighbors - 4.0f * center);
+    }
+  }
+}
+
+int main(int argc, char **argv) {
+  if (argc != 1 && argc != 4) {
+    fprintf(stderr, "usage: %s [width height steps]\n", argv[0]); return 2;
+  }
+  const int width = argc == 4 ? dimension(argv[1], 512) : 193;
+  const int height = argc == 4 ? dimension(argv[2], 512) : 129;
+  const int steps = argc == 4 ? dimension(argv[3], 64) : 32;
+  const int n = width * height;
+  const float alpha = 0.125f, guard = -777;
+  float *first = host_buffer(n + 2), *second = host_buffer(n + 2);
+  float *reference = host_buffer(n);
+  double *cpu = (double *)malloc(n * sizeof(double));
+  double *next = (double *)malloc(n * sizeof(double));
+  if (!cpu || !next) { fprintf(stderr, "CPU reference allocation failed\n"); return 2; }
+  first[0] = first[n + 1] = second[0] = second[n + 1] = guard;
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      int i = y * width + x;
+      first[i + 1] = (float)(((x * 13 + y * 17 + x * y) % 97) - 48) / 31.0f;
+      cpu[i] = first[i + 1];
+    }
+  }
+  /* Independent double precision reference, including fixed input edges. */
+  for (int step = 0; step < steps; ++step) {
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        int i = y * width + x;
+        next[i] = cpu[i];
+        if (x > 0 && y > 0 && x + 1 < width && y + 1 < height) {
+          double laplacian = cpu[(y - 1) * width + x] + cpu[(y + 1) * width + x]
+                             + cpu[y * width + x - 1] + cpu[y * width + x + 1]
+                             - 4.0 * cpu[i];
+          next[i] = cpu[i] + (double)alpha * laplacian;
+        }
+      }
+    }
+    double *swap = cpu; cpu = next; next = swap;
+  }
+  for (int i = 0; i < n; ++i) reference[i] = (float)cpu[i];
+
+  float *d0 = device_copy(first, n + 2), *d1 = device_copy(second, n + 2);
+  float *current = d0 + 1, *destination = d1 + 1;
+  cnrtQueue_t queue = NULL; CHECK(cnrtQueueCreate(&queue));
+  cnrtDim3_t dim = {4, 1, 1};
+  for (int step = 0; step < steps; ++step) {
+    heat_step_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(current, destination, width, height, alpha);
+    CHECK(cnrtGetLastError());
+    float *swap = current; current = destination; destination = swap;
+  }
+  CHECK(cnrtQueueSync(queue));
+  CHECK(cnrtMemcpy(first, d0, (n + 2) * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(second, d1, (n + 2) * sizeof(float), cnrtMemcpyDevToHost));
+  size_t guards = (first[0] != guard) + (first[n + 1] != guard)
+                  + (second[0] != guard) + (second[n + 1] != guard);
+  char shape[64]; snprintf(shape, sizeof(shape), "%dx%dx%d", width, height, steps);
+  printf("WIDTH=%d\nHEIGHT=%d\nSTEPS=%d\nBOUNDARY=fixed-input\nGUARD_MISMATCH=%zu\n",
+         width, height, steps, guards);
+  int result = report("heat_diffusion", shape, reference,
+                      (steps % 2 ? second : first) + 1, n, 1e-5f, guards);
+  CHECK(cnrtQueueDestroy(queue)); CHECK(cnrtFree(d0)); CHECK(cnrtFree(d1));
+  free(first); free(second); free(reference); free(cpu); free(next);
+  return result;
+}

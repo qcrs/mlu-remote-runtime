@@ -1,0 +1,20 @@
+ISOLATION user/mount namespace; host network retained
+user user:[4026542190]
+mnt mnt:[4026542191]
+net net:[4026531840]
+VERIFIED vendor SDK path and /dev hidden
+ENDPOINT 127.0.0.1:50263
+CLIENT /home/lvtong/mlu-remote-runtime/build/workloads/heat_diffusion
+WIDTH=23
+HEIGHT=17
+STEPS=5
+BOUNDARY=fixed-input
+GUARD_MISMATCH=0
+WORKLOAD=heat_diffusion
+SHAPE=23x17x5
+CPU_CHECKSUM=0.77895583317149431
+MLU_CHECKSUM=0.7789559718221426
+MAX_ABS_ERROR=2.98023224e-08
+TOLERANCE=9.99999975e-06
+MISMATCH=0
+RESULT=PASS

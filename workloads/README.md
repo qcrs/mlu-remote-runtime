@@ -2,7 +2,7 @@
 
 普通 CNCC/BANG C 应用：Host 生成确定性输入，CPU reference 逐元素对照，使用
 `cnrtMalloc/cnrtMemcpy/kernel<<<>>>/sync`。源码没有模式判断、remote helper 或
-preset operator RPC。七个程序优先展示正确性，不提供性能结论。
+preset operator RPC。八个程序优先展示正确性，不提供性能结论。
 
 | 程序 | 默认尺寸 | 计算与覆盖能力 | 绝对误差容限 |
 |---|---|---|---:|
@@ -13,12 +13,16 @@ preset operator RPC。七个程序优先展示正确性，不提供性能结论�
 | image_sobel | 512×512 灰度 | 3×3 Sobel，min(abs(Gx)+abs(Gy),255)；四周边界置零 | 0 |
 | queue_notifier | 4096 FP32 | async H2D → Notifier → 跨 Queue affine kernel | 1e-6 |
 | row_center | 65×127 FP32 | 行均值归约 → `(x-mean)*1.25-0.5`，nested struct/array 按值参数 | 1e-4 |
+| heat_diffusion | 193×129 FP32，32 步 | 五点 Jacobi 热扩散；同 Queue 连续 launch、双缓冲/offset/guard | 1e-5 |
 
 图像以 float 存储 0..255 灰度，无需图片库。Kernel 使用 `taskId/taskDim` 分配
 4 个 Block task。`row_center` 的两个 Kernel 在同一 image 内，使用已有编译器
 metadata 机制，不要求修改应用源码；没有 embedded pointer 或 pointer graph。
 它还验证默认 Queue、async memset、context sync、pitched D2D、allocation offset，
 并读回 padding/首尾 guard 与中间均值，检查越界写入及中间结果。
+`heat_diffusion` 使用 `u_next = u + 0.125*(上+下+左+右-4*u)`，四周固定为
+初始值；每步交换两个设备缓冲，仅在所有 Kernel 提交后 QueueSync。
+CPU 使用独立 double precision 时间迭代；最后逐元素检查 FP32 输出及两个缓冲的 guard。
 `queue_notifier` 覆盖已有 device/memory info、pointer attributes、Notifier
 query/wait、跨 Queue 依赖和计时 API，不扩展 API 状态或能力边界。
 
@@ -51,19 +55,23 @@ python3 scripts/verify-workloads.py --external-server --host 127.0.0.1 --port 50
 ```sh
 python3 scripts/verify-workloads.py --build-only
 python3 scripts/verify-workloads.py --external-server --skip-build --port 50261
+# 按需选择一个或多个实验，仍对照三种模式并运行一次 core smoke
+python3 scripts/verify-workloads.py --external-server --skip-build --port 50261 \
+  --workload naive_gemm --workload heat_diffusion --out /tmp/mlu-workload-demo
 ```
 
 `--skip-build` 验证源码与 executable 的 SHA256，过期构建会报错。
 `row_center` 构建时复用 `generate_bang_metadata.py`，把 CNCC IR 类型描述附入
 `.mlu.remote.abi`；Native 和两种 Remote 模式均运行这一份 executable。
 
-脚本覆盖默认和小尺寸，共 16 组：非方形矩阵（17×31）、非方形 GEMM（17×23×19）、
-非整齐图像、1×1 threshold、1×7 blur/Sobel 和单列中心化。输出统一包含
+脚本覆盖默认和小尺寸，共 19 组：非方形矩阵（17×31）、非方形 GEMM（17×23×19）、
+非整齐图像、1×1 threshold、1×7 blur/Sobel、单列中心化，以及热扩散的
+偶数/奇数轮次（32/5）和无内部像素边界（1×7，1 步）。输出统一包含
 `WORKLOAD/SHAPE/CPU_CHECKSUM/MLU_CHECKSUM/MAX_ABS_ERROR/TOLERANCE/MISMATCH/RESULT`；
 图像额外报告 `WIDTH/HEIGHT/BOUNDARY`。`MLU_CHECKSUM` 在三种模式统一命名，模式由
 脚本记录，应用不判断环境。未写入输出初始化为 NaN，非有限结果直接失败。
 
-`--out` 指定证据目录（默认 `evidence/workloads-20261107-extended`），保存各次
+`--out` 指定证据目录（默认 `evidence/workloads-20261107-iterative`），保存各次
 stdout/stderr、编译命令、源码/executable SHA256、struct ABI manifest 和
 `results.json` 数值汇总。每个程序只构建一次，再运行 Native、library replacement
 和 LD_PRELOAD；比较 CPU reference、逐元素误差与 Native/Remote checksum 容限。
@@ -77,5 +85,6 @@ MLU_REMOTE_HOST=127.0.0.1 MLU_REMOTE_PORT=50261 \
 LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/workloads/naive_gemm 17 23 19
 ```
 
-[本轮实测](../evidence/workloads-20261107-extended/README.md)：48 次 workload 执行
-全部 PASS；GEMM 和行中心化的最大绝对误差均为 `9.53674316e-7`，其他五项为 0。
+[本轮实测](../evidence/workloads-20261107-iterative/README.md)：57 次 workload 执行
+全部 PASS；GEMM 和行中心化的最大绝对误差均为 `9.53674316e-7`，热扩散为
+`5.96046448e-8`，其他五项为 0。所有 mismatch/guard mismatch 为 0。
