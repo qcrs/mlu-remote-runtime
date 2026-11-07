@@ -362,7 +362,7 @@ cnrtRet_t cnrtCastDataType(void *src,cnrtDataType_t srcType,void *dst,cnrtDataTy
   }
   return cnrtSuccess;
 }
-static int cast_v2_size(cnrtDataType_V2_t type) { if(type==cnrtFloat || type==cnrtInt) return 4; if(type==cnrtHalf || type==cnrtBfloat) return 2; if(type==cnrtUchar) return 1; return 0; }
+static int cast_v2_size(cnrtDataType_V2_t type) { if(type==cnrtFloat || type==cnrtInt) return 4; if(type==cnrtLonglong || type==cnrtUlonglong) return 8; if(type==cnrtHalf || type==cnrtBfloat) return 2; if(type==cnrtUchar) return 1; return 0; }
 static uint16_t float_to_bfloat(float value) { uint32_t bits; memcpy(&bits,&value,4); uint32_t lower=bits&0xffffu; uint16_t hi=(uint16_t)(bits>>16); if(lower>0x8000u || (lower==0x8000u && (hi&1))) ++hi; return hi; }
 static float bfloat_to_float(uint16_t value) { uint32_t bits=((uint32_t)value)<<16; float out; memcpy(&out,&bits,4); return out; }
 static uint16_t float_to_half(float value) {
@@ -392,6 +392,10 @@ cnrtRet_t cnrtCastDataType_V2(const void *src,cnrtDataType_V2_t srcType,void *ds
     else if(srcType==cnrtHalf && dstType==cnrtFloat) ((float *)dst)[i]=half_to_float(((const uint16_t *)src)[i]);
     else if(srcType==cnrtBfloat && dstType==cnrtFloat) ((float *)dst)[i]=bfloat_to_float(((const uint16_t *)src)[i]);
     else if(srcType==cnrtInt && dstType==cnrtFloat) ((float *)dst)[i]=(float)((const int *)src)[i];
+    else if(srcType==cnrtFloat && dstType==cnrtLonglong) ((int64_t *)dst)[i]=(int64_t)cast_round(((const float *)src)[i],mode);
+    else if(srcType==cnrtFloat && dstType==cnrtUlonglong) { int64_t v=(int64_t)cast_round(((const float *)src)[i],mode); ((uint64_t *)dst)[i]=v<0?0:(uint64_t)v; }
+    else if(srcType==cnrtLonglong && dstType==cnrtFloat) ((float *)dst)[i]=(float)((const int64_t *)src)[i];
+    else if(srcType==cnrtUlonglong && dstType==cnrtFloat) ((float *)dst)[i]=(float)((const uint64_t *)src)[i];
     else if(srcType==cnrtUchar && dstType==cnrtFloat) ((float *)dst)[i]=(float)((const unsigned char *)src)[i];
     else return cnrtErrorNotSupport;
   }

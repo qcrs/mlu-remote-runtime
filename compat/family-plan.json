@@ -1052,8 +1052,8 @@
         "api": "cnrtCastDataType_V2",
         "priority": 3,
         "depends_on": "typed buffers/structs",
-        "blocker": "V2 64-bit/quantized semantics not validated",
-        "next_step": "Validate 64-bit and quantized V2 types against SDK"
+        "blocker": "V2 quantized parameter semantics not validated",
+        "next_step": "Validate V2 quantized parameter path against SDK"
       },
       {
         "api": "cnrtCreateQuantizedParam",
