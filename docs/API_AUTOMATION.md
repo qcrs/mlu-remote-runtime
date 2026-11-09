@@ -39,7 +39,7 @@ Binding 与 wrapper 的局部 C 语句仍须作者根据 SDK 审查填写；这�
 
 之前仅有 10 个 ObjectID RPC 能生成。普通 API 需要分别增加 header、client 编解码、server 长度检查/dispatch、backend、导出与台账；各处重复字段和 opcode。现在新增一个已审查的普通 API，主要填写 Schema 中的字段/映射/native binding，再补功能族语义断言；其余重复路径一次生成。
 
-首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 54/116，另有 4 个本地 error API，最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
+首批 20 个 RPC、21 个公共 wrapper 对应 1,089 行生成的 C 包装/编解码/dispatch/binding（含声明）/成功形状检查代码，后续查询批次扩至 39 个 RPC、44 个 wrapper；当前为 61 个 typed RPC 和 146 个公共 wrapper，另有 4 个本地 error API。最新制品受 `generate_rpc.py --check` 和 `verify-api-contracts.py` 校验。行数不能当作人时节省或正确性指标。台账状态不会因为生成代码或导出符号而自动提升。
 
 ## 2026-11-07 G2 Graph kernel buffers 与参数 ownership
 

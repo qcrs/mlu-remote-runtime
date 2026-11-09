@@ -1,0 +1,29 @@
+[
+  {
+    "symbol": "interop_transform",
+    "image_size": 2120,
+    "fingerprint": "0x6f8ff527169f8e9b",
+    "parameters": [
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      }
+    ]
+  }
+]

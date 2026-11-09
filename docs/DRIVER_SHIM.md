@@ -35,7 +35,7 @@ NULL queue launch 与显式 queue 一样创建真实 transfer notifier，release
 
 同步 H2D/D2H/D2D 使用原有 bounded RPC；显式 queue 的异步 H2D 用服务端 staging 保持源字节，异步 D2D 原生入队。原生对照程序为每个异步 H2D 保留独立主机源存储，直到完成，遵守 native host-buffer 生命周期约束。
 
-当前 MEMCPY wire 的 queue=0 表示同步操作，无法区分 native NULL queue 的异步 copy 意图；`cnMemcpyHtoDAsync/DtoDAsync` 的非零字节 NULL queue 调用明确 NotSupported，不能伪装同步为已实现的异步。`cnMemcpyDtoHAsync` 整个入口明确 NotSupported，等待 pinned/host completion/writeback 设计。
+当前 MEMCPY wire 的 queue=0 表示同步操作，无法区分 native NULL queue 的异步 copy 意图；`cnMemcpyHtoDAsync/DtoDAsync` 的非零字节 NULL queue 调用明确 NotSupported，不能伪装同步为已实现的异步。显式 Queue 的 `cnMemcpyDtoHAsync` 已通过 Server pinned staging、TransferID completion fetch 和成功边界写回实现；pageable 目标由调用者保持到完成，NULL queue 的非零异步路径仍按台账边界拒绝。
 
 Queue destroy 立即退役公开 ID，底层句柄和 staging 保留到队列完成再回收；Notifier wait/query、context sync、free、module unload 和 cross-queue wait 均保留在途数据。Free 和 module unload 仍使用保守同步。Queue/Notifier flags、priority、timing 与 cross-queue wait 的当前支持范围以台账为准；QueueID 0 的常用 H2D/D2D async 和 completion 已接入。退役/失败重试与 SDK pending-destroy 差异见 [Queue retirement](../evidence/queue-retirement-20261107/README.md)。
 
@@ -65,6 +65,14 @@ LD_LIBRARY_PATH="$PWD/build/driver-shim:$PWD/build" \
 MLU_REMOTE_SHIM=driver ./scripts/run-isolated-client.sh \
   ./build/native_driver "$module" "$abi" "$drain"
 ```
+
+`run-isolated-client.sh` 保留宿主网络并只隐藏 SDK 和 `/dev`。更严格的本地模拟由
+`scripts/run-isolated-pair.sh` 提供：Server/Client 进入 sibling network namespace，使用
+veth/TCP；Client 在独立 chroot 中只看到 executable、shim、系统动态库及显式文件参数。
+用 `bash scripts/test-isolated-topology.sh` 可在没有 MLU 的机器上验证 TCP payload
+传输和 SHA-256；在 MLU 主机上可用 `python3 scripts/verify-workloads.py
+--realistic-isolation --workload cndrv_gemm` 运行 Driver workload。该拓扑自检不等于
+MLU runtime 或第二物理主机验收。
 
 完整自动验证由 `scripts/verify-transparent.py` 执行，包括 native/replacement/preload、语义逐行对照、隔离客户端、strace、Driver 协议/故障注入、原有 CNRT 和六 preset 回归、有界 parser ASan/UBSan。构建 Shim 需要 SDK 头文件，运行只依赖系统库和 client core。必须保持调用库的 SONAME、动态解析及当前 CPU/ABI 相容；静态链接、绝对 dlopen、deep binding、自定义 loader namespace 不在已验收边界。
 

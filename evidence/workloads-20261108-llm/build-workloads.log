@@ -1,0 +1,1 @@
+COMMAND ['/usr/local/neuware/bin/cncc', '--bang-mlu-arch=mtp_372', '-lm', '/home/lvtong/mlu-remote-runtime/workloads/llm_transformer.mlu', '-o', '/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer']

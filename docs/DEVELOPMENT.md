@@ -113,9 +113,10 @@ python3 scripts/verify-transparent.py --host SERVER_IP --port 50051 --out eviden
 | server_restart.py | 仅暂停/kill 自建 server；断线/超时 context 不重放，重启后旧对象 ID 不误命中新 allocation |
 | bang_image_bounds | ASan/UBSan：真实 image、截断、越界 section、NOBITS、变量 OBJECT/大小；kernel parser、未初始化变量两种 image 和初始化/const globals 各 2000 次 mutation |
 | run-isolated-client.sh | user/mount namespace 隐藏当前 SDK 和整个 /dev，保留网络，连接 namespace 外的真机 server |
+| run-isolated-pair.sh / test-isolated-topology.sh | sibling network namespaces、veth/TCP 和 client chroot；无 MLU 的 payload transfer 自检及可选 Driver workload 路径 |
 | 原有 client / operator / custom-kernel / isolation / reset / device / abrupt / CNNL | 六 preset 及内存/对象生命周期回归；CNNL 验证明确拒绝 |
 
-namespace 测试要求系统允许 unprivileged user namespace 和 mount；否则应记录环境阻塞，不能把跳过算成通过。`client.strace` 检查 vendor lib/device 访问，namespace 才进一步证明当前客户端在隐藏 SDK/设备节点后可运行。两者都不替代跨物理主机证据。
+namespace 测试要求系统允许 unprivileged user namespace、mount 和 veth 配置；sandbox 若限制网络管理能力，应在允许 network namespace 的环境运行拓扑自检。`client.strace` 检查 vendor lib/device 访问，旧 mount namespace 测试证明 SDK/设备隐藏后的运行；paired harness 另验证分离的网络和文件视图。均不替代 MLU workload 或跨物理主机证据。
 
 ## 生成流程与维护
 
@@ -125,12 +126,13 @@ python3 scripts/generate_rpc.py
 python3 scripts/generate_rpc.py --check
 python3 scripts/generate_compat.py
 python3 scripts/generate_compat.py --check
+python3 scripts/generate_behavior_coverage.py --check
 python3 scripts/verify-api-contracts.py
 python3 scripts/verify-api-families.py
 python3 scripts/verify-module-accounting.py
 ```
 
-`schema/mlu_api_schema.json` 保留 operator registry 和 10 对 `simple_rpc`；当前有 57 个 typed RPC 编解码/分派/binding、146 个公共 RPC 包装和 4 个本地 error API、导出 map、test plan/template。有界 u64 arrays 与 caller-owned buffer 由 Schema 生成；关键的内存/异步/注册/归属语义仍有手写部分。不要通过添加成功空函数提高兼容数字。[自动化扩展指南](API_AUTOMATION.md) 说明 Schema 字段、compiler metadata、生成边界和 Native/Remote 功能族测试。
+`schema/mlu_api_schema.json` 保留 operator registry 和 10 对 `simple_rpc`；当前有 61 个 typed RPC 编解码/分派/binding、146 个公共 RPC 包装和 4 个本地 error API、导出 map、test plan/template。有界 u64 arrays 与 caller-owned buffer 由 Schema 生成；关键的内存/异步/注册/归属语义仍有手写部分。不要通过添加成功空函数提高兼容数字。[自动化扩展指南](API_AUTOMATION.md) 说明 Schema 字段、compiler metadata、生成边界和 Native/Remote 功能族测试。行为覆盖报告按源码调用点区分直接测试、工作负载、功能族和 contract-only，不替代运行证据。
 
 人工语义审查在 Schema 的 `apis` 中维护，`compat/annotations.json` 是生成的兼容视图；生成器遍历安装头文件、核对签名和真实导出，输出 310 行公共 API 及逐项 blocker/优先级。更新 SDK 后先核对 diff、原生语义与证据，再调整状态。新增能力按 [M1～M4](../design/MILESTONES.md) 的交付门槛更新。
 

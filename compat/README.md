@@ -7,6 +7,7 @@ python3 scripts/generate_compat.py
 python3 scripts/generate_compat.py --check
 python3 scripts/verify-api-contracts.py
 python3 scripts/verify-closure-audit.py
+python3 scripts/generate_behavior_coverage.py --check
 ```
 
 生成器预处理 `cnrt.h` 和 `cn_api.h`（包括传递引入的 deprecated 声明），检查全部匹配声明，去重后生成 CSV，并分别核对 `build/shim/libcnrt.so` 与 `build/driver-shim/libcndrv.so` 的真实动态导出。CNRT 宏别名归一为预处理后的链接符号。CNDrv 行的 `backend_used=true` 仅表示服务端调用；独立 `client_export` 和人工状态才描述 Driver Shim 能力。
@@ -27,5 +28,7 @@ RPC 重复封装由 Schema 生成：原有 10 对对象包装/分派，加上当
 当前收口以 MLU370-S4、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64→AArch64、单设备为范围。[closure audit](../docs/API_COMPATIBILITY_CLOSURE.md) 冻结原有 97 个 PARTIAL 并保存逐 API 决策；状态不由测试数量或导出符号自动推导。后续修复须附 Native/Remote resolution 证据。
 
 当前为 **283 IMPLEMENTED、0 PARTIAL、23 BLOCKED、3 OUT_OF_SCOPE、1 UNSUPPORTED、0 NOT_IMPLEMENTED**。原剩余 49 项中，36 项完成，12 项有 Native 硬件/SDK 前提阻塞，1 项私有扩展查询范围外。Shared Context、VMM、Symbol、普通队列 Host/callback/atomics 与普通 memory/Host/VMM IPC 已有 [本批差分与生命周期证据](../evidence/remaining-closure-20261107/README.md)；Graph G1～G4 保持 102/102。
+
+[行为覆盖审计](behavior-coverage.csv) 为 283 个 IMPLEMENTED 公共 API 标出精确测试/工作负载调用点，并关联台账中已有的 Native/Remote 证据。`WORKLOAD_COVERED` 还要求同一个通过的 `results.json` 中存在该普通 workload 的 Native 和 Remote 成功运行；独立 `probes/` 也计入直接行为测试。当前分类为 152 `DIRECT_BEHAVIOR_TEST`、52 `WORKLOAD_COVERED`、79 `FAMILY_TEST`、0 `CONTRACT_ONLY`。未运行的新 workload call sites 单独列出，但不会提升覆盖等级。生成结果可用 `python3 scripts/generate_behavior_coverage.py --check` 校验。
 
 [IPC 证据](../evidence/remaining-ipc-20261107/README.md) 覆盖独立进程、两库交叉、替换库/preload/隔离客户端、源退役、Graph 引用、真实 FD 和单份 backing 配额。Host IPC 限同客户端主机、UID 与 Unix namespace；原子单元限经 API 更新的 pinned Host 64-bit cells；VMM 非零 backing offset 在本 SDK 返回 Native NotSupported。23 个阻塞为 Peer 7、notifier IPC 4、CPU mapping/cache 8、merge 1、属性设置 2、reshape 1。详见 [阻塞证据](../evidence/remaining-native-20261107/README.md)、[Graph/IPC 设计](../docs/GRAPH_IPC.md) 和逐 API boundary。

@@ -1,0 +1,47 @@
+{
+  "runtime_driver_interop": {
+    "sha256": "bf1e8c97c19ecbe559e3e797cdf987583226be5fd70f1005e1c0f9efa15eb718",
+    "sources": {
+      "workloads/runtime_driver_interop.mlu": "49f165cd43781fc4265516696d5ab3a81aff0a05cc8b3930c9e6f1c1d814300b",
+      "scripts/generate_bang_metadata.py": "ebc75a35528c6487b8a552ad5d01df2e1a8520567d7c93122bbae3ca48bc7f8a"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "-save-temps",
+        "-lcndrv",
+        "/home/lvtong/mlu-remote-runtime/workloads/runtime_driver_interop.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop"
+      ],
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-device-only",
+        "--bang-mlu-arch=mtp_372",
+        "-S",
+        "-emit-llvm",
+        "/home/lvtong/mlu-remote-runtime/workloads/runtime_driver_interop.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/types.ll"
+      ],
+      [
+        "/usr/bin/python3",
+        "/home/lvtong/mlu-remote-runtime/scripts/generate_bang_metadata.py",
+        "--host",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "--pair",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/types.ll:/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin",
+        "--manifest",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/abi.json",
+        "--attach-images"
+      ]
+    ],
+    "image": {
+      "path": "build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin",
+      "sha256": "e80a401d24bf30f90224d60fe07b67b80aee0bbd036126ffc479da35120ed524",
+      "evidence_image": "evidence/workloads-20261108-next/runtime_driver_interop.cnfatbin",
+      "abi_manifest": "evidence/workloads-20261108-next/runtime_driver_interop-abi.json"
+    }
+  }
+}

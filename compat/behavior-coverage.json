@@ -1,0 +1,65 @@
+{
+  "scope": "All 283 IMPLEMENTED public CNRT/CNDrv APIs in compat/api-ledger.csv",
+  "classification_method": "Exact source call sites, including token-pasting family aliases, joined to Native/Remote ledger evidence. WORKLOAD_COVERED additionally requires successful Native and Remote workload entries in one passing results.json; missing runtime evidence is never inferred from compilation or source calls.",
+  "successful_workload_runs": {
+    "cndrv_gemm": [
+      "workloads-20261108-cndrv/results.json",
+      "workloads-20261108-final/results.json",
+      "workloads-20261108-realistic-final/results.json"
+    ],
+    "heat_diffusion": [
+      "remaining-closure-20261107/workloads/results.json",
+      "workloads-20261107-iterative/results.json"
+    ],
+    "image_blur": [
+      "remaining-closure-20261107/workloads/results.json",
+      "workloads-20261107-extended/results.json",
+      "workloads-20261107-iterative/results.json"
+    ],
+    "image_sobel": [
+      "remaining-closure-20261107/workloads/results.json",
+      "workloads-20261107-extended/results.json",
+      "workloads-20261107-iterative/results.json"
+    ],
+    "image_threshold": [
+      "remaining-closure-20261107/workloads/results.json",
+      "workloads-20261107-extended/results.json",
+      "workloads-20261107-iterative/results.json"
+    ],
+    "llm_transformer": [
+      "workloads-20261108-final/results.json",
+      "workloads-20261108-llm/results.json"
+    ],
+    "matrix_add": [
+      "remaining-closure-20261107/workloads/results.json",
+      "workloads-20261107-extended/results.json",
+      "workloads-20261107-iterative/results.json"
+    ],
+    "naive_gemm": [
+      "remaining-closure-20261107/workloads/results.json",
+      "workloads-20261107-extended/results.json",
+      "workloads-20261107-iterative/results.json"
+    ],
+    "queue_notifier": [
+      "remaining-closure-20261107/workloads/results.json",
+      "workloads-20261107-extended/results.json",
+      "workloads-20261107-iterative/results.json"
+    ],
+    "row_center": [
+      "remaining-closure-20261107/workloads/results.json",
+      "workloads-20261107-extended/results.json",
+      "workloads-20261107-iterative/results.json"
+    ],
+    "runtime_driver_interop": [
+      "workloads-20261108-final/results.json",
+      "workloads-20261108-interop/results.json"
+    ]
+  },
+  "counts": {
+    "DIRECT_BEHAVIOR_TEST": 152,
+    "WORKLOAD_COVERED": 52,
+    "FAMILY_TEST": 79,
+    "CONTRACT_ONLY": 0
+  },
+  "total": 283
+}

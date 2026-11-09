@@ -1,0 +1,206 @@
+#include <bang.h>
+#include <cn_api.h>
+#include <cnrt.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define RT_OK(call) do { cnrtRet_t status_ = (call); if (status_) { \
+  fprintf(stderr, "%s failed: %d\n", #call, (int)status_); exit(2); } } while (0)
+#define DRV_OK(call) do { CNresult status_ = (call); if (status_) { \
+  fprintf(stderr, "%s failed: %d\n", #call, (int)status_); exit(2); } } while (0)
+#define REQUIRE(test) do { if (!(test)) { \
+  fprintf(stderr, "assertion failed: %s\n", #test); exit(3); } } while (0)
+
+extern "C" __mlu_entry__ void interop_transform(const float *input, float *output,
+                                                 int count, float scale, float bias) {
+  for (int index = taskId; index < count; index += taskDim)
+    output[index] = input[index] * scale + bias;
+}
+
+struct RuntimeSide {
+  cnrtQueue_t queue;
+  cnrtNotifier_t complete;
+  float *input;
+  float *output;
+  float *host_input;
+  float *host_output;
+};
+
+struct DriverSide {
+  CNcontext context;
+  CNqueue queue;
+  CNnotifier complete;
+  CNmodule module;
+  CNkernel kernel;
+  CNaddr input;
+  CNaddr output;
+  float *host_input;
+  float *host_output;
+};
+
+static void runtime_create(RuntimeSide *side, const float *values, int count) {
+  RT_OK(cnrtSetDevice(0));
+  RT_OK(cnrtQueueCreate(&side->queue));
+  RT_OK(cnrtNotifierCreate(&side->complete));
+  RT_OK(cnrtHostMalloc((void **)&side->host_input, count * sizeof(float)));
+  RT_OK(cnrtHostMalloc((void **)&side->host_output, count * sizeof(float)));
+  for (int i = 0; i < count; ++i) {
+    side->host_input[i] = values[i];
+    side->host_output[i] = NAN;
+  }
+  RT_OK(cnrtMalloc((void **)&side->input, count * sizeof(float)));
+  RT_OK(cnrtMalloc((void **)&side->output, count * sizeof(float)));
+}
+
+static void runtime_run(RuntimeSide *side, int count) {
+  RT_OK(cnrtSetDevice(0));
+  RT_OK(cnrtMemcpyAsync(side->input, side->host_input, count * sizeof(float),
+                        side->queue, cnrtMemcpyHostToDev));
+  cnrtDim3_t grid = {4, 1, 1};
+  interop_transform<<<grid, cnrtFuncTypeBlock, side->queue>>>(
+      side->input, side->output, count, 1.75f, -0.25f);
+  RT_OK(cnrtGetLastError());
+  RT_OK(cnrtPlaceNotifier(side->complete, side->queue));
+  RT_OK(cnrtWaitNotifier(side->complete));
+  RT_OK(cnrtMemcpyAsync(side->host_output, side->output, count * sizeof(float),
+                        side->queue, cnrtMemcpyDevToHost));
+  RT_OK(cnrtQueueSync(side->queue));
+}
+
+static void runtime_destroy(RuntimeSide *side) {
+  RT_OK(cnrtSetDevice(0));
+  RT_OK(cnrtQueueSync(side->queue));
+  RT_OK(cnrtNotifierDestroy(side->complete));
+  RT_OK(cnrtQueueDestroy(side->queue));
+  RT_OK(cnrtFree(side->input));
+  RT_OK(cnrtFree(side->output));
+  RT_OK(cnrtFreeHost(side->host_input));
+  RT_OK(cnrtFreeHost(side->host_output));
+}
+
+static void driver_create(DriverSide *side, const char *image,
+                          const float *values, int count) {
+  DRV_OK(cnInit(0));
+  CNdev device = -1;
+  DRV_OK(cnDeviceGet(&device, 0));
+  DRV_OK(cnCtxCreate(&side->context, 0, device));
+  DRV_OK(cnCreateQueue(&side->queue, 0));
+  DRV_OK(cnCreateNotifier(&side->complete, 0));
+  DRV_OK(cnMallocHost((void **)&side->host_input, count * sizeof(float)));
+  DRV_OK(cnMallocHost((void **)&side->host_output, count * sizeof(float)));
+  for (int i = 0; i < count; ++i) {
+    side->host_input[i] = values[i];
+    side->host_output[i] = NAN;
+  }
+  DRV_OK(cnModuleLoad(image, &side->module));
+  DRV_OK(cnModuleGetKernel(side->module, "interop_transform", &side->kernel));
+  DRV_OK(cnMalloc(&side->input, count * sizeof(float)));
+  DRV_OK(cnMalloc(&side->output, count * sizeof(float)));
+}
+
+static void driver_run(DriverSide *side, int count) {
+  DRV_OK(cnCtxSetCurrent(side->context));
+  DRV_OK(cnMemcpyHtoDAsync(side->input, side->host_input,
+                           count * sizeof(float), side->queue));
+  CNaddr input = side->input, output = side->output;
+  int elements = count;
+  float scale = 1.75f, bias = -0.25f;
+  void *arguments[] = {&input, &output, &elements, &scale, &bias};
+  DRV_OK(cnInvokeKernel(side->kernel, 4, 1, 1, CN_KERNEL_CLASS_BLOCK,
+                        0, side->queue, arguments, NULL));
+  DRV_OK(cnPlaceNotifier(side->complete, side->queue));
+  DRV_OK(cnWaitNotifier(side->complete));
+  DRV_OK(cnMemcpyDtoHAsync(side->host_output, side->output,
+                           count * sizeof(float), side->queue));
+  DRV_OK(cnQueueSync(side->queue));
+}
+
+static void driver_destroy(DriverSide *side) {
+  DRV_OK(cnCtxSetCurrent(side->context));
+  DRV_OK(cnQueueSync(side->queue));
+  DRV_OK(cnDestroyNotifier(side->complete));
+  DRV_OK(cnDestroyQueue(side->queue));
+  DRV_OK(cnFree(side->input));
+  DRV_OK(cnFree(side->output));
+  DRV_OK(cnModuleUnload(side->module));
+  DRV_OK(cnFreeHost(side->host_input));
+  DRV_OK(cnFreeHost(side->host_output));
+  DRV_OK(cnCtxDestroy(side->context));
+}
+
+static double checksum(const float *values, int count) {
+  double result = 0.0;
+  for (int i = 0; i < count; ++i) result += values[i];
+  return result;
+}
+
+static float compare(const float *expected, const float *actual, int count,
+                     int *mismatches, double *expected_sum, double *actual_sum) {
+  float maximum = 0.0f;
+  *mismatches = 0;
+  *expected_sum = 0.0;
+  *actual_sum = 0.0;
+  for (int i = 0; i < count; ++i) {
+    float error = fabsf(expected[i] - actual[i]);
+    if (!isfinite(actual[i]) || error > 1e-4f) ++*mismatches;
+    if (!isfinite(error)) error = INFINITY;
+    if (error > maximum) maximum = error;
+    *expected_sum += expected[i];
+    *actual_sum += actual[i];
+  }
+  return maximum;
+}
+
+int main(int argc, char **argv) {
+  REQUIRE(argc == 2);
+  enum { COUNT = 37 };
+  float input[COUNT], expected[COUNT], observed[4 * COUNT];
+  for (int i = 0; i < COUNT; ++i) {
+    input[i] = (float)((i * 7) % 31 - 15) / 9.0f;
+    expected[i] = input[i] * 1.75f - 0.25f;
+  }
+
+  DriverSide driver = {};
+  RuntimeSide runtime = {};
+  driver_create(&driver, argv[1], input, COUNT);
+  runtime_create(&runtime, input, COUNT);
+  driver_run(&driver, COUNT);
+  runtime_run(&runtime, COUNT);
+  for (int i = 0; i < COUNT; ++i) {
+    observed[i] = runtime.host_output[i];
+    observed[COUNT + i] = driver.host_output[i];
+  }
+
+  runtime_destroy(&runtime);
+  RT_OK(cnrtDeviceReset());
+  driver_run(&driver, COUNT);
+  for (int i = 0; i < COUNT; ++i) observed[2 * COUNT + i] = driver.host_output[i];
+
+  driver_destroy(&driver);
+  runtime_create(&runtime, input, COUNT);
+  runtime_run(&runtime, COUNT);
+  for (int i = 0; i < COUNT; ++i) observed[3 * COUNT + i] = runtime.host_output[i];
+
+  int mismatches = 0;
+  double expected_sum = 0.0, actual_sum = 0.0;
+  float maximum = 0.0f;
+  for (int phase = 0; phase < 4; ++phase) {
+    int phase_mismatches = 0;
+    double phase_expected = 0.0, phase_actual = 0.0;
+    float phase_error = compare(expected, observed + phase * COUNT, COUNT,
+                                &phase_mismatches, &phase_expected, &phase_actual);
+    mismatches += phase_mismatches;
+    expected_sum += phase_expected;
+    actual_sum += phase_actual;
+    if (phase_error > maximum) maximum = phase_error;
+  }
+  runtime_destroy(&runtime);
+  RT_OK(cnrtDeviceReset());
+
+  printf("WORKLOAD=runtime_driver_interop\nSHAPE=4x%d\nCPU_CHECKSUM=%.17g\n"
+         "MLU_CHECKSUM=%.17g\nMAX_ABS_ERROR=%.9g\nTOLERANCE=0.0001\n"
+         "MISMATCH=%d\nRESULT=%s\n", COUNT, expected_sum, actual_sum,
+         maximum, mismatches, mismatches ? "FAIL" : "PASS");
+  return mismatches ? 1 : 0;
+}

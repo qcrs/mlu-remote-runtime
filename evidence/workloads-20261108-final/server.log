@@ -1,0 +1,63 @@
+[server] limit DEVICE session=1073741824 total=8589934592 bytes
+[server] limit STAGING session=67108864 total=268435456 bytes
+[server] limit IMAGE session=67108864 total=268435456 bytes
+[server] MLU_REMOTE_BIND=127.0.0.1 PORT=50440 device_count=1 device0=MLU370-S4[mtp_372.41] memory=25769803776
+[server] listening handshake_timeout_ms=5000 io_timeout_ms=120000 max_connections=32
+[server] session start fd=10 awaiting HELLO
+[server] SESSION_NO_NATIVE_CONTEXT fd=10
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=0
+[server] session start fd=13 awaiting HELLO
+[server] native context created fd=13 device=0 flags=0
+[server] SESSION_CLOSE_ACK fd=13 status=0
+[server] SESSION_NO_NATIVE_CONTEXT fd=13
+[server] session fd=10 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=0
+[server] session start fd=13 awaiting HELLO
+[server] native context created fd=13 device=0 flags=0
+[server] SESSION_CLOSE_ACK fd=13 status=0
+[server] SESSION_NO_NATIVE_CONTEXT fd=13
+[server] session fd=10 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] session fd=10 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] session fd=10 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=0
+[server] session start fd=13 awaiting HELLO
+[server] native context created fd=13 device=0 flags=0
+[server] session start fd=16 awaiting HELLO
+[server] native context created fd=16 device=0 flags=1
+[server] SESSION_CLOSE_ACK fd=13 status=0
+[server] SESSION_NO_NATIVE_CONTEXT fd=13
+[server] session fd=10 disconnected; cleaning native resources
+[server] session fd=16 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] SESSION_CLEANUP_EMPTY fd=16 status=0
+[server] session start fd=15 awaiting HELLO
+[server] native context created fd=15 device=0 flags=0
+[server] session start fd=12 awaiting HELLO
+[server] native context created fd=12 device=0 flags=0
+[server] session start fd=16 awaiting HELLO
+[server] native context created fd=16 device=0 flags=1
+[server] SESSION_CLOSE_ACK fd=12 status=0
+[server] SESSION_NO_NATIVE_CONTEXT fd=12
+[server] session fd=16 disconnected; cleaning native resources
+[server] session fd=15 disconnected; cleaning native resources
+[server] SESSION_CLEANUP_EMPTY fd=16 status=0
+[server] SESSION_CLEANUP_EMPTY fd=15 status=0
+[server] session start fd=10 awaiting HELLO
+[server] native context created fd=10 device=0 flags=1
+[server] session fd=10 disconnected; cleaning native resources
+[server] DRAIN_BEGIN workers=1
+[server] SESSION_CLEANUP_EMPTY fd=10 status=0
+[server] DRAIN_COMPLETE workers=0 cleanup_errors=0
+[server] RESOURCE_TOTAL device=0 staging=0 image=0
+[server] stopped

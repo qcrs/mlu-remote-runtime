@@ -1,0 +1,180 @@
+{
+  "status": "PASS",
+  "endpoint": "127.0.0.1:50434",
+  "external_server": false,
+  "baseline_commit": "c087186a1e8a52bc39060564c0815be1db21e2bd",
+  "realistic_isolation": true,
+  "workloads": [
+    "cndrv_gemm"
+  ],
+  "failure": null,
+  "runtime_artifacts": {
+    "build/mlu-remote-server": "70c62899808ae18984a55a3d0078cc23296537bae2701be2f578490224f3cfc2",
+    "build/shim/libcnrt.so": "888fcde406160655fbec7fe4af803a8c428e860fd8770da3ef18ccdca99beb8c",
+    "build/driver-shim/libcndrv.so": "294c399528c093cc8b2c7c3b31c1e5ea9474dc005feefca7ac786905bee4d8a9",
+    "build/libremote_cnrt.so": "b08b1cf7f8e33acdd259d63ad621cebba1edd4f54999e2b66ecd1feef73407e8"
+  },
+  "results": [
+    {
+      "name": "cndrv_gemm-default-native",
+      "workload": "cndrv_gemm",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "sha256": "dd5f8ac707e7f1b4e3f71105c00e48e5e0b7da3d2f54a6231f3dd3baedd0edb5",
+      "elements": 342,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "cndrv_gemm",
+        "SHAPE": "19x17x23",
+        "CPU_CHECKSUM": -4.884981308350689e-15,
+        "MLU_CHECKSUM": 1.5497207641601562e-06,
+        "MAX_ABS_ERROR": 1.43051147e-06,
+        "TOLERANCE": 0.0001,
+        "MISMATCH": 0,
+        "GEMM_CPU_CHECKSUM": "0",
+        "GEMM_MLU_CHECKSUM": "0",
+        "REDUCTION_CPU_CHECKSUM": "-4.8849813083506888e-15",
+        "REDUCTION_MLU_CHECKSUM": "1.5497207641601562e-06",
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "cndrv_gemm-default-replacement",
+      "workload": "cndrv_gemm",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "sha256": "dd5f8ac707e7f1b4e3f71105c00e48e5e0b7da3d2f54a6231f3dd3baedd0edb5",
+      "elements": 342,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50434"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "cndrv_gemm",
+        "SHAPE": "19x17x23",
+        "CPU_CHECKSUM": -4.884981308350689e-15,
+        "MLU_CHECKSUM": 1.5497207641601562e-06,
+        "MAX_ABS_ERROR": 1.43051147e-06,
+        "TOLERANCE": 0.0001,
+        "MISMATCH": 0,
+        "GEMM_CPU_CHECKSUM": "0",
+        "GEMM_MLU_CHECKSUM": "0",
+        "REDUCTION_CPU_CHECKSUM": "-4.8849813083506888e-15",
+        "REDUCTION_MLU_CHECKSUM": "1.5497207641601562e-06",
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "cndrv_gemm-default-preload",
+      "workload": "cndrv_gemm",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "sha256": "dd5f8ac707e7f1b4e3f71105c00e48e5e0b7da3d2f54a6231f3dd3baedd0edb5",
+      "elements": 342,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so:/home/lvtong/mlu-remote-runtime/build/driver-shim/libcndrv.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50434"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "cndrv_gemm",
+        "SHAPE": "19x17x23",
+        "CPU_CHECKSUM": -4.884981308350689e-15,
+        "MLU_CHECKSUM": 1.5497207641601562e-06,
+        "MAX_ABS_ERROR": 1.43051147e-06,
+        "TOLERANCE": 0.0001,
+        "MISMATCH": 0,
+        "GEMM_CPU_CHECKSUM": "0",
+        "GEMM_MLU_CHECKSUM": "0",
+        "REDUCTION_CPU_CHECKSUM": "-4.8849813083506888e-15",
+        "REDUCTION_MLU_CHECKSUM": "1.5497207641601562e-06",
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "cndrv_gemm-default-isolated-netns",
+      "workload": "cndrv_gemm",
+      "mode": "isolated-netns",
+      "command": [
+        "bash",
+        "/home/lvtong/mlu-remote-runtime/scripts/run-isolated-pair.sh",
+        "--port",
+        "50434",
+        "--shim",
+        "both",
+        "--server",
+        "/home/lvtong/mlu-remote-runtime/build/mlu-remote-server",
+        "--client",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "--",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "sha256": "dd5f8ac707e7f1b4e3f71105c00e48e5e0b7da3d2f54a6231f3dd3baedd0edb5",
+      "elements": 342,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50434"
+      },
+      "returncode": 0,
+      "metrics": {
+        "PAIR_ARGS rootfs": "/tmp/mlu-remote-client.BbDWi6/rootfs port=50434 server=/home/lvtong/mlu-remote-runtime/build/mlu-remote-server shim=both",
+        "ISOLATION server_netns": "net:[4026542244] client_netns=net:[4026542283] veth=198.18.0.1/30<->198.18.0.2/30",
+        "CLIENT_EXEC chroot": "/tmp/mlu-remote-client.BbDWi6/rootfs executable=/app/client arguments=1",
+        "WORKLOAD": "cndrv_gemm",
+        "SHAPE": "19x17x23",
+        "CPU_CHECKSUM": -4.884981308350689e-15,
+        "MLU_CHECKSUM": 1.5497207641601562e-06,
+        "MAX_ABS_ERROR": 1.43051147e-06,
+        "TOLERANCE": 0.0001,
+        "MISMATCH": 0,
+        "GEMM_CPU_CHECKSUM": "0",
+        "GEMM_MLU_CHECKSUM": "0",
+        "REDUCTION_CPU_CHECKSUM": "-4.8849813083506888e-15",
+        "REDUCTION_MLU_CHECKSUM": "1.5497207641601562e-06",
+        "RESULT": "PASS"
+      }
+    }
+  ],
+  "core_smoke": [
+    {
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/native_bang_generic"
+      ],
+      "returncode": 0,
+      "sha256": "1f80f8d637e0e73263454605f3b94782eb9574b3d2b360ea3a5b347e9159d84b"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+[server] limit DEVICE session=1073741824 total=8589934592 bytes
+[server] limit STAGING session=67108864 total=268435456 bytes
+[server] limit IMAGE session=67108864 total=268435456 bytes
+backend init failed: "No useful mlu device" (100004)

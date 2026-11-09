@@ -1,0 +1,19 @@
+{
+  "status": "FAIL",
+  "endpoint": "127.0.0.1:50221",
+  "external_server": false,
+  "baseline_commit": "c087186a1e8a52bc39060564c0815be1db21e2bd",
+  "workloads": [
+    "cndrv_gemm",
+    "llm_transformer",
+    "runtime_driver_interop"
+  ],
+  "runtime_artifacts": {
+    "build/mlu-remote-server": "70c62899808ae18984a55a3d0078cc23296537bae2701be2f578490224f3cfc2",
+    "build/shim/libcnrt.so": "888fcde406160655fbec7fe4af803a8c428e860fd8770da3ef18ccdca99beb8c",
+    "build/driver-shim/libcndrv.so": "294c399528c093cc8b2c7c3b31c1e5ea9474dc005feefca7ac786905bee4d8a9",
+    "build/libremote_cnrt.so": "b08b1cf7f8e33acdd259d63ad621cebba1edd4f54999e2b66ecd1feef73407e8"
+  },
+  "results": [],
+  "core_smoke": []
+}

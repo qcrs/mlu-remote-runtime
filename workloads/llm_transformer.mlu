@@ -1,0 +1,392 @@
+#include "common.h"
+#include <float.h>
+
+enum { SEQ = 7, WIDTH = 8, HIDDEN = 12, CACHE = 10, HEAD_WIDTH = 4 };
+
+__mlu_entry__ void rms_norm_kernel(const float *input, const float *weight,
+                                   float *output, int seq, int width) {
+  for (int row = taskId; row < seq; row += taskDim) {
+    float square_sum = 0.0f;
+    for (int col = 0; col < width; ++col) {
+      float value = input[row * width + col];
+      square_sum += value * value;
+    }
+    float scale = 1.0f / sqrtf(square_sum / width + 1e-5f);
+    for (int col = 0; col < width; ++col)
+      output[row * width + col] = input[row * width + col] * scale * weight[col];
+  }
+}
+
+__mlu_entry__ void qkv_projection_kernel(const float *input, const float *weights,
+                                         float *qkv, int seq, int width) {
+  for (int row = taskId; row < 3 * seq; row += taskDim) {
+    int projection = row / seq;
+    int token = row % seq;
+    for (int col = 0; col < width; ++col) {
+      float sum = 0.0f;
+      for (int inner = 0; inner < width; ++inner)
+        sum += input[token * width + inner]
+               * weights[(projection * width + inner) * width + col];
+      qkv[(projection * seq + token) * width + col] = sum;
+    }
+  }
+}
+
+__mlu_entry__ void rope_kernel(const float *qkv, float *query, float *key,
+                               int seq, int width) {
+  for (int pair = taskId; pair < seq * (width / 2); pair += taskDim) {
+    int token = pair / (width / 2);
+    int column_pair = pair % (width / 2);
+    float frequency = column_pair % (HEAD_WIDTH / 2) == 0 ? 1.0f : 0.01f;
+    float angle = token * frequency;
+    float cosine = cosf(angle), sine = sinf(angle);
+    int base = token * width + column_pair * 2;
+    int key_base = (seq + token) * width + column_pair * 2;
+    float q0 = qkv[base], q1 = qkv[base + 1];
+    float k0 = qkv[key_base], k1 = qkv[key_base + 1];
+    query[base] = q0 * cosine - q1 * sine;
+    query[base + 1] = q0 * sine + q1 * cosine;
+    key[base] = k0 * cosine - k1 * sine;
+    key[base + 1] = k0 * sine + k1 * cosine;
+  }
+}
+
+__mlu_entry__ void kv_cache_kernel(const float *qkv, const float *rotated_key,
+                                   float *key_cache, float *value_cache,
+                                   int seq, int width, int capacity) {
+  for (int index = taskId; index < capacity * width; index += taskDim) {
+    int token = index / width;
+    int col = index % width;
+    if (token < seq) {
+      key_cache[index] = rotated_key[token * width + col];
+      value_cache[index] = qkv[(2 * seq + token) * width + col];
+    }
+  }
+}
+
+__mlu_entry__ void attention_score_kernel(const float *query, const float *key_cache,
+                                          float *scores, int seq, int width) {
+  for (int index = taskId; index < seq * seq; index += taskDim) {
+    int token = index / seq, key = index % seq;
+    if (key > token) {
+      scores[index] = -10000.0f;
+    } else {
+      float dot = 0.0f;
+      for (int col = 0; col < width; ++col)
+        dot += query[token * width + col] * key_cache[key * width + col];
+      scores[index] = dot / sqrtf((float)width);
+    }
+  }
+}
+
+__mlu_entry__ void softmax_kernel(const float *scores, float *probabilities,
+                                 int seq) {
+  for (int row = taskId; row < seq; row += taskDim) {
+    float maximum = -FLT_MAX;
+    for (int col = 0; col < seq; ++col)
+      if (scores[row * seq + col] > maximum) maximum = scores[row * seq + col];
+    float total = 0.0f;
+    for (int col = 0; col < seq; ++col) {
+      float value = expf(scores[row * seq + col] - maximum);
+      probabilities[row * seq + col] = value;
+      total += value;
+    }
+    for (int col = 0; col < seq; ++col)
+      probabilities[row * seq + col] /= total;
+  }
+}
+
+__mlu_entry__ void attention_output_kernel(const float *probabilities,
+                                           const float *value_cache,
+                                           float *output, int seq, int width) {
+  for (int index = taskId; index < seq * width; index += taskDim) {
+    int token = index / width, col = index % width;
+    float sum = 0.0f;
+    for (int key = 0; key <= token; ++key)
+      sum += probabilities[token * seq + key] * value_cache[key * width + col];
+    output[index] = sum;
+  }
+}
+
+__mlu_entry__ void feed_forward_projection_kernel(const float *input,
+                                                  const float *gate_weight,
+                                                  const float *up_weight,
+                                                  float *gate, float *up,
+                                                  int seq, int width, int hidden) {
+  for (int index = taskId; index < seq * hidden; index += taskDim) {
+    int token = index / hidden, col = index % hidden;
+    float gate_sum = 0.0f, up_sum = 0.0f;
+    for (int inner = 0; inner < width; ++inner) {
+      float value = input[token * width + inner];
+      gate_sum += value * gate_weight[inner * hidden + col];
+      up_sum += value * up_weight[inner * hidden + col];
+    }
+    gate[index] = gate_sum;
+    up[index] = up_sum;
+  }
+}
+
+__mlu_entry__ void swiglu_kernel(const float *gate, const float *up,
+                                 float *output, int count) {
+  for (int index = taskId; index < count; index += taskDim) {
+    float value = gate[index];
+    output[index] = (value / (1.0f + expf(-value))) * up[index];
+  }
+}
+
+__mlu_entry__ void down_projection_kernel(const float *input, const float *weight,
+                                          const float *residual, float *output,
+                                          int seq, int width, int hidden) {
+  for (int index = taskId; index < seq * width; index += taskDim) {
+    int token = index / width, col = index % width;
+    float sum = residual[index];
+    for (int inner = 0; inner < hidden; ++inner)
+      sum += input[token * hidden + inner] * weight[inner * width + col];
+    output[index] = sum;
+  }
+}
+
+static float *device_buffer(size_t count) {
+  float *result = NULL;
+  CHECK(cnrtMalloc((void **)&result, count * sizeof(float)));
+  return result;
+}
+
+static float max_stage_error(const float *expected, const float *actual,
+                             size_t count) {
+  float maximum = 0.0f;
+  for (size_t i = 0; i < count; ++i) {
+    float error = fabsf(expected[i] - actual[i]);
+    if (!isfinite(error)) error = INFINITY;
+    if (error > maximum) maximum = error;
+  }
+  return maximum;
+}
+
+static void check_stage(const char *name, const float *expected,
+                        const float *actual, size_t count, float tolerance) {
+  float error = max_stage_error(expected, actual, count);
+  printf("STAGE_%s_MAX_ABS_ERROR=%.9g\n", name, error);
+  if (error > tolerance) {
+    fprintf(stderr, "stage %s exceeded tolerance %.9g\n", name, tolerance);
+    exit(4);
+  }
+}
+
+static void linear(const float *input, const float *weight, float *output,
+                   int rows, int in_width, int out_width) {
+  for (int row = 0; row < rows; ++row)
+    for (int col = 0; col < out_width; ++col) {
+      double sum = 0.0;
+      for (int inner = 0; inner < in_width; ++inner)
+        sum += (double)input[row * in_width + inner]
+               * weight[inner * out_width + col];
+      output[row * out_width + col] = (float)sum;
+    }
+}
+
+int main(void) {
+  const int seq = SEQ, width = WIDTH, hidden = HIDDEN, capacity = CACHE;
+  const size_t token_count = seq * width, qkv_count = 3 * token_count;
+  const size_t cache_count = capacity * width, score_count = seq * seq;
+  float *input = host_buffer(token_count), *gamma = host_buffer(width);
+  float *qkv_weight = host_buffer(3 * width * width);
+  float *norm_ref = host_buffer(token_count), *qkv_ref = host_buffer(qkv_count);
+  float *query_ref = host_buffer(token_count), *key_ref = host_buffer(token_count);
+  float *key_cache_ref = host_buffer(cache_count), *value_cache_ref = host_buffer(cache_count);
+  float *scores_ref = host_buffer(score_count), *probabilities_ref = host_buffer(score_count);
+  float *attention_ref = host_buffer(token_count);
+  float *gate_weight = host_buffer(width * hidden), *up_weight = host_buffer(width * hidden);
+  float *down_weight = host_buffer(hidden * width);
+  float *gate_ref = host_buffer(seq * hidden), *up_ref = host_buffer(seq * hidden);
+  float *swiglu_ref = host_buffer(seq * hidden), *output_ref = host_buffer(token_count);
+  float *qkv_actual = host_buffer(qkv_count), *scores_actual = host_buffer(score_count);
+  float *probabilities_actual = host_buffer(score_count), *attention_actual = host_buffer(token_count);
+  float *cache_actual = host_buffer(2 * cache_count), *projection_actual = host_buffer(2 * seq * hidden);
+  float *swiglu_actual = host_buffer(seq * hidden), *output = host_buffer(token_count);
+
+  for (int i = 0; i < token_count; ++i)
+    input[i] = (float)(((i * 13 + i / width * 7) % 37) - 18) / 19.0f;
+  for (int i = 0; i < width; ++i) gamma[i] = 0.75f + (float)(i % 5) / 8.0f;
+  for (int i = 0; i < 3 * width * width; ++i)
+    qkv_weight[i] = (float)(((i * 5) % 23) - 11) / 67.0f;
+  for (int i = 0; i < width * hidden; ++i) {
+    gate_weight[i] = (float)(((i * 7) % 19) - 9) / 43.0f;
+    up_weight[i] = (float)(((i * 11) % 17) - 8) / 47.0f;
+  }
+  for (int i = 0; i < hidden * width; ++i)
+    down_weight[i] = (float)(((i * 3) % 21) - 10) / 59.0f;
+
+  for (int token = 0; token < seq; ++token) {
+    double squares = 0.0;
+    for (int col = 0; col < width; ++col)
+      squares += (double)input[token * width + col] * input[token * width + col];
+    double scale = 1.0 / sqrt(squares / width + 1e-5);
+    for (int col = 0; col < width; ++col)
+      norm_ref[token * width + col] = (float)(input[token * width + col] * scale * gamma[col]);
+  }
+  /* Q, K and V reuse the same normalized token rows with three weight
+   * matrices.  Do not pass 3*seq rows to linear(): norm_ref has only seq
+   * rows, and doing so would read past the input while building the CPU
+   * reference. */
+  for (int projection = 0; projection < 3; ++projection)
+    for (int token = 0; token < seq; ++token)
+      for (int col = 0; col < width; ++col) {
+        double sum = 0.0;
+        for (int inner = 0; inner < width; ++inner)
+          sum += (double)norm_ref[token * width + inner]
+                 * qkv_weight[(projection * width + inner) * width + col];
+        qkv_ref[(projection * seq + token) * width + col] = (float)sum;
+      }
+  for (int token = 0; token < seq; ++token) {
+    for (int pair = 0; pair < width / 2; ++pair) {
+      const int col = pair * 2;
+      const double frequency = pair % (HEAD_WIDTH / 2) == 0 ? 1.0 : 0.01;
+      const double angle = token * frequency;
+      const double cosine = cos(angle), sine = sin(angle);
+      const int q_index = token * width + col;
+      const int k_index = (seq + token) * width + col;
+      double q0 = qkv_ref[q_index], q1 = qkv_ref[q_index + 1];
+      double k0 = qkv_ref[k_index], k1 = qkv_ref[k_index + 1];
+      query_ref[q_index] = (float)(q0 * cosine - q1 * sine);
+      query_ref[q_index + 1] = (float)(q0 * sine + q1 * cosine);
+      key_ref[q_index] = (float)(k0 * cosine - k1 * sine);
+      key_ref[q_index + 1] = (float)(k0 * sine + k1 * cosine);
+    }
+  }
+  for (int i = 0; i < cache_count; ++i)
+    key_cache_ref[i] = value_cache_ref[i] = -777.0f;
+  for (int token = 0; token < seq; ++token)
+    for (int col = 0; col < width; ++col) {
+      key_cache_ref[token * width + col] = key_ref[token * width + col];
+      value_cache_ref[token * width + col] = qkv_ref[(2 * seq + token) * width + col];
+    }
+  for (int token = 0; token < seq; ++token) {
+    float maximum = -FLT_MAX;
+    for (int key = 0; key < seq; ++key) {
+      if (key > token) {
+        scores_ref[token * seq + key] = -10000.0f;
+      } else {
+        double dot = 0.0;
+        for (int col = 0; col < width; ++col)
+          dot += (double)query_ref[token * width + col] * key_cache_ref[key * width + col];
+        scores_ref[token * seq + key] = (float)(dot / sqrt((double)width));
+      }
+      if (scores_ref[token * seq + key] > maximum) maximum = scores_ref[token * seq + key];
+    }
+    double total = 0.0;
+    for (int key = 0; key < seq; ++key) {
+      probabilities_ref[token * seq + key] = (float)exp(scores_ref[token * seq + key] - maximum);
+      total += probabilities_ref[token * seq + key];
+    }
+    for (int key = 0; key < seq; ++key)
+      probabilities_ref[token * seq + key] = (float)(probabilities_ref[token * seq + key] / total);
+    for (int col = 0; col < width; ++col) {
+      double sum = 0.0;
+      for (int key = 0; key <= token; ++key)
+        sum += probabilities_ref[token * seq + key] * value_cache_ref[key * width + col];
+      attention_ref[token * width + col] = (float)sum;
+    }
+  }
+  linear(attention_ref, gate_weight, gate_ref, seq, width, hidden);
+  linear(attention_ref, up_weight, up_ref, seq, width, hidden);
+  for (int i = 0; i < seq * hidden; ++i)
+    swiglu_ref[i] = (float)((gate_ref[i] / (1.0 + exp(-(double)gate_ref[i]))) * up_ref[i]);
+  for (int token = 0; token < seq; ++token)
+    for (int col = 0; col < width; ++col) {
+      double sum = input[token * width + col];
+      for (int inner = 0; inner < hidden; ++inner)
+        sum += (double)swiglu_ref[token * hidden + inner] * down_weight[inner * width + col];
+      output_ref[token * width + col] = (float)sum;
+    }
+
+  float *dx = device_copy(input, token_count), *dgamma = device_copy(gamma, width);
+  float *dwqkv = device_copy(qkv_weight, 3 * width * width);
+  float *dwgate = device_copy(gate_weight, width * hidden);
+  float *dwup = device_copy(up_weight, width * hidden);
+  float *dwdown = device_copy(down_weight, hidden * width);
+  float *dnorm = device_buffer(token_count), *dqkv = device_buffer(qkv_count);
+  float *dquery = device_buffer(token_count), *dkey = device_buffer(token_count);
+  float *dkey_cache = device_copy(key_cache_ref, cache_count);
+  float *dvalue_cache = device_copy(value_cache_ref, cache_count);
+  float *dscores = device_buffer(score_count), *dprobabilities = device_buffer(score_count);
+  float *dattention = device_buffer(token_count);
+  float *dgate = device_buffer(seq * hidden), *dup = device_buffer(seq * hidden);
+  float *dswiglu = device_buffer(seq * hidden), *doutput = device_buffer(token_count);
+
+  cnrtQueue_t queue = NULL;
+  CHECK(cnrtQueueCreate(&queue));
+  cnrtDim3_t dim = {4, 1, 1};
+  rms_norm_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dx, dgamma, dnorm, seq, width);
+  CHECK(cnrtGetLastError());
+  qkv_projection_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dnorm, dwqkv, dqkv, seq, width);
+  CHECK(cnrtGetLastError());
+  rope_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dqkv, dquery, dkey, seq, width);
+  CHECK(cnrtGetLastError());
+  kv_cache_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dqkv, dkey, dkey_cache, dvalue_cache,
+                                                     seq, width, capacity);
+  CHECK(cnrtGetLastError());
+  attention_score_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dquery, dkey_cache, dscores,
+                                                            seq, width);
+  CHECK(cnrtGetLastError());
+  softmax_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dscores, dprobabilities, seq);
+  CHECK(cnrtGetLastError());
+  attention_output_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dprobabilities, dvalue_cache,
+                                                             dattention, seq, width);
+  CHECK(cnrtGetLastError());
+  feed_forward_projection_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dattention, dwgate, dwup,
+      dgate, dup, seq, width, hidden);
+  CHECK(cnrtGetLastError());
+  swiglu_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dgate, dup, dswiglu, seq * hidden);
+  CHECK(cnrtGetLastError());
+  down_projection_kernel<<<dim, cnrtFuncTypeBlock, queue>>>(dswiglu, dwdown, dx,
+      doutput, seq, width, hidden);
+  CHECK(cnrtGetLastError());
+  CHECK(cnrtQueueSync(queue));
+
+  CHECK(cnrtMemcpy(qkv_actual, dqkv, qkv_count * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(scores_actual, dscores, score_count * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(probabilities_actual, dprobabilities, score_count * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(attention_actual, dattention, token_count * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(cache_actual, dkey_cache, cache_count * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(cache_actual + cache_count, dvalue_cache, cache_count * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(projection_actual, dgate, seq * hidden * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(projection_actual + seq * hidden, dup, seq * hidden * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(swiglu_actual, dswiglu, seq * hidden * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(output, doutput, token_count * sizeof(float), cnrtMemcpyDevToHost));
+  float *norm_actual = host_buffer(token_count);
+  float *rope_actual = host_buffer(2 * token_count);
+  CHECK(cnrtMemcpy(norm_actual, dnorm, token_count * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(rope_actual, dquery, token_count * sizeof(float), cnrtMemcpyDevToHost));
+  CHECK(cnrtMemcpy(rope_actual + token_count, dkey, token_count * sizeof(float), cnrtMemcpyDevToHost));
+
+  const float tolerance = 7e-4f;
+  check_stage("RMSNORM", norm_ref, norm_actual, token_count, tolerance);
+  check_stage("QKV", qkv_ref, qkv_actual, qkv_count, tolerance);
+  check_stage("ROPE", query_ref, rope_actual, token_count, tolerance);
+  check_stage("ROPE_KEY", key_ref, rope_actual + token_count, token_count, tolerance);
+  check_stage("KV_CACHE_KEY", key_cache_ref, cache_actual, cache_count, tolerance);
+  check_stage("KV_CACHE_VALUE", value_cache_ref, cache_actual + cache_count, cache_count, tolerance);
+  check_stage("ATTENTION_SCORE", scores_ref, scores_actual, score_count, tolerance);
+  check_stage("SOFTMAX", probabilities_ref, probabilities_actual, score_count, tolerance);
+  check_stage("ATTENTION", attention_ref, attention_actual, token_count, tolerance);
+  check_stage("SWIGLU_PROJECTION", gate_ref, projection_actual, seq * hidden, tolerance);
+  check_stage("SWIGLU_UP", up_ref, projection_actual + seq * hidden, seq * hidden, tolerance);
+  check_stage("SWIGLU", swiglu_ref, swiglu_actual, seq * hidden, tolerance);
+  char shape[64]; snprintf(shape, sizeof(shape), "%dx%dx%d", seq, width, hidden);
+  int result = report("llm_transformer", shape, output_ref, output, token_count, tolerance);
+
+  CHECK(cnrtQueueDestroy(queue));
+  float *device_buffers[] = {dx, dgamma, dwqkv, dwgate, dwup, dwdown, dnorm, dqkv,
+      dquery, dkey, dkey_cache, dvalue_cache, dscores, dprobabilities, dattention,
+      dgate, dup, dswiglu, doutput};
+  for (size_t i = 0; i < sizeof(device_buffers) / sizeof(device_buffers[0]); ++i)
+    CHECK(cnrtFree(device_buffers[i]));
+  float *host_buffers[] = {input, gamma, qkv_weight, norm_ref, qkv_ref, query_ref, key_ref,
+      key_cache_ref, value_cache_ref, scores_ref, probabilities_ref, attention_ref,
+      gate_weight, up_weight, down_weight, gate_ref, up_ref, swiglu_ref, output_ref,
+      qkv_actual, scores_actual, probabilities_actual, attention_actual, cache_actual,
+      projection_actual, swiglu_actual, output, norm_actual, rope_actual};
+  for (size_t i = 0; i < sizeof(host_buffers) / sizeof(host_buffers[0]); ++i) free(host_buffers[i]);
+  return result;
+}

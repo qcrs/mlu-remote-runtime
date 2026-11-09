@@ -1,0 +1,155 @@
+#include <bang.h>
+#include <cn_api.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define OK(call) do { CNresult status_ = (call); if (status_) { \
+  fprintf(stderr, "%s failed: %d\n", #call, (int)status_); exit(2); } } while (0)
+#define REQUIRE(test) do { if (!(test)) { \
+  fprintf(stderr, "assertion failed: %s\n", #test); exit(3); } } while (0)
+
+extern "C" __mlu_entry__ void cndrv_gemm(const float *a, const float *b, float *c,
+                                           int m, int n, int k) {
+  for (int row = taskId; row < m; row += taskDim) {
+    for (int col = 0; col < n; ++col) {
+      float sum = 0.0f;
+      for (int inner = 0; inner < k; ++inner)
+        sum += a[row * k + inner] * b[inner * n + col];
+      c[row * n + col] = sum;
+    }
+  }
+}
+
+extern "C" __mlu_entry__ void cndrv_row_sum(const float *input, float *sums,
+                                              int rows, int columns) {
+  for (int row = taskId; row < rows; row += taskDim) {
+    float sum = 0.0f;
+    for (int column = 0; column < columns; ++column)
+      sum += input[row * columns + column];
+    sums[row] = sum;
+  }
+}
+
+static float *pinned(size_t bytes) {
+  float *result = NULL;
+  OK(cnMallocHost((void **)&result, bytes));
+  REQUIRE(result != NULL);
+  return result;
+}
+
+static float max_error(const float *expected, const float *actual, size_t count,
+                       size_t *mismatches, double *expected_sum, double *actual_sum) {
+  float maximum = 0.0f;
+  *mismatches = 0;
+  *expected_sum = 0.0;
+  *actual_sum = 0.0;
+  for (size_t i = 0; i < count; ++i) {
+    float error = fabsf(expected[i] - actual[i]);
+    if (!isfinite(error)) error = INFINITY;
+    if (error > 1e-4f) ++*mismatches;
+    if (error > maximum) maximum = error;
+    *expected_sum += expected[i];
+    *actual_sum += actual[i];
+  }
+  return maximum;
+}
+
+int main(int argc, char **argv) {
+  REQUIRE(argc == 2);
+  enum { M = 19, N = 17, K = 23 };
+  const size_t a_count = M * K, b_count = K * N, c_count = M * N;
+  /* CNDrv Host allocations are valid after cnInit, even before a Context. */
+  OK(cnInit(0));
+  float *a = pinned(a_count * sizeof(float));
+  float *b = pinned(b_count * sizeof(float));
+  float *reference = (float *)malloc((c_count + M) * sizeof(float));
+  float *output = pinned((c_count + M) * sizeof(float));
+  REQUIRE(reference != NULL);
+  float *sum_reference = reference + c_count;
+  float *sum_output = output + c_count;
+
+  for (size_t i = 0; i < a_count; ++i) a[i] = (float)((int)(i % 29) - 14) / 13.0f;
+  for (size_t i = 0; i < b_count; ++i) b[i] = (float)((int)(i % 17) - 8) / 11.0f;
+  for (int row = 0; row < M; ++row) {
+    double row_sum = 0.0;
+    for (int col = 0; col < N; ++col) {
+      double value = 0.0;
+      for (int inner = 0; inner < K; ++inner)
+        value += (double)a[row * K + inner] * (double)b[inner * N + col];
+      reference[row * N + col] = (float)value;
+      row_sum += value;
+    }
+    sum_reference[row] = (float)row_sum;
+  }
+
+  CNdev device = -1;
+  CNcontext context = NULL;
+  OK(cnDeviceGet(&device, 0));
+  OK(cnCtxCreate(&context, 0, device));
+  CNmodule module = NULL;
+  CNkernel gemm = NULL, reduce = NULL;
+  OK(cnModuleLoad(argv[1], &module));
+  OK(cnModuleGetKernel(module, "cndrv_gemm", &gemm));
+  OK(cnModuleGetKernel(module, "cndrv_row_sum", &reduce));
+
+  CNaddr da = 0, db = 0, dc = 0, ds = 0;
+  OK(cnMalloc(&da, a_count * sizeof(float)));
+  OK(cnMalloc(&db, b_count * sizeof(float)));
+  OK(cnMalloc(&dc, c_count * sizeof(float)));
+  OK(cnMalloc(&ds, M * sizeof(float)));
+  CNqueue copy_queue = NULL, compute_queue = NULL;
+  OK(cnCreateQueue(&copy_queue, 0));
+  OK(cnCreateQueue(&compute_queue, 0));
+  CNnotifier uploaded = NULL, complete = NULL;
+  OK(cnCreateNotifier(&uploaded, 0));
+  OK(cnCreateNotifier(&complete, 0));
+  OK(cnMemcpyHtoDAsync(da, a, a_count * sizeof(float), copy_queue));
+  OK(cnMemcpyHtoDAsync(db, b, b_count * sizeof(float), copy_queue));
+  OK(cnPlaceNotifier(uploaded, copy_queue));
+  OK(cnQueueWaitNotifier(compute_queue, uploaded));
+
+  int m = M, n = N, k = K;
+  void *gemm_args[] = {&da, &db, &dc, &m, &n, &k};
+  OK(cnInvokeKernel(gemm, 4, 1, 1, CN_KERNEL_CLASS_BLOCK, 0, compute_queue,
+                    gemm_args, NULL));
+  int rows = M, columns = N;
+  void *reduce_args[] = {&dc, &ds, &rows, &columns};
+  OK(cnInvokeKernel(reduce, 4, 1, 1, CN_KERNEL_CLASS_BLOCK, 0, compute_queue,
+                    reduce_args, NULL));
+  OK(cnPlaceNotifier(complete, compute_queue));
+  OK(cnQueueWaitNotifier(copy_queue, complete));
+  OK(cnMemcpyDtoHAsync(output, dc, c_count * sizeof(float), copy_queue));
+  OK(cnMemcpyDtoHAsync(sum_output, ds, M * sizeof(float), copy_queue));
+  OK(cnQueueSync(copy_queue));
+  OK(cnWaitNotifier(complete));
+  REQUIRE(cnQueryNotifier(complete) == CN_SUCCESS);
+
+  size_t mismatches = 0, sum_mismatches = 0;
+  double expected_sum, actual_sum, expected_row_sums, actual_row_sums;
+  float error = max_error(reference, output, c_count, &mismatches,
+                          &expected_sum, &actual_sum);
+  float reduce_error = max_error(sum_reference, sum_output, M, &sum_mismatches,
+                                 &expected_row_sums, &actual_row_sums);
+  if (reduce_error > error) error = reduce_error;
+  mismatches += sum_mismatches;
+  printf("WORKLOAD=cndrv_gemm\nSHAPE=%dx%dx%d\nCPU_CHECKSUM=%.17g\n"
+         "MLU_CHECKSUM=%.17g\nMAX_ABS_ERROR=%.9g\nTOLERANCE=0.0001\n"
+         "MISMATCH=%zu\nGEMM_CPU_CHECKSUM=%.17g\nGEMM_MLU_CHECKSUM=%.17g\n"
+         "REDUCTION_CPU_CHECKSUM=%.17g\nREDUCTION_MLU_CHECKSUM=%.17g\n"
+         "RESULT=%s\n", M, N, K, expected_sum + expected_row_sums,
+         actual_sum + actual_row_sums, error, mismatches, expected_sum, actual_sum,
+         expected_row_sums, actual_row_sums, mismatches ? "FAIL" : "PASS");
+
+  OK(cnDestroyNotifier(uploaded));
+  OK(cnDestroyNotifier(complete));
+  OK(cnDestroyQueue(copy_queue));
+  OK(cnDestroyQueue(compute_queue));
+  OK(cnFree(da)); OK(cnFree(db)); OK(cnFree(dc)); OK(cnFree(ds));
+  OK(cnModuleUnload(module));
+  OK(cnCtxDestroy(context));
+  OK(cnFreeHost(a)); OK(cnFreeHost(b)); OK(cnFreeHost(output));
+  free(reference);
+  return mismatches ? 1 : 0;
+}

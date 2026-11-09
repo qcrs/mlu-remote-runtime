@@ -1,0 +1,19 @@
+{
+  "llm_transformer": {
+    "sha256": "8725b291d7fa989a30b74d002974c22f0611d57cda5a869dd1fa670fe90ba6c7",
+    "sources": {
+      "workloads/llm_transformer.mlu": "497ae4ed3ed5b23b060f5cf889d8d4e4975c93f0462aca420742730de6876a2e",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "-lm",
+        "/home/lvtong/mlu-remote-runtime/workloads/llm_transformer.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer"
+      ]
+    ]
+  }
+}

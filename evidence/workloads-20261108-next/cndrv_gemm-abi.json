@@ -1,0 +1,56 @@
+[
+  {
+    "symbol": "cndrv_gemm",
+    "image_size": 2864,
+    "fingerprint": "0xda42fa5106b3bc57",
+    "parameters": [
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      }
+    ]
+  },
+  {
+    "symbol": "cndrv_row_sum",
+    "image_size": 2864,
+    "fingerprint": "0xda42fa5106b3bc57",
+    "parameters": [
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 8,
+        "kind": "pointer"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      },
+      {
+        "size": 4,
+        "kind": "scalar"
+      }
+    ]
+  }
+]

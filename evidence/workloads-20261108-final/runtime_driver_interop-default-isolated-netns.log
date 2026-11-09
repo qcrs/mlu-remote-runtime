@@ -1,0 +1,13 @@
+CLIENT_ROOTFS staged at /tmp/mlu-remote-client.D2zhEl/rootfs (SDK, repository, /dev and host /tmp are absent)
+PAIR_ARGS rootfs=/tmp/mlu-remote-client.D2zhEl/rootfs port=50440 server=/home/lvtong/mlu-remote-runtime/build/mlu-remote-server shim=both
+ISOLATION server_netns=net:[4026542414] client_netns=net:[4026542452] veth=198.18.0.1/30<->198.18.0.2/30
+VERIFIED client chroot has no vendor SDK, device nodes, repository tree, or shared host /tmp
+CLIENT_EXEC chroot=/tmp/mlu-remote-client.D2zhEl/rootfs executable=/app/client arguments=1
+WORKLOAD=runtime_driver_interop
+SHAPE=4x37
+CPU_CHECKSUM=-49.444444537162781
+MLU_CHECKSUM=-49.444444537162781
+MAX_ABS_ERROR=0
+TOLERANCE=0.0001
+MISMATCH=0
+RESULT=PASS

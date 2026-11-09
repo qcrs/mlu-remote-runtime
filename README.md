@@ -10,7 +10,7 @@ BANG C Application / CNCC host stub
   → ServerSession → Native CNDrv → MLU
 ```
 
-当前在 MLU370-S4 / Neuware 3.5.2 真机上验证了原生、动态库替换、LD_PRELOAD、隐藏 SDK 和设备节点的客户端运行。真实注册 image、含 pointer 字段的自然布局按值 struct/嵌套 struct/固定数组、初始化/const globals 与注册计量（[证据](evidence/module-accounting-20261107/README.md)）、混合标量、指针偏移/NULL、三维 task grid、1200 次 launch、1200 次异步 H2D、线程、资源回收和旧六算子均有证据。**跨第二台物理主机的最终验收尚未完成。**
+当前在 MLU370-S4 / Neuware 3.5.2 真机上验证了原生、动态库替换、LD_PRELOAD、隐藏 SDK 和设备节点的客户端运行。真实注册 image、含 pointer 字段的自然布局按值 struct/嵌套 struct/固定数组、初始化/const globals 与注册计量（[证据](evidence/module-accounting-20261107/README.md)）、混合标量、指针偏移/NULL、三维 task grid、1200 次 launch、1200 次异步 H2D、线程、资源回收和旧六算子均有证据。另有本地 sibling-netns/veth/chroot 文件传输自检及宿主 MLU 上的新 workload/隔离验证；**跨第二台物理主机的最终验收尚未完成。**
 
 ```sh
 ./scripts/build.sh
@@ -54,4 +54,4 @@ LD_LIBRARY_PATH="$PWD/build/shim:$PWD/build" ./build/native_bang_generic
 
 ## Application Workloads
 
-已验证 Vector/Tensor elementwise、Matrix Add、Naive GEMM、Image pointwise（threshold）、Image neighborhood（3×3 blur / Sobel），以及异步 H2D/Notifier 跨 Queue pipeline。`row_center` 覆盖同 Module 多 Kernel、nested struct/array 按值参数、默认 Queue、pitched D2D 与 allocation offset；新增 `heat_diffusion` 以多步五点邻域计算验证同 Queue 连续 launch 和双缓冲依赖。八个普通 BANG C 应用的 19 组输入均以 CPU reference 逐元素检查；Native/replacement/preload 使用同一 executable，57 次运行全部通过，GEMM/中心化最大绝对误差为 `9.53674316e-7`，热扩散为 `5.96046448e-8`。运行方式和双终端命令见 [workloads](workloads/README.md)，最新结果见 [证据](evidence/workloads-20261107-iterative/README.md)。本机独立进程经 TCP 验证，不代表第二物理主机验收。
+11 个普通 BANG C 应用覆盖 Vector/Tensor elementwise、Matrix Add、GEMM、Image pointwise/neighborhood、Heat Diffusion、CNDrv Queue/Notifier/Module、多阶段 LLM-style transformer 和 CNRT/CNDrv 同进程重建。原有八个应用的 19 组输入已通过 Native/replacement/preload 共 57 次运行；新增 `cndrv_gemm`、`llm_transformer`、`runtime_driver_interop` 已在宿主 MLU 上通过 Native→Remote 数值对照，其中 CNDrv GEMM 还通过 separate netns/veth/chroot。运行方式见 [workloads](workloads/README.md)，结果见 [workload evidence](evidence/workloads-20261108-cndrv/results.json)。283 个 IMPLEMENTED API 的覆盖审计在 [behavior-coverage.csv](compat/behavior-coverage.csv)：52 项有成功 workload runtime 证据，152 项有直接行为测试，79 项有功能族测试。本地 netns/veth/chroot payload transfer 自检见 [隔离证据](evidence/isolation-topology-20261108/README.md)；它不代表第二物理主机验收。

@@ -1,0 +1,150 @@
+{
+  "status": "PASS",
+  "endpoint": "127.0.0.1:50422",
+  "external_server": false,
+  "baseline_commit": "c087186a1e8a52bc39060564c0815be1db21e2bd",
+  "realistic_isolation": false,
+  "workloads": [
+    "llm_transformer"
+  ],
+  "failure": null,
+  "runtime_artifacts": {
+    "build/mlu-remote-server": "70c62899808ae18984a55a3d0078cc23296537bae2701be2f578490224f3cfc2",
+    "build/shim/libcnrt.so": "888fcde406160655fbec7fe4af803a8c428e860fd8770da3ef18ccdca99beb8c",
+    "build/driver-shim/libcndrv.so": "294c399528c093cc8b2c7c3b31c1e5ea9474dc005feefca7ac786905bee4d8a9",
+    "build/libremote_cnrt.so": "b08b1cf7f8e33acdd259d63ad621cebba1edd4f54999e2b66ecd1feef73407e8"
+  },
+  "results": [
+    {
+      "name": "llm_transformer-default-native",
+      "workload": "llm_transformer",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer"
+      ],
+      "sha256": "8725b291d7fa989a30b74d002974c22f0611d57cda5a869dd1fa670fe90ba6c7",
+      "elements": 56,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "STAGE_RMSNORM_MAX_ABS_ERROR": 2.38418579e-07,
+        "STAGE_QKV_MAX_ABS_ERROR": 1.1920929e-07,
+        "STAGE_ROPE_MAX_ABS_ERROR": 1.78813934e-07,
+        "STAGE_ROPE_KEY_MAX_ABS_ERROR": 7.4505806e-08,
+        "STAGE_KV_CACHE_KEY_MAX_ABS_ERROR": 7.4505806e-08,
+        "STAGE_KV_CACHE_VALUE_MAX_ABS_ERROR": 5.96046448e-08,
+        "STAGE_ATTENTION_SCORE_MAX_ABS_ERROR": 3.7252903e-08,
+        "STAGE_SOFTMAX_MAX_ABS_ERROR": 1.49011612e-08,
+        "STAGE_ATTENTION_MAX_ABS_ERROR": 8.94069672e-08,
+        "STAGE_SWIGLU_PROJECTION_MAX_ABS_ERROR": 5.21540642e-08,
+        "STAGE_SWIGLU_UP_MAX_ABS_ERROR": 2.98023224e-08,
+        "STAGE_SWIGLU_MAX_ABS_ERROR": 4.65661287e-09,
+        "WORKLOAD": "llm_transformer",
+        "SHAPE": "7x8x12",
+        "CPU_CHECKSUM": -14.390430826693773,
+        "MLU_CHECKSUM": -14.390430357307196,
+        "MAX_ABS_ERROR": 5.96046448e-08,
+        "TOLERANCE": 0.000699999975,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "llm_transformer-default-replacement",
+      "workload": "llm_transformer",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer"
+      ],
+      "sha256": "8725b291d7fa989a30b74d002974c22f0611d57cda5a869dd1fa670fe90ba6c7",
+      "elements": 56,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50422"
+      },
+      "returncode": 0,
+      "metrics": {
+        "STAGE_RMSNORM_MAX_ABS_ERROR": 2.38418579e-07,
+        "STAGE_QKV_MAX_ABS_ERROR": 1.1920929e-07,
+        "STAGE_ROPE_MAX_ABS_ERROR": 1.78813934e-07,
+        "STAGE_ROPE_KEY_MAX_ABS_ERROR": 7.4505806e-08,
+        "STAGE_KV_CACHE_KEY_MAX_ABS_ERROR": 7.4505806e-08,
+        "STAGE_KV_CACHE_VALUE_MAX_ABS_ERROR": 5.96046448e-08,
+        "STAGE_ATTENTION_SCORE_MAX_ABS_ERROR": 3.7252903e-08,
+        "STAGE_SOFTMAX_MAX_ABS_ERROR": 1.49011612e-08,
+        "STAGE_ATTENTION_MAX_ABS_ERROR": 8.94069672e-08,
+        "STAGE_SWIGLU_PROJECTION_MAX_ABS_ERROR": 5.21540642e-08,
+        "STAGE_SWIGLU_UP_MAX_ABS_ERROR": 2.98023224e-08,
+        "STAGE_SWIGLU_MAX_ABS_ERROR": 4.65661287e-09,
+        "WORKLOAD": "llm_transformer",
+        "SHAPE": "7x8x12",
+        "CPU_CHECKSUM": -14.390430826693773,
+        "MLU_CHECKSUM": -14.390430357307196,
+        "MAX_ABS_ERROR": 5.96046448e-08,
+        "TOLERANCE": 0.000699999975,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "llm_transformer-default-preload",
+      "workload": "llm_transformer",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer"
+      ],
+      "sha256": "8725b291d7fa989a30b74d002974c22f0611d57cda5a869dd1fa670fe90ba6c7",
+      "elements": 56,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50422"
+      },
+      "returncode": 0,
+      "metrics": {
+        "STAGE_RMSNORM_MAX_ABS_ERROR": 2.38418579e-07,
+        "STAGE_QKV_MAX_ABS_ERROR": 1.1920929e-07,
+        "STAGE_ROPE_MAX_ABS_ERROR": 1.78813934e-07,
+        "STAGE_ROPE_KEY_MAX_ABS_ERROR": 7.4505806e-08,
+        "STAGE_KV_CACHE_KEY_MAX_ABS_ERROR": 7.4505806e-08,
+        "STAGE_KV_CACHE_VALUE_MAX_ABS_ERROR": 5.96046448e-08,
+        "STAGE_ATTENTION_SCORE_MAX_ABS_ERROR": 3.7252903e-08,
+        "STAGE_SOFTMAX_MAX_ABS_ERROR": 1.49011612e-08,
+        "STAGE_ATTENTION_MAX_ABS_ERROR": 8.94069672e-08,
+        "STAGE_SWIGLU_PROJECTION_MAX_ABS_ERROR": 5.21540642e-08,
+        "STAGE_SWIGLU_UP_MAX_ABS_ERROR": 2.98023224e-08,
+        "STAGE_SWIGLU_MAX_ABS_ERROR": 4.65661287e-09,
+        "WORKLOAD": "llm_transformer",
+        "SHAPE": "7x8x12",
+        "CPU_CHECKSUM": -14.390430826693773,
+        "MLU_CHECKSUM": -14.390430357307196,
+        "MAX_ABS_ERROR": 5.96046448e-08,
+        "TOLERANCE": 0.000699999975,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    }
+  ],
+  "core_smoke": [
+    {
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/native_bang_generic"
+      ],
+      "returncode": 0,
+      "sha256": "1f80f8d637e0e73263454605f3b94782eb9574b3d2b360ea3a5b347e9159d84b"
+    }
+  ]
+}

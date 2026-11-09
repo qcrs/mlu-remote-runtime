@@ -1,0 +1,7 @@
+2026-11-09 00:39:33.705239: [cnrtError] [2526780] [Card: 0] cnrtDeviceGetAttribute: invalid argument, attr is out of range.
+2026-11-09 00:39:33.706224: [cnrtError] [2526780] [Card: 0] Error occurred during calling 'cnNotifierElapsedTime' in CNDrv interface.
+2026-11-09 00:39:33.706244: [cnrtError] [2526780] [Card: 0] Return value is 100080, CN_NOTIFIER_ERROR_INVALID.
+2026-11-09 00:39:33.706250: [cnrtError] [2526780] [Card: 0] cnrtNotifierElapsedTime: Failed to get notifier duration.
+2026-11-09 00:39:33.706360: [cnrtError] [2526780] [Card: 0] Error occurred during calling 'cnNotifierElapsedTime' in CNDrv interface.
+2026-11-09 00:39:33.706367: [cnrtError] [2526780] [Card: 0] Return value is 100080, CN_NOTIFIER_ERROR_INVALID.
+2026-11-09 00:39:33.706370: [cnrtError] [2526780] [Card: 0] cnrtNotifierElapsedTime: Failed to get notifier duration.

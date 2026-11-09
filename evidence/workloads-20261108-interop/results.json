@@ -1,0 +1,153 @@
+{
+  "status": "PASS",
+  "endpoint": "127.0.0.1:50423",
+  "external_server": false,
+  "baseline_commit": "c087186a1e8a52bc39060564c0815be1db21e2bd",
+  "realistic_isolation": false,
+  "workloads": [
+    "runtime_driver_interop"
+  ],
+  "failure": null,
+  "runtime_artifacts": {
+    "build/mlu-remote-server": "70c62899808ae18984a55a3d0078cc23296537bae2701be2f578490224f3cfc2",
+    "build/shim/libcnrt.so": "888fcde406160655fbec7fe4af803a8c428e860fd8770da3ef18ccdca99beb8c",
+    "build/driver-shim/libcndrv.so": "294c399528c093cc8b2c7c3b31c1e5ea9474dc005feefca7ac786905bee4d8a9",
+    "build/libremote_cnrt.so": "b08b1cf7f8e33acdd259d63ad621cebba1edd4f54999e2b66ecd1feef73407e8"
+  },
+  "results": [
+    {
+      "name": "runtime_driver_interop-default-native",
+      "workload": "runtime_driver_interop",
+      "mode": "native",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "sha256": "bf1e8c97c19ecbe559e3e797cdf987583226be5fd70f1005e1c0f9efa15eb718",
+      "elements": 148,
+      "environment": {
+        "LD_LIBRARY_PATH": "/usr/local/neuware/lib64"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "runtime_driver_interop",
+        "SHAPE": "4x37",
+        "CPU_CHECKSUM": -49.44444453716278,
+        "MLU_CHECKSUM": -49.44444453716278,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0001,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "runtime_driver_interop-default-replacement",
+      "workload": "runtime_driver_interop",
+      "mode": "replacement",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "sha256": "bf1e8c97c19ecbe559e3e797cdf987583226be5fd70f1005e1c0f9efa15eb718",
+      "elements": 148,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50423"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "runtime_driver_interop",
+        "SHAPE": "4x37",
+        "CPU_CHECKSUM": -49.44444453716278,
+        "MLU_CHECKSUM": -49.44444453716278,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0001,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "runtime_driver_interop-default-preload",
+      "workload": "runtime_driver_interop",
+      "mode": "preload",
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "sha256": "bf1e8c97c19ecbe559e3e797cdf987583226be5fd70f1005e1c0f9efa15eb718",
+      "elements": 148,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "LD_PRELOAD": "/home/lvtong/mlu-remote-runtime/build/shim/libcnrt.so:/home/lvtong/mlu-remote-runtime/build/driver-shim/libcndrv.so",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50423"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "runtime_driver_interop",
+        "SHAPE": "4x37",
+        "CPU_CHECKSUM": -49.44444453716278,
+        "MLU_CHECKSUM": -49.44444453716278,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0001,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    },
+    {
+      "name": "runtime_driver_interop-default-isolated",
+      "workload": "runtime_driver_interop",
+      "mode": "isolated",
+      "command": [
+        "bash",
+        "/home/lvtong/mlu-remote-runtime/scripts/run-isolated-client.sh",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "client_command": [
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin"
+      ],
+      "sha256": "bf1e8c97c19ecbe559e3e797cdf987583226be5fd70f1005e1c0f9efa15eb718",
+      "elements": 148,
+      "environment": {
+        "LD_LIBRARY_PATH": "/home/lvtong/mlu-remote-runtime/build/driver-shim:/home/lvtong/mlu-remote-runtime/build/shim:/home/lvtong/mlu-remote-runtime/build",
+        "MLU_REMOTE_HOST": "127.0.0.1",
+        "MLU_REMOTE_PORT": "50423"
+      },
+      "returncode": 0,
+      "metrics": {
+        "WORKLOAD": "runtime_driver_interop",
+        "SHAPE": "4x37",
+        "CPU_CHECKSUM": -49.44444453716278,
+        "MLU_CHECKSUM": -49.44444453716278,
+        "MAX_ABS_ERROR": 0.0,
+        "TOLERANCE": 0.0001,
+        "MISMATCH": 0,
+        "RESULT": "PASS"
+      }
+    }
+  ],
+  "core_smoke": [
+    {
+      "command": [
+        "/home/lvtong/mlu-remote-runtime/build/native_bang_generic"
+      ],
+      "returncode": 0,
+      "sha256": "1f80f8d637e0e73263454605f3b94782eb9574b3d2b360ea3a5b347e9159d84b"
+    }
+  ]
+}

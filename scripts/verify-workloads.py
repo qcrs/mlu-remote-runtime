@@ -6,6 +6,7 @@ import json
 import math
 import os
 from pathlib import Path
+import shutil
 import socket
 import subprocess
 import sys
@@ -29,16 +30,32 @@ SPECS = {
     'heat_diffusion': (1e-5, [((), '193x129x32', 24897),
                               (('23', '17', '5'), '23x17x5', 391),
                               (('1', '7', '1'), '1x7x1', 7)]),
+    'cndrv_gemm': (1e-4, [((), '19x17x23', 342)]),
+    'llm_transformer': (7e-4, [((), '7x8x12', 56)]),
+    'runtime_driver_interop': (1e-4, [((), '4x37', 148)]),
 }
+DRIVER_WORKLOADS = {'cndrv_gemm', 'runtime_driver_interop'}
 
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def recorded_path(path):
+    path = Path(path).resolve()
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def source_hashes(name):
-    paths = [ROOT / 'workloads' / (name + '.mlu'), ROOT / 'workloads/common.h']
+    paths = [ROOT / 'workloads' / (name + '.mlu')]
+    if name not in ('cndrv_gemm', 'runtime_driver_interop'):
+        paths.append(ROOT / 'workloads/common.h')
     if name == 'row_center':
+        paths.append(ROOT / 'scripts/generate_bang_metadata.py')
+    if name in DRIVER_WORKLOADS:
         paths.append(ROOT / 'scripts/generate_bang_metadata.py')
     return {str(path.relative_to(ROOT)): digest(path) for path in paths}
 
@@ -51,10 +68,15 @@ def build_workloads(sdk, out, names):
             executable = BUILD / name
             command = [str(sdk / 'bin/cncc'), '--bang-mlu-arch=mtp_372']
             cwd = ROOT
-            if name == 'row_center':
+            if name == 'row_center' or name in DRIVER_WORKLOADS:
                 cwd = BUILD / 'audit' / name
                 cwd.mkdir(parents=True, exist_ok=True)
-                command.append('-save-temps')
+                if name in DRIVER_WORKLOADS or name == 'row_center':
+                    command.append('-save-temps')
+            if name in DRIVER_WORKLOADS:
+                command.append('-lcndrv')
+            if name == 'llm_transformer':
+                command.append('-lm')
             command += [str(ROOT / 'workloads' / (name + '.mlu')), '-o', str(executable)]
             commands = [command]
             if name == 'row_center':
@@ -66,6 +88,16 @@ def build_workloads(sdk, out, names):
                      '--host', str(executable), '--pair',
                      f'{ir}:{cwd}/row_center-bang-mlisa-cambricon-bang.cnfatbin',
                      '--manifest', str(cwd / 'abi.json')],
+                ]
+            elif name in DRIVER_WORKLOADS:
+                ir = cwd / 'types.ll'
+                image = cwd / (name + '-bang-mlisa-cambricon-bang.cnfatbin')
+                commands += [
+                    [str(sdk / 'bin/cncc'), '--bang-device-only', '--bang-mlu-arch=mtp_372',
+                     '-S', '-emit-llvm', str(ROOT / 'workloads' / (name + '.mlu')), '-o', str(ir)],
+                    [sys.executable, str(ROOT / 'scripts/generate_bang_metadata.py'),
+                     '--host', str(executable), '--pair', f'{ir}:{image}',
+                     '--manifest', str(cwd / 'abi.json'), '--attach-images'],
                 ]
             for command in commands:
                 log.write('COMMAND ' + repr(command) + '\n'); log.flush()
@@ -79,6 +111,18 @@ def build_workloads(sdk, out, names):
                                                      for p in k['parameters']) for k in metadata):
                     raise RuntimeError('row_center compiler aggregate metadata missing')
                 (out / 'row_center-abi.json').write_text(json.dumps(metadata, indent=2) + '\n')
+            if name in DRIVER_WORKLOADS:
+                image = cwd / (name + '-bang-mlisa-cambricon-bang.cnfatbin')
+                metadata = json.loads((cwd / 'abi.json').read_text())
+                if not image.is_file() or not metadata:
+                    raise RuntimeError(name + ': compiler-derived Driver image metadata missing')
+                shutil.copy2(image, out / (name + '.cnfatbin'))
+                shutil.copy2(cwd / 'abi.json', out / (name + '-abi.json'))
+                artifacts[name]['image'] = {
+                    'path': str(image.relative_to(ROOT)), 'sha256': digest(image),
+                    'evidence_image': recorded_path(out / (name + '.cnfatbin')),
+                    'abi_manifest': recorded_path(out / (name + '-abi.json')),
+                }
             print('built', name, flush=True)
     receipt = BUILD / 'artifacts.json'
     existing = json.loads(receipt.read_text()) if receipt.exists() else {}
@@ -93,6 +137,10 @@ def load_artifacts(names):
         entry = artifacts[name]
         if entry['sha256'] != digest(BUILD / name) or entry['sources'] != source_hashes(name):
             raise RuntimeError(f'{name}: stale build; rerun without --skip-build')
+        if name in DRIVER_WORKLOADS:
+            image = ROOT / entry['image']['path']
+            if not image.is_file() or entry['image']['sha256'] != digest(image):
+                raise RuntimeError(f'{name}: stale CNDrv image; rerun without --skip-build')
     return {name: artifacts[name] for name in names}
 
 
@@ -126,6 +174,15 @@ def observations(stdout, name, shape, tolerance):
         values['MEAN_MAX_ABS_ERROR'] = float(values['MEAN_MAX_ABS_ERROR'])
         if values['GUARD_MISMATCH'] or not 0 <= values['MEAN_MAX_ABS_ERROR'] <= tolerance:
             raise RuntimeError('row mean/offset/padding comparison failed')
+    if name == 'llm_transformer':
+        stages = ('RMSNORM', 'QKV', 'ROPE', 'ROPE_KEY', 'KV_CACHE_KEY',
+                  'KV_CACHE_VALUE', 'ATTENTION_SCORE', 'SOFTMAX', 'ATTENTION',
+                  'SWIGLU_PROJECTION', 'SWIGLU_UP', 'SWIGLU')
+        for stage in stages:
+            key = 'STAGE_' + stage + '_MAX_ABS_ERROR'
+            values[key] = float(values[key])
+            if not math.isfinite(values[key]) or not 0 <= values[key] <= tolerance:
+                raise RuntimeError('LLM intermediate stage comparison failed: ' + key)
     return values
 
 
@@ -135,14 +192,28 @@ def run_case(out, results, name, args, shape, count, mode, env, artifact):
     before = digest(executable)
     if before != artifact['sha256']:
         raise RuntimeError(name + ': executable changed between modes')
-    command = [str(executable), *args]
-    entry = {'name': label, 'workload': name, 'mode': mode, 'command': command,
+    workload_args = list(args)
+    if name in DRIVER_WORKLOADS:
+        workload_args.append(str(ROOT / artifact['image']['path']))
+    command = [str(executable), *workload_args]
+    launched_command = command
+    if mode == 'isolated':
+        launched_command = ['bash', str(ROOT / 'scripts/run-isolated-client.sh'), *command]
+    elif mode == 'isolated-netns':
+        launched_command = [
+            'bash', str(ROOT / 'scripts/run-isolated-pair.sh'),
+            '--port', env['MLU_REMOTE_PORT'], '--shim', env.get('MLU_REMOTE_SHIM', 'both'),
+            '--server', str(ROOT / 'build/mlu-remote-server'), '--client', str(executable),
+            '--', *workload_args,
+        ]
+    entry = {'name': label, 'workload': name, 'mode': mode, 'command': launched_command,
+             'client_command': command,
              'sha256': before, 'elements': count,
              'environment': {k: env[k] for k in ('LD_LIBRARY_PATH', 'LD_PRELOAD',
                                                 'MLU_REMOTE_HOST', 'MLU_REMOTE_PORT') if k in env}}
     results.append(entry)
     try:
-        process = subprocess.run(command, cwd=ROOT, env=env, capture_output=True,
+        process = subprocess.run(launched_command, cwd=ROOT, env=env, capture_output=True,
                                  text=True, timeout=180)
         (out / (label + '.log')).write_text(process.stdout)
         (out / (label + '.stderr')).write_text(process.stderr)
@@ -173,10 +244,12 @@ def wait_server(host, port, server):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--out', default='evidence/workloads-20261107-iterative')
+    parser.add_argument('--out', default='evidence/workloads-20261108-full')
     parser.add_argument('--port', type=int, default=50221)
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--external-server', action='store_true', help='use server in terminal A')
+    parser.add_argument('--realistic-isolation', action='store_true',
+                        help='run Driver clients in a chroot over sibling network namespaces and veth/TCP')
     parser.add_argument('--skip-build', action='store_true', help='verify a current build receipt')
     parser.add_argument('--build-only', action='store_true', help='compile apps without running them')
     parser.add_argument('--workload', action='append', choices=tuple(SPECS),
@@ -206,21 +279,33 @@ def main():
     results, smoke = [], []
     baseline = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     runtime_artifacts = {path: digest(ROOT / path) for path in (
-        'build/mlu-remote-server', 'build/shim/libcnrt.so', 'build/libremote_cnrt.so')}
+        'build/mlu-remote-server', 'build/shim/libcnrt.so',
+        'build/driver-shim/libcndrv.so', 'build/libremote_cnrt.so')}
     server = log = None
+    failure = None
     status = 'FAIL'
     try:
         if not args.external_server:
             log = (out / 'server.log').open('w')
-            server = subprocess.Popen([str(ROOT / 'scripts/run-server.sh')], cwd=ROOT,
-                                      env=dict(base, MLU_REMOTE_BIND=args.host, MLU_REMOTE_PORT=str(args.port)),
+            server = subprocess.Popen([str(ROOT / 'scripts/run-server.sh')], cwd='/tmp',
+                                      env=dict(base, MLU_REMOTE_BIND=args.host, MLU_REMOTE_PORT=str(args.port),
+                                               MLU_REMOTE_MODULE_DIR=str(ROOT / 'modules')),
                                       stdout=log, stderr=subprocess.STDOUT)
         wait_server(args.host, args.port, server)
         for name in names:
             tolerance, cases = SPECS[name]
             for arguments, shape, count in cases:
                 native = run_case(out, results, name, arguments, shape, count, 'native', base, artifacts[name])
-                for mode, env in [('replacement', remote), ('preload', preload)]:
+                modes = [('replacement', remote), ('preload', preload)]
+                if name in DRIVER_WORKLOADS:
+                    modes = [
+                        ('replacement', dict(remote, MLU_REMOTE_SHIM='both',
+                            LD_LIBRARY_PATH=f'{ROOT}/build/driver-shim:{ROOT}/build/shim:{ROOT}/build')),
+                        ('preload', dict(preload, MLU_REMOTE_SHIM='both',
+                            LD_PRELOAD=f'{ROOT}/build/shim/libcnrt.so:{ROOT}/build/driver-shim/libcndrv.so',
+                            LD_LIBRARY_PATH=f'{ROOT}/build/driver-shim:{ROOT}/build/shim:{ROOT}/build')),
+                    ]
+                for mode, env in modes:
                     measured = run_case(out, results, name, arguments, shape, count, mode, env, artifacts[name])
                     if measured['CPU_CHECKSUM'] != native['CPU_CHECKSUM']:
                         raise RuntimeError(name + ': CPU reference differs across modes')
@@ -228,6 +313,13 @@ def main():
                     # byte-identical FP32 text across native and remote backends.
                     if abs(measured['MLU_CHECKSUM'] - native['MLU_CHECKSUM']) > 2 * count * tolerance:
                         raise RuntimeError(name + ': native/remote checksum drift exceeds tolerance')
+                if name in DRIVER_WORKLOADS and (not args.external_server or args.realistic_isolation):
+                    isolated_mode = 'isolated-netns' if args.realistic_isolation else 'isolated'
+                    measured = run_case(out, results, name, arguments, shape, count, isolated_mode,
+                                        dict(modes[0][1], MLU_REMOTE_SHIM='both'), artifacts[name])
+                    if (measured['CPU_CHECKSUM'] != native['CPU_CHECKSUM'] or
+                            abs(measured['MLU_CHECKSUM'] - native['MLU_CHECKSUM']) > 2 * count * tolerance):
+                        raise RuntimeError(name + ': isolated client differs from native result')
         # One existing generic CNCC core smoke; no fault/stress suites.
         command = [str(ROOT / 'build/native_bang_generic')]
         process = subprocess.run(command, cwd=ROOT, env=remote, capture_output=True, text=True, timeout=180)
@@ -238,8 +330,10 @@ def main():
         if process.returncode or 'PASS generic_add_one BANG C numerical check' not in process.stdout:
             raise RuntimeError('core smoke failed')
         status = 'PASS'
-        print(f'PASS: {len(names)} workloads, {len(results) // 3} cases, '
-              f'{len(results)} native/replacement/preload runs; core smoke PASS', flush=True)
+        print(f'PASS: {len(names)} workloads, {len(results)} runs; core smoke PASS', flush=True)
+    except Exception as exc:
+        failure = str(exc)
+        raise
     finally:
         if server is not None:
             server.terminate()
@@ -251,7 +345,8 @@ def main():
             log.close()
         summary = {'status': status, 'endpoint': f'{args.host}:{args.port}',
                    'external_server': args.external_server, 'baseline_commit': baseline,
-                   'workloads': names,
+                   'realistic_isolation': args.realistic_isolation,
+                   'workloads': names, 'failure': failure,
                    'runtime_artifacts': runtime_artifacts, 'results': results, 'core_smoke': smoke}
         (out / 'results.json').write_text(json.dumps(summary, indent=2) + '\n')
 

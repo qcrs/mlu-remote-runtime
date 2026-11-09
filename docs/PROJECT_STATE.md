@@ -1,6 +1,6 @@
 # 当前工程状态
 
-更新：2026-11-07。目标为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64→AArch64。普通 CNCC/BANG 程序通过原生注册 ABI、image/module 上传和通用 launch 远程运行；客户端替换库不依赖本地 Driver/设备节点。第二物理主机和生产安全体系不是当前核心阶段门槛。
+更新：2026-11-08。目标为 MLU370-S4 单设备、Neuware 3.5.2、CNRT 6.5.2、CNDrv 2.5.2、AArch64→AArch64。普通 CNCC/BANG 程序通过原生注册 ABI、image/module 上传和通用 launch 远程运行；客户端替换库不依赖本地 Driver/设备节点。第二物理主机和生产安全体系不是当前核心阶段门槛。
 
 ## API 状态
 
@@ -73,6 +73,6 @@ G1 当时的完整核心回归 76/76、功能族 15/15、API contracts/codegen/l
 
 本批 [error/copy 16 项差分与完整核心回归](../evidence/core-copy-20261107/README.md) 通过，包括 Native、replacement、preload、独立 TCP Server/Client 与隐藏 SDK 和 `/dev` 的 namespace；错误查询在初始化前、远端不可达时仍完整一致。L0 build、codegen/ledger/contracts 和 closure resolution 检查通过。此前 [audit 功能族 15 项、查询 11 项](../evidence/closure-20261107/README.md) 保留。
 
-已有 [完整核心回归](../evidence/context-default-20261102-final/README.md)、[Driver](../evidence/driver-shim-20261102/README.md)、[资源生命周期](RESOURCE_LIFECYCLE.md) 和 [连接生命周期](TRANSPORT_LIFECYCLE.md) 记录保留。八个普通 BANG workload 共 19 输入，Native/replacement/preload 的 57 次运行 CPU reference 和 guard 均一致，最新 [迭代 workload 证据](../evidence/workloads-20261107-iterative/README.md) 包含 heat diffusion；GEMM/row_center 最大误差 9.53674316e-7，heat diffusion 5.96046448e-8，其余 0。
+已有 [完整核心回归](../evidence/context-default-20261102-final/README.md)、[Driver](../evidence/driver-shim-20261102/README.md)、[资源生命周期](RESOURCE_LIFECYCLE.md) 和 [连接生命周期](TRANSPORT_LIFECYCLE.md) 记录保留。此前完整 workload 运行包含八个普通 BANG 程序的 19 组输入、57 次 Native/replacement/preload 运行，CPU reference 和 guard 均一致；GEMM/row_center 最大误差 9.53674316e-7，heat diffusion 5.96046448e-8，其余 0。新增 CNDrv GEMM、LLM transformer、Runtime/Driver interop 随后在宿主 MLU 上通过 Native/replacement/preload；CNDrv GEMM 还通过 separate netns/veth/chroot，发现并修复了 Host allocation 初始化顺序、LLM CPU reference 越界和隔离 chroot 的 dlopen-only LZ4/Server library-path 问题。详见 [cndrv](../evidence/workloads-20261108-cndrv/results.json)、[llm](../evidence/workloads-20261108-llm/results.json)、[interop](../evidence/workloads-20261108-interop/results.json) 与 [realistic isolation](../evidence/workloads-20261108-realistic-final/results.json)。283 个 IMPLEMENTED API 的覆盖审计见[行为覆盖报告](../compat/behavior-coverage.csv)：52 项有成功 workload runtime 证据；152 项有 exact native behavior-test/probe call site，79 项为 family test，0 项 contract-only。较早受限环境的无设备尝试保留在[历史记录](../evidence/workloads-20261108-next/README.md)。
 
-本机独立地址空间和 namespace 证明客户端无需本地设备；尚未作为第二物理主机认证。异构 CPU、其他 SDK/image ABI 与生产认证/TLS 不包含在当前完成声明中。
+[隔离拓扑自检](../evidence/isolation-topology-20261108/README.md) 已在独立 sibling network namespaces 和 veth/TCP 上通过，验证 Driver image 文件参数由 Client chroot 读取并传输，接收端 SHA-256 一致。此项只证明本机网络/文件视图与 payload transfer，不运行 MLU server 或 workload；它尚未作为第二物理主机认证。异构 CPU、其他 SDK/image ABI 与生产认证/TLS 不包含在当前完成声明中。

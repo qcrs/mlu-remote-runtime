@@ -1,0 +1,109 @@
+{
+  "cndrv_gemm": {
+    "sha256": "dd5f8ac707e7f1b4e3f71105c00e48e5e0b7da3d2f54a6231f3dd3baedd0edb5",
+    "sources": {
+      "workloads/cndrv_gemm.mlu": "c00d393691122bb16a7f2e3dd97a58980793a1fc3ea210309082e126b690bca2",
+      "scripts/generate_bang_metadata.py": "ebc75a35528c6487b8a552ad5d01df2e1a8520567d7c93122bbae3ca48bc7f8a"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "-save-temps",
+        "-lcndrv",
+        "/home/lvtong/mlu-remote-runtime/workloads/cndrv_gemm.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm"
+      ],
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-device-only",
+        "--bang-mlu-arch=mtp_372",
+        "-S",
+        "-emit-llvm",
+        "/home/lvtong/mlu-remote-runtime/workloads/cndrv_gemm.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/types.ll"
+      ],
+      [
+        "/usr/bin/python3",
+        "/home/lvtong/mlu-remote-runtime/scripts/generate_bang_metadata.py",
+        "--host",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "--pair",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/types.ll:/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin",
+        "--manifest",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/abi.json",
+        "--attach-images"
+      ]
+    ],
+    "image": {
+      "path": "build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin",
+      "sha256": "cee1190b905bae3d42e8947188729c9c1762ed275a834428e62ce2b514cd7e17",
+      "evidence_image": "evidence/workloads-20261108-host-initial/cndrv_gemm.cnfatbin",
+      "abi_manifest": "evidence/workloads-20261108-host-initial/cndrv_gemm-abi.json"
+    }
+  },
+  "llm_transformer": {
+    "sha256": "8725b291d7fa989a30b74d002974c22f0611d57cda5a869dd1fa670fe90ba6c7",
+    "sources": {
+      "workloads/llm_transformer.mlu": "497ae4ed3ed5b23b060f5cf889d8d4e4975c93f0462aca420742730de6876a2e",
+      "workloads/common.h": "9a44fe225487e1d02ad26ee924ac96803ae19f8972445262c83648da5857308c"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "-lm",
+        "/home/lvtong/mlu-remote-runtime/workloads/llm_transformer.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/llm_transformer"
+      ]
+    ]
+  },
+  "runtime_driver_interop": {
+    "sha256": "bf1e8c97c19ecbe559e3e797cdf987583226be5fd70f1005e1c0f9efa15eb718",
+    "sources": {
+      "workloads/runtime_driver_interop.mlu": "49f165cd43781fc4265516696d5ab3a81aff0a05cc8b3930c9e6f1c1d814300b",
+      "scripts/generate_bang_metadata.py": "ebc75a35528c6487b8a552ad5d01df2e1a8520567d7c93122bbae3ca48bc7f8a"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "-save-temps",
+        "-lcndrv",
+        "/home/lvtong/mlu-remote-runtime/workloads/runtime_driver_interop.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop"
+      ],
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-device-only",
+        "--bang-mlu-arch=mtp_372",
+        "-S",
+        "-emit-llvm",
+        "/home/lvtong/mlu-remote-runtime/workloads/runtime_driver_interop.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/types.ll"
+      ],
+      [
+        "/usr/bin/python3",
+        "/home/lvtong/mlu-remote-runtime/scripts/generate_bang_metadata.py",
+        "--host",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/runtime_driver_interop",
+        "--pair",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/types.ll:/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin",
+        "--manifest",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/runtime_driver_interop/abi.json",
+        "--attach-images"
+      ]
+    ],
+    "image": {
+      "path": "build/workloads/audit/runtime_driver_interop/runtime_driver_interop-bang-mlisa-cambricon-bang.cnfatbin",
+      "sha256": "e80a401d24bf30f90224d60fe07b67b80aee0bbd036126ffc479da35120ed524",
+      "evidence_image": "evidence/workloads-20261108-next/runtime_driver_interop.cnfatbin",
+      "abi_manifest": "evidence/workloads-20261108-next/runtime_driver_interop-abi.json"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "cndrv_gemm": {
+    "sha256": "dd5f8ac707e7f1b4e3f71105c00e48e5e0b7da3d2f54a6231f3dd3baedd0edb5",
+    "sources": {
+      "workloads/cndrv_gemm.mlu": "c00d393691122bb16a7f2e3dd97a58980793a1fc3ea210309082e126b690bca2",
+      "scripts/generate_bang_metadata.py": "ebc75a35528c6487b8a552ad5d01df2e1a8520567d7c93122bbae3ca48bc7f8a"
+    },
+    "build_commands": [
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-mlu-arch=mtp_372",
+        "-save-temps",
+        "-lcndrv",
+        "/home/lvtong/mlu-remote-runtime/workloads/cndrv_gemm.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm"
+      ],
+      [
+        "/usr/local/neuware/bin/cncc",
+        "--bang-device-only",
+        "--bang-mlu-arch=mtp_372",
+        "-S",
+        "-emit-llvm",
+        "/home/lvtong/mlu-remote-runtime/workloads/cndrv_gemm.mlu",
+        "-o",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/types.ll"
+      ],
+      [
+        "/usr/bin/python3",
+        "/home/lvtong/mlu-remote-runtime/scripts/generate_bang_metadata.py",
+        "--host",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/cndrv_gemm",
+        "--pair",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/types.ll:/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin",
+        "--manifest",
+        "/home/lvtong/mlu-remote-runtime/build/workloads/audit/cndrv_gemm/abi.json",
+        "--attach-images"
+      ]
+    ],
+    "image": {
+      "path": "build/workloads/audit/cndrv_gemm/cndrv_gemm-bang-mlisa-cambricon-bang.cnfatbin",
+      "sha256": "cee1190b905bae3d42e8947188729c9c1762ed275a834428e62ce2b514cd7e17",
+      "evidence_image": "evidence/workloads-20261108-host-initial/cndrv_gemm.cnfatbin",
+      "abi_manifest": "evidence/workloads-20261108-host-initial/cndrv_gemm-abi.json"
+    }
+  }
+}
